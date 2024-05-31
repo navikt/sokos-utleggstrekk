@@ -1,0 +1,20 @@
+name: Build/test PR
+
+on:
+  pull_request:
+
+jobs:
+  build-pr:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - uses: gradle/gradle-build-action@v2.11.0
+        with:
+          arguments: --configuration-cache build shadowJar
