@@ -1,0 +1,26 @@
+[
+  {
+    "trekkid": "string",
+    "trekkversjon": 1,
+    "opprettet": "2024-06-01T22:06:56.058Z",
+    "trekkpliktig": "123456789",
+    "skyldner": "14475093046",
+    "trekkstatus": "aktiv",
+    "startPeriode": "2024-12",
+    "sluttPeriode": "2024-12",
+    "midlertidigStans": [
+      {
+        "startPeriode": "2024-12",
+        "sluttPeriode": "2024-12"
+      }
+    ],
+    "trekkbeloep": {
+      "trekkbeloep": 0
+    },
+    "trekkprosent": {
+      "trekkprosent": 0
+    },
+    "kidnummer": "73296364",
+    "kontonummer": "76367932207"
+  }
+]
