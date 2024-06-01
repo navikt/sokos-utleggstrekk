@@ -21,16 +21,10 @@ class SkeClient(
     suspend fun hentAlleNyeUtleggstrekk() =
         doGet(ORGNR, UUID.randomUUID().toString())
 
-    private suspend fun doGet(path: String, corrID: String):HttpResponse {
-        val resp = client.get(buildHttpRequest(path, corrID))
-        println(resp.bodyAsText())
-        return resp
-    }
+    private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID))
 
     private suspend fun buildHttpRequest(path: String, corrID: String): HttpRequestBuilder {
-        println("Henter Token")
         val token = tokenProvider.hentAccessToken()
-        println("Token:  \n --$token")
         return HttpRequestBuilder().apply {
             url("$skeEndpoint$path")
             headers {
