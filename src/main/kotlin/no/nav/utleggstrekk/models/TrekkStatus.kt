@@ -1,4 +1,4 @@
-package no.nav.utleggstrekk.models
+package sokos.utleggstrekk.models
 
 
 enum class TrekkStatus(val value: kotlin.String){

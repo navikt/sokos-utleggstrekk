@@ -1,4 +1,4 @@
-package no.nav.utleggstrekk.api
+package sokos.utleggstrekk.api
 
 import io.ktor.server.application.*
 import io.ktor.server.response.*

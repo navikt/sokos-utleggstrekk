@@ -11,8 +11,6 @@ spec:
   replicas:
     min: 1
     max: 2
-  secureLogs:
-    enabled: true
   webproxy: true
   resources:
     limits:

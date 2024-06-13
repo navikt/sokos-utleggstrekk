@@ -1,10 +1,11 @@
-package sokos.ske.krav.client
+package sokos.utleggstrekk.client
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import no.nav.utleggstrekk.client.MaskinportenAccessTokenClient
-import no.nav.utleggstrekk.client.httpClient
+import io.ktor.client.HttpClient
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.request.url
+import io.ktor.http.HttpHeaders
 import java.util.*
 
 private const val NAV_ORGNR = "<SETT INN NAV ORGNR>"

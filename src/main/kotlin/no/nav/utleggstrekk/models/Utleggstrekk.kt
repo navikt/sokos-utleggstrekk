@@ -1,7 +1,10 @@
-package no.nav.utleggstrekk.models
+package sokos.utleggstrekk.models
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Utleggstrekk (
     val trekkid: String,
     val trekkversjon: Int,
@@ -14,7 +17,6 @@ data class Utleggstrekk (
     val midlertidigStans: List<MidlertidigStans>? = null,
     val trekkbeloep: Double? = null,
     val trekkprosent: Double? = null,
-    val kidnummer: String? = null,
-    val kontonummer: String? = null
-) {
-}
+    val kidnummer: String,
+    val kontonummer: String
+)

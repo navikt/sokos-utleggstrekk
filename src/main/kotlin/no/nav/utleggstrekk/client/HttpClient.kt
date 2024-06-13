@@ -1,4 +1,4 @@
-package no.nav.utleggstrekk.client
+package sokos.utleggstrekk.client
 
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*

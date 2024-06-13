@@ -1,13 +1,18 @@
-package no.nav.utleggstrekk.config
+package sokos.utleggstrekk.config
 
-import com.natpryce.konfig.*
+import com.natpryce.konfig.ConfigurationMap
+import com.natpryce.konfig.ConfigurationProperties
+import com.natpryce.konfig.EnvironmentVariables
+import com.natpryce.konfig.Key
+import com.natpryce.konfig.overriding
+import com.natpryce.konfig.stringType
 import com.nimbusds.jose.jwk.RSAKey
-import io.ktor.client.call.*
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import no.nav.utleggstrekk.client.httpClient
+import sokos.utleggstrekk.client.httpClient
 import java.io.File
 
 object PropertiesConfig {

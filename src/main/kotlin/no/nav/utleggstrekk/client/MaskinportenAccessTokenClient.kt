@@ -1,19 +1,24 @@
-package no.nav.utleggstrekk.client
+package sokos.utleggstrekk.client
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.NoTransformationFoundException
+import io.ktor.client.call.body
+import io.ktor.client.request.accept
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.plus
 import mu.KotlinLogging
-import no.nav.utleggstrekk.config.PropertiesConfig
+import sokos.utleggstrekk.config.PropertiesConfig
 import java.util.*
 
 class MaskinportenAccessTokenClient(

@@ -1,4 +1,4 @@
-package no.nav.utleggstrekk.client
+package sokos.utleggstrekk.client
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit

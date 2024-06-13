@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MsgHead xmlns="http://www.kith.no/xmlstds/msghead/2006-05-24"
+         xmlns:ivt="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"
+         xmlns:fk1="http://www.kith.no/xmlstds/felleskomponent1" xmlns:ns4="http://www.kith.no/xmlstds">
+    <MsgInfo>
+        <Type V="INNRAPPORTERING_TREKK_RETUR" DN="Innrapportering av trekk til NAV retur" />
+        <MIGversion>2024-05-06T16:18:28.105+02:00
+        </GenDate>
+        <MsgId>af6fa589-3bc6-48a0-9037-007857c44a41
+        <GenDate>2024-06-13T12:49:07</GenDate>
+        <MsgId>f2f0f2f4-f0f6-f1f3-f1f2-f4f9f0f7f5f1</MsgId>
+        <Ack V="N" DN="Nei" />
+        <ConversationRef>
+            <RefToParent>af6fa589-3bc6-48a0-9037-007857c44a41 </RefToParent>
+            <RefToConversation>af6fa589-3bc6-48a0-9037-007857c44a41</RefToConversation>
+        </ConversationRef>
+        <Sender>2024-05-06T16:18:28.105+02:00</GenDate>        <MsgId>
+        af6fa589-3bc6-48a0-9037-007857c44a41
+    </Sender>
+        <Receiver>
+            <Ident>
+                <Id>889640782</Id>
+            </Ident>
+        </Receiver>
+    </MsgInfo>
+    <Document>
+        <RefDoc>
+            <Content>
+                <InnrapporteringTrekk
+                        xsi:schemaLocation="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04 InnrapporteringTrekk-2010-02-04.xsd"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xmlns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"
+                        xmlns:fk1="http://www.kith.no/xmlstds/felleskomponent1">
+                    <Identifisering>
+                        <KreditorTrekkId>SIAN6212487 </KreditorTrekkId>
+                        <NavTrekkId>0015018001</NavTrekkId>
+                        <DebitorId>
+                            <fk1:Id>01020312345</fk1:Id>
+                            <fk1:TypeId V="   " />
+                        </DebitorId>
+                    </Identifisering>
+                    <Periode>
+                        <PeriodeFomDato>2025- 09-01</PeriodeFomDato>
+                        <PeriodeTomDato>2025-09-30</PeriodeTomDato>
+                    </Periode>
+                    <Kreditor>
+                        <TSSId>80000345435</TSSId>
+                        <OrgNr>
+                            <fk1:Id>00971229756</fk1:Id>
+                            <fk1:TypeId V="" />
+                        </OrgNr>
+                        <Navn>ARBEIDS- OG VELFERDSETATENS INNKREV</Navn>
+                        <Adresse>
+                            <fk1:StreetAdr>
+                            </fk1:StreetAdr>
+                            <fk1:PostalCode>9917</fk1:PostalCode>
+                        </Adresse>
+                        <Ref> </Ref>
+                        <Kontonr> </Kontonr>
+                        <KID> </KID>
+                    </Kreditor>
+                </InnrapporteringTrekk>
+            </Content>
+        </RefDoc>
+    </Document>
+</MsgHead>
+<MottakenhetBlokk version="1.0" encoding="UTF-8" standa lone="yes"?>
