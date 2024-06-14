@@ -7,51 +7,18 @@ import io.prometheus.client.Counter
 
 object Metrics {
     val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-    private const val NAMESPACE = "sokos_ske_krav"
+    private const val NAMESPACE = "sokos_utleggstrekk"
 
-    val numberOfKravRead: Counter = Counter.build()
+    val numberOfUtleggstrekkMottatt: Counter = Counter.build()
         .namespace(NAMESPACE)
-        .name("krav_lest")
-        .help("antall krav Lest fra fil")
+        .name("utleggstrekk_mottatt")
+        .help("antall trekk mottatt fra SKE")
         .register(registry.prometheusRegistry)
 
-    val numberOfKravSent: Counter = Counter.build()
+    val numberOfUtleggstrekkSent: Counter = Counter.build()
         .namespace(NAMESPACE)
-        .name("krav_sendt")
-        .help("antall krav sendt til endepunkt")
-        .register(registry.prometheusRegistry)
-
-    val numberOfKravResent: Counter = Counter.build()
-        .namespace(NAMESPACE)
-        .name("krav_resendt")
-        .help("antall krav resendt")
-        .register(registry.prometheusRegistry)
-
-    val typeKravSent: Counter = Counter.build()
-        .namespace(NAMESPACE)
-        .name("type_krav_sendt")
-        .help("type krav sendt til endepunkt")
-        .labelNames("kravtype")
-        .register(registry.prometheusRegistry)
-
-    val fileValidationError: Counter = Counter.build()
-        .namespace(NAMESPACE)
-        .name("filvalidering_feil")
-        .help("feil i validering av fil")
-        .labelNames("fileName", "message")
-        .register(registry.prometheusRegistry)
-
-    val lineValidationError: Counter = Counter.build()
-        .namespace(NAMESPACE)
-        .name("linjevalidering_feil")
-        .help("feil i validering av linje")
-        .labelNames("fileName", "message")
-        .register(registry.prometheusRegistry)
-
-    val requestError: Counter = Counter.build()
-        .namespace(NAMESPACE)
-        .name("innsending_av_krav_feil")
-        .help("feil i innsending av krav")
+        .name("utleggstrekk_sendt")
+        .help("antall trekk sendt til OS")
         .register(registry.prometheusRegistry)
 
     val appStateRunningFalse: Counter = Counter.build()

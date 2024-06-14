@@ -9,8 +9,8 @@ import io.ktor.http.HttpHeaders
 import java.util.*
 
 private const val NAV_ORGNR = "<SETT INN NAV ORGNR>"
-private const val HENT_KRAVLISTE = "api/utleggstrekk/%s/$NAV_ORGNR"
-private const val HENT_KRAV = "api/utleggstrekk/%s/$NAV_ORGNR/%s/%s"
+private const val HENT_NYE_UTLEGGSTREKK = "api/utleggstrekk/%s/$NAV_ORGNR"
+private const val HENT_ENKELT_TREKK = "api/utleggstrekk/%s/$NAV_ORGNR/%s/%s"
 
 
 class SkeClient(

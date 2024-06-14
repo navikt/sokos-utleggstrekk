@@ -71,20 +71,20 @@ fun Routing.internalNaisRoutes(
     route("internal") {
         get("isAlive") {
             when (alivenessCheck()) {
-                true -> call.respondText { "I'm alive :)" }
+                true -> call.respondText { "Utleggstrekk is alive" }
                 else ->
                     call.respondText(
-                        text = "I'm dead x_x",
+                        text = "Utleggstrekk is DEAD!",
                         status = HttpStatusCode.InternalServerError,
                     )
             }
         }
         get("isReady") {
             when (readynessCheck()) {
-                true -> call.respondText { "I'm ready! :)" }
+                true -> call.respondText { "Utleggstrekk is ready!" }
                 else ->
                     call.respondText(
-                        text = "Wait! I'm not ready yet! :O",
+                        text = "Wait! Utlegsstrekk is not ready.... yet! ",
                         status = HttpStatusCode.InternalServerError,
                     )
             }

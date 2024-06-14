@@ -19,16 +19,13 @@ object PropertiesConfig {
 
 	private val defaultProperties = ConfigurationMap(
 		mapOf(
-			"NAIS_APP_NAME" to "sokos-ske-krav",
+			"NAIS_APP_NAME" to "sokos-utleggstrekk",
 			"NAIS_NAMESPACE" to "okonomi",
 		)
 	)
 	private val localDevProperties = ConfigurationMap(
 		"APPLICATION_PROFILE" to Profile.LOCAL.toString(),
 		"POSTGRES_HOST" to "dev-pg.intern.nav.no",
-		"SFTP_HOST_KEY_FILE_PATH" to "hostKey",
-		"SFTP_PRIVATE_KEY_FILE_PATH" to "privKey",
-		"FTP_SERVER" to "10.183.32.98",
 	)
 
 	private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))

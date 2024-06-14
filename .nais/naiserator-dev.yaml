@@ -24,7 +24,7 @@ spec:
   azure:
     application:
       enabled: true
-      allowAllUsers: false
+      allowAllUsers: true
   maskinporten:
     enabled: true
     scopes:
@@ -32,3 +32,6 @@ spec:
         - name: skatteetaten:utleggstrekkformidling
   vault:
     enabled: true
+  env:
+    - name: SKE_REST_URL
+      value: https://api-test.sits.no/api/utleggstrekk/v1/
