@@ -19,11 +19,6 @@ class SkeClient(
     private val client: HttpClient = httpClient,
 ) {
 
-    suspend fun getHentKravliste() =
-        doGet(HENT_KRAVLISTE, UUID.randomUUID().toString())
-
-    suspend fun getHentKrav(trekkId: String, trekkVersion: String) =
-        doGet(String.format(HENT_KRAV, trekkId, trekkVersion ), UUID.randomUUID().toString())
 
     private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID))
 

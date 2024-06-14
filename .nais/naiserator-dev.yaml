@@ -33,11 +33,6 @@ spec:
   prometheus:
     enabled: true
     path: /internal/metrics
-  azure:
-    application:
-      enabled: true
-      tenant: nav.no
-      allowAllUsers: true
   ingresses:
     - https://sokos-utleggstrekk.intern.dev.nav.no
   vault:
