@@ -40,18 +40,5 @@ spec:
       allowAllUsers: true
   ingresses:
     - https://sokos-utleggstrekk.intern.dev.nav.no
-  secureLogs:
-    enabled: true
   vault:
     enabled: true
-  env:
-    - name: SKE_REST_URL
-      value: https://api-test.sits.no/api/innkreving/innkrevingsoppdrag/v1/
-    - name: POSTGRES_HOST
-      value: b27dbvl030.preprod.local
-    - name: POSTGRES_PORT
-      value: "5432"
-    - name: POSTGRES_NAME
-      value: sokos-ske-krav
-    - name: VAULT_MOUNTPATH
-      value: postgresql/preprod-fss/

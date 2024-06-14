@@ -6,6 +6,7 @@ import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
+import sokos.utleggstrekk.api.utleggstrekkApi
 import sokos.utleggstrekk.config.commonConfig
 import sokos.utleggstrekk.config.internalNaisRoutes
 
@@ -20,6 +21,7 @@ fun Application.module() {
     applicationLifecycleConfig(applicationState)
     routing {
         internalNaisRoutes(applicationState)
+        utleggstrekkApi()
     }
 }
 
