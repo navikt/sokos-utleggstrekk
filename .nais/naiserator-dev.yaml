@@ -10,23 +10,14 @@ spec:
     - https://sokos-utleggstrekk.intern.dev.nav.no
   image: {{image}}
   port: 8080
-  ttl: 3h
   replicas:
     max: 1
     min: 1
   webproxy: true
   resources:
+    limits:
+      cpu: 2000m
+      memory: 12Gi
     requests:
-      cpu: 50m
-      memory: 32Mi
-  liveness:
-    path: /internal/is_alive
-    initialDelay: 10
-    timeout: 5
-    periodSeconds: 5
-    failureThreshold: 30
-  readiness:
-    path: /internal/is_ready
-    initialDelay: 10
-    periodSeconds: 5
-    timeout: 5
+      cpu: 500m
+      memory: 512Mi
