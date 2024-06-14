@@ -21,3 +21,14 @@ spec:
     requests:
       cpu: 500m
       memory: 512Mi
+  azure:
+    application:
+      enabled: true
+      allowAllUsers: false
+  maskinporten:
+    enabled: true
+    scopes:
+      consumes:
+        - name: skatteetaten:utleggstrekkformidling
+  vault:
+    enabled: true
