@@ -1,39 +1,21 @@
-apiVersion: "nais.io/v1alpha1"
-kind: "Application"
+apiVersion: nais.io/v1alpha1
+kind: Application
+
 metadata:
   name: sokos-utleggstrekk
   namespace: okonomi
   labels:
     team: okonomi
 spec:
-  image: {{image}}
-  port: 8080
-  replicas:
-    min: 1
-    max: 2
-  webproxy: true
-  resources:
-    limits:
-      cpu: 2000m
-      memory: 12Gi
-    requests:
-      cpu: 500m
-      memory: 512Mi
-  liveness:
-    path: /internal/is_alive
-    initialDelay: 10
-    timeout: 5
-    periodSeconds: 5
-    failureThreshold: 30
-  readiness:
-    path: /internal/is_ready
-    initialDelay: 10
-    periodSeconds: 5
-    timeout: 5
-  prometheus:
-    enabled: true
-    path: /internal/metrics
   ingresses:
     - https://sokos-utleggstrekk.intern.dev.nav.no
-  vault:
-    enabled: true
+  image: {{image}}
+  port: 8080
+  ttl: 3h
+  replicas:
+    max: 1
+    min: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
