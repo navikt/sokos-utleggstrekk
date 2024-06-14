@@ -16,12 +16,9 @@ spec:
     min: 1
   webproxy: true
   resources:
-    limits:
-      cpu: 2000m
-      memory: 12Gi
     requests:
-      cpu: 500m
-      memory: 512Mi
+      cpu: 50m
+      memory: 32Mi
   liveness:
     path: /internal/is_alive
     initialDelay: 10
