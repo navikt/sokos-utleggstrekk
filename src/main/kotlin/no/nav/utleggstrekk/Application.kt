@@ -48,16 +48,6 @@ class HttpServer(
         embeddedServer.start(wait = true)
     }
 
-    fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
-        environment.monitor.subscribe(ApplicationStarted) {
-            applicationState.ready = true
-        }
-
-        environment.monitor.subscribe(ApplicationStopped) {
-            applicationState.ready = false
-        }
-    }
-
     class ApplicationState {
         var ready: Boolean by Delegates.observable(false) { _, _, newValue ->
 //            if (!newValue) Metrics.appStateReadyFalse.inc()
