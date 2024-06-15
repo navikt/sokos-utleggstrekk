@@ -10,9 +10,7 @@ spec:
   port: 8080
   replicas:
     min: 1
-    max: 2
-  secureLogs:
-    enabled: true
+    max: 1
   webproxy: true
   resources:
     limits:
@@ -32,9 +30,6 @@ spec:
     initialDelay: 10
     periodSeconds: 5
     timeout: 5
-  prometheus:
-    enabled: true
-    path: /internal/metrics
   azure:
     application:
       enabled: true
