@@ -3,6 +3,7 @@ build/
 out/
 .idea
 .run
+.gradle
 *.iws
 *.iml
 *.ipr
@@ -11,3 +12,4 @@ out/
 defaults.properties
 /privKey
 /hostKey
+/.idea/

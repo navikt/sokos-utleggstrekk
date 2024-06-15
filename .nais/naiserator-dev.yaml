@@ -10,7 +10,7 @@ spec:
   port: 8080
   replicas:
     min: 1
-    max: 1
+    max: 2
   secureLogs:
     enabled: true
   webproxy: true
@@ -32,30 +32,15 @@ spec:
     initialDelay: 10
     periodSeconds: 5
     timeout: 5
+  prometheus:
+    enabled: true
+    path: /internal/metrics
   azure:
     application:
       enabled: true
-      tenant: nav.no
       allowAllUsers: true
   ingresses:
     - https://sokos-utleggstrekk.intern.dev.nav.no
-  maskinporten:
-    enabled: true
-    scopes:
-      consumes:
-        - name: skatteetaten:utleggstrekkformidling
   vault:
     enabled: true
-  env:
-    - name: SKE_REST_URL
-      value: https://api-test.sits.no/api/utleggstrekk/v1/
-    - name: POSTGRES_HOST
-      value: b27dbvl030.preprod.local
-    - name: POSTGRES_PORT
-      value: "5432"
-    - name: POSTGRES_NAME
-      value: sokos-utleggstrekk
-    - name: VAULT_MOUNTPATH
-      value: postgresql/preprod-fss/
-    - name: LOG_APPENDER
-      value: CONSOLE
+

@@ -1,17 +1,18 @@
-package no.nav.utleggstrekk.config
+package sokos.utleggstrekk.config
 
 import com.auth0.jwk.JwkProvider
-import mu.KotlinLogging
-import sokos.utleggstrekk.client.httpClient
-import java.net.URI
-import java.util.concurrent.TimeUnit
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
+import sokos.utleggstrekk.httpClient
+import java.net.URI
+import java.util.concurrent.TimeUnit
 
-    private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
+
 data class AzureConfiguration(
     val appName:String = readProperty("NAIS_APP_NAME"),
     val azureAd: AzureAd = AzureAd(),
@@ -49,7 +50,6 @@ data class AzureConfiguration(
     )
 
 }
-
 private fun readProperty(name: String, default: String? = null) =
     System.getenv(name)
         ?: System.getProperty(name)
