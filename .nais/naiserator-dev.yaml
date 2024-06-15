@@ -1,18 +1,18 @@
-apiVersion: nais.io/v1alpha1
-kind: Application
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
 metadata:
   name: sokos-utleggstrekk
   namespace: okonomi
   labels:
     team: okonomi
 spec:
-  ingresses:
-    - https://sokos-utleggstrekk.intern.dev.nav.no
   image: {{image}}
   port: 8080
   replicas:
-    max: 1
     min: 1
+    max: 2
+  secureLogs:
+    enabled: true
   webproxy: true
   resources:
     limits:
@@ -21,10 +21,24 @@ spec:
     requests:
       cpu: 500m
       memory: 512Mi
+  liveness:
+    path: /internal/is_alive
+    initialDelay: 10
+    timeout: 5
+    periodSeconds: 5
+    failureThreshold: 30
+  readiness:
+    path: /internal/is_ready
+    initialDelay: 10
+    periodSeconds: 5
+    timeout: 5
   azure:
     application:
       enabled: true
+      tenant: nav.no
       allowAllUsers: true
+  ingresses:
+    - https://sokos-skattekort-dolly.intern.dev.nav.no
   maskinporten:
     enabled: true
     scopes:
@@ -32,6 +46,19 @@ spec:
         - name: skatteetaten:utleggstrekkformidling
   vault:
     enabled: true
+    paths:
+      - kvPath: /oracle/data/dev/creds/oseskatt_q1-sokos_skattekort_dolly_q1
+        mountPath: /var/run/secrets/nais.io/database-user
   env:
     - name: SKE_REST_URL
       value: https://api-test.sits.no/api/utleggstrekk/v1/
+    - name: POSTGRES_HOST
+      value: b27dbvl030.preprod.local
+    - name: POSTGRES_PORT
+      value: "5432"
+    - name: POSTGRES_NAME
+      value: sokos-utleggstrekk
+    - name: VAULT_MOUNTPATH
+      value: postgresql/preprod-fss/
+    - name: LOG_APPENDER
+      value: CONSOLE
