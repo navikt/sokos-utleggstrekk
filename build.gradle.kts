@@ -18,7 +18,7 @@ repositories {
 val ktorVersion = "2.3.6"
 val hikaricpVersion = "5.1.0"
 val oracleJdbcVersion = "19.22.0.0"
-val nimbusVersion = "9.37.1"
+val nimbusVersion = "9.37.2"
 val vaultVersion ="1.3.10"
 val logback_version = "1.4.1"
 val logstash_version = "7.3"
