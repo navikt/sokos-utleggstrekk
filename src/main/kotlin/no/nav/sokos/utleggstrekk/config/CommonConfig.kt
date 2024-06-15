@@ -39,7 +39,7 @@ fun Application.commonConfig(
     install(CallLogging) {
         level = Level.INFO
         callIdMdc(HttpHeaders.XCorrelationId)
-        filter { call -> call.request.path().startsWith("/skattekort") }
+        filter { call -> call.request.path().startsWith("/utleggstrekk") }
         disableDefaultColors()
     }
     install(ContentNegotiation) {

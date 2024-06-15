@@ -4,7 +4,7 @@ import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FunSpec
 
 @Ignored
-class DollyServiceTest : FunSpec({
+class UtleggstrekkServiceTest : FunSpec({
 
 //    test("Sjekk"){
 //        val xml = getResourceAsText("/skattekort.xml")
