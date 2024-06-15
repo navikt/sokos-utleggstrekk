@@ -4,6 +4,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import sokos.utleggstrekk.metrics.Metrics
 
 fun Routing.naisApi(alive: () -> Boolean, ready: () -> Boolean) {
     route("internal") {
@@ -25,5 +26,9 @@ fun Routing.naisApi(alive: () -> Boolean, ready: () -> Boolean) {
                 )
             }
         }
+        get("metrics") {
+            call.respondText(Metrics.prometheusRegistry.scrape())
+        }
+
     }
 }

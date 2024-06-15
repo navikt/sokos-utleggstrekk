@@ -7,15 +7,22 @@ import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics
+import io.micrometer.core.instrument.binder.system.UptimeMetrics
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import org.slf4j.event.Level
+import sokos.utleggstrekk.metrics.Metrics
 import java.util.*
 
 private val logger= KotlinLogging.logger {  }
@@ -42,6 +49,17 @@ fun Application.commonConfig(
             explicitNulls = false
         })
     }
+    install(MicrometerMetrics) {
+        registry = Metrics.prometheusRegistry
+        meterBinders = listOf(
+            UptimeMetrics(),
+            JvmMemoryMetrics(),
+            JvmGcMetrics(),
+            JvmThreadMetrics(),
+            ProcessorMetrics(),
+        )
+    }
+
 
     install(Authentication) {
         jwt {

@@ -18,9 +18,9 @@ repositories {
 val ktorVersion = "2.3.6"
 val hikaricpVersion = "5.1.0"
 val oracleJdbcVersion = "19.22.0.0"
-val nimbusVersion = "9.37.1"
+val nimbusVersion = "9.37.2"
 val vaultVersion ="1.3.10"
-val logback_version = "1.4.1"
+val logback_version = "1.5.6"
 val logstash_version = "7.3"
 val kotlin_logging_version = "3.0.4"
 val kotlinxDatetimeVersion = "0.4.1"
@@ -28,6 +28,8 @@ val natpryceVersion = "1.6.10.0"
 val prometheus_version = "1.11.0"
 val jacksonVersion = "2.16.1"
 val kotlinxSerializationVersion = "1.6.0"
+val prometheusVersion = "1.11.5"
+
 
 
 // Test
@@ -74,8 +76,10 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:$kotlin_logging_version")
     runtimeOnly("org.codehaus.janino:janino:$janinoVersion")
 
+    // metrics
+    implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
+    implementation("io.micrometer:micrometer-registry-prometheus:$prometheusVersion")
 
-    implementation("io.micrometer:micrometer-registry-prometheus:$prometheus_version")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime-jvm:$kotlinxDatetimeVersion")
     implementation("com.natpryce:konfig:$natpryceVersion")
 
