@@ -1,4 +1,4 @@
-package nav.no.sokos.utleggstrekk.service
+package no.nav.sokos.utleggstrekk.service
 
 import io.kotest.core.annotation.Ignored
 import io.kotest.core.spec.style.FunSpec

@@ -1,6 +1,7 @@
-package nav.no.sokos.utleggstrekk.service
+package no.nav.sokos.utleggstrekk.service
 
 import mu.KotlinLogging
+import no.nav.sokos.utleggstrekk.service.DatabaseService
 
 private val logger = KotlinLogging.logger {  }
 class UtleggstrekkService(

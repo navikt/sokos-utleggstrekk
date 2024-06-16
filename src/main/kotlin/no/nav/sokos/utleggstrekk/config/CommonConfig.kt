@@ -1,4 +1,4 @@
-package nav.no.sokos.utleggstrekk.config
+package no.nav.sokos.utleggstrekk.config
 
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json

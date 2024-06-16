@@ -122,7 +122,7 @@ tasks {
         enabled = true
         archiveFileName.set("sokos-utleggstrekk.jar")
         manifest {
-            attributes["Main-Class"] = "nav.no.sokos.utleggstrekk.MainKt"
+            attributes["Main-Class"] = "no.nav.sokos.utleggstrekk.MainKt"
         }
     }
 

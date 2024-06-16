@@ -1,4 +1,4 @@
-package nav.no.sokos.utleggstrekk.service
+package no.nav.sokos.utleggstrekk.service
 
 fun getResourceAsText(file: String): String? =
     object {}.javaClass.getResource(file)?.readText()

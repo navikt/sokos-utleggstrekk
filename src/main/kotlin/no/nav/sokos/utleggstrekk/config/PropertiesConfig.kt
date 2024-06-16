@@ -1,4 +1,4 @@
-package nav.no.sokos.utleggstrekk.config
+package no.nav.sokos.utleggstrekk.config
 
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties

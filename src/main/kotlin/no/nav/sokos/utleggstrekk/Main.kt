@@ -1,13 +1,13 @@
-package nav.no.sokos.utleggstrekk.no.nav.sokos.utleggstrekk
+package no.nav.sokos.utleggstrekk
 
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
-import nav.no.sokos.utleggstrekk.api.naisApi
-import nav.no.sokos.utleggstrekk.api.utleggstrekkApi
-import nav.no.sokos.utleggstrekk.config.AzureConfiguration
-import nav.no.sokos.utleggstrekk.config.commonConfig
+import no.nav.sokos.utleggstrekk.api.naisApi
+import no.nav.sokos.utleggstrekk.api.utleggstrekkApi
+import no.nav.sokos.utleggstrekk.config.AzureConfiguration
+import no.nav.sokos.utleggstrekk.config.commonConfig
 import java.util.concurrent.TimeUnit
 import kotlin.properties.Delegates
 
