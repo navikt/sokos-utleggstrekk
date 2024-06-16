@@ -1,4 +1,4 @@
-package sokos.utleggstrekk
+package nav.no.sokos.utleggstrekk
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule

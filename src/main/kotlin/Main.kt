@@ -1,44 +1,34 @@
-package sokos.utleggstrekk
+package nav.no.sokos.utleggstrekk
 
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
-import sokos.utleggstrekk.api.naisApi
-import sokos.utleggstrekk.api.utleggstrekkApi
-import sokos.utleggstrekk.config.AzureConfiguration
-import sokos.utleggstrekk.config.commonConfig
-import sokos.utleggstrekk.database.OracleDataSource
-import sokos.utleggstrekk.metrics.Metrics
-import sokos.utleggstrekk.service.DatabaseService
-import sokos.utleggstrekk.service.UtleggstrekkService
+import nav.no.sokos.utleggstrekk.api.naisApi
+import nav.no.sokos.utleggstrekk.api.utleggstrekkApi
+import nav.no.sokos.utleggstrekk.config.AzureConfiguration
+import nav.no.sokos.utleggstrekk.config.commonConfig
 import java.util.concurrent.TimeUnit
 import kotlin.properties.Delegates
 
 
 fun main() {
     val applicationState = ApplicationState()
-    val dataSource = OracleDataSource()
-    val databaseService = DatabaseService(dataSource)
-    val utleggstrekkService = UtleggstrekkService(databaseService)
     val configuration = AzureConfiguration()
 
     applicationState.ready = true
-    HttpServer(applicationState, utleggstrekkService, dataSource, configuration).start()
+    HttpServer(applicationState, configuration).start()
 
 }
 
 class HttpServer(
     private val applicationState: ApplicationState,
-    private val utleggstrekkService: UtleggstrekkService,
-    private val dataSource: OracleDataSource,
     private val azureConfiguration: AzureConfiguration,
     port: Int = 8080,
 ) {
     init {
         Runtime.getRuntime().addShutdownHook(Thread {
             applicationState.running = false
-            dataSource.close()
             this.embeddedServer.stop(gracePeriod = 2, timeout = 20, TimeUnit.SECONDS)
         })
     }
@@ -58,12 +48,10 @@ class HttpServer(
 }
 
 class ApplicationState {
-    var ready: Boolean by Delegates.observable(false) { _, _, newValue ->
-        if (!newValue) Metrics.appStateReadyFalse.inc()
+    var ready: Boolean by Delegates.observable(false) { _, _, _ ->
     }
 
-    var running: Boolean by Delegates.observable(false) { _, _, newValue ->
-        if (!newValue) Metrics.appStateRunningFalse.inc()
+    var running: Boolean by Delegates.observable(false) { _, _, _ ->
     }
 }
 

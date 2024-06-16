@@ -1,6 +1,11 @@
-package sokos.utleggstrekk.config
+package nav.no.sokos.utleggstrekk.config
 
-import com.natpryce.konfig.*
+import com.natpryce.konfig.ConfigurationMap
+import com.natpryce.konfig.ConfigurationProperties
+import com.natpryce.konfig.EnvironmentVariables
+import com.natpryce.konfig.Key
+import com.natpryce.konfig.overriding
+import com.natpryce.konfig.stringType
 import java.io.File
 
 object PropertiesConfig {

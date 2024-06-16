@@ -38,4 +38,7 @@ spec:
     - https://sokos-utleggstrekk.intern.dev.nav.no
   vault:
     enabled: true
+  prometheus:
+    enabled: false
+
 

@@ -1,4 +1,4 @@
-package sokos.utleggstrekk.metrics
+package nav.no.sokos.utleggstrekk.metrics
 
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry

@@ -1,4 +1,4 @@
-package sokos.utleggstrekk.api
+package nav.no.sokos.utleggstrekk.api
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call

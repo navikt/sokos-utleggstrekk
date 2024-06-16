@@ -1,4 +1,4 @@
-package sokos.utleggstrekk.database
+package nav.no.sokos.utleggstrekk.database
 
 import mu.KotlinLogging
 import java.math.BigDecimal

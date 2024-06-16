@@ -1,4 +1,4 @@
-package sokos.utleggstrekk.config
+package nav.no.sokos.utleggstrekk.config
 
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
@@ -7,7 +7,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
-import sokos.utleggstrekk.httpClient
+import nav.no.sokos.utleggstrekk.httpClient
 import java.net.URI
 import java.util.concurrent.TimeUnit
 

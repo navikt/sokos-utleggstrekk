@@ -1,4 +1,4 @@
-package sokos.utleggstrekk.service
+package nav.no.sokos.utleggstrekk.service
 
 import mu.KotlinLogging
 

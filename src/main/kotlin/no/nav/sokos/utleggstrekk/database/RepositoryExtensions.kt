@@ -1,6 +1,6 @@
-package sokos.utleggstrekk.database
+package nav.no.sokos.utleggstrekk.database
 
-import sokos.utleggstrekk.database.RepositoryExtensions.Parameter
+import nav.no.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
