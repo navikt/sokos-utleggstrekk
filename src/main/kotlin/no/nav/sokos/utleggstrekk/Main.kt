@@ -8,6 +8,8 @@ import no.nav.sokos.utleggstrekk.api.naisApi
 import no.nav.sokos.utleggstrekk.api.utleggstrekkApi
 import no.nav.sokos.utleggstrekk.config.AzureConfiguration
 import no.nav.sokos.utleggstrekk.config.commonConfig
+import no.nav.sokos.utleggstrekk.service.DatabaseService
+import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 import java.util.concurrent.TimeUnit
 import kotlin.properties.Delegates
 
@@ -15,14 +17,16 @@ import kotlin.properties.Delegates
 fun main() {
     val applicationState = ApplicationState()
     val configuration = AzureConfiguration()
+    val utleggstrekkService = UtleggstrekkService()
 
     applicationState.ready = true
-    HttpServer(applicationState, configuration).start()
+    HttpServer(applicationState, utleggstrekkService, configuration).start()
 
 }
 
 class HttpServer(
     private val applicationState: ApplicationState,
+    private val utleggstrekkService: UtleggstrekkService,
     private val azureConfiguration: AzureConfiguration,
     port: Int = 8080,
 ) {
@@ -37,7 +41,7 @@ class HttpServer(
         commonConfig(azureConfiguration)
         routing {
             naisApi({ applicationState.ready }, { applicationState.running })
-            utleggstrekkApi()
+            utleggstrekkApi(utleggstrekkService)
         }
     }
 

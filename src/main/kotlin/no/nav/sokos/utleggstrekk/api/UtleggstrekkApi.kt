@@ -9,13 +9,27 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import mu.KotlinLogging
+import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
+import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Private
 
-fun Routing.utleggstrekkApi() {
+fun Routing.utleggstrekkApi(
+    utleggstrekkService: UtleggstrekkService
+) {
     val logger = KotlinLogging.logger { }
 
     route("utleggstrekk/") {
         get("hei") {
             call.respond(HttpStatusCode.OK, "Hellu")
+        }
+
+        get("hent") {
+            try {
+                utleggstrekkService.hentAlle()
+                call.respond(HttpStatusCode.OK, "tja gikk bra")
+            }catch (e: Exception){
+                println(e.toString())
+                call.respond(HttpStatusCode.Conflict, "Gikk ikke så bra ${e.message}")
+            }
         }
 
     }

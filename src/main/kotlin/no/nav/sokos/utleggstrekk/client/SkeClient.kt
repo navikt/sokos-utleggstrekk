@@ -22,7 +22,9 @@ class SkeClient(
     private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID))
 
     private suspend fun buildHttpRequest(path: String, corrID: String): HttpRequestBuilder {
+        println("Henter Token")
         val token = tokenProvider.hentAccessToken()
+        println("Token:  \n --$token")
         return HttpRequestBuilder().apply {
             url("$skeEndpoint$path")
             headers {
