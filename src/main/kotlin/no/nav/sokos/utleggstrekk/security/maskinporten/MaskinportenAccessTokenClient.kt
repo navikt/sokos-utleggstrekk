@@ -25,7 +25,7 @@ class MaskinportenAccessTokenClient(
     private val mutex = Mutex()
 
     @Volatile
-    private lateinit var token: no.nav.sokos.utleggstrekk.security.maskinporten.AccessToken
+    private lateinit var token: AccessToken
 
     suspend fun hentAccessToken(): String {
         val omToMinutter = Clock.System.now().plus(2, DateTimeUnit.MINUTE)
@@ -33,11 +33,15 @@ class MaskinportenAccessTokenClient(
         return mutex.withLock {
             when {
                 !this::token.isInitialized || token.expiresAt < omToMinutter -> {
+                    println("Henter fra provider")
+                    logger.info { "Henter fra  provider" }
                     token = AccessToken(hentAccessTokenFraProvider())
                     token.accessToken
                 }
 
                 else -> {
+                    println("bruker samme")
+                    logger.info { "bruker samme" }
                     token.accessToken
                 }
             }
@@ -45,6 +49,7 @@ class MaskinportenAccessTokenClient(
     }
 
     private suspend fun hentAccessTokenFraProvider(): Token {
+        println("fun hentAccessTokenFraProvider")
         val jwt = JWT.create()
             .withAudience(maskinportenConfig.openIdConfiguration.issuer)
             .withIssuer(maskinportenConfig.clientId)
@@ -61,6 +66,7 @@ class MaskinportenAccessTokenClient(
         }
 
         return try {
+            println(response.bodyAsText())
             response.body()
         } catch (ex: NoTransformationFoundException) {
             logger.error("Kunne ikke lese accessToken, se sikker log for meldingen som string" )
