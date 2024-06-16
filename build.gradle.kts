@@ -42,12 +42,6 @@ val mockFtpServerVersion = "3.1.0"
 val swaggerRequestValidatorVersion = "2.40.0"
 val janinoVersion = "3.1.10"
 
-
-
-
-
-
-
 dependencies {
     // Ktor Server
     implementation("io.ktor:ktor-server-call-logging-jvm:$ktorVersion")
@@ -128,7 +122,7 @@ tasks {
         enabled = true
         archiveFileName.set("sokos-utleggstrekk.jar")
         manifest {
-            attributes["Main-Class"] = "sokos.utleggstrekk.MainKt"
+            attributes["Main-Class"] = "nav.no.sokos.utleggstrekk.MainKt"
         }
     }
 

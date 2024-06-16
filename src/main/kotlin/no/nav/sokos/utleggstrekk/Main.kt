@@ -1,4 +1,4 @@
-package nav.no.sokos.utleggstrekk
+package nav.no.sokos.utleggstrekk.no.nav.sokos.utleggstrekk
 
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.stop
