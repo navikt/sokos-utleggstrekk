@@ -38,7 +38,8 @@ spec:
     - https://sokos-utleggstrekk.intern.dev.nav.no
   vault:
     enabled: true
-  prometheus:
-    enabled: false
+  env:
+    - name: SKE_REST_URL
+      value: https://api-test.sits.no/api/innkreving/innkrevingsoppdrag/v1/
 
 
