@@ -24,6 +24,7 @@ val httpClient = HttpClient(Apache) {
             prettyPrint = true
             isLenient = true
             explicitNulls = false
+            ignoreUnknownKeys = true
         })
     }
 

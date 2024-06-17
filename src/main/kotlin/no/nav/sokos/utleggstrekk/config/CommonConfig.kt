@@ -40,6 +40,7 @@ fun Application.commonConfig(
             prettyPrint = true
             isLenient = true
             explicitNulls = false
+            ignoreUnknownKeys = true
         })
     }
 
