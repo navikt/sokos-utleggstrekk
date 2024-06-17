@@ -49,8 +49,11 @@ class MaskinportenAccessTokenClient(
     }
 
     private suspend fun hentAccessTokenFraProvider(): Token {
+        println("Issuer")
         println(maskinportenConfig.openIdConfiguration.issuer)
+        println("tokenendpoint")
         println(maskinportenConfig.openIdConfiguration.tokenEndpoint)
+        println("jwksuri")
         println(maskinportenConfig.openIdConfiguration.jwksUri)
 
         println("fun hentAccessTokenFraProvider")
