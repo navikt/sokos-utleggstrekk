@@ -9,6 +9,7 @@ import com.natpryce.konfig.stringType
 import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.util.InternalAPI
 import io.ktor.util.logging.Logger
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
@@ -83,10 +84,14 @@ object PropertiesConfig {
 	}
 
 	open class JwtConfig(private val wellKnownUrl: String) {
+		@OptIn(InternalAPI::class)
 		val openIdConfiguration: OpenIdConfiguration by lazy {
 			runBlocking {
 				println("WelKnown: $wellKnownUrl")
-				httpClient.get(wellKnownUrl).body<OpenIdConfiguration>().also { println(it.toString()) }
+				val response = httpClient.get(wellKnownUrl)
+				println("response.status ${response.status}")
+				println("${response.content.toString()}")
+				response.body()
 			}
 		}
 	}
