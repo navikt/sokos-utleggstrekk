@@ -1,12 +1,12 @@
 package no.nav.sokos.utleggstrekk
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.client.plugins.contentnegotiation.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 
@@ -17,11 +17,14 @@ val httpClient = HttpClient(Apache) {
         retryOnException(maxRetries = 3)
         delayMillis { retry -> retry * 3000L }
     }
-    install(ContentNegotiation)  {
-        jackson {
-            registerModule(JavaTimeModule())
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    install(ContentNegotiation) {
+        json(Json {
+            prettyPrint = true
+            isLenient = true
+            explicitNulls = false
+        })
     }
 
     engine {
