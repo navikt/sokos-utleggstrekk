@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.httpClient
 import java.net.URI
@@ -38,14 +40,15 @@ data class AzureConfiguration(
         }
     }
 
+    @Serializable
     data class AzureAdOpenIdConfiguration(
-        @JsonProperty("jwks_uri")
+        @SerialName("jwks_uri")
         val jwksUri: String,
-        @JsonProperty("issuer")
+        @SerialName("issuer")
         val issuer: String,
-        @JsonProperty("token_endpoint")
+        @SerialName("token_endpoint")
         val tokenEndpoint: String,
-        @JsonProperty("authorization_endpoint")
+        @SerialName("authorization_endpoint")
         val authorizationEndpoint: String
     )
 
