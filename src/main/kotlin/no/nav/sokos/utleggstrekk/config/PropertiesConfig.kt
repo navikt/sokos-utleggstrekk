@@ -62,7 +62,7 @@ object PropertiesConfig {
 
 	@Serializable
 	data class OpenIdConfiguration(
-		@SerialName("jwks_uri") val jwksUri: String?,
+		@SerialName("jwks_uri") val jwksUri: String,
 		@SerialName("issuer") val issuer: String,
 		@SerialName("token_endpoint") val tokenEndpoint: String,
 	)
@@ -85,7 +85,8 @@ object PropertiesConfig {
 	open class JwtConfig(private val wellKnownUrl: String) {
 		val openIdConfiguration: OpenIdConfiguration by lazy {
 			runBlocking {
-				httpClient.get(wellKnownUrl).body()
+				println("WelKnown: $wellKnownUrl")
+				httpClient.get(wellKnownUrl).body<OpenIdConfiguration>().also { println(it.toString()) }
 			}
 		}
 	}
