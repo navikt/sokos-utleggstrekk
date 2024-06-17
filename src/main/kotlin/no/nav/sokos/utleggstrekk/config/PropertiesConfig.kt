@@ -9,6 +9,7 @@ import com.natpryce.konfig.stringType
 import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.util.logging.Logger
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -61,7 +62,7 @@ object PropertiesConfig {
 
 	@Serializable
 	data class OpenIdConfiguration(
-		@SerialName("jwks_uri") val jwksUri: String,
+		@SerialName("jwks_uri") val jwksUri: String?,
 		@SerialName("issuer") val issuer: String,
 		@SerialName("token_endpoint") val tokenEndpoint: String,
 	)

@@ -49,6 +49,10 @@ class MaskinportenAccessTokenClient(
     }
 
     private suspend fun hentAccessTokenFraProvider(): Token {
+        println(maskinportenConfig.openIdConfiguration.issuer)
+        println(maskinportenConfig.openIdConfiguration.tokenEndpoint)
+        println(maskinportenConfig.openIdConfiguration.jwksUri)
+
         println("fun hentAccessTokenFraProvider")
         val jwt = JWT.create()
             .withAudience(maskinportenConfig.openIdConfiguration.issuer)
