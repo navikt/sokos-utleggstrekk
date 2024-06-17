@@ -9,6 +9,7 @@ import com.natpryce.konfig.stringType
 import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.util.InternalAPI
 import io.ktor.util.logging.Logger
 import kotlinx.coroutines.runBlocking
@@ -90,7 +91,8 @@ object PropertiesConfig {
 				println("WelKnown: $wellKnownUrl")
 				val response = httpClient.get(wellKnownUrl)
 				println("response.status ${response.status}")
-				println("${response.content.toString()}")
+				val b = response.bodyAsText()
+				println("${b}")
 				response.body()
 			}
 		}
