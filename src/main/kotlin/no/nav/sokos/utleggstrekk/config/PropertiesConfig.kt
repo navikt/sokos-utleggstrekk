@@ -64,9 +64,12 @@ object PropertiesConfig {
 
 	@Serializable
 	data class OpenIdConfiguration(
-		@SerialName("jwks_uri") val jwksUri: String,
-		@SerialName("issuer") val issuer: String,
-		@SerialName("token_endpoint") val tokenEndpoint: String,
+		@SerialName("jwks_uri")
+		val jwksUri: String,
+		@SerialName("issuer")
+		val issuer: String,
+		@SerialName("token_endpoint")
+		val tokenEndpoint: String,
 	)
 
 	data class SKEConfig(
