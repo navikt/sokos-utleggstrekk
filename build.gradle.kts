@@ -29,6 +29,7 @@ val prometheus_version = "1.11.0"
 val jacksonVersion = "2.16.1"
 val kotlinxSerializationVersion = "1.6.0"
 val prometheusVersion = "1.11.5"
+val flywayVersion = "9.16.1"
 
 
 
@@ -80,6 +81,9 @@ dependencies {
     // Database
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("com.oracle.database.jdbc:ojdbc10:$oracleJdbcVersion")
+    // Flyway
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+
 
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("no.nav:vault-jdbc:$vaultVersion")
@@ -132,7 +136,6 @@ tasks {
             exceptionFormat = TestExceptionFormat.FULL
             events("passed", "skipped", "failed")
         }
-
         reports.forEach { report -> report.required.value(false) }
     }
 
