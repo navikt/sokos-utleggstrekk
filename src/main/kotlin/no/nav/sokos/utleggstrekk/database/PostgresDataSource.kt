@@ -6,6 +6,8 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration
 import java.sql.Connection
+import org.flywaydb.core.Flyway
+
 
 class PostgresDataSource {
     private val logger = KotlinLogging.logger("secureLogger")
@@ -21,15 +23,15 @@ class PostgresDataSource {
     }
 
     constructor(){
-//        if (!isLocal) {
-//            val role = adminRole
-//            logger.info("Flyway db opprettes med rolle $role")
-//            Flyway.configure()
-//                .dataSource(dataSource(role))
-//                .initSql("""SET ROLE "$role"""")
-//                .load()
-//                .migrate()
-//        }
+        if (!isLocal) {
+            val role = adminRole
+            logger.info("Flyway db opprettes med rolle $role")
+            Flyway.configure()
+                .dataSource(dataSource(role))
+                .initSql("""SET ROLE "$role"""")
+                .load()
+                .migrate()
+        }
         dataSource = dataSource()
     }
 

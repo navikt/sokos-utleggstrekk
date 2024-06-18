@@ -8,6 +8,7 @@ import no.nav.sokos.utleggstrekk.api.naisApi
 import no.nav.sokos.utleggstrekk.api.utleggstrekkApi
 import no.nav.sokos.utleggstrekk.config.AzureConfiguration
 import no.nav.sokos.utleggstrekk.config.commonConfig
+import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.service.DatabaseService
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 import java.util.concurrent.TimeUnit
@@ -18,6 +19,7 @@ fun main() {
     val applicationState = ApplicationState()
     val configuration = AzureConfiguration()
     val utleggstrekkService = UtleggstrekkService()
+    val dataSource = PostgresDataSource()
 
     applicationState.ready = true
     HttpServer(applicationState, utleggstrekkService, configuration).start()

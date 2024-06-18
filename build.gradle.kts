@@ -81,6 +81,7 @@ dependencies {
     // Database
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("com.oracle.database.jdbc:ojdbc10:$oracleJdbcVersion")
+
     // Flyway
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
