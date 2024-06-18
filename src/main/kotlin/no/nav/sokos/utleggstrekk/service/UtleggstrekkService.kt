@@ -1,5 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
+import io.ktor.client.statement.bodyAsText
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
@@ -16,7 +17,7 @@ class UtleggstrekkService(
 
     suspend fun hentAlle(){
         println("skeClient.hentalle kalles:")
-        skeClient.hentAlleNyeUtleggstrekk()
+        skeClient.hentAlleNyeUtleggstrekk().also { println(it.bodyAsText()) }
         println("skeClient.hentalle Ferdig:")
     }
 
