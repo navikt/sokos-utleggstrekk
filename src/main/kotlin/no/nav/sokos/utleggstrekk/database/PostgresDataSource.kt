@@ -54,7 +54,6 @@ class PostgresDataSource() {
         if (isLocal) {
             username = postgresConfig.username
             password = postgresConfig.password
-
         }
     }
 }

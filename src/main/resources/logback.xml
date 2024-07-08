@@ -13,29 +13,29 @@
         </encoder>
     </appender>
 
-    <appender name="secureLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/secure-logs/secure.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>/secure-logs/secure.log.%i</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>1</maxIndex>
-        </rollingPolicy>
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>50MB</maxFileSize>
-        </triggeringPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-    </appender>
+<!--    <appender name="secureLog" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>/secure-logs/secure.log</file>-->
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">-->
+<!--            <fileNamePattern>/secure-logs/secure.log.%i</fileNamePattern>-->
+<!--            <minIndex>1</minIndex>-->
+<!--            <maxIndex>1</maxIndex>-->
+<!--        </rollingPolicy>-->
+<!--        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">-->
+<!--            <maxFileSize>50MB</maxFileSize>-->
+<!--        </triggeringPolicy>-->
+<!--        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>-->
+<!--    </appender>-->
 
-    <if condition='isDefined("NAIS_CLUSTER_NAME")'>
-        <then>
-            <logger name="secureLogger" level="DEBUG" additivity="false">
-                <appender-ref ref="${LOG_APPENDER:-secureLog}"/>
-            </logger>
-            <logger name="validationLogger" level="WARN" additivity="false">
-                <appender-ref ref="${LOG_APPENDER:-secureLog}"/>
-            </logger>
-        </then>
-    </if>
+<!--    <if condition='isDefined("NAIS_CLUSTER_NAME")'>-->
+<!--        <then>-->
+<!--            <logger name="secureLogger" level="DEBUG" additivity="false">-->
+<!--                <appender-ref ref="${LOG_APPENDER:-secureLog}"/>-->
+<!--            </logger>-->
+<!--            <logger name="validationLogger" level="WARN" additivity="false">-->
+<!--                <appender-ref ref="${LOG_APPENDER:-secureLog}"/>-->
+<!--            </logger>-->
+<!--        </then>-->
+<!--    </if>-->
 
     <if condition='isDefined("NAIS_CLUSTER_NAME")'>
         <then>
@@ -52,7 +52,7 @@
 
     <logger name="no.nav.sokos.utleggstrekk" level="DEBUG"/>
 
-    <logger name="com.jcraft.jsch" level="INFO" additivity="false"/>
+    <logger name="com.zaxxer.hikari.HikariDataSource" level="DEBUG"/>
 
 
 </configuration>

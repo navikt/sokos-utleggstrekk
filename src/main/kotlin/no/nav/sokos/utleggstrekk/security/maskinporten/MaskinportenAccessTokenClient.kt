@@ -21,7 +21,7 @@ class MaskinportenAccessTokenClient(
     private val client: HttpClient,
 ) {
     private val logger = KotlinLogging.logger {}
-    private val secureLogger = KotlinLogging.logger("secureLogger")
+    private val secureLogger = KotlinLogging.logger { }
     private val mutex = Mutex()
 
     @Volatile
