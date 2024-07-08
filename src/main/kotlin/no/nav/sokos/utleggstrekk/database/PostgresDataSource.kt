@@ -10,17 +10,13 @@ import org.flywaydb.core.Flyway
 
 
 class PostgresDataSource {
-    private val logger = KotlinLogging.logger("secureLogger")
+    private val logger = KotlinLogging.logger { }
     private val postgresConfig: PropertiesConfig.PostgresConfig = PropertiesConfig.PostgresConfig()
     private val isLocal = PropertiesConfig.Configuration().profile == PropertiesConfig.Profile.LOCAL
     private var dataSource: HikariDataSource
     private val adminRole = "${postgresConfig.name}-admin"
     private val userRole = "${postgresConfig.name}-user"
     val connection: Connection get() = dataSource.connection.apply { autoCommit = false }
-
-    constructor(dataSource: HikariDataSource) {
-        this.dataSource = dataSource
-    }
 
     constructor(){
         if (!isLocal) {
