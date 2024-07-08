@@ -47,7 +47,7 @@ spec:
     - name: SKE_REST_URL
       value: https://api-test.sits.no/api/utleggstrekk/v1/
     - name: POSTGRES_HOST
-      value: b27dbvl035.preprod.local
+      value: b27drvl011.preprod.local
     - name: POSTGRES_PORT
       value: "5432"
     - name: POSTGRES_NAME

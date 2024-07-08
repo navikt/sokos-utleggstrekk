@@ -18,16 +18,18 @@ import kotlin.properties.Delegates
 fun main() {
     val applicationState = ApplicationState()
     val configuration = AzureConfiguration()
-    val utleggstrekkService = UtleggstrekkService()
     val dataSource = PostgresDataSource()
+    val databaseService = DatabaseService(dataSource)
+    val utleggstrekkService = UtleggstrekkService(databaseService)
 
     applicationState.ready = true
-    HttpServer(applicationState, utleggstrekkService, configuration).start()
+    HttpServer(applicationState, databaseService, utleggstrekkService, configuration).start()
 
 }
 
 class HttpServer(
     private val applicationState: ApplicationState,
+    private val databaseService: DatabaseService,
     private val utleggstrekkService: UtleggstrekkService,
     private val azureConfiguration: AzureConfiguration,
     port: Int = 8080,

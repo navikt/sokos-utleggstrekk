@@ -10,6 +10,7 @@ import no.nav.sokos.utleggstrekk.service.DatabaseService
 
 private val logger = KotlinLogging.logger {  }
 class UtleggstrekkService(
+    databaseService: DatabaseService
 ) {
 
     val tokenProvider = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), httpClient)
