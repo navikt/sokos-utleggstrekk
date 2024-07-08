@@ -9,7 +9,7 @@ import io.ktor.server.routing.route
 
 fun Routing.naisApi(alive: () -> Boolean, ready: () -> Boolean) {
     route("internal") {
-        get("is_alive") {
+        get("isAlive") {
             when (alive()) {
                 true -> call.respondText { "Application is alive" }
                 else -> call.respondText(
@@ -18,7 +18,7 @@ fun Routing.naisApi(alive: () -> Boolean, ready: () -> Boolean) {
                 )
             }
         }
-        get("is_ready") {
+        get("isReady") {
             when (ready()) {
                 true -> call.respondText { "Application is ready" }
                 else -> call.respondText(

@@ -53,5 +53,6 @@
     <logger name="no.nav.sokos.utleggstrekk" level="INFO"/>
 
     <logger name="com.jcraft.jsch" level="INFO" additivity="false"/>
+    <logger name="com.zaxxer.hikari" lever="DEBUG" additivity="false"/>
 
 </configuration>

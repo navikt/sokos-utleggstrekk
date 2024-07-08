@@ -20,13 +20,13 @@ spec:
       cpu: 500m
       memory: 512Mi
   liveness:
-    path: /internal/is_alive
+    path: /internal/isAlive
     initialDelay: 10
     timeout: 5
     periodSeconds: 5
     failureThreshold: 30
   readiness:
-    path: /internal/is_ready
+    path: /internal/isReady
     initialDelay: 10
     periodSeconds: 5
     timeout: 5

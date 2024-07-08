@@ -60,8 +60,4 @@ fun Application.commonConfig(
             }
         }
     }
-
-
-
-
 }
