@@ -14,7 +14,6 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
-
 val ktorVersion = "2.3.6"
 val hikaricpVersion = "5.1.0"
 val oracleJdbcVersion = "19.22.0.0"
@@ -30,8 +29,7 @@ val jacksonVersion = "2.16.1"
 val kotlinxSerializationVersion = "1.6.0"
 val prometheusVersion = "1.11.5"
 val flywayVersion = "9.16.1"
-
-
+val postgresqlVersion = "42.6.1"
 
 // Test
 val kotestVersion = "5.8.0"
@@ -80,14 +78,11 @@ dependencies {
 
     // Database
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
-    implementation("com.oracle.database.jdbc:ojdbc10:$oracleJdbcVersion")
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("no.nav:vault-jdbc:$vaultVersion")
 
     // Flyway
     implementation("org.flywaydb:flyway-core:$flywayVersion")
-
-
-    implementation("com.zaxxer:HikariCP:$hikaricpVersion")
-    implementation("no.nav:vault-jdbc:$vaultVersion")
 
     // Test
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
