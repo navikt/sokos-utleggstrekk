@@ -9,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.get
 import no.nav.sokos.utleggstrekk.httpClient
 import java.net.URI
 import java.util.concurrent.TimeUnit
@@ -16,14 +17,14 @@ import java.util.concurrent.TimeUnit
 private val logger = KotlinLogging.logger { }
 
 data class AzureConfiguration(
-    val appName:String = readProperty("NAIS_APP_NAME"),
+    val appName:String = get("NAIS_APP_NAME"),
     val azureAd: AzureAd = AzureAd(),
-    val useAuthentication: Boolean = readProperty("USE_AUTHENTICATION", "true") != "false"
+    val useAuthentication: Boolean = get("USE_AUTHENTICATION") != "false"
 )
 {
     data class AzureAd(
-        val clientId: String = readProperty("AZURE_APP_CLIENT_ID", ""),
-        val authorityEndpoint: String = readProperty("AZURE_APP_WELL_KNOWN_URL", ""),
+        val clientId: String = get("AZURE_APP_CLIENT_ID"),
+        val authorityEndpoint: String = get("AZURE_APP_WELL_KNOWN_URL"),
     ) {
         val openIdConfiguration: AzureAdOpenIdConfiguration by lazy {
             runBlocking { httpClient.get(authorityEndpoint).body() }
@@ -53,8 +54,3 @@ data class AzureConfiguration(
     )
 
 }
-private fun readProperty(name: String, default: String? = null) =
-    System.getenv(name)
-        ?: System.getProperty(name)
-        ?: default.takeIf { it != null }?.also { logger.warn( "Using default value for property $name" ) }
-        ?: throw RuntimeException("Mandatory property '$name' was not found")

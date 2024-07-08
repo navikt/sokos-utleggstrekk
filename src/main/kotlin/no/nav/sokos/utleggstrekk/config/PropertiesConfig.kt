@@ -29,6 +29,7 @@ object PropertiesConfig {
 	private val localDevProperties = ConfigurationMap(
 		"APPLICATION_PROFILE" to Profile.LOCAL.toString(),
 		"POSTGRES_HOST" to "dev-pg.intern.nav.no",
+		"USE_AUTHENTICATION" to "false",
 	)
 
 	private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))
