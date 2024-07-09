@@ -39,12 +39,12 @@
 
     <if condition='isDefined("NAIS_CLUSTER_NAME")'>
         <then>
-            <root level="INFO">
+            <root level="DEBUG">
                 <appender-ref ref="CONSOLE"/>
             </root>
         </then>
         <else>
-            <root level="INFO">
+            <root level="DEBUG">
                 <appender-ref ref="CONSOLE"/>
             </root>
         </else>

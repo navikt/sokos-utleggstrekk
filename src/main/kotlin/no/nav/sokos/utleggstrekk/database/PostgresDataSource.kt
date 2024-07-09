@@ -29,23 +29,16 @@ class PostgresDataSource {
                 .load()
                 .migrate()
         }
-       dataSource = dataSource()
+        println("JDBC: ${postgresConfig.jdbcUrl}")
+        dataSource = dataSource()
     }
 
     private fun dataSource(role: String = userRole) =
-        if ( PropertiesConfig.isLocal() ) HikariDataSource(hikariConfig()) else try {
-            createHikariDataSourceWithVaultIntegration(
-                hikariConfig(),
-                postgresConfig.vaultMountPath,
-                role
-            )
-        }catch(e: Exception){
-            println(e.message)
-            println(e.stackTraceToString())
-            println(e)
-
-            throw e
-        }
+        if ( PropertiesConfig.isLocal() ) HikariDataSource(hikariConfig()) else createHikariDataSourceWithVaultIntegration(
+            hikariConfig(),
+            postgresConfig.vaultMountPath,
+            role
+        )
 
 
     private fun hikariConfig() = HikariConfig().apply {
