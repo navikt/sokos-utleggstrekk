@@ -30,6 +30,7 @@ class PostgresDataSource {
                 .migrate()
         }
         println("JDBC: ${postgresConfig.jdbcUrl}")
+        println("USERNAME: ${postgresConfig.username}")
         dataSource = dataSource()
     }
 
@@ -47,6 +48,7 @@ class PostgresDataSource {
         maximumPoolSize = 4
         connectionTimeout = 10000
         isAutoCommit = false
+        addDataSourceProperty("socketTimeout", 5);//timeout in seconds
         idleTimeout = 10000
         //connectionTestQuery = "SELECT * FROM ${dbConfig.testTable} LIMIT 1"
         jdbcUrl = postgresConfig.jdbcUrl

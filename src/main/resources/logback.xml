@@ -39,12 +39,12 @@
 
     <if condition='isDefined("NAIS_CLUSTER_NAME")'>
         <then>
-            <root level="DEBUG">
+            <root level="INFO">
                 <appender-ref ref="CONSOLE"/>
             </root>
         </then>
         <else>
-            <root level="DEBUG">
+            <root level="INFO">
                 <appender-ref ref="CONSOLE"/>
             </root>
         </else>
@@ -52,7 +52,6 @@
 
     <logger name="no.nav.sokos.utleggstrekk" level="DEBUG"/>
 
-    <logger name="com.zaxxer.hikari.HikariDataSource" level="DEBUG"/>
 
 
 </configuration>
