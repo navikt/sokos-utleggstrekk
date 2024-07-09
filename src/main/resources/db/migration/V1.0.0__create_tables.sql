@@ -1,5 +1,5 @@
 drop table if exists hei;
-create table "hei"
+create table "jada"
 (
     id bigserial,
     navn text,
