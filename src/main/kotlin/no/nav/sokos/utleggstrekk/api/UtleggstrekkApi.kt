@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.api
 
+import io.ktor.client.call.body
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
@@ -9,8 +11,8 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import mu.KotlinLogging
+import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
-import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Private
 
 fun Routing.utleggstrekkApi(
     utleggstrekkService: UtleggstrekkService
@@ -23,13 +25,10 @@ fun Routing.utleggstrekkApi(
         }
 
         get("hent") {
-            try {
-                utleggstrekkService.hentAlle()
-                call.respond(HttpStatusCode.OK, "tja gikk bra")
-            }catch (e: Exception){
-                println(e.toString())
-                call.respond(HttpStatusCode.Conflict, "Gikk ikke så bra ${e.message}")
-            }
+            val response = utleggstrekkService.hentAlle()
+            val utleggstrekk: List<Utleggstrekk> = response.body<List<Utleggstrekk>>()
+            println("antall elementer: ${utleggstrekk.size}")
+            call.respond(response.status, response.bodyAsText())
         }
 
     }

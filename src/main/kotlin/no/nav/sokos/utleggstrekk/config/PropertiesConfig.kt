@@ -29,6 +29,9 @@ object PropertiesConfig {
 	private val localDevProperties = ConfigurationMap(
 		"APPLICATION_PROFILE" to Profile.LOCAL.toString(),
 		"POSTGRES_HOST" to "dev-pg.intern.nav.no",
+		"POSTGRES_PORT" to "5432",
+		"POSTGRES_NAME" to "sokos-utleggstrekk",
+		"SKE_REST_URL" to "https://api-test.sits.no/api/utleggstrekk/v1/",
 		"USE_AUTHENTICATION" to "false",
 	)
 
@@ -89,15 +92,11 @@ object PropertiesConfig {
 	}
 
 	open class JwtConfig(private val wellKnownUrl: String) {
-		@OptIn(InternalAPI::class)
+
 		val openIdConfiguration: OpenIdConfiguration by lazy {
 			runBlocking {
-				println("WelKnown: $wellKnownUrl")
-				val response = httpClient.get(wellKnownUrl)
-				println("response.status ${response.status}")
-				val b = response.bodyAsText()
-				println("${b}")
-				response.body()
+		httpClient.get(wellKnownUrl).body()
+
 			}
 		}
 	}

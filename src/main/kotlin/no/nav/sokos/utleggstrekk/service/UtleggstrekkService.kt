@@ -1,5 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
@@ -14,12 +15,11 @@ class UtleggstrekkService(
 ) {
 
     val tokenProvider = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), httpClient)
-    val skeClient = SkeClient(tokenProvider, PropertiesConfig.SKEConfig().skeRestUrl)
+    val skeClient = SkeClient(tokenProvider)
 
-    suspend fun hentAlle(){
+    suspend fun hentAlle(): HttpResponse {
         println("skeClient.hentalle kalles:")
-        skeClient.hentAlleNyeUtleggstrekk().also { println(it.bodyAsText()) }
-        println("skeClient.hentalle Ferdig:")
+        return skeClient.hentAlleNyeUtleggstrekk()
     }
 
 }
