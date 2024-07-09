@@ -1,13 +1,14 @@
 package no.nav.sokos.utleggstrekk.client
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.get
+import io.ktor.client.request.headers
+import io.ktor.client.request.url
+import io.ktor.http.HttpHeaders
 import no.nav.sokos.utleggstrekk.httpClient
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
-import java.util.*
+import java.util.UUID
 
 private const val ORGNR = "889640782"
 private const val KLIENT_ID = "NAV/0.1"
@@ -18,8 +19,7 @@ class SkeClient(
     private val client: HttpClient = httpClient,
 ) {
 
-    suspend fun hentAlleNyeUtleggstrekk() =
-        doGet(ORGNR, UUID.randomUUID().toString())
+    suspend fun hentAlleNyeUtleggstrekk() = doGet(ORGNR, UUID.randomUUID().toString())
 
     private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID))
 

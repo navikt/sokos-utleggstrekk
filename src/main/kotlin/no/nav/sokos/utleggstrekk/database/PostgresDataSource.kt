@@ -13,13 +13,13 @@ class PostgresDataSource() {
     private val logger = KotlinLogging.logger { }
     private val postgresConfig: PropertiesConfig.PostgresConfig = PropertiesConfig.PostgresConfig()
     private val isLocal = PropertiesConfig.Configuration().profile == PropertiesConfig.Profile.LOCAL
-    private var dataSource: HikariDataSource
+   // private var dataSource: HikariDataSource
     private val adminRole = "${postgresConfig.name}-admin"
     private val userRole = "${postgresConfig.name}-user"
-    val connection: Connection get() = dataSource.connection.apply { autoCommit = false }
+ //   val connection: Connection get() = dataSource.connection.apply { autoCommit = false }
 
 
-    init{
+  /*  init{
         if (!isLocal) {
             val role = adminRole
             logger.info("Flyway db opprettes med rolle $role")
@@ -29,8 +29,8 @@ class PostgresDataSource() {
                 .load()
                 .migrate()
         }
-       dataSource = dataSource()
-    }
+     //  dataSource = dataSource()
+    }*/
 
     private fun dataSource(role: String = userRole) =
         if ( PropertiesConfig.isLocal() ) HikariDataSource(hikariConfig()) else createHikariDataSourceWithVaultIntegration(

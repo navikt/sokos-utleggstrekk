@@ -1,66 +1,53 @@
 package no.nav.sokos.utleggstrekk
 
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.stop
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
-import no.nav.sokos.utleggstrekk.api.naisApi
+import no.nav.sokos.utleggstrekk.api.internalNaisRoutes
 import no.nav.sokos.utleggstrekk.api.utleggstrekkApi
 import no.nav.sokos.utleggstrekk.config.AzureConfiguration
 import no.nav.sokos.utleggstrekk.config.commonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.service.DatabaseService
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
-import java.util.concurrent.TimeUnit
-import kotlin.properties.Delegates
 
 
 fun main() {
+    embeddedServer(Netty, port = 8080, module = Application::module).start(true)
+
+}
+
+private fun Application.module(){
     val applicationState = ApplicationState()
-    val configuration = AzureConfiguration()
+    val azureConfiguration = AzureConfiguration()
     val dataSource = PostgresDataSource()
     val databaseService = DatabaseService(dataSource)
     val utleggstrekkService = UtleggstrekkService(databaseService)
 
-    applicationState.ready = true
-    HttpServer(applicationState, databaseService, utleggstrekkService, configuration).start()
 
-}
-
-class HttpServer(
-    private val applicationState: ApplicationState,
-    private val databaseService: DatabaseService,
-    private val utleggstrekkService: UtleggstrekkService,
-    private val azureConfiguration: AzureConfiguration,
-    port: Int = 8080,
-) {
-    init {
-        Runtime.getRuntime().addShutdownHook(Thread {
-            applicationState.running = false
-            this.embeddedServer.stop(gracePeriod = 2, timeout = 20, TimeUnit.SECONDS)
-        })
-    }
-
-    private val embeddedServer = embeddedServer(Netty, port) {
-        commonConfig(azureConfiguration)
-        routing {
-            naisApi({ applicationState.ready }, { applicationState.running })
-            utleggstrekkApi(utleggstrekkService)
-        }
-    }
-
-    fun start() {
-        applicationState.running = true
-        embeddedServer.start(wait = true)
+    commonConfig(azureConfiguration)
+    applicationLifecycleConfig(applicationState)
+    routing {
+        internalNaisRoutes(applicationState)
+        utleggstrekkApi(utleggstrekkService)
     }
 }
 
-class ApplicationState {
-    var ready: Boolean by Delegates.observable(false) { _, _, _ ->
+fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
+    environment.monitor.subscribe(ApplicationStarted) {
+        applicationState.ready = true
     }
 
-    var running: Boolean by Delegates.observable(false) { _, _, _ ->
+    environment.monitor.subscribe(ApplicationStopped) {
+        applicationState.ready = false
     }
 }
 
+class ApplicationState(
+    var ready: Boolean = true,
+    var alive: Boolean = true,
+)
 
