@@ -16,5 +16,4 @@ data class Utleggstrekk (
     val trekkprosent: Double? = null,
     val kidnummer: String? = null,
     val kontonummer: String? = null
-) {
-}
+)

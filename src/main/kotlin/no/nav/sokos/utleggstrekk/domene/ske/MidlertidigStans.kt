@@ -4,5 +4,4 @@ data class MidlertidigStans (
 
     val startPeriode: String? = null,
     val sluttPeriode: String? = null
-) {
-}
+)
