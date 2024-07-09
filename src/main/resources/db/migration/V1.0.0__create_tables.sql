@@ -4,7 +4,7 @@ create table "hei"
     id bigserial,
     navn text,
     melding text
-)
+);
 -- drop table if exists krav;
 -- create table "utleggstrekk"
 -- (
