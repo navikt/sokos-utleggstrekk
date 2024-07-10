@@ -18,7 +18,6 @@ class SkeClient(
     private val client: HttpClient = httpClient,
     private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), httpClient),
 ) {
-
     suspend fun hentAlleNyeUtleggstrekk() = doGet("${PropertiesConfig.SKEConfig().skeRestUrl}$ORGNR", UUID.randomUUID().toString())
 
     private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID))

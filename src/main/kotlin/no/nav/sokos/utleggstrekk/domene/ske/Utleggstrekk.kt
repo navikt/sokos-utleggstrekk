@@ -3,7 +3,7 @@ package no.nav.sokos.utleggstrekk.domene.ske
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Utleggstrekk (
+data class Utleggstrekk(
     val trekkid: String,
     val trekkversjon: Int,
     val sekvensnummer: Int,
@@ -17,19 +17,21 @@ data class Utleggstrekk (
     val trekkbeloep: TrekkBeloep? = null,
     val trekkprosent: TrekkProsent? = null,
     val kidnummer: String? = null,
-    val kontonummer: String? = null
+    val kontonummer: String? = null,
 )
 
 @Serializable
 data class TrekkProsent(
-    val trekkprosent: Double? = null
+    val trekkprosent: Double? = null,
 )
+
 @Serializable
 data class TrekkBeloep(
-    val trekkbeloep: Double? = null
+    val trekkbeloep: Double? = null,
 )
+
 @Serializable
-data class MidlertidigStans (
+data class MidlertidigStans(
     val startPeriode: String? = null,
-    val sluttPeriode: String? = null
+    val sluttPeriode: String? = null,
 )

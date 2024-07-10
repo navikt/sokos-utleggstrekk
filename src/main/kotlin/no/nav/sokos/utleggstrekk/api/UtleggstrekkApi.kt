@@ -15,7 +15,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 
 fun Routing.utleggstrekkApi(
-    utleggstrekkService: UtleggstrekkService
+    utleggstrekkService: UtleggstrekkService,
 ) {
     val logger = KotlinLogging.logger { }
 
@@ -30,13 +30,12 @@ fun Routing.utleggstrekkApi(
             println("antall elementer: ${utleggstrekk.size}")
             call.respond(response.status, response.bodyAsText())
         }
-
     }
 }
 
 private fun Route.authenticate(
     useAuthentication: Boolean,
-    block: Route.() -> Unit
+    block: Route.() -> Unit,
 ) {
     if (useAuthentication) {
         authenticate { block() }
@@ -44,5 +43,3 @@ private fun Route.authenticate(
         block()
     }
 }
-
-

@@ -41,14 +41,12 @@ class MockHttpClient {
             }
         }
     }
-
-
 }
 
 object Responses {
-
     //language=json
-    val utleggsTrekkListe = """
+    val utleggsTrekkListe =
+        """
         [
           {
             "trekkid": "1",
@@ -104,32 +102,32 @@ object Responses {
         """.trimIndent()
 
     //language=json
-    val utleggsTrekk = """
+    val utleggsTrekk =
+        """
+        {
+          "trekkid": "string",
+          "trekkversjon": 1,
+          "sekvensnummer": 1,
+          "opprettet": "2024-07-10T08:25:37.020Z",
+          "trekkpliktig": "123456789",
+          "skyldner": "13088839702",
+          "trekkstatus": "aktiv",
+          "startPeriode": "2024-12",
+          "sluttPeriode": "2024-12",
+          "midlertidigStans": [
             {
-              "trekkid": "string",
-              "trekkversjon": 1,
-              "sekvensnummer": 1,
-              "opprettet": "2024-07-10T08:25:37.020Z",
-              "trekkpliktig": "123456789",
-              "skyldner": "13088839702",
-              "trekkstatus": "aktiv",
               "startPeriode": "2024-12",
-              "sluttPeriode": "2024-12",
-              "midlertidigStans": [
-                {
-                  "startPeriode": "2024-12",
-                  "sluttPeriode": "2024-12"
-                }
-              ],
-              "trekkbeloep": {
-                "trekkbeloep": 0
-              },
-              "trekkprosent": {
-                "trekkprosent": 0
-              },
-              "kidnummer": "824776336890844418867",
-              "kontonummer": "61588822927"
+              "sluttPeriode": "2024-12"
             }
+          ],
+          "trekkbeloep": {
+            "trekkbeloep": 0
+          },
+          "trekkprosent": {
+            "trekkprosent": 0
+          },
+          "kidnummer": "824776336890844418867",
+          "kontonummer": "61588822927"
+        }
         """.trimIndent()
 }
-

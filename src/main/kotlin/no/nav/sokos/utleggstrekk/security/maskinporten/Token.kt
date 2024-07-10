@@ -12,7 +12,7 @@ data class Token(
     @SerialName("access_token")
     val accessToken: String,
     @SerialName("expires_in")
-    val expiresIn: Long
+    val expiresIn: Long,
 )
 
 data class AccessToken(
@@ -21,7 +21,6 @@ data class AccessToken(
 ) {
     constructor(token: Token) : this(
         accessToken = token.accessToken,
-        expiresAt = Clock.System.now().plus(token.expiresIn, DateTimeUnit.SECOND)
+        expiresAt = Clock.System.now().plus(token.expiresIn, DateTimeUnit.SECOND),
     )
 }
-

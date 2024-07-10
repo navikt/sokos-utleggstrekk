@@ -9,15 +9,15 @@ import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenCl
 import no.nav.sokos.utleggstrekk.util.MockHttpClient
 import no.nav.sokos.utleggstrekk.util.Responses
 
-internal class UtleggstrekkServiceTest: FunSpec({
+internal class UtleggstrekkServiceTest : FunSpec({
 
-    test("Når SKE returnerer liste av utleggstrekk skal disse parses til objekter"){
+    test("Når SKE returnerer liste av utleggstrekk skal disse parses til objekter") {
         val mockClient = MockHttpClient().getClient(Responses.utleggsTrekkListe, HttpStatusCode.OK)
         val utleggsTrekkService = UtleggstrekkService(mockk<DatabaseService>(relaxed = true), SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)))
         val utleggsTrekk = utleggsTrekkService.hentAlleNyeUtleggstrekk()
 
         utleggsTrekk.size shouldBe 2
-        with(utleggsTrekk.first()){
+        with(utleggsTrekk.first()) {
             trekkid shouldBe "1"
             trekkversjon shouldBe 1
             sekvensnummer shouldBe 1
@@ -28,7 +28,7 @@ internal class UtleggstrekkServiceTest: FunSpec({
             startPeriode shouldBe "2024-12"
             sluttPeriode shouldBe "2024-12"
             midlertidigStans!!.size shouldBe 1
-            with(midlertidigStans!!.first()){
+            with(midlertidigStans!!.first()) {
                 startPeriode shouldBe "2024-12"
                 sluttPeriode shouldBe "2024-12"
             }
@@ -38,7 +38,7 @@ internal class UtleggstrekkServiceTest: FunSpec({
             kontonummer shouldBe "19019019019"
         }
 
-        with(utleggsTrekk.last()){
+        with(utleggsTrekk.last()) {
             trekkid shouldBe "2"
             trekkversjon shouldBe 1
             sekvensnummer shouldBe 1
@@ -49,7 +49,7 @@ internal class UtleggstrekkServiceTest: FunSpec({
             startPeriode shouldBe "2024-11"
             sluttPeriode shouldBe "2024-11"
             midlertidigStans!!.size shouldBe 1
-            with(midlertidigStans!!.first()){
+            with(midlertidigStans!!.first()) {
                 startPeriode shouldBe "2024-11"
                 sluttPeriode shouldBe "2024-11"
             }
@@ -59,5 +59,4 @@ internal class UtleggstrekkServiceTest: FunSpec({
             kontonummer shouldBe "12012012012"
         }
     }
-
 })

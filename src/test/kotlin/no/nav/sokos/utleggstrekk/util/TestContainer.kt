@@ -8,28 +8,29 @@ import java.util.Locale
 import java.util.UUID
 
 class TestContainer(private val name: String = UUID.randomUUID().toString()) {
-
-    fun startContainer( script: String = "", initScripts: List<String> = emptyList()) = createContainer(script, initScripts).toDataSource {
-        maximumPoolSize = 100
-        minimumIdle = 1
-        isAutoCommit = false
-    }
+    fun startContainer(script: String = "", initScripts: List<String> = emptyList()) =
+        createContainer(script, initScripts).toDataSource {
+            maximumPoolSize = 100
+            minimumIdle = 1
+            isAutoCommit = false
+        }
 
     private fun createContainer(script: String, scripts: List<String> = emptyList()): PostgreSQLContainer<Nothing> {
-        val container = PostgreSQLContainer<Nothing>("postgres:latest").apply {
-            withCreateContainerCmdModifier { cmd ->
-                cmd.withName(
-                    name.lowercase(Locale.getDefault())
-                        .replace(' ', '-')
-                        .replace('æ', 'e')
-                        .replace('ø', 'o')
-                        .replace('å', 'a')
-                        .replace(',', '-')
-                )
+        val container =
+            PostgreSQLContainer<Nothing>("postgres:latest").apply {
+                withCreateContainerCmdModifier { cmd ->
+                    cmd.withName(
+                        name.lowercase(Locale.getDefault())
+                            .replace(' ', '-')
+                            .replace('æ', 'e')
+                            .replace('ø', 'o')
+                            .replace('å', 'a')
+                            .replace(',', '-'),
+                    )
+                }
+                withReuse(false)
+                start()
             }
-            withReuse(false)
-            start()
-        }
 
         if (scripts.isNotEmpty()) {
             scripts.forEach {

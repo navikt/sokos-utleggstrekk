@@ -1,10 +1,13 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.9.20"
     kotlin("plugin.serialization") version "1.8.21"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("org.jetbrains.kotlinx.kover") version "0.8.2"
 }
 
 group = "no.nav.sokos"
@@ -18,13 +21,12 @@ val ktorVersion = "2.3.6"
 val hikaricpVersion = "5.1.0"
 val oracleJdbcVersion = "19.22.0.0"
 val nimbusVersion = "9.37.2"
-val vaultVersion ="1.3.10"
-val logback_version = "1.5.6"
-val logstash_version = "7.3"
-val kotlin_logging_version = "3.0.4"
+val vaultVersion = "1.3.10"
+val logbackVersion = "1.5.6"
+val logstashVersion = "7.3"
+val kotlinLoggingVersion = "3.0.4"
 val kotlinxDatetimeVersion = "0.4.1"
 val natpryceVersion = "1.6.10.0"
-val prometheus_version = "1.11.0"
 val kotlinxSerializationVersion = "1.6.0"
 val prometheusVersion = "1.11.5"
 val flywayVersion = "9.16.1"
@@ -57,11 +59,11 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktorVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$kotlinxSerializationVersion")
 
-    //Logging
-    implementation("ch.qos.logback:logback-core:$logback_version")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logstash_version")
-    implementation("io.github.microutils:kotlin-logging-jvm:$kotlin_logging_version")
+    // Logging
+    implementation("ch.qos.logback:logback-core:$logbackVersion")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+    implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
+    implementation("io.github.microutils:kotlin-logging-jvm:$kotlinLoggingVersion")
     runtimeOnly("org.codehaus.janino:janino:$janinoVersion")
 
     // metrics
@@ -108,13 +110,16 @@ sourceSets {
 }
 
 tasks {
-
+    withType<KotlinCompile>().configureEach {
+        dependsOn("ktlintFormat")
+    }
     withType<ShadowJar>().configureEach {
         enabled = true
         archiveFileName.set("sokos-utleggstrekk.jar")
         manifest {
             attributes["Main-Class"] = "no.nav.sokos.utleggstrekk.ApplicationKt"
         }
+        finalizedBy(koverHtmlReport)
     }
 
     ("jar") {

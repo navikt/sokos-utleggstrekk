@@ -11,9 +11,8 @@ private val logger = KotlinLogging.logger { }
 
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
-    private val skeClient: SkeClient = SkeClient()
+    private val skeClient: SkeClient = SkeClient(),
 ) {
-
     suspend fun hentAlleNyeUtleggstrekk(): List<Utleggstrekk> {
         val response = skeClient.hentAlleNyeUtleggstrekk()
         return try {
@@ -28,5 +27,4 @@ class UtleggstrekkService(
         println("skeClient.hentalle kalles:")
         return skeClient.hentAlleNyeUtleggstrekk()
     }
-
 }

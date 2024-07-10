@@ -23,15 +23,14 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.metrics.Metrics
 import org.slf4j.event.Level
-import java.util.*
+import java.util.UUID
 
-private val logger= KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @OptIn(ExperimentalSerializationApi::class)
 fun Application.commonConfig(
-    azureConfiguration: AzureConfiguration
+    azureConfiguration: AzureConfiguration,
 ) {
-
     install(CallId) {
         header(HttpHeaders.XCorrelationId)
         generate { UUID.randomUUID().toString() }
@@ -44,22 +43,25 @@ fun Application.commonConfig(
         disableDefaultColors()
     }
     install(ContentNegotiation) {
-        json(Json {
-            prettyPrint = true
-            isLenient = true
-            explicitNulls = false
-            ignoreUnknownKeys = true
-        })
+        json(
+            Json {
+                prettyPrint = true
+                isLenient = true
+                explicitNulls = false
+                ignoreUnknownKeys = true
+            },
+        )
     }
     install(MicrometerMetrics) {
         registry = Metrics.registry
-        meterBinders = listOf(
-            UptimeMetrics(),
-            JvmMemoryMetrics(),
-            JvmGcMetrics(),
-            JvmThreadMetrics(),
-            ProcessorMetrics(),
-        )
+        meterBinders =
+            listOf(
+                UptimeMetrics(),
+                JvmMemoryMetrics(),
+                JvmGcMetrics(),
+                JvmThreadMetrics(),
+                ProcessorMetrics(),
+            )
     }
     install(Authentication) {
         jwt {

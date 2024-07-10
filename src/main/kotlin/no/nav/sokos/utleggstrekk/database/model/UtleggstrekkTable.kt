@@ -2,7 +2,7 @@ package no.nav.sokos.utleggstrekk.database.model
 
 import kotlinx.datetime.LocalDateTime
 
-data class UtleggstrekkTable (
+data class UtleggstrekkTable(
     val trekkid_nav: Long,
     val trekkid_ske: String,
     val trekkversjon_ske: Int,

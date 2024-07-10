@@ -15,18 +15,15 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.service.DatabaseService
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 
-
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::module).start(true)
-
 }
 
-private fun Application.module(){
+private fun Application.module() {
     val applicationState = ApplicationState()
     val azureConfiguration = AzureConfiguration()
     val databaseService = DatabaseService()
     val utleggstrekkService = UtleggstrekkService(databaseService)
-
 
     commonConfig(azureConfiguration)
     applicationLifecycleConfig(applicationState)
@@ -35,8 +32,9 @@ private fun Application.module(){
         utleggstrekkApi(utleggstrekkService)
     }
 
-    if(!PropertiesConfig.isLocal())
+    if (!PropertiesConfig.isLocal()) {
         PostgresDataSource.postgresMigrate()
+    }
 }
 
 fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
@@ -53,4 +51,3 @@ class ApplicationState(
     var ready: Boolean = true,
     var alive: Boolean = true,
 )
-
