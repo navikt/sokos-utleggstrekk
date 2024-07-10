@@ -15,8 +15,8 @@ private const val ORGNR = "889640782"
 private const val KLIENT_ID = "NAV/0.1"
 
 class SkeClient(
-    private val tokenProvider: MaskinportenAccessTokenClient,
     private val client: HttpClient = httpClient,
+    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), httpClient),
 ) {
 
     suspend fun hentAlleNyeUtleggstrekk() = doGet("${PropertiesConfig.SKEConfig().skeRestUrl}$ORGNR", UUID.randomUUID().toString())
@@ -26,6 +26,7 @@ class SkeClient(
     private suspend fun buildHttpRequest(path: String, corrID: String): HttpRequestBuilder {
         val token = tokenProvider.hentAccessToken()
         return HttpRequestBuilder().apply {
+            println("henter $path")
             url(path)
             headers {
                 append("Klientid", KLIENT_ID)

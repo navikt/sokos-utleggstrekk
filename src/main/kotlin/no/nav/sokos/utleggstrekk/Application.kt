@@ -10,7 +10,6 @@ import no.nav.sokos.utleggstrekk.api.internalNaisRoutes
 import no.nav.sokos.utleggstrekk.api.utleggstrekkApi
 import no.nav.sokos.utleggstrekk.config.AzureConfiguration
 import no.nav.sokos.utleggstrekk.config.commonConfig
-import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.service.DatabaseService
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 
@@ -23,8 +22,7 @@ fun main() {
 private fun Application.module(){
     val applicationState = ApplicationState()
     val azureConfiguration = AzureConfiguration()
-    val dataSource = PostgresDataSource()
-    val databaseService = DatabaseService(dataSource)
+    val databaseService = DatabaseService()
     val utleggstrekkService = UtleggstrekkService(databaseService)
 
 
@@ -34,6 +32,9 @@ private fun Application.module(){
         internalNaisRoutes(applicationState)
         utleggstrekkApi(utleggstrekkService)
     }
+
+    /*if(!PropertiesConfig.isLocal())
+        PostgresDataSource.postgresMigrate()*/
 }
 
 fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {

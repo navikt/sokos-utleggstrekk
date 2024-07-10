@@ -25,7 +25,6 @@ val kotlin_logging_version = "3.0.4"
 val kotlinxDatetimeVersion = "0.4.1"
 val natpryceVersion = "1.6.10.0"
 val prometheus_version = "1.11.0"
-val jacksonVersion = "2.16.1"
 val kotlinxSerializationVersion = "1.6.0"
 val prometheusVersion = "1.11.5"
 val flywayVersion = "9.16.1"
@@ -91,7 +90,7 @@ dependencies {
     testImplementation("io.mockk:mockk-jvm:$mockkVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("commons-net:commons-net:$commonsVersion")
-
+    testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 

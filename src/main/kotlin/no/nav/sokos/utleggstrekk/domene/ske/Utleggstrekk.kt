@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class Utleggstrekk (
     val trekkid: String,
     val trekkversjon: Int,
+    val sekvensnummer: Int,
     val opprettet: String,
     val trekkpliktig: String,
     val skyldner: String,
@@ -25,7 +26,7 @@ data class TrekkProsent(
 )
 @Serializable
 data class TrekkBeloep(
-    val trekkBeloep: Double? = null
+    val trekkbeloep: Double? = null
 )
 @Serializable
 data class MidlertidigStans (
