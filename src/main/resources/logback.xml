@@ -51,6 +51,6 @@
     </if>
 
     <logger name="no.nav.sokos.utleggstrekk" level="DEBUG"/>
-    <logger name="com.zaxxer.hikari" level="${log.level.com.zaxxer.hikari:-DEBUG}" />
+    <logger name="com.zaxxer.hikari" level="${log.level.com.zaxxer.hikari:-INFO}" />
 
 </configuration>

@@ -9,9 +9,6 @@ import com.natpryce.konfig.stringType
 import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import io.ktor.util.InternalAPI
-import io.ktor.util.logging.Logger
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -89,6 +86,8 @@ object PropertiesConfig {
 		val vaultMountPath: String = getOrEmpty("VAULT_MOUNTPATH"),
 	) {
 		val jdbcUrl: String = "jdbc:postgresql://$host:$port/$name"
+		val adminUser = "$name--admin"
+		val user = "$name--user"
 	}
 
 	open class JwtConfig(private val wellKnownUrl: String) {

@@ -5,40 +5,31 @@ import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration
-import java.sql.Connection
 import org.flywaydb.core.Flyway
 
 
-class PostgresDataSource {
-    private val logger = KotlinLogging.logger { }
+object PostgresDataSource {
     private val postgresConfig: PropertiesConfig.PostgresConfig = PropertiesConfig.PostgresConfig()
-    private val isLocal = PropertiesConfig.Configuration().profile == PropertiesConfig.Profile.LOCAL
-    private var dataSource: HikariDataSource
-    private val adminRole = "${postgresConfig.name}-admin"
-    private val userRole = "${postgresConfig.name}-user"
-    val connection: Connection get() = dataSource.connection.apply { autoCommit = false }
+    private val logger = KotlinLogging.logger {}
 
-
-    init{
-        if (!isLocal) {
-            val role = adminRole
-            logger.info("Flyway db opprettes med rolle $role")
-            Flyway.configure()
-                .dataSource(dataSource(role))
-                .initSql("""SET ROLE "$role"""")
-                .load()
-                .migrate()
-        }
-        dataSource = dataSource()
+    fun postgresMigrate(role: String = postgresConfig.adminUser, dataSource: HikariDataSource = dataSource(role)){
+      logger.info { "Flyway migration" }
+        Flyway.configure()
+            .dataSource(dataSource)
+            .initSql("""SET ROLE "$role"""")
+            .load()
+            .migrate()
+      logger.info { "Migration finished" }
     }
 
-    private fun dataSource(role: String = userRole) =
-        if ( PropertiesConfig.isLocal() ) HikariDataSource(hikariConfig()) else createHikariDataSourceWithVaultIntegration(
+   fun dataSource(role: String = postgresConfig.user): HikariDataSource =
+        if (PropertiesConfig.isLocal())
+            HikariDataSource(hikariConfig())
+        else createHikariDataSourceWithVaultIntegration(
             hikariConfig(),
             postgresConfig.vaultMountPath,
             role
         )
-
 
     private fun hikariConfig() = HikariConfig().apply {
         minimumIdle = 1
@@ -51,7 +42,7 @@ class PostgresDataSource {
         jdbcUrl = postgresConfig.jdbcUrl
         transactionIsolation = "TRANSACTION_REPEATABLE_READ"
         validate()
-        if (isLocal) {
+        if (PropertiesConfig.isLocal()) {
             username = postgresConfig.username
             password = postgresConfig.password
         }

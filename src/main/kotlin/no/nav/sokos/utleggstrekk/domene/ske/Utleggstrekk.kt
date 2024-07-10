@@ -1,6 +1,5 @@
 package no.nav.sokos.utleggstrekk.domene.ske
 
-import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -27,4 +26,9 @@ data class TrekkProsent(
 @Serializable
 data class TrekkBeloep(
     val trekkBeloep: Double? = null
+)
+@Serializable
+data class MidlertidigStans (
+    val startPeriode: String? = null,
+    val sluttPeriode: String? = null
 )

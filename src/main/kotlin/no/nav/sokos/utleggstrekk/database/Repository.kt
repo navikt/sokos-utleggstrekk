@@ -8,7 +8,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {  }
-object Repository {}
+object Repository
 
 inline fun <reified T : Any?> ResultSet.getColumn(
     columnLabel: String,
