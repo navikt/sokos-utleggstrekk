@@ -13,19 +13,26 @@ class UtleggstrekkService(
     private val databaseService: DatabaseService,
     private val skeClient: SkeClient = SkeClient(),
 ) {
+
+
+    suspend fun hentAlleUtleggstrekk(): List<Utleggstrekk> {
+        println("skeClient.hentalle kalles:")
+        val trekkListe = utleggstrekkResponseToList(skeClient.hentAlleUtleggstrekk())
+        return lagreAlleNyeUtleggstrekk(trekkListe)
+    }
+
     suspend fun hentAlleNyeUtleggstrekk(): List<Utleggstrekk> {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
-        val response = skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
-        return try {
-            response.body<List<Utleggstrekk>>()
-        } catch (e: JsonConvertException) {
-            logger.error { "Feil i konvertering av response: ${e.message}" }
-            emptyList()
-        }
+        return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
-    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Utleggstrekk> {
+    suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Utleggstrekk> {
         val response = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
+        val trekkListe = utleggstrekkResponseToList(response)
+        return lagreAlleNyeUtleggstrekk(trekkListe)
+    }
+
+    private suspend fun utleggstrekkResponseToList(response: HttpResponse): List<Utleggstrekk> {
         return try {
             response.body<List<Utleggstrekk>>()
         } catch (e: JsonConvertException) {
@@ -34,8 +41,8 @@ class UtleggstrekkService(
         }
     }
 
-    suspend fun hentAlleUtleggstrekk(): HttpResponse {
-        println("skeClient.hentalle kalles:")
-        return skeClient.hentAlleUtleggstrekk()
-    }
+    private suspend fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>): List<Utleggstrekk> =
+        trekkListe.map {
+            it.takeIf{!databaseService.trekkFinnes(it.sekvensnummer) }
+        }.filterNotNull()
 }

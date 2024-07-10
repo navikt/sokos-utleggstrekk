@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository.getLastSekvensnr
+import no.nav.sokos.utleggstrekk.database.Repository.sjekkOmTrekkfinnes
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
 
 private val logger = KotlinLogging.logger { }
@@ -14,5 +15,10 @@ class DatabaseService(
     fun hentSisteSekvensnummer(): Int =
         dataSource.connection.useAndHandleErrors { con ->
             con.getLastSekvensnr()
+        }
+
+    fun trekkFinnes(sekvensnr: Int): Boolean =
+        dataSource.connection.useAndHandleErrors { con ->
+            con.sjekkOmTrekkfinnes(sekvensnr)
         }
 }

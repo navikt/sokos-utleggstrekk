@@ -24,7 +24,11 @@ object RepositoryExtensions {
         fun addToPreparedStatement(sp: PreparedStatement, index: Int)
     }
 
-    fun param(value: String?) = Parameter { sp: PreparedStatement, index: Int -> sp.setString(index, value) }
+    fun param(value: String?) =
+        Parameter { sp: PreparedStatement, index: Int -> sp.setString(index, value) }
+
+    fun param(value: Int) =
+        Parameter { statement: PreparedStatement, index: Int -> statement.setInt(index, value) }
 
     fun PreparedStatement.withParameters(vararg parameters: Parameter?) =
         apply {

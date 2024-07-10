@@ -2,6 +2,8 @@ package no.nav.sokos.utleggstrekk.database
 
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import java.sql.Connection
 import java.sql.Date
@@ -17,6 +19,15 @@ object Repository {
             0
         }
     }
+
+    fun Connection.sjekkOmTrekkfinnes(sekvensnr: Int): Boolean =
+        prepareStatement(
+        """
+           select 1 from utleggstrekk where sekvensnr = ? 
+        """.trimIndent()
+        ).withParameters(
+            param(sekvensnr)
+        ).executeQuery().next()
 
     fun Connection.saveAllNewUtleggstrekk(
         trekkListe: List<Utleggstrekk>,
