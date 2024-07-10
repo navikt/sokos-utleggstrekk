@@ -50,7 +50,7 @@
         </else>
     </if>
 
-    <logger name="no.nav.sokos.utleggstrekk" level="DEBUG"/>
-    <logger name="com.zaxxer.hikari" level="${log.level.com.zaxxer.hikari:-INFO}" />
+    <logger name="no.nav.sokos.utleggstrekk" level="INFO"/>
+    <logger name="com.zaxxer.hikari" level="${log.level.com.zaxxer.hikari:-WARN}" />
 
 </configuration>
