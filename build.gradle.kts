@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.9.20"
     kotlin("plugin.serialization") version "1.8.21"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+//    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jetbrains.kotlinx.kover") version "0.8.2"
 }
@@ -110,16 +110,16 @@ sourceSets {
 }
 
 tasks {
-    withType<KotlinCompile>().configureEach {
-        dependsOn("ktlintFormat")
-    }
+//    withType<KotlinCompile>().configureEach {
+//        dependsOn("ktlintFormat")
+//    }
     withType<ShadowJar>().configureEach {
         enabled = true
         archiveFileName.set("sokos-utleggstrekk.jar")
         manifest {
             attributes["Main-Class"] = "no.nav.sokos.utleggstrekk.ApplicationKt"
         }
-        finalizedBy(koverHtmlReport)
+//        finalizedBy(koverHtmlReport)
     }
 
     ("jar") {

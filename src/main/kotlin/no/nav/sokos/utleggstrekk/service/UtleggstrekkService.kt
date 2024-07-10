@@ -14,7 +14,8 @@ class UtleggstrekkService(
     private val skeClient: SkeClient = SkeClient(),
 ) {
     suspend fun hentAlleNyeUtleggstrekk(): List<Utleggstrekk> {
-        val response = skeClient.hentAlleNyeUtleggstrekk()
+        val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
+        val response = skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
         return try {
             response.body<List<Utleggstrekk>>()
         } catch (e: JsonConvertException) {
@@ -23,8 +24,18 @@ class UtleggstrekkService(
         }
     }
 
-    suspend fun hentAlle(): HttpResponse {
+    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Utleggstrekk> {
+        val response = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
+        return try {
+            response.body<List<Utleggstrekk>>()
+        } catch (e: JsonConvertException) {
+            logger.error { "Feil i konvertering av response: ${e.message}" }
+            emptyList()
+        }
+    }
+
+    suspend fun hentAlleUtleggstrekk(): HttpResponse {
         println("skeClient.hentalle kalles:")
-        return skeClient.hentAlleNyeUtleggstrekk()
+        return skeClient.hentAlleUtleggstrekk()
     }
 }

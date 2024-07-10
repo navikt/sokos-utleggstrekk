@@ -25,10 +25,19 @@ fun Routing.utleggstrekkApi(
         }
 
         get("hent") {
-            val response = utleggstrekkService.hentAlle()
+            val response = utleggstrekkService.hentAlleUtleggstrekk()
             val utleggstrekk: List<Utleggstrekk> = response.body<List<Utleggstrekk>>()
             println("antall elementer: ${utleggstrekk.size}")
             call.respond(response.status, response.bodyAsText())
+        }
+        get("hent/{sekvensnr}") {
+            val sekvensnr = call.parameters["sekvensnr"]
+            if (sekvensnr.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest, "Ugyldig sekvensnr")
+            } else {
+                val response = utleggstrekkService.hentUtleggstrekkFraSekvensnr(sekvensnr.toInt())
+                call.respond(HttpStatusCode.OK, response.toString())
+            }
         }
     }
 }

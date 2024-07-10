@@ -12,13 +12,19 @@ import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenCl
 import java.util.UUID
 
 private const val ORGNR = "889640782"
+private const val FRA_SEKVENSNR = "?fraSekvensnummer="
 private const val KLIENT_ID = "NAV/0.1"
 
 class SkeClient(
     private val client: HttpClient = httpClient,
     private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), httpClient),
 ) {
-    suspend fun hentAlleNyeUtleggstrekk() = doGet("${PropertiesConfig.SKEConfig().skeRestUrl}$ORGNR", UUID.randomUUID().toString())
+    val basePath = "${PropertiesConfig.SKEConfig().skeRestUrl}$ORGNR"
+
+    suspend fun hentAlleUtleggstrekk() = doGet("$basePath", UUID.randomUUID().toString())
+
+    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int) =
+        doGet("${basePath}$FRA_SEKVENSNR$sekvensnr", UUID.randomUUID().toString())
 
     private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID))
 

@@ -1,42 +1,65 @@
 package no.nav.sokos.utleggstrekk.database
 
 import mu.KotlinLogging
-import java.math.BigDecimal
-import java.sql.ResultSet
-import java.sql.SQLException
-import java.time.LocalDate
-import java.time.LocalDateTime
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
+import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
+import java.sql.Connection
+import java.sql.Date
 
 private val logger = KotlinLogging.logger { }
 
-object Repository
-
-inline fun <reified T : Any?> ResultSet.getColumn(
-    columnLabel: String,
-    transform: (T) -> T = { it },
-): T {
-    val columnValue =
-        when (T::class) {
-            Int::class -> getInt(columnLabel)
-            Long::class -> getLong(columnLabel)
-            Char::class -> getString(columnLabel)?.get(0) ?: ' '
-            Double::class -> getDouble(columnLabel)
-            String::class -> getString(columnLabel)?.trim() ?: ""
-            Boolean::class -> getBoolean(columnLabel)
-            BigDecimal::class -> getBigDecimal(columnLabel)
-            LocalDate::class -> getDate(columnLabel)?.toLocalDate()
-            LocalDateTime::class -> getTimestamp(columnLabel)?.toLocalDateTime()
-
-            else -> {
-                println("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
-                throw SQLException("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
-            }
+object Repository {
+    fun Connection.getLastSekvensnr(): Int {
+        val rs = prepareStatement("""select max(sekvensnr) from utleggstrekk""").executeQuery()
+        return if (rs.next()) {
+            rs.getColumn("sekvensnr")
+        } else {
+            0
         }
-
-    if (null !is T && columnValue == null) {
-        println("Påkrevet kolonne '$columnLabel' er null")
-        throw SQLException("Påkrevet kolonne '$columnLabel' er null")
     }
 
-    return transform(columnValue as T)
+    fun Connection.saveAllNewUtleggstrekk(
+        trekkListe: List<Utleggstrekk>,
+    ) {
+        val prepStmt =
+            prepareStatement(
+                """
+                insert into utleggstrekk (
+                sekvensnr,
+                trekkid_ske, 
+                trekkversjon, 
+                trekkopprettet, 
+                trekkpliktig, 
+                skyldner, 
+                trekkstatus, 
+                startperiode, 
+                sluttperiode, 
+                trekkbeloep, 
+                trekkprosent, 
+                kidnummer, 
+                kontonummer 
+                ) values (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                """.trimIndent(),
+            )
+        trekkListe.forEach {
+            val trekkBelop = it.trekkbeloep?.trekkbeloep
+            val trekkProsent = it.trekkprosent?.trekkprosent
+            prepStmt.setInt(1, it.sekvensnummer)
+            prepStmt.setInt(2, it.trekkid.toInt())
+            prepStmt.setInt(3, it.trekkversjon)
+            prepStmt.setDate(4, Date.valueOf(it.opprettet))
+            prepStmt.setString(5, it.trekkpliktig)
+            prepStmt.setString(6, it.skyldner)
+            prepStmt.setString(7, it.trekkstatus)
+            prepStmt.setString(8, it.startPeriode)
+            prepStmt.setString(9, it.sluttPeriode)
+            prepStmt.setDouble(10, trekkBelop ?: 0.0)
+            prepStmt.setDouble(11, trekkProsent ?: 0.0)
+            prepStmt.setString(12, it.kidnummer)
+            prepStmt.setString(13, it.kontonummer)
+            prepStmt.addBatch()
+        }
+        prepStmt.executeBatch()
+        commit()
+    }
 }
