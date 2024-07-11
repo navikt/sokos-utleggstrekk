@@ -55,7 +55,7 @@ object Repository {
             val trekkBelop = it.trekkbeloep?.trekkbeloep
             val trekkProsent = it.trekkprosent?.trekkprosent
             prepStmt.setInt(1, it.sekvensnummer)
-            prepStmt.setInt(2, it.trekkid.toInt())
+            prepStmt.setString(2, it.trekkid)
             prepStmt.setInt(3, it.trekkversjon)
             prepStmt.setString(4, it.opprettet)
             prepStmt.setString(5, it.trekkpliktig)

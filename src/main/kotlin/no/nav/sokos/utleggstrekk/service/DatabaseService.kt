@@ -16,17 +16,17 @@ class DatabaseService(
 ) {
     fun hentSisteSekvensnummer(): Int =
         dataSource.connection.useAndHandleErrors { con ->
-            con.getLastSekvensnr()
+            con.getLastSekvensnr().also { con.close() }
         }
 
     fun trekkFinnes(sekvensnr: Int): Boolean =
         dataSource.connection.useAndHandleErrors { con ->
-            con.sjekkOmTrekkfinnes(sekvensnr)
+            con.sjekkOmTrekkfinnes(sekvensnr).also { con.close() }
         }
 
     fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>) {
         dataSource.connection.useAndHandleErrors { con ->
-            con.saveAllNewUtleggstrekk(trekkListe)
+            con.saveAllNewUtleggstrekk(trekkListe).also { con.close() }
         }
     }
 }
