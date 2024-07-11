@@ -6,7 +6,6 @@ import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import java.sql.Connection
-import java.sql.Date
 
 private val logger = KotlinLogging.logger { }
 
@@ -49,7 +48,7 @@ object Repository {
                 trekkprosent, 
                 kidnummer, 
                 kontonummer 
-                ) values (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ) values (?,?,?,TO_TIMESTAMP(?, 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'),?,?,?,?,?,?,?,?,?)
                 """.trimIndent(),
             )
         trekkListe.forEach {
@@ -58,7 +57,7 @@ object Repository {
             prepStmt.setInt(1, it.sekvensnummer)
             prepStmt.setInt(2, it.trekkid.toInt())
             prepStmt.setInt(3, it.trekkversjon)
-            prepStmt.setDate(4, Date.valueOf(it.opprettet))
+            prepStmt.setString(4, it.opprettet)
             prepStmt.setString(5, it.trekkpliktig)
             prepStmt.setString(6, it.skyldner)
             prepStmt.setString(7, it.trekkstatus)
