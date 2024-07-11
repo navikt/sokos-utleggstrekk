@@ -4,8 +4,10 @@ import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository.getLastSekvensnr
+import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.database.Repository.sjekkOmTrekkfinnes
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
+import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 
 private val logger = KotlinLogging.logger { }
 
@@ -21,4 +23,10 @@ class DatabaseService(
         dataSource.connection.useAndHandleErrors { con ->
             con.sjekkOmTrekkfinnes(sekvensnr)
         }
+
+    fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>) {
+        dataSource.connection.useAndHandleErrors { con ->
+            con.saveAllNewUtleggstrekk(trekkListe)
+        }
+    }
 }

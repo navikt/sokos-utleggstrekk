@@ -41,8 +41,8 @@ class UtleggstrekkService(
         }
     }
 
-    private suspend fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>): List<Utleggstrekk> =
+    private fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>): List<Utleggstrekk> =
         trekkListe.map {
-            it.takeIf{!databaseService.trekkFinnes(it.sekvensnummer) }
-        }.filterNotNull()
+            it.takeIf{!databaseService.trekkFinnes(it.sekvensnummer) }.also { println("take if: $it") }
+        }.filterNotNull().also { println("lagring av Map gir : ${it.size}") }.also { databaseService.lagreAlleNyeUtleggstrekk(it) }
 }
