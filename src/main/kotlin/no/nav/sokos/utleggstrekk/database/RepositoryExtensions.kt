@@ -78,7 +78,7 @@ object RepositoryExtensions {
         TrekkTable(
             trekktableid =  getColumn("id"),
             sekvensnr = getColumn("sekvensnr"),
-            trekkid = getColumn("trekid_ske"),
+            trekkid = getColumn("trekkid_ske"),
             trekkversjon = getColumn("trekkversjon"),
             trekkopprettet = getColumn("trekkopprettet"),
             trekkpliktig = getColumn("trekkpliktig"),
