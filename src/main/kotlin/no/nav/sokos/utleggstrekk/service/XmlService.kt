@@ -38,7 +38,10 @@ object XmlService {
             enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION)
         }
         return xmlDataList.map {
-           xmlMapper.writeValueAsString(it).also(::println)
+            println("Mapper ${it.msgInfo.msgId}")
+            val xml = xmlMapper.writeValueAsString(it)
+            println(xml)
+            xml
         }
     }
 

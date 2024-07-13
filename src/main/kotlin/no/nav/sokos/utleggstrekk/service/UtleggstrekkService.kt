@@ -20,9 +20,10 @@ class UtleggstrekkService(
         val nyeTrekkListe = utleggstrekkResponseToList(skeClient.hentAlleUtleggstrekk())
         lagreAlleNyeUtleggstrekk(nyeTrekkListe)
         val sendTrekkListe = databaseService.hentAlleTrekkSomIkkeErSendt()
-        val XmlList = sendTrekkListe.map {
+        val xmlList = sendTrekkListe.map {
             XmlService.createTrekkXml(it)
         }
+        XmlService.generateXmlStringListFromTrekkXmlList(xmlList)
         return nyeTrekkListe
     }
 
