@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.database
 
 import kotlinx.datetime.FixedOffsetTimeZone
+import kotlinx.datetime.Instant
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toLocalDateTime
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
@@ -63,11 +64,7 @@ object RepositoryExtensions {
                 BigDecimal::class -> getBigDecimal(columnLabel)
                 LocalDate::class -> getDate(columnLabel)?.toLocalDate()
                 LocalDateTime::class -> getTimestamp(columnLabel)?.toLocalDateTime()
-                kotlinx.datetime.LocalDateTime::class -> kotlinx.datetime.Instant.fromEpochMilliseconds(
-                                                            getTimestamp(columnLabel)?.toLocalDateTime()!!
-                                                                .toEpochSecond(ZoneOffset.UTC)).toLocalDateTime(
-                                                                    FixedOffsetTimeZone(UtcOffset.ZERO)
-                                                                )
+                kotlinx.datetime.LocalDateTime::class -> timeStampToKotlinxDatetime(getTimestamp(columnLabel)?.toLocalDateTime())
                 else -> {
                     println("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
                     throw SQLException("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
@@ -80,6 +77,12 @@ object RepositoryExtensions {
         }
 
         return transform(columnValue as T)
+    }
+
+    fun ResultSet.timeStampToKotlinxDatetime(columnValue: LocalDateTime?):kotlinx.datetime.LocalDateTime? {
+        if (columnValue == null) return null
+        return Instant.fromEpochMilliseconds(columnValue.toEpochSecond(ZoneOffset.UTC))
+            .toLocalDateTime(FixedOffsetTimeZone(UtcOffset.ZERO))
     }
 
     fun ResultSet.toTrekkTable() = toList {
@@ -100,7 +103,7 @@ object RepositoryExtensions {
             kontonummer = getColumn("kontonummer"),
             corrid = getColumn("corrid"),
             status = getColumn("status"),
-            tidspunktMottatt = getColumn("tidspunkt_motatt"),
+            tidspunktMottatt = getColumn("tidspunkt_mottatt"),
             tidspunktSendtOs = getColumn("tidspunkt_sendt_os"),
             tidspunktSisteStatus = getColumn("tidspunkt_siste_status"),
             tidspunktOpprettet = getColumn("tidspunkt_opprettet")
