@@ -47,20 +47,20 @@ object XmlService {
     private fun populateTrekkObjects(trekkListe: List<Utleggstrekk>): TrekkXml {
         val xmlData = TrekkXml(
             msgInfo = MsgInfo(
-                msgId = "En gguid",
+                msgId = "En gguid",  //TODO Legge inn GGIID  for meldingen, en for hver nye melding må lagres i db
                 sender = TrekkSenderReceiver(
                     organisation = Organisation(
-                        organisationName = "Statens innkrevingssentral",
+                        organisationName = "Statens innkrevingssentral", //TODO Verifser/endre Kan være statisk og legges om default i definisjonen
                         ident = Ident(
-                            id = "123456789",
-                            typeId = VSDN(
+                            id = "123456789",  //TODO Orgnummer til Sender  NB Må ligge her
+                            typeId = VSDN(  //TODO Verifisere informasjonen
                                 v = "ENH",
-                                s = "some sort of version",
-                                dn = "orgnummer beskrivelse"
+                                s = "2.16.578.1.12.4.1.1.9051",
+                                dn = "Organisasjonsnummeret i  Enhetsregister (Brønnøysund)"
                             )
                         ),
                         address = AddressType1(
-                            streetAdress = "gateadresse",
+                            streetAdress = "gateadresse",  //TODO Legge inn riktig adresse
                             postalCode = "Postkode",
                             city = "MO I RANA",
                             county = VDN(
@@ -72,16 +72,16 @@ object XmlService {
                 ),
                 receiver = TrekkSenderReceiver(
                     organisation = Organisation(
-                        organisationName = "NAV",
+                        organisationName = "NAV",  //TODO verifisere hviket navn som skal brukes
                         ident = Ident(
-                            id = "889640782",
+                            id = "889640782",  //TODO Verifisere riktig orgnr
                             typeId = VSDN(
                                 v = "ENH",
-                                s = "some sort of version",
-                                dn = "orgnummer beskrivelse"
+                                s = "2.16.578.1.12.4.1.1.9051",
+                                dn = "Organisasjonsnummeret i  Enhetsregister (Brønnøysund)"
                             )
                         ),
-                        address = AddressType1(
+                        address = AddressType1( //TODO Verifisere/legge inn riktig adresse
                             streetAdress = "Fyrstikken",
                             postalCode = "0579",
                             city = "OSLO",
@@ -97,27 +97,27 @@ object XmlService {
                 refDoc = RefDoc(
                     content = Content(
                         innrapporteringTrekk = InnrapporteringTrekk(
-                            aksjonskode = VDN(v = "NY", dn = "Nytt trekk"),
+                            aksjonskode = VDN(v = "NY", dn = "Nytt trekk"),  //TODO Dette må sikker være dynamisk.(Ny, endring eller  stopp)
                             identifisering = Identifisering(
-                                kreditorTrekkId = "TREKKID_000001",
-                                debitorId = DebitorId(
+                                kreditorTrekkId = "TREKKID_000001", //TODO  Fra Trekket
+                                debitorId = DebitorId(  //TODO Skyldner fra trekket
                                     id = "09876543219",
                                     typeId = VSDN(v = "FNR", s = "2.16.578.1.12.4.1.1.8116", dn="Fødselsnummer")
                                 ),
                             ),
                             trekk = Trekk(
-                                kodeTrekktype = VDN(v = "KRED", dn = "Deknings.§ bokstav f"),
-                                kodeTrekkAlternativ = VDN(v = "SALM", dn = "Saldotrekk månedssats"),
-                                sats = V(v = "12345.50"),
-                                saldo = V(v = "10000.00"),
-                                prioritetFomDato = "2024-05-06+02:00",
-                                gyldigTomDato = "2026-05-06+02:00"
+                                kodeTrekktype = VDN(v = "KRED", dn = "Deknings.§ bokstav f"),  //TODO Verifiosere hvilke kode som finnes og hva som definerer de
+                                kodeTrekkAlternativ = VDN(v = "SALM", dn = "Saldotrekk månedssats"),  //TODO HVike alternativer finnes
+                                sats = V(v = "12345.50"),  //TODO Fra trekket
+                                saldo = V(v = "10000.00"), //TODO Fra Trekket
+                                prioritetFomDato = "2024-05-06+02:00",  //TODO AVklare hva er
+                                gyldigTomDato = "2026-05-06+02:00"   //TODO Avklare hva er
                             ),
                             periode = Periode(
-                                periodeFomDato = "2025-09-01+02:00",
-                                periodeTomDato = "2025-09-30+02:00"
+                                periodeFomDato = "2025-09-01+02:00",  //TODO fra trekket
+                                periodeTomDato = "2025-09-30+02:00" //TODO  fra trekket
                             ),
-                            kreditor = Kreditor(
+                            kreditor = Kreditor( //TODO  Denne vil vel alltid være skatteetaten? så den kan gjøres som default?
                                 orgNr = Ident(
                                     id = "00987654321",
                                     typeId = VSDN(v = "ENH", s = "2.16.578.1.12.4.1.1.9051", dn = "DN")
@@ -132,8 +132,8 @@ object XmlService {
                                 ref = "T2023-123456",
                                 kontonr = "12345612345",
                                 kid = "99999999999999999999"
-                            ),
-                            namsmann = Namsmann(
+                            ), //kreditor
+                            namsmann = Namsmann(  //TODO Vil vi vite noe om denne?  Alltid SKE dette også?
                                 orgNr = Ident(
                                     id = "987654321",
                                     typeId = VSDN(v = "ENH", s = "2.16.578.1.12.4.1.1.9051", dn = "DN")

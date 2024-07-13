@@ -44,7 +44,7 @@ data class TrekkSenderReceiver(
 
 data class Organisation(
     @field:JacksonXmlProperty(localName = "OrganisationName")
-    val organisationName: String,
+    val organisationName: String = "Skatteetaten",
     @field:JacksonXmlProperty(localName = "Ident")
     val ident: Ident,
     @field:JacksonXmlProperty(localName = "Adress")
