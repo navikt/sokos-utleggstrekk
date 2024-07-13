@@ -14,7 +14,7 @@ private val logger = KotlinLogging.logger { }
 
 object Repository {
     fun Connection.fetchLastSekvensnr(): Int {
-        val rs = prepareStatement("""select max(sekvensnr) from utleggstrekk""").executeQuery()
+        val rs = prepareStatement("""select max(sekvensnr) from trekk""").executeQuery()
         return if (rs.next()) {
             rs.getColumn("sekvensnr")
         } else {
@@ -25,7 +25,7 @@ object Repository {
     fun Connection.checkIfTrekkfinnes(sekvensnr: Int): Boolean =
         prepareStatement(
         """
-           select 1 from utleggstrekk where sekvensnr = ? 
+           select 1 from trekk where sekvensnr = ? 
         """.trimIndent()
         ).withParameters(
             param(sekvensnr)
@@ -37,7 +37,7 @@ object Repository {
         val prepStmt1 =
             prepareStatement(
                 """
-                insert into Trekk (
+                insert into trekk (
                 sekvensnr,
                 trekkid_ske, 
                 trekkversjon, 
