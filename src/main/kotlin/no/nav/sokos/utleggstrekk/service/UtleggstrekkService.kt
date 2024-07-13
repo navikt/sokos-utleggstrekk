@@ -18,6 +18,7 @@ class UtleggstrekkService(
     suspend fun hentAlleUtleggstrekk(): List<Utleggstrekk> {
         println("skeClient.hentalle kalles:")
         val trekkListe = utleggstrekkResponseToList(skeClient.hentAlleUtleggstrekk())
+        XmlService.generateXmlFromTrekk(trekkListe)
         return lagreAlleNyeUtleggstrekk(trekkListe)
     }
 

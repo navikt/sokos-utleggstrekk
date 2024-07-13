@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar ns="http://www.kith.no/xmlstds/msghead/2006-05-24" xmlns:ivt="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04" xmlns:fk1="http://www.kith.no/xmlstds/felleskomponent1" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    <start>
+        <element name="MsgHead">
+            <element name="MsgInfo">
+                <element name="Type">
+                    <attribute name="DN"/>
+                    <attribute name="V">
+                        <data type="NCName"/>
+                    </attribute>
+                </element>
+                <element name="MIGversion">
+                    <text/>
+                </element>
+                <element name="GenDate">
+                    <data type="dateTime"/>
+                </element>
+                <element name="MsgId">
+                    <text/>
+                </element>
+                <element name="Ack">
+                    <attribute name="DN">
+                        <data type="NCName"/>
+                    </attribute>
+                    <attribute name="V">
+                        <data type="NCName"/>
+                    </attribute>
+                </element>
+                <element name="Sender">
+                    <ref name="Organisation"/>
+                </element>
+                <element name="Receiver">
+                    <ref name="Organisation"/>
+                </element>
+            </element>
+            <element name="Document">
+                <element name="ContentDescription">
+                    <text/>
+                </element>
+                <element name="Consent">
+                    <attribute name="DN"/>
+                    <attribute name="S">
+                        <data type="NMTOKEN"/>
+                    </attribute>
+                    <attribute name="V">
+                        <data type="integer"/>
+                    </attribute>
+                </element>
+                <element name="RefDoc">
+                    <element name="IssueDate">
+                        <attribute name="V">
+                            <data type="NMTOKEN"/>
+                        </attribute>
+                    </element>
+                    <element name="MsgType">
+                        <attribute name="DN">
+                            <data type="NCName"/>
+                        </attribute>
+                        <attribute name="V">
+                            <data type="NCName"/>
+                        </attribute>
+                    </element>
+                    <element name="Content">
+                        <element name="ivt:InnrapporteringTrekk">
+                            <element name="ivt:Aksjonskode">
+                                <attribute name="DN"/>
+                                <attribute name="V">
+                                    <data type="NCName"/>
+                                </attribute>
+                            </element>
+                            <element name="ivt:Identifisering">
+                                <element name="ivt:KreditorTrekkId">
+                                    <data type="NCName"/>
+                                </element>
+                                <element name="ivt:DebitorId">
+                                    <ref name="fk1.Id"/>
+                                    <ref name="fk1.TypeId"/>
+                                </element>
+                            </element>
+                            <element name="ivt:Trekk">
+                                <element name="ivt:KodeTrekktype">
+                                    <attribute name="DN"/>
+                                    <attribute name="V">
+                                        <data type="NCName"/>
+                                    </attribute>
+                                </element>
+                                <element name="ivt:KodeTrekkAlternativ">
+                                    <attribute name="DN"/>
+                                    <attribute name="V">
+                                        <data type="NCName"/>
+                                    </attribute>
+                                </element>
+                                <element name="ivt:Sats">
+                                    <attribute name="V">
+                                        <data type="decimal"/>
+                                    </attribute>
+                                </element>
+                                <element name="ivt:Saldo">
+                                    <attribute name="V">
+                                        <data type="decimal"/>
+                                    </attribute>
+                                </element>
+                                <element name="ivt:PrioritetFomDato">
+                                    <data type="date"/>
+                                </element>
+                                <element name="ivt:GyldigTomDato">
+                                    <data type="date"/>
+                                </element>
+                            </element>
+                            <element name="ivt:Periode">
+                                <element name="ivt:PeriodeFomDato">
+                                    <data type="date"/>
+                                </element>
+                                <element name="ivt:PeriodeTomDato">
+                                    <data type="date"/>
+                                </element>
+                            </element>
+                            <element name="ivt:Kreditor">
+                                <ref name="ivt.OrgNr"/>
+                                <element name="ivt:Navn">
+                                    <text/>
+                                </element>
+                                <element name="ivt:Adresse">
+                                    <element name="fk1:Type">
+                                        <attribute name="DN"/>
+                                        <attribute name="V">
+                                            <data type="NCName"/>
+                                        </attribute>
+                                    </element>
+                                    <element name="fk1:StreetAdr">
+                                        <text/>
+                                    </element>
+                                    <element name="fk1:PostalCode">
+                                        <data type="integer"/>
+                                    </element>
+                                    <element name="fk1:Country">
+                                        <attribute name="DN">
+                                            <data type="NCName"/>
+                                        </attribute>
+                                        <attribute name="V">
+                                            <data type="NCName"/>
+                                        </attribute>
+                                    </element>
+                                </element>
+                                <element name="ivt:Ref">
+                                    <data type="NCName"/>
+                                </element>
+                                <element name="ivt:Kontonr">
+                                    <data type="integer"/>
+                                </element>
+                                <element name="ivt:KID">
+                                    <data type="integer"/>
+                                </element>
+                            </element>
+                            <element name="ivt:Namsmann">
+                                <ref name="ivt.OrgNr"/>
+                            </element>
+                        </element>
+                    </element>
+                </element>
+            </element>
+        </element>
+    </start>
+    <define name="Organisation">
+        <element name="Organisation">
+            <element name="OrganisationName">
+                <text/>
+            </element>
+            <element name="Ident">
+                <element name="Id">
+                    <data type="integer"/>
+                </element>
+                <element name="TypeId">
+                    <attribute name="DN"/>
+                    <attribute name="S">
+                        <data type="NMTOKEN"/>
+                    </attribute>
+                    <attribute name="V">
+                        <data type="NCName"/>
+                    </attribute>
+                </element>
+            </element>
+            <element name="Address">
+                <element name="StreetAdr">
+                    <text/>
+                </element>
+                <element name="PostalCode">
+                    <data type="integer"/>
+                </element>
+                <element name="City">
+                    <text/>
+                </element>
+                <element name="County">
+                    <attribute name="DN"/>
+                    <attribute name="V">
+                        <data type="integer"/>
+                    </attribute>
+                </element>
+            </element>
+        </element>
+    </define>
+    <define name="fk1.Id">
+        <element name="fk1:Id">
+            <data type="integer"/>
+        </element>
+    </define>
+    <define name="fk1.TypeId">
+        <element name="fk1:TypeId">
+            <attribute name="DN">
+                <data type="NCName"/>
+            </attribute>
+            <attribute name="S">
+                <data type="NMTOKEN"/>
+            </attribute>
+            <attribute name="V">
+                <data type="NCName"/>
+            </attribute>
+        </element>
+    </define>
+    <define name="ivt.OrgNr">
+        <element name="ivt:OrgNr">
+            <ref name="fk1.Id"/>
+            <ref name="fk1.TypeId"/>
+        </element>
+    </define>
+</grammar>

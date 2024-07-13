@@ -10,7 +10,7 @@ import java.sql.Connection
 private val logger = KotlinLogging.logger { }
 
 object Repository {
-    fun Connection.getLastSekvensnr(): Int {
+    fun Connection.fetchLastSekvensnr(): Int {
         val rs = prepareStatement("""select max(sekvensnr) from utleggstrekk""").executeQuery()
         return if (rs.next()) {
             rs.getColumn("sekvensnr")
@@ -19,7 +19,7 @@ object Repository {
         }
     }
 
-    fun Connection.sjekkOmTrekkfinnes(sekvensnr: Int): Boolean =
+    fun Connection.checkIfTrekkfinnes(sekvensnr: Int): Boolean =
         prepareStatement(
         """
            select 1 from utleggstrekk where sekvensnr = ? 

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<MsgHead xmlns="http://www.kith.no/xmlstds/msghead/2006-05-24"
+         xmlns:ivt="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"
+         xmlns:fk1="http://www.kith.no/xmlstds/felleskomponent1">
+<MsgInfo>
+<Type V="INNRAPPORTERING_TREKK" DN="Innrapportering av trekk"/>
+<MIGversion>v1.2 2006-05-24</MIGversion>
+<GenDate>2024-05-06T16:18:28.105+02:00</GenDate>
+<MsgId>af6fa589-3bc6-48a0-9037-007857c44a41</MsgId>
+<Ack V="J" DN="Ja"/>
+<Sender>
+    <Organisation>
+        <OrganisationName>STATENS INNKREVINGSSENTRAL</OrganisationName>
+        <Ident>
+            <Id>971648198</Id>
+            <TypeId V="ENH" S="2.16.578.1.12.4.1.1.9051" DN="Organisasjonsnummeret i  Enhetsregister (Brønnøysund)"/>
+        </Ident>
+        <Address>
+            <StreetAdr>Terminalveien 2</StreetAdr>
+            <PostalCode>8601</PostalCode>
+            <City>MO I RANA</City>
+            <County V="8601" DN="MO I RANA"/>
+        </Address>
+    </Organisation>
+</Sender>
+<Receiver>
+    <Organisation>
+        <OrganisationName>ARBEIDS- OG VELFERDSETATEN</OrganisationName>
+        <Ident>
+            <Id>889640782</Id>
+            <TypeId V="ENH" S="2.16.578.1.12.4.1.1.9051" DN="Organisasjonsnummeret i  Enhetsregister (Brønnøysund)"/>
+        </Ident>
+        <Address>
+            <StreetAdr>Økernveien 94</StreetAdr>
+            <PostalCode>0579</PostalCode>
+            <City>OSLO</City>
+            <County V="0579" DN="OSLO"/>
+        </Address>
+    </Organisation>
+</Receiver>
+</MsgInfo>
+<Document>
+<ContentDescription>Innrapportering av trekk</ContentDescription>
+<Consent V="1" S="2.16.578.1.12.4.1.1.9064" DN=""/>
+<RefDoc>
+    <IssueDate V="2011-05-27T12:47:38"/>
+    <MsgType V="XML" DN="XML-instans"/>
+    <Content>
+        <ivt:InnrapporteringTrekk>
+            <ivt:Aksjonskode V="NY" DN="Nytt trekk"/>
+            <ivt:Identifisering>
+                <ivt:KreditorTrekkId>SIAN6212486</ivt:KreditorTrekkId>
+                <ivt:DebitorId>
+                    <fk1:Id>01020312345</fk1:Id>
+                    <fk1:TypeId V="FNR" S="2.16.578.1.12.4.1.1.8116" DN="Fødselsnummer"/>
+                </ivt:DebitorId>
+            </ivt:Identifisering>
+            <ivt:Trekk>
+                <ivt:KodeTrekktype V="KRED" DN="Deknings.§ bokstav f"/>
+                <ivt:KodeTrekkAlternativ V="SALM" DN="Saldotrekk måndedssats"/>
+                <ivt:Sats V="4598.37"/>
+                <ivt:Saldo V="4598.37"/>
+                <ivt:PrioritetFomDato>2024-05-06+02:00</ivt:PrioritetFomDato>
+                <ivt:GyldigTomDato>2026-05-06+02:00</ivt:GyldigTomDato>
+            </ivt:Trekk>
+            <ivt:Periode>
+                <ivt:PeriodeFomDato>2025-09-01+02:00</ivt:PeriodeFomDato>
+                <ivt:PeriodeTomDato>2025-09-30+02:00</ivt:PeriodeTomDato>
+            </ivt:Periode>
+            <ivt:Kreditor>
+                <ivt:OrgNr>
+                    <fk1:Id>00913876725</fk1:Id>
+                    <fk1:TypeId V="ENH" S="2.16.578.1.12.4.1.1.9051" DN="DN"/>
+                </ivt:OrgNr>
+                <ivt:Navn> Ropo Capital Norway As</ivt:Navn>
+                <ivt:Adresse>
+                    <fk1:Type V="UM" DN="adresse i SIAN"/>
+                    <fk1:StreetAdr>Postboks 1700 Kilen</fk1:StreetAdr>
+                    <fk1:PostalCode>3206</fk1:PostalCode>
+                    <fk1:Country V="NO" DN="Norge"/>
+                </ivt:Adresse>
+                <ivt:Ref>T2023-285001</ivt:Ref>
+                <ivt:Kontonr>32073436388</ivt:Kontonr>
+                <ivt:KID>8000001284050805</ivt:KID>
+            </ivt:Kreditor>
+            <ivt:Namsmann>
+                <ivt:OrgNr>
+                    <fk1:Id>988900060</fk1:Id>
+                    <fk1:TypeId V="ENH" S="2.16.578.1.12.4.1.1.9051" DN="DN"/>
+                </ivt:OrgNr>
+            </ivt:Namsmann>
+        </ivt:InnrapporteringTrekk>
+    </Content>
+</RefDoc>
+</Document>
+        </MsgHead>

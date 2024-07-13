@@ -3,9 +3,9 @@ package no.nav.sokos.utleggstrekk.service
 import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
-import no.nav.sokos.utleggstrekk.database.Repository.getLastSekvensnr
+import no.nav.sokos.utleggstrekk.database.Repository.checkIfTrekkfinnes
+import no.nav.sokos.utleggstrekk.database.Repository.fetchLastSekvensnr
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
-import no.nav.sokos.utleggstrekk.database.Repository.sjekkOmTrekkfinnes
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 
@@ -16,12 +16,12 @@ class DatabaseService(
 ) {
     fun hentSisteSekvensnummer(): Int =
         dataSource.connection.useAndHandleErrors { con ->
-            con.getLastSekvensnr().also { con.close() }
+            con.fetchLastSekvensnr().also { con.close() }
         }
 
     fun trekkFinnes(sekvensnr: Int): Boolean =
         dataSource.connection.useAndHandleErrors { con ->
-            con.sjekkOmTrekkfinnes(sekvensnr).also { con.close() }
+            con.checkIfTrekkfinnes(sekvensnr).also { con.close() }
         }
 
     fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>) {

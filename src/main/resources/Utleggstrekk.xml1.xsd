@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="InnrapporteringTrekk" type="ns:InnrapporteringTrekkType" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+  <xs:complexType name="AksjonskodeType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="V"/>
+        <xs:attribute type="xs:string" name="DN"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="DebitorIdType">
+    <xs:sequence>
+      <xs:element ref="fel:Id" xmlns:fel="http://www.kith.no/xmlstds/felleskomponent1"/>
+      <xs:element ref="fel:TypeId" xmlns:fel="http://www.kith.no/xmlstds/felleskomponent1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="IdentifiseringType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="KreditorTrekkId"/>
+      <xs:element type="ns:DebitorIdType" name="DebitorId" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="KodeTrekktypeType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="V"/>
+        <xs:attribute type="xs:string" name="DN"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="KodeTrekkAlternativType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="V"/>
+        <xs:attribute type="xs:string" name="DN"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="SatsType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="V"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="SaldoType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="V"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="TrekkType">
+    <xs:sequence>
+      <xs:element type="ns:KodeTrekktypeType" name="KodeTrekktype" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="ns:KodeTrekkAlternativType" name="KodeTrekkAlternativ" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="ns:SatsType" name="Sats" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="ns:SaldoType" name="Saldo" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="xs:string" name="PrioritetFomDato"/>
+      <xs:element type="xs:string" name="GyldigTomDato"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PeriodeType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="PeriodeFomDato"/>
+      <xs:element type="xs:string" name="PeriodeTomDato"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="OrgNrType">
+    <xs:sequence>
+      <xs:element ref="fel:Id" xmlns:fel="http://www.kith.no/xmlstds/felleskomponent1"/>
+      <xs:element ref="fel:TypeId" xmlns:fel="http://www.kith.no/xmlstds/felleskomponent1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="AdresseType">
+    <xs:sequence>
+      <xs:element ref="fel:Type" xmlns:fel="http://www.kith.no/xmlstds/felleskomponent1"/>
+      <xs:element ref="fel:StreetAdr" xmlns:fel="http://www.kith.no/xmlstds/felleskomponent1"/>
+      <xs:element ref="fel:PostalCode" xmlns:fel="http://www.kith.no/xmlstds/felleskomponent1"/>
+      <xs:element ref="fel:Country" xmlns:fel="http://www.kith.no/xmlstds/felleskomponent1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="KreditorType">
+    <xs:sequence>
+      <xs:element type="ns:OrgNrType" name="OrgNr" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="xs:string" name="Navn"/>
+      <xs:element type="ns:AdresseType" name="Adresse" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="xs:string" name="Ref"/>
+      <xs:element type="xs:string" name="Kontonr"/>
+      <xs:element type="xs:string" name="KID"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NamsmannType">
+    <xs:sequence>
+      <xs:element type="ns:OrgNrType" name="OrgNr" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="InnrapporteringTrekkType">
+    <xs:sequence>
+      <xs:element type="ns:AksjonskodeType" name="Aksjonskode" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="ns:IdentifiseringType" name="Identifisering" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="ns:TrekkType" name="Trekk" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="ns:PeriodeType" name="Periode" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="ns:KreditorType" name="Kreditor" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+      <xs:element type="ns:NamsmannType" name="Namsmann" xmlns:ns="http://www.kith.no/xmlstds/nav/innrapporteringtrekk/2010-02-04"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

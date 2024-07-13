@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.9.20"
@@ -31,6 +30,7 @@ val kotlinxSerializationVersion = "1.6.0"
 val prometheusVersion = "1.11.5"
 val flywayVersion = "9.16.1"
 val postgresqlVersion = "42.6.1"
+val jacksonVersion = "2.13.4"
 
 // Test
 val kotestVersion = "5.8.0"
@@ -84,6 +84,9 @@ dependencies {
 
     // Flyway
     implementation("org.flywaydb:flyway-core:$flywayVersion")
+
+    // XML
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}")
 
     // Test
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")

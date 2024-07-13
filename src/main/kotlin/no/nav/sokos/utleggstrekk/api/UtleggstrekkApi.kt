@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.api
 
-import io.ktor.client.call.body
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
@@ -11,7 +9,6 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import mu.KotlinLogging
-import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 
 fun Routing.utleggstrekkApi(
@@ -31,7 +28,7 @@ fun Routing.utleggstrekkApi(
         }
         get("hent/{sekvensnr}") {
             val sekvensnr = call.parameters["sekvensnr"]
-            if (sekvensnr.isNullOrBlank()) {
+            if (sekvensnr.isNullOrBlank() || sekvensnr.toInt() < 0) {
                 call.respond(HttpStatusCode.BadRequest, "Ugyldig sekvensnr")
             } else {
                 val utleggstrekk = utleggstrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
