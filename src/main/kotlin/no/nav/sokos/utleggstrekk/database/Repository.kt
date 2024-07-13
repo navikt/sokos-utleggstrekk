@@ -53,7 +53,7 @@ object Repository {
                 status,
                 kidnummer, 
                 kontonummer 
-                ) values (?,?,?,TO_TIMESTAMP(?, 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'),?,?,?,?,?,?,?,'MOTTATT',?,?)
+                ) values (?,?,?,TO_TIMESTAMP(?, 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'),?,?,?,?,?,?,?,?,'MOTTATT',?,?)
                 """.trimIndent(),
             )
         val prepStmt2 =
