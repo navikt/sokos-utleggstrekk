@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.database
 
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
+import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -72,4 +73,29 @@ object RepositoryExtensions {
 
         return transform(columnValue as T)
     }
+
+    fun ResultSet.toTrekkTable() = toList {
+        TrekkTable(
+            trekktableid =  getColumn("id"),
+            trekkid = getColumn("trekid"),
+            trekkversjon = getColumn("trekkversjon"),
+            trekkopprettet = getColumn("trekkopprettet"),
+            trekkpliktig = getColumn("trekkpliktig"),
+            skyldner = getColumn("skyldner"),
+            trekkstatus = getColumn("trekkstatus"),
+            startPeriode = getColumn("startperiode"),
+            sluttPeriode = getColumn("sluttperiode"),
+            trekkbelop = getColumn("trekkbeloep"),
+            trekkprosent =getColumn("trekkprosent"),
+            kid = getColumn("kid"),
+            kontonummer = getColumn("kontonummer"),
+            corrid = getColumn("corrid"),
+            status = getColumn("status"),
+            tidspunktMottatt = getColumn("tidspunkt_motatt"),
+            tidspunktSendtOs = getColumn("tidspunkt_sendt_os"),
+            tidspunktSisteStatus = getColumn("tidspunkt_siste_status"),
+            tidspunktOpprettet = getColumn("tidspunkt_opprettet")
+        )
+    }
+
 }

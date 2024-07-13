@@ -4,9 +4,11 @@ import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository.checkIfTrekkfinnes
+import no.nav.sokos.utleggstrekk.database.Repository.fetchAllTrekkNotSent
 import no.nav.sokos.utleggstrekk.database.Repository.fetchLastSekvensnr
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
+import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 
 private val logger = KotlinLogging.logger { }
@@ -28,5 +30,11 @@ class DatabaseService(
         dataSource.connection.useAndHandleErrors { con ->
             con.saveAllNewUtleggstrekk(trekkListe).also { con.close() }
         }
+    }
+
+    fun hentAlleTrekkSomIkkeErSendt(): List<TrekkTable> =
+        dataSource.connection.useAndHandleErrors { con ->
+            con.fetchAllTrekkNotSent().also { con.close() }
+
     }
 }

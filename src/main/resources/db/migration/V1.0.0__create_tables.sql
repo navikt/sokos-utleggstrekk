@@ -1,5 +1,5 @@
-drop table if exists krav;
-create table "utleggstrekk"
+drop table if exists trekk;
+create table "trekk"
 (
     id                     bigserial primary key,
     sekvensnr              numeric,
@@ -11,11 +11,12 @@ create table "utleggstrekk"
     trekkstatus            text,
     startPeriode           text,
     sluttPeriode           text,
-    trekkbeloep            decimal,
+    trekkbelop             decimal,
     trekkprosent           decimal,
-    kidnummer              text,
+    kid                    text,
     kontonummer            text,
-    corr_id                text,
+    corrid                 text,
+    status                 text,
     tidspunkt_mottatt      timestamp NOT NULL DEFAULT NOW(),
     tidspunkt_sendt_os     timestamp null,
     tidspunkt_siste_status timestamp NOT NULL DEFAULT NOW(),
@@ -32,5 +33,5 @@ create table "midlertidigstans"
 );
 
 create index if not exists idxmidlertidigtrekksekvensnr on midlertidigstans (trekksekvensnr);
-create index if not exists idxtrekksekvensnr on utleggstrekk(sekvensnr);
-create index if not exists idxtrekkid_ske on utleggstrekk (trekkid_ske);
+create index if not exists idxtrekksekvensnr on trekk(sekvensnr);
+create index if not exists idxtrekkid_ske on trekk (trekkid_ske, trekkversjon);

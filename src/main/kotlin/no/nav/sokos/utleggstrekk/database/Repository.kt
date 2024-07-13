@@ -3,9 +3,12 @@ package no.nav.sokos.utleggstrekk.database
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
+import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import java.sql.Connection
+import java.util.*
 
 private val logger = KotlinLogging.logger { }
 
@@ -34,7 +37,7 @@ object Repository {
         val prepStmt1 =
             prepareStatement(
                 """
-                insert into utleggstrekk (
+                insert into Trekk (
                 sekvensnr,
                 trekkid_ske, 
                 trekkversjon, 
@@ -46,9 +49,11 @@ object Repository {
                 sluttperiode, 
                 trekkbeloep, 
                 trekkprosent, 
+                corr_id,
+                status,
                 kidnummer, 
                 kontonummer 
-                ) values (?,?,?,TO_TIMESTAMP(?, 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'),?,?,?,?,?,?,?,?,?)
+                ) values (?,?,?,TO_TIMESTAMP(?, 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'),?,?,?,?,?,?,?,'MOTTATT',?,?)
                 """.trimIndent(),
             )
         val prepStmt2 =
@@ -75,8 +80,9 @@ object Repository {
             prepStmt1.setString(9, it.sluttPeriode)
             prepStmt1.setDouble(10, trekkBelop ?: 0.0)
             prepStmt1.setDouble(11, trekkProsent ?: 0.0)
-            prepStmt1.setString(12, it.kidnummer)
-            prepStmt1.setString(13, it.kontonummer)
+            prepStmt1.setString(12, UUID.randomUUID().toString())
+            prepStmt1.setString(13, it.kidnummer)
+            prepStmt1.setString(14, it.kontonummer)
             prepStmt1.addBatch()
 
             if (!it.midlertidigStans.isNullOrEmpty()) {
@@ -91,6 +97,12 @@ object Repository {
         prepStmt1.executeBatch()
         prepStmt2.executeBatch()
         commit()
+    }
+
+    fun Connection.fetchAllTrekkNotSent(): List<TrekkTable> {
+        return prepareStatement("""select * from trekk where status = 'MOTTATT'""")
+            .executeQuery().toTrekkTable()
+
     }
 
 }
