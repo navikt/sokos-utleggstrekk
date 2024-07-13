@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDateTime
 
 data class TrekkTable(
     val trekktableid: Long,
+    val sekvensnr: Int,
     val trekkid: String,
     val trekkversjon: Int,
     val trekkopprettet: LocalDateTime,

@@ -77,7 +77,8 @@ object RepositoryExtensions {
     fun ResultSet.toTrekkTable() = toList {
         TrekkTable(
             trekktableid =  getColumn("id"),
-            trekkid = getColumn("trekid"),
+            sekvensnr = getColumn("sekvensnr"),
+            trekkid = getColumn("trekid_ske"),
             trekkversjon = getColumn("trekkversjon"),
             trekkopprettet = getColumn("trekkopprettet"),
             trekkpliktig = getColumn("trekkpliktig"),
@@ -85,7 +86,7 @@ object RepositoryExtensions {
             trekkstatus = getColumn("trekkstatus"),
             startPeriode = getColumn("startperiode"),
             sluttPeriode = getColumn("sluttperiode"),
-            trekkbelop = getColumn("trekkbeloep"),
+            trekkbelop = getColumn("trekkbelop"),
             trekkprosent =getColumn("trekkprosent"),
             kid = getColumn("kid"),
             kontonummer = getColumn("kontonummer"),
