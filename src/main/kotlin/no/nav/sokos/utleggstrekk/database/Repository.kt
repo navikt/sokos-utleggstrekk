@@ -47,11 +47,11 @@ object Repository {
                 trekkstatus, 
                 startperiode, 
                 sluttperiode, 
-                trekkbeloep, 
+                trekkbelop, 
                 trekkprosent, 
-                corr_id,
+                corrid,
                 status,
-                kidnummer, 
+                kid, 
                 kontonummer 
                 ) values (?,?,?,TO_TIMESTAMP(?, 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'),?,?,?,?,?,?,?,?,'MOTTATT',?,?)
                 """.trimIndent(),
@@ -81,7 +81,7 @@ object Repository {
             prepStmt1.setDouble(10, trekkBelop ?: 0.0)
             prepStmt1.setDouble(11, trekkProsent ?: 0.0)
             prepStmt1.setString(12, UUID.randomUUID().toString())
-            prepStmt1.setString(13, it.kidnummer)
+            prepStmt1.setString(13, it.kid)
             prepStmt1.setString(14, it.kontonummer)
             prepStmt1.addBatch()
 
