@@ -1,5 +1,8 @@
 package no.nav.sokos.utleggstrekk.database
 
+import kotlinx.datetime.FixedOffsetTimeZone
+import kotlinx.datetime.UtcOffset
+import kotlinx.datetime.toLocalDateTime
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import java.math.BigDecimal
@@ -9,6 +12,7 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 object RepositoryExtensions {
     inline fun <R> Connection.useAndHandleErrors(block: (Connection) -> R): R {
@@ -59,7 +63,11 @@ object RepositoryExtensions {
                 BigDecimal::class -> getBigDecimal(columnLabel)
                 LocalDate::class -> getDate(columnLabel)?.toLocalDate()
                 LocalDateTime::class -> getTimestamp(columnLabel)?.toLocalDateTime()
-
+                kotlinx.datetime.LocalDateTime::class -> kotlinx.datetime.Instant.fromEpochMilliseconds(
+                                                            getTimestamp(columnLabel)?.toLocalDateTime()!!
+                                                                .toEpochSecond(ZoneOffset.UTC)).toLocalDateTime(
+                                                                    FixedOffsetTimeZone(UtcOffset.ZERO)
+                                                                )
                 else -> {
                     println("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
                     throw SQLException("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
