@@ -70,7 +70,7 @@ object Responses {
             "trekkprosent": {
               "trekkprosent": 0
             },
-            "kidnummer": "8981238184016280475641088",
+            "kid": "8981238184016280475641088",
             "kontonummer": "19019019019"
           },
           {
@@ -95,7 +95,7 @@ object Responses {
             "trekkprosent": {
               "trekkprosent": 1
             },
-            "kidnummer": "9981238184016280475641088",
+            "kid": "9981238184016280475641088",
             "kontonummer": "12012012012"
           }
         ]
@@ -126,7 +126,7 @@ object Responses {
           "trekkprosent": {
             "trekkprosent": 0
           },
-          "kidnummer": "824776336890844418867",
+          "kid": "824776336890844418867",
           "kontonummer": "61588822927"
         }
         """.trimIndent()

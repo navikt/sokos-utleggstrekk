@@ -34,7 +34,7 @@ internal class UtleggstrekkServiceTest : FunSpec({
             }
             trekkbeloep!!.trekkbeloep shouldBe 0
             trekkprosent!!.trekkprosent shouldBe 0
-            kidnummer shouldBe "8981238184016280475641088"
+            kid shouldBe "8981238184016280475641088"
             kontonummer shouldBe "19019019019"
         }
 
@@ -55,7 +55,7 @@ internal class UtleggstrekkServiceTest : FunSpec({
             }
             trekkbeloep!!.trekkbeloep shouldBe 2.2
             trekkprosent!!.trekkprosent shouldBe 1
-            kidnummer shouldBe "9981238184016280475641088"
+            kid shouldBe "9981238184016280475641088"
             kontonummer shouldBe "12012012012"
         }
     }
