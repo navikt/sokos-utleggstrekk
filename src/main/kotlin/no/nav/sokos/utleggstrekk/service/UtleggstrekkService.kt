@@ -18,8 +18,10 @@ class UtleggstrekkService(
     suspend fun hentAlleUtleggstrekk(): List<Utleggstrekk> {
         println("skeClient.hentalle kalles:")
         val nyeTrekkListe = utleggstrekkResponseToList(skeClient.hentAlleUtleggstrekk())
+        println("Antall trekk mottatt: ${nyeTrekkListe.size}")
         lagreAlleNyeUtleggstrekk(nyeTrekkListe)
         val sendTrekkListe = databaseService.hentAlleTrekkSomIkkeErSendt()
+        println("Antall trekk lest fra db: ${sendTrekkListe.size}")
         val xmlList = sendTrekkListe.map {
             XmlService.createTrekkXml(it)
         }
@@ -50,5 +52,5 @@ class UtleggstrekkService(
     private fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>): List<Utleggstrekk> =
         trekkListe.map {
             it.takeIf{!databaseService.trekkFinnes(it.sekvensnummer) }.also { println("take if: $it") }
-        }.filterNotNull().also { println("lagring av Map gir : ${it.size}") }.also { databaseService.lagreAlleNyeUtleggstrekk(it) }
+        }.filterNotNull().also { println("Etter filtrering av de vi har fra før : ${it.size}") }.also { databaseService.lagreAlleNyeUtleggstrekk(it) }
 }
