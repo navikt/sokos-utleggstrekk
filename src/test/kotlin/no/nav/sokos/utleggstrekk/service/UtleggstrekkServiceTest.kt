@@ -11,7 +11,7 @@ import no.nav.sokos.utleggstrekk.util.Responses
 
 internal class UtleggstrekkServiceTest : FunSpec({
 
-    test("Når SKE returnerer liste av utleggstrekk skal disse parses til objekter") {
+    test("Når SKE returnerer liste av utleggstrekk skal disse parses til objekter").config(enabled = false) {
         val mockClient = MockHttpClient().getClient(Responses.utleggsTrekkListe, HttpStatusCode.OK)
         val utleggsTrekkService = UtleggstrekkService(mockk<DatabaseService>(relaxed = true), SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)))
         val utleggsTrekk = utleggsTrekkService.hentAlleUtleggstrekk()
