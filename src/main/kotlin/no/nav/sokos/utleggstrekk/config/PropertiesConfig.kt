@@ -107,4 +107,15 @@ object PropertiesConfig {
             }
         }
     }
+
+    data class MqProperties(
+        val queue: String = get("MQ_SEND_TIL_OS"),
+        val host: String = getOrEmpty("MQ_HOST"),
+        val port: String = getOrEmpty("MQ_PORT"),
+        val name: String = getOrEmpty("MQ_NAME"),
+        val channel: String = getOrEmpty("MQ_CHANNEL"),
+        val username: String = getOrEmpty("MQ_USERNAME"),
+        val password: String = getOrEmpty("MQ_PASSWORD")
+    )
+
 }

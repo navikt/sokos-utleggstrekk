@@ -41,6 +41,8 @@ val testContainerVersion = "1.19.1"
 val mockFtpServerVersion = "3.1.0"
 val swaggerRequestValidatorVersion = "2.40.0"
 val janinoVersion = "3.1.10"
+val ibm_mq_version="9.4.0.0"
+
 
 dependencies {
     // Ktor Server
@@ -84,6 +86,10 @@ dependencies {
 
     // Flyway
     implementation("org.flywaydb:flyway-core:$flywayVersion")
+
+    // MQ
+    implementation("com.ibm.mq:com.ibm.mq.allclient:$ibm_mq_version")
+
 
     // XML
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}")
