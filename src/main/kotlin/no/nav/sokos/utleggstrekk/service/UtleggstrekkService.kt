@@ -5,6 +5,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 
 private val logger = KotlinLogging.logger { }
@@ -17,6 +18,8 @@ class UtleggstrekkService(
 
     suspend fun hentAlleUtleggstrekk(): List<Utleggstrekk> {
         println("skeClient.hentalle kalles:")
+        val mqc = PropertiesConfig.MqProperties()
+        println("un: ${mqc.username}, pwd: ${mqc.password}")
         val nyeTrekkListe = utleggstrekkResponseToList(skeClient.hentAlleUtleggstrekk())
         println("Antall trekk mottatt: ${nyeTrekkListe.size}")
         lagreAlleNyeUtleggstrekk(nyeTrekkListe)
