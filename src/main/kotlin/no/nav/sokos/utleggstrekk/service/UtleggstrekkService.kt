@@ -7,6 +7,7 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
+import no.nav.sokos.utleggstrekk.mq.MqProducer
 
 private val logger = KotlinLogging.logger { }
 
@@ -28,7 +29,9 @@ class UtleggstrekkService(
         val xmlList = sendTrekkListe.map {
             XmlService.createTrekkXml(it)
         }
-        XmlService.generateXmlStringListFromTrekkXmlList(xmlList)
+        val mqProducer = MqProducer(PropertiesConfig.MqProperties())
+        XmlService.generateXmlStringListFromTrekkXmlList(xmlList).forEach { mqProducer.send(it)  }
+        mqProducer.commit()
         return nyeTrekkListe
     }
 

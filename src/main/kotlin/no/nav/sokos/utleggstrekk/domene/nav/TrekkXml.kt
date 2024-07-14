@@ -22,7 +22,7 @@ data class TrekkXml(
 
 data class MsgInfo(
     @field:JacksonXmlProperty(localName = "Type")
-    val type: VDN = VDN(v = "INNRAPPORTERING_TREKK", dn = "Innrapportering av trekk"),
+    val type: VDN = VDN(v = "INNRAPPORTERING_TREKK-KEN-VERSJONEN", dn = "Innrapportering av trekk"),
     @field:JacksonXmlProperty(localName = "MIGversion")
     val migVersion: String = "v1.2 2006-05-24",
     @field:JacksonXmlProperty(localName = "GenDate")
