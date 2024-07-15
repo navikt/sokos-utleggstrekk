@@ -63,15 +63,15 @@ spec:
     - name: LOG_APPENDER
       value: CONSOLE
     - name: MQ_HOST
-      value: b27apvl226.preprod.local
+      value: mqls02.preprod.local
     - name: MQ_PORT
-      value: "1411"
+      value: "1413"
     - name: MQ_NAME
-      value: MDLCLIENT02
+      value: MQLS02
     - name: MQ_CHANNEL
-      value: HERMES.SRVCONN
+      value: Q1_UTLEGGSTREKK
     - name: MQ_SEND_TIL_OS
-      value: QA.SOKOS_UTLEGGSTREKK
+      value: QA.DY_231.OB04_INNRAPPORTERING_TREKK
 
 
 
