@@ -71,7 +71,7 @@ spec:
     - name: MQ_CHANNEL
       value: HERMES.SRVCONN
     - name: MQ_SEND_TIL_OS
-      value: DY_231.OB04_INNRAPPORTERING_TREKK
+      value: QA.DY_231.OB04_INNRAPPORTERING_TREKK
 
 
 
