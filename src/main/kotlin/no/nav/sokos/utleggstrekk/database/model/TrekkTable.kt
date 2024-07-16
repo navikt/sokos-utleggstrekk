@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.database.model
 
-import kotlinx.datetime.LocalDateTime
+import java.time.LocalDateTime
+
 
 data class TrekkTable(
     val trekktableid: Long,
@@ -11,12 +12,12 @@ data class TrekkTable(
     val trekkpliktig: String,
     val skyldner: String,
     val trekkstatus: String,
-    val startPeriode: String? = null,
-    val sluttPeriode: String? = null,
+    val startPeriode: String,
+    val sluttPeriode: String,
     val trekkbelop: Double? = null,
     val trekkprosent: Double? = null,
-    val kid: String? = null,
-    val kontonummer: String? = null,
+    val kid: String,
+    val kontonummer: String,
     val corrid: String,
     val status: String,
     val tidspunktMottatt: LocalDateTime,

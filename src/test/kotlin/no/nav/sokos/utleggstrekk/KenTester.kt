@@ -7,22 +7,16 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator
 import io.kotest.core.spec.style.FunSpec
-import no.nav.sokos.utleggstrekk.domene.nav.AddressType1
-import no.nav.sokos.utleggstrekk.domene.nav.AddressType2
 import no.nav.sokos.utleggstrekk.domene.nav.Content
 import no.nav.sokos.utleggstrekk.domene.nav.DebitorId
 import no.nav.sokos.utleggstrekk.domene.nav.Document
-import no.nav.sokos.utleggstrekk.domene.nav.Ident
 import no.nav.sokos.utleggstrekk.domene.nav.Identifisering
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.Kreditor
 import no.nav.sokos.utleggstrekk.domene.nav.MsgInfo
-import no.nav.sokos.utleggstrekk.domene.nav.Namsmann
-import no.nav.sokos.utleggstrekk.domene.nav.Organisation
 import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.RefDoc
 import no.nav.sokos.utleggstrekk.domene.nav.Trekk
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkSenderReceiver
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkXml
 import no.nav.sokos.utleggstrekk.domene.nav.V
 import no.nav.sokos.utleggstrekk.domene.nav.VDN
@@ -73,50 +67,6 @@ internal class KenTester : FunSpec({
         val xmlData = TrekkXml(
             msgInfo = MsgInfo(
                 msgId = "En gguid",
-                sender = TrekkSenderReceiver(
-                    organisation = Organisation(
-                        organisationName = "Statens innkrevingssentral",
-                        ident = Ident(
-                            id = "123456789",
-                            typeId = VSDN(
-                                v = "ENH",
-                                s = "some sort of version",
-                                dn = "orgnummer beskrivelse"
-                            )
-                        ),
-                        address = AddressType1(
-                            streetAdress = "gateadresse",
-                            postalCode = "Postkode",
-                            city = "MO I RANA",
-                            county = VDN(
-                                v = "8601",
-                                dn = "MO I RANA"
-                            ),
-                        ),
-                    ),
-                ),
-                receiver = TrekkSenderReceiver(
-                    organisation = Organisation(
-                        organisationName = "NAV",
-                        ident = Ident(
-                            id = "889640782",
-                            typeId = VSDN(
-                                v = "ENH",
-                                s = "some sort of version",
-                                dn = "orgnummer beskrivelse"
-                            )
-                        ),
-                        address = AddressType1(
-                            streetAdress = "Fyrstikken",
-                            postalCode = "0579",
-                            city = "OSLO",
-                            county = VDN(
-                                v = "0589",
-                                dn = "OSLO"
-                            ),
-                        ),
-                    ),
-                ),
             ), //msgInfo
             document = Document(
                 refDoc = RefDoc(
@@ -143,26 +93,9 @@ internal class KenTester : FunSpec({
                                 periodeTomDato = "2025-09-30+02:00"
                             ),
                             kreditor = Kreditor(
-                                orgNr = Ident(
-                                    id = "00987654321",
-                                    typeId = VSDN(v = "ENH", s = "2.16.578.1.12.4.1.1.9051", dn = "DN")
-                                ),
-                                navn = "Ropo Capital Norway AS",
-                                adresse = AddressType2(
-                                    type = VDN(v = "UM", dn = "adresse i SIAN"),
-                                    streetAdress = "Postboks somwhere",
-                                    postalCode = "1234",
-                                    country = VDN(v = "NO", dn = "Norge")
-                                ),
-                                ref = "T2023-123456",
-                                kontonr = "12345612345",
-                                kid = "99999999999999999999"
-                            ),
-                            namsmann = Namsmann(
-                                orgNr = Ident(
-                                    id = "987654321",
-                                    typeId = VSDN(v = "ENH", s = "2.16.578.1.12.4.1.1.9051", dn = "DN")
-                                )
+                                ref = "Dette er kreditorREF",
+                                kontonr = "Kontonummer12345",
+                                kid = "kid1234567890"
                             )
                         ) //innrapporteringTrekk
                     ) //content

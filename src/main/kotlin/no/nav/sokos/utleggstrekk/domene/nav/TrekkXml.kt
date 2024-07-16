@@ -32,19 +32,62 @@ data class MsgInfo(
     @field:JacksonXmlProperty(localName = "Ack")
     val ack: VDN = VDN(v = "J", dn = "Ja"),
     @field:JacksonXmlProperty(localName = "Sender")
-    val sender: TrekkSenderReceiver,
+    val sender: Sender =Sender(),
     @field:JacksonXmlProperty(localName = "Receiver")
-    val receiver: TrekkSenderReceiver
+    val receiver: Receiver = Receiver()
 )
 
-data class TrekkSenderReceiver(
+data class Sender(
     @field:JacksonXmlProperty(localName = "Organisation")
-    val organisation: Organisation,
+    val organisation: Organisation = Organisation(
+        organisationName = "Skatteetaten",
+        Ident(
+            id = "987654321",
+            typeId = VSDN(
+                v = "ENH",
+                s = "2.16.578.1.12.4.1.1.9051",
+                dn = "Organisasjonsnummeret i  Enhetsregister (Brønnøysund)"
+            )
+        ),
+        address = AddressType1(
+            streetAdress = "Borteveien",
+            postalCode = "998123",
+            city = "byen deres",
+            county = VDN(
+                v = "8601",
+                dn = "MO I RANA"
+            )
+        ),
+    ),
+)
+
+data class Receiver(
+    @field:JacksonXmlProperty(localName = "Organisation")
+    val organisation: Organisation = Organisation(
+        organisationName = "NAV",
+        Ident(
+            id = "987654321",
+            typeId = VSDN(
+                v = "ENH",
+                s = "2.16.578.1.12.4.1.1.9051",
+                dn = "Organisasjonsnummeret i  Enhetsregister (Brønnøysund)"
+            )
+        ),
+        address = AddressType1(
+            streetAdress = "Hjemmeveien",
+            postalCode = "998123",
+            city = "byen vår",
+            county = VDN(
+                v = "0504",
+                dn = "OSLO"
+            )
+        ),
+    ),
 )
 
 data class Organisation(
     @field:JacksonXmlProperty(localName = "OrganisationName")
-    val organisationName: String = "Skatteetaten",
+    val organisationName: String,
     @field:JacksonXmlProperty(localName = "Ident")
     val ident: Ident,
     @field:JacksonXmlProperty(localName = "Adress")
@@ -104,7 +147,7 @@ data class InnrapporteringTrekk(
     @field:JacksonXmlProperty(localName = "ivt:Kreditor")
     val kreditor: Kreditor,
     @field:JacksonXmlProperty(localName = "ivt:Namsmann")
-    val namsmann: Namsmann,
+    val namsmann: Namsmann = Namsmann(),
 )
 
 data class Identifisering(
@@ -139,11 +182,19 @@ data class Periode(
 
 data class Kreditor(
     @field:JacksonXmlProperty(localName = "ivt:OrgNr")
-    val orgNr: Ident,
+    val orgNr: Ident = Ident(
+        id = "00987654321",
+        typeId = VSDN(v = "ENH", s = "2.16.578.1.12.4.1.1.9051", dn = "DN")
+    ),
     @field:JacksonXmlProperty(localName = "ivt:Navn")
-    val navn: String,
+    val navn: String = "Skatteetaten",
     @field:JacksonXmlProperty(localName = "ivt:Adresse")
-    val adresse: AddressType2,
+    val adresse: AddressType2 = AddressType2(
+        type = VDN(v = "UM", dn = "Adresse i SIAN"),
+        streetAdress = "Donnaldduckveien",
+        postalCode = "09876",
+        country = VDN(v = "NO", dn = "Norge")
+    ),
     @field:JacksonXmlProperty(localName = "ivt:Ref")
     val ref: String,
     @field:JacksonXmlProperty(localName = "ivt:Kontonr")
@@ -154,7 +205,10 @@ data class Kreditor(
 
 data class Namsmann(
     @field:JacksonXmlProperty(localName = "ivt:OrgNr")
-    val orgNr: Ident
+    val orgNr: Ident = Ident(
+        id = "00987654321",
+        typeId = VSDN(v = "ENH", s = "2.16.578.1.12.4.1.1.9051", dn = "DN")
+    )
 )
 
 data class AddressType2(

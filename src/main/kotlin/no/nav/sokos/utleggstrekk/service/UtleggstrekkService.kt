@@ -19,7 +19,6 @@ class UtleggstrekkService(
 
     suspend fun hentAlleUtleggstrekk(): List<Utleggstrekk> {
         println("skeClient.hentalle kalles:")
-        val mqc = PropertiesConfig.MqProperties()
         val nyeTrekkListe = utleggstrekkResponseToList(skeClient.hentAlleUtleggstrekk())
         println("Antall trekk mottatt: ${nyeTrekkListe.size}")
         lagreAlleNyeUtleggstrekk(nyeTrekkListe)
@@ -30,7 +29,7 @@ class UtleggstrekkService(
         }
         val mqProducer = MqProducer(PropertiesConfig.MqProperties())
         println("Sender ${xmlList.size} til MQ")
-        XmlService.generateXmlStringListFromTrekkXmlList(xmlList).forEach { mqProducer.send(it)  }
+        XmlService.generateXmlStringListFromTrekkXmlList(xmlList).forEach { mqProducer.send(it) }
         mqProducer.commit()
         return nyeTrekkListe  //TODO for testapiet vårt, bør tas bort/endres? etterhvert
     }
