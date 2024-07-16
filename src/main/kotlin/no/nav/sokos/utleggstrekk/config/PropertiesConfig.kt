@@ -12,7 +12,7 @@ import io.ktor.client.request.get
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import no.nav.sokos.utleggstrekk.httpClient
+import no.nav.sokos.utleggstrekk.client.httpClient
 import java.io.File
 
 object PropertiesConfig {

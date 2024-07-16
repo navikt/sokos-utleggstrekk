@@ -8,8 +8,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+import no.nav.sokos.utleggstrekk.client.httpClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.get
-import no.nav.sokos.utleggstrekk.httpClient
 import java.net.URI
 import java.util.concurrent.TimeUnit
 

@@ -7,9 +7,8 @@ import io.ktor.client.request.headers
 import io.ktor.client.request.url
 import io.ktor.http.HttpHeaders
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.httpClient
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
-import java.util.UUID
+import java.util.*
 
 private const val ORGNR = "889640782"
 private const val FRA_SEKVENSNR = "?fraSekvensnummer="
