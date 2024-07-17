@@ -35,11 +35,14 @@ class UtleggstrekkService(
     }
 
     suspend fun hentAlleNyeUtleggstrekk(): List<Utleggstrekk> {
+        println("hent alle NYE!")
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
+        println("Henter fra siste sekvensnr: $sisteSekvensnr")
         return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Utleggstrekk> {
+        println("henter allefra sekvensnr(sekvensnr: $sekvensnr")
         val response = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
         val trekkListe = utleggstrekkResponseToList(response)
         return lagreAlleNyeUtleggstrekk(trekkListe)

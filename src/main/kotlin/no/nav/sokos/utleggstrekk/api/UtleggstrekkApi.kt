@@ -32,8 +32,14 @@ fun Routing.utleggstrekkApi(
                 call.respond(HttpStatusCode.BadRequest, "Ugyldig sekvensnr")
             } else {
                 val utleggstrekk = utleggstrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
+                println("Antall mottat på søk fra sekvensnr $sekvensnr: ${utleggstrekk.size}")
                 call.respond(HttpStatusCode.OK, utleggstrekk.toString())
             }
+        }
+        get("hentnye}") {
+            val utleggstrekk = utleggstrekkService.hentAlleNyeUtleggstrekk()
+            println("Antall Nye: ${utleggstrekk.size}")
+            call.respond(HttpStatusCode.OK, utleggstrekk.toString())
         }
     }
 }
