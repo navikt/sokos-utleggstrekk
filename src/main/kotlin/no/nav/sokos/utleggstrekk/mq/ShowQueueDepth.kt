@@ -16,7 +16,7 @@ class ShowAllQueueDepth() {
     }
 
     fun allLocalQueueDepths():Array<PCFMessage> {
-        val qmgr = MQQueueManager("MQLS1")
+        val qmgr = MQQueueManager("MQLS01")
         val pcfCmd = PCFMessage(MQConstants.MQCMD_INQUIRE_Q)
         val agent = PCFMessageAgent()
 
