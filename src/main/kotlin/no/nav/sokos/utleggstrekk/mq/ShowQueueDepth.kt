@@ -38,7 +38,7 @@ class ShowAllQueueDepth() {
             .filter { !Pattern.matches("^AMK.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
             .filter { !Pattern.matches("^AMQ.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
             .map { pcfMessage ->
-                String.valueOf("KøNavn: ${pcfMessage.getParameterValue(MQCA_Q_NAME)}, Kødybde: ${pcfMessage.getParameterValue(MQIA_CURRENT_Q_DEPTH)}").also(::println)
+                String.valueOf("KøNavn: ${pcfMessage.getParameterValue(MQCA_Q_NAME)}, Kødybde: ${pcfMessage.getParameterValue(MQIA_CURRENT_Q_DEPTH)}\n").also(::print)
             }
 
     }
