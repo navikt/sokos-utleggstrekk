@@ -24,7 +24,7 @@ class ShowAllQueueDepth() {
     fun allLocalQueueDepths():List<kotlin.String> {
         val qmgr = MQQueueManager("MQLS01")
         val pcfCmd = PCFMessage(MQConstants.MQCMD_INQUIRE_Q)
-        val agent = PCFMessageAgent()
+        val agent = PCFMessageAgent(qmgr)
 
         pcfCmd.addParameter(MQConstants.MQCA_Q_NAME, "*")
         pcfCmd.addParameter(MQConstants.MQIA_Q_TYPE, MQConstants.MQQT_LOCAL)
