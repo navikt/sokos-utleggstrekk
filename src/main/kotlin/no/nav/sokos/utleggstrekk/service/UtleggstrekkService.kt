@@ -42,7 +42,7 @@ class UtleggstrekkService(
     }
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Utleggstrekk> {
-        println("henter allefra sekvensnr(sekvensnr: $sekvensnr")
+        println("henter allefra sekvensnr sekvensnr: $sekvensnr")
         val response = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
         val trekkListe = utleggstrekkResponseToList(response)
         return lagreAlleNyeUtleggstrekk(trekkListe)
