@@ -49,6 +49,9 @@ fun Routing.utleggstrekkApi(
             val res = mq.allLocalQueueDepths()
             call.respond(HttpStatusCode.OK, res.toString())
         }
+        get("a/{namePart}"){
+
+        }
     }
 }
 

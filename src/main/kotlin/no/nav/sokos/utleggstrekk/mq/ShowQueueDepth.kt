@@ -10,12 +10,10 @@ import com.ibm.mq.constants.CMQC.MQOO_OUTPUT
 import com.ibm.mq.constants.MQConstants
 import com.ibm.mq.headers.pcf.PCFMessage
 import com.ibm.mq.headers.pcf.PCFMessageAgent
-import java.lang.String
 import java.util.regex.Pattern
-import kotlin.Boolean
 
 
-class ShowAllQueueDepth() {
+class ShowAllQueueDepth(val namePart:String  = "") {
     init {
         MQEnvironment.hostname = "10.53.17.126"
         MQEnvironment.port = 1413
@@ -36,8 +34,11 @@ class ShowAllQueueDepth() {
         val pcfResponse = agent.send(pcfCmd).asList()
 
 
-        return pcfResponse.filterNotNull()
-            .filter { Pattern.matches("^.*_BOQ.*", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
+        return pcfResponse.filterNotNull().let {
+            val respList = if (namePart.isNotBlank()) {
+                it.filter { java.lang.String.valueOf(it.getParameterValue(MQCA_Q_NAME)).contains(namePart)}
+            } else { it }
+            respList.filter { Pattern.matches("^.*_BOQ.*", java.lang.String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
 //            .filter { !Pattern.matches("^SYSTEM.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
 //            .filter { !Pattern.matches("^AMK.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
 //            .filter { !Pattern.matches("^AMQ.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
@@ -49,12 +50,12 @@ class ShowAllQueueDepth() {
                     val queue: MQQueue = qmgr.accessQueue(queueName, MQOO_OUTPUT)
                     write = true
                     println("$queueName kan lese = $write")
-                } catch (e: MQException){
+                } catch (e: MQException) {
                     println("$queueName kan lese = $write -  ${e.reasonCode}")
                 }
 
-                "Navn: $queueName Dybde: $depth KAn skrive: $write\n"
+                "\nNavn: $queueName Dybde: $depth Kan skrive: $write"
             }
-
+        }
     }
 }
