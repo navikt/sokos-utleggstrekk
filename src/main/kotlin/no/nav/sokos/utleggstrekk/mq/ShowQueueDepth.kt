@@ -52,7 +52,7 @@ class ShowAllQueueDepth() {
                     println("$queueName kan lese = $write")
                 }
 
-                "Navn: $queueName Dybde: $depth KAn lese: $write"
+                "Navn: $queueName Dybde: $depth KAn lese: $write\n"
             }
 
     }
