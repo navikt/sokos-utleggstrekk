@@ -1,15 +1,18 @@
 package no.nav.sokos.utleggstrekk.mq
 
 import com.ibm.mq.MQEnvironment
+import com.ibm.mq.MQException
+import com.ibm.mq.MQQueue
 import com.ibm.mq.MQQueueManager
 import com.ibm.mq.constants.CMQC.MQCA_Q_NAME
 import com.ibm.mq.constants.CMQC.MQIA_CURRENT_Q_DEPTH
+import com.ibm.mq.constants.CMQC.MQOO_OUTPUT
 import com.ibm.mq.constants.MQConstants
 import com.ibm.mq.headers.pcf.PCFMessage
 import com.ibm.mq.headers.pcf.PCFMessageAgent
 import java.lang.String
 import java.util.regex.Pattern
-import kotlin.also
+import kotlin.Boolean
 
 
 class ShowAllQueueDepth() {
@@ -37,8 +40,19 @@ class ShowAllQueueDepth() {
             .filter { !Pattern.matches("^SYSTEM.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
             .filter { !Pattern.matches("^AMK.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
             .filter { !Pattern.matches("^AMQ.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
-            .map { pcfMessage ->
-                String.valueOf("KøNavn: ${pcfMessage.getParameterValue(MQCA_Q_NAME)}, Kødybde: ${pcfMessage.getParameterValue(MQIA_CURRENT_Q_DEPTH)}\n").also(::print)
+            .map { pcfm ->
+                val queueName = pcfm.getParameterValue(MQCA_Q_NAME).toString()
+                val depth = pcfm.getParameterValue(MQIA_CURRENT_Q_DEPTH).toString()
+                var write: Boolean = false
+                try {
+                    val queue: MQQueue = qmgr.accessQueue(queueName, MQOO_OUTPUT)
+                    write = true
+                    println("$queueName kan lese = $write")
+                } catch (e: MQException){
+                    println("$queueName kan lese = $write")
+                }
+
+                "Navn: $queueName Dybde: $depth KAn lese: $write"
             }
 
     }
