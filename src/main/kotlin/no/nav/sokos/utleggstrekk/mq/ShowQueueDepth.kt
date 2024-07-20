@@ -13,7 +13,7 @@ import com.ibm.mq.headers.pcf.PCFMessageAgent
 import java.util.regex.Pattern
 
 
-class ShowAllQueueDepth(val namePart:String  = "") {
+class ShowAllQueueDepth() {
     init {
         MQEnvironment.hostname = "10.53.17.126"
         MQEnvironment.port = 1413
@@ -22,7 +22,7 @@ class ShowAllQueueDepth(val namePart:String  = "") {
         MQEnvironment.password = "YVqijM6XK94l4Uav4MGOtt"
     }
 
-    fun allLocalQueueDepths():List<kotlin.String> {
+    fun allLocalQueueDepths(namePart:String  = ""):List<String> {
         val qmgr = MQQueueManager("MQLS01")
         val pcfCmd = PCFMessage(MQConstants.MQCMD_INQUIRE_Q)
         val agent = PCFMessageAgent(qmgr)
@@ -38,7 +38,7 @@ class ShowAllQueueDepth(val namePart:String  = "") {
             val respList = if (namePart.isNotBlank()) {
                 it.filter { java.lang.String.valueOf(it.getParameterValue(MQCA_Q_NAME)).contains(namePart)}
             } else { it }
-            respList.filter { Pattern.matches("^.*_BOQ.*", java.lang.String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
+            respList.filter { Pattern.matches("^.*_BOQ.*", java.lang.String.valueOf( it.getParameterValue(MQCA_Q_NAME))) }
 //            .filter { !Pattern.matches("^SYSTEM.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
 //            .filter { !Pattern.matches("^AMK.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
 //            .filter { !Pattern.matches("^AMQ.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
