@@ -49,7 +49,7 @@ class ShowAllQueueDepth() {
                     write = true
                     println("$queueName kan lese = $write")
                 } catch (e: MQException){
-                    println("$queueName kan lese = $write")
+                    println("$queueName kan lese = $write -  ${e.reasonCode}")
                 }
 
                 "Navn: $queueName Dybde: $depth KAn lese: $write\n"
