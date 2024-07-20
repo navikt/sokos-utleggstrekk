@@ -37,9 +37,10 @@ class ShowAllQueueDepth() {
 
 
         return pcfResponse.filterNotNull()
-            .filter { !Pattern.matches("^SYSTEM.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
-            .filter { !Pattern.matches("^AMK.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
-            .filter { !Pattern.matches("^AMQ.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
+            .filter { Pattern.matches("^.*BOQ$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
+//            .filter { !Pattern.matches("^SYSTEM.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
+//            .filter { !Pattern.matches("^AMK.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
+//            .filter { !Pattern.matches("^AMQ.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
             .map { pcfm ->
                 val queueName = pcfm.getParameterValue(MQCA_Q_NAME).toString()
                 val depth = pcfm.getParameterValue(MQIA_CURRENT_Q_DEPTH).toString()
