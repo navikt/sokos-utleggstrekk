@@ -18,8 +18,8 @@ class ShowAllQueueDepth() {
         MQEnvironment.hostname = "10.53.17.126"
         MQEnvironment.port = 1413
         MQEnvironment.channel = "HERMES.SVRCONN"
-        MQEnvironment.userID = "srvos-eskatt"
-        MQEnvironment.password = "YVqijM6XK94l4Uav4MGOtt"
+        MQEnvironment.userID = "srvokonomiadmin"
+        MQEnvironment.password = "7DR4rMTqwHRWC5TCheIGR1"
     }
 
     fun allLocalQueueDepths(namePart:String  = ""):List<String> {
