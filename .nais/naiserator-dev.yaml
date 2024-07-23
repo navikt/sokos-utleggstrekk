@@ -41,6 +41,8 @@ spec:
     paths:
       - kvPath: /serviceuser/data/dev/srvutleggstrekk
         mountPath: /var/run/secrets/nais.io/srvutleggstrekk
+      - kvPath: /serviceuser/data/dev/srvokonomiadmin
+        mountPath: /var/run/secrets/nais.io/srvokonomiadmin
 
   maskinporten:
     enabled: true

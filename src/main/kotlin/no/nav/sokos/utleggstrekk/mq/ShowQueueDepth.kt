@@ -21,8 +21,8 @@ class ShowAllQueueDepth(
         MQEnvironment.hostname = mqConfig.host
         MQEnvironment.port = mqConfig.port.toInt()
         MQEnvironment.channel = mqConfig.channel
-        MQEnvironment.userID = mqConfig.username
-        MQEnvironment.password = mqConfig.password
+        MQEnvironment.userID = mqConfig.inqUsername
+        MQEnvironment.password = mqConfig.inqPassword
     }
 
     fun allLocalQueueDepths(namePart:String  = ""):List<String> {
@@ -53,9 +53,9 @@ class ShowAllQueueDepth(
                 try {
                     val queue: MQQueue = qmgr.accessQueue(queueName, MQOO_OUTPUT)
                     write = true
-                    println("$queueName kan lese = $write")
+                    println("*****$queueName KAN skrive = $write")
                 } catch (e: MQException) {
-                    println("$queueName kan lese = $write -  ${e.reasonCode}")
+                    println("*****$queueName kan IKKE skrive = $write -  ${e.reasonCode}")
                 }
 
                 "\nNavn: $queueName Dybde: $depth Kan skrive: $write"

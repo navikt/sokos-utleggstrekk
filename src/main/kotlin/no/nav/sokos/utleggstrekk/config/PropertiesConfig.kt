@@ -115,7 +115,9 @@ object PropertiesConfig {
         val qmgrName: String = getOrEmpty("MQ_QMGR_NAME").also(::println),
         val channel: String = getOrEmpty("MQ_CHANNEL").also(::println),
         val username: String = getOrEmpty("MQ_USERNAME").also(::println),
-        val password: String = getOrEmpty("MQ_PASSWORD").also(::println)
+        val password: String = getOrEmpty("MQ_PASSWORD").also(::println),
+        val inqUsername: String = getOrEmpty("MQ_INQ_USERNAME").also(::println),
+        val inqPassword: String = getOrEmpty("MQ_INQ_PASSWORD").also(::println)
     )
 
 }
