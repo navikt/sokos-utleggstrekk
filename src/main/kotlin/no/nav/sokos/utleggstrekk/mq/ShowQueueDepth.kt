@@ -10,20 +10,23 @@ import com.ibm.mq.constants.CMQC.MQOO_OUTPUT
 import com.ibm.mq.constants.MQConstants
 import com.ibm.mq.headers.pcf.PCFMessage
 import com.ibm.mq.headers.pcf.PCFMessageAgent
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import java.util.regex.Pattern
 
 
-class ShowAllQueueDepth() {
+class ShowAllQueueDepth(
+    val mqConfig: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties()
+) {
     init {
-        MQEnvironment.hostname = "10.53.17.126"
-        MQEnvironment.port = 1413
-        MQEnvironment.channel = "HERMES.SVRCONN"
-        MQEnvironment.userID = "srvokonomiadmin"
-        MQEnvironment.password = "7DR4rMTqwHRWC5TCheIGR1"
+        MQEnvironment.hostname = mqConfig.host
+        MQEnvironment.port = mqConfig.host.toInt()
+        MQEnvironment.channel = mqConfig.channel
+        MQEnvironment.userID = mqConfig.username
+        MQEnvironment.password = mqConfig.password
     }
 
     fun allLocalQueueDepths(namePart:String  = ""):List<String> {
-        val qmgr = MQQueueManager("MQLS01")
+        val qmgr = MQQueueManager(mqConfig.qmgrName)
         val pcfCmd = PCFMessage(MQConstants.MQCMD_INQUIRE_Q)
         val agent = PCFMessageAgent(qmgr)
 
@@ -38,14 +41,15 @@ class ShowAllQueueDepth() {
             val respList = if (namePart.isNotBlank()) {
                 it.filter { java.lang.String.valueOf(it.getParameterValue(MQCA_Q_NAME)).contains(namePart)}
             } else { it }
-            respList.filter { Pattern.matches("^.*_BOQ.*", java.lang.String.valueOf( it.getParameterValue(MQCA_Q_NAME))) }
-//            .filter { !Pattern.matches("^SYSTEM.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
-//            .filter { !Pattern.matches("^AMK.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
-//            .filter { !Pattern.matches("^AMQ.*$", String.valueOf(it.getParameterValue(MQCA_Q_NAME))) }
+            respList
+//                .filter { Pattern.matches("^.*_BOQ.*", java.lang.String.valueOf( it.getParameterValue(MQCA_Q_NAME))) }
+            .filter { !Pattern.matches("^SYSTEM.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
+            .filter { !Pattern.matches("^AMK.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
+            .filter { !Pattern.matches("^AMQ.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
             .map { pcfm ->
                 val queueName = pcfm.getParameterValue(MQCA_Q_NAME).toString()
                 val depth = pcfm.getParameterValue(MQIA_CURRENT_Q_DEPTH).toString()
-                var write: Boolean = false
+                var write = false
                 try {
                     val queue: MQQueue = qmgr.accessQueue(queueName, MQOO_OUTPUT)
                     write = true

@@ -112,7 +112,7 @@ object PropertiesConfig {
         val queue: String = getOrEmpty("MQ_SEND_TIL_OS").also(::println),
         val host: String = getOrEmpty("MQ_HOST").also(::println),
         val port: String = getOrEmpty("MQ_PORT").also(::println),
-        val name: String = getOrEmpty("MQ_NAME").also(::println),
+        val qmgrName: String = getOrEmpty("MQ_QMGR_NAME").also(::println),
         val channel: String = getOrEmpty("MQ_CHANNEL").also(::println),
         val username: String = getOrEmpty("MQ_USERNAME").also(::println),
         val password: String = getOrEmpty("MQ_PASSWORD").also(::println)
