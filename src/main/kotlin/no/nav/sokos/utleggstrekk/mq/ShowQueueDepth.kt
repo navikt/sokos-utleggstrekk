@@ -19,7 +19,7 @@ class ShowAllQueueDepth(
 ) {
     init {
         MQEnvironment.hostname = mqConfig.host
-        MQEnvironment.port = mqConfig.host.toInt()
+        MQEnvironment.port = mqConfig.port.toInt()
         MQEnvironment.channel = mqConfig.channel
         MQEnvironment.userID = mqConfig.username
         MQEnvironment.password = mqConfig.password
