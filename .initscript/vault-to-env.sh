@@ -15,6 +15,7 @@ if test -f '/var/run/secrets/nais.io/srvokonomiadmin/username'; then
     echo '- exporting MQ_INQ_USERNAME'
 fi
 
+
 if test -f '/var/run/secrets/nais.io/srvokonomiadmin/password'; then
     export MQ_INQ_PASSWORD=$(cat /var/run/secrets/nais.io/srvokonomiadmin/password)
     echo '- exporting MQ_INQ_PASSWORD'
