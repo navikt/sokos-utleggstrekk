@@ -65,10 +65,7 @@ object Responses {
               }
             ],
             "trekkbeloep": {
-              "trekkbeloep": 0
-            },
-            "trekkprosent": {
-              "trekkprosent": 0
+              "trekkbeloep": 1000
             },
             "kid": "8981238184016280475641088",
             "kontonummer": "19019019019"
@@ -89,11 +86,8 @@ object Responses {
                 "sluttPeriode": "2024-11"
               }
             ],
-            "trekkbeloep": {
-              "trekkbeloep": 2.2
-            },
             "trekkprosent": {
-              "trekkprosent": 1
+              "trekkprosent": 10.0
             },
             "kid": "9981238184016280475641088",
             "kontonummer": "12012012012"
@@ -124,7 +118,7 @@ object Responses {
             "trekkbeloep": 0
           },
           "trekkprosent": {
-            "trekkprosent": 0
+            "trekkprosent": 10.0
           },
           "kid": "824776336890844418867",
           "kontonummer": "61588822927"

@@ -14,6 +14,7 @@ private val logger = KotlinLogging.logger { }
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
     private val skeClient: SkeClient = SkeClient(),
+    private val mqProducer: MqProducer = MqProducer(PropertiesConfig.MqProperties())
 ) {
 
 
@@ -27,7 +28,6 @@ class UtleggstrekkService(
         val xmlList = sendTrekkListe.map {
             XmlService.createTrekkXml(it)
         }
-        val mqProducer = MqProducer(PropertiesConfig.MqProperties())
         println("Sender ${xmlList.size} til MQ")
         XmlService.generateXmlStringListFromTrekkXmlList(xmlList).forEach { mqProducer.send(it) }
         mqProducer.commit()

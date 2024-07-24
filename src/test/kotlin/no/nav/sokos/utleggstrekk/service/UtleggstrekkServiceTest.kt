@@ -3,17 +3,22 @@ package no.nav.sokos.utleggstrekk.service
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpStatusCode
+import io.mockk.justRun
 import io.mockk.mockk
 import no.nav.sokos.utleggstrekk.client.SkeClient
+import no.nav.sokos.utleggstrekk.mq.MqProducer
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.util.MockHttpClient
 import no.nav.sokos.utleggstrekk.util.Responses
 
 internal class UtleggstrekkServiceTest : FunSpec({
 
-    test("Når SKE returnerer liste av utleggstrekk skal disse parses til objekter").config(enabled = false) {
+    test("Når SKE returnerer liste av utleggstrekk skal disse parses til objekter") {
         val mockClient = MockHttpClient().getClient(Responses.utleggsTrekkListe, HttpStatusCode.OK)
-        val utleggsTrekkService = UtleggstrekkService(mockk<DatabaseService>(relaxed = true), SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)))
+        val mqProducerMock = mockk<MqProducer>()
+        val utleggsTrekkService = UtleggstrekkService(mockk<DatabaseService>(relaxed = true), SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)), mqProducerMock)
+        justRun { mqProducerMock.send(any()) }
+        justRun { mqProducerMock.commit() }
         val utleggsTrekk = utleggsTrekkService.hentAlleUtleggstrekk()
 
         utleggsTrekk.size shouldBe 2
@@ -32,8 +37,8 @@ internal class UtleggstrekkServiceTest : FunSpec({
                 startPeriode shouldBe "2024-12"
                 sluttPeriode shouldBe "2024-12"
             }
-            trekkbeloep!!.trekkbeloep shouldBe 0
-            trekkprosent!!.trekkprosent shouldBe 0
+            trekkbeloep!!.trekkbeloep shouldBe 1000
+            trekkprosent shouldBe null
             kid shouldBe "8981238184016280475641088"
             kontonummer shouldBe "19019019019"
         }
@@ -53,8 +58,8 @@ internal class UtleggstrekkServiceTest : FunSpec({
                 startPeriode shouldBe "2024-11"
                 sluttPeriode shouldBe "2024-11"
             }
-            trekkbeloep!!.trekkbeloep shouldBe 2.2
-            trekkprosent!!.trekkprosent shouldBe 1
+            trekkbeloep shouldBe null
+            trekkprosent!!.trekkprosent shouldBe 10.0
             kid shouldBe "9981238184016280475641088"
             kontonummer shouldBe "12012012012"
         }
