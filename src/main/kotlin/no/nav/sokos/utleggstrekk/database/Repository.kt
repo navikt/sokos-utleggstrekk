@@ -3,8 +3,10 @@ package no.nav.sokos.utleggstrekk.database
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toMidlertidigStans
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
+import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import java.sql.Connection
@@ -76,8 +78,8 @@ object Repository {
             prepStmt1.setString(5, it.trekkpliktig)
             prepStmt1.setString(6, it.skyldner)
             prepStmt1.setString(7, it.trekkstatus)
-            prepStmt1.setString(8, it.startPeriode)
-            prepStmt1.setString(9, it.sluttPeriode)
+            prepStmt1.setString(8, "${it.startPeriode}-1")
+            prepStmt1.setString(9, periodeEndDay(it.sluttPeriode))
             prepStmt1.setDouble(10, trekkBelop ?: 0.0)
             prepStmt1.setDouble(11, trekkProsent ?: 0.0)
             prepStmt1.setString(12, UUID.randomUUID().toString())
@@ -102,6 +104,17 @@ object Repository {
     fun Connection.fetchAllTrekkNotSent(): List<TrekkTable> {
         return prepareStatement("""select * from trekk where status = 'MOTTATT'""")
             .executeQuery().toTrekkTable()
+
+    }
+
+    fun Connection.fetcMidletidigStansForSekvensnr(sekvensnr: Int): List<MidlertidigStansTable> {
+        return prepareStatement(
+            """
+                select * from midlertidigstans where trekksekvensnr = ?
+            """.trimIndent()
+        ).withParameters(
+            param(sekvensnr)
+        ).executeQuery().toMidlertidigStans()
 
     }
 

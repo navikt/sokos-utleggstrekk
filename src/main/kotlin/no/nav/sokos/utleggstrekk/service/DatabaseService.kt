@@ -4,10 +4,12 @@ import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository.checkIfTrekkfinnes
+import no.nav.sokos.utleggstrekk.database.Repository.fetcMidletidigStansForSekvensnr
 import no.nav.sokos.utleggstrekk.database.Repository.fetchAllTrekkNotSent
 import no.nav.sokos.utleggstrekk.database.Repository.fetchLastSekvensnr
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
+import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 
@@ -35,6 +37,10 @@ class DatabaseService(
     fun hentAlleTrekkSomIkkeErSendt(): List<TrekkTable> =
         dataSource.connection.useAndHandleErrors { con ->
             con.fetchAllTrekkNotSent().also { con.close() }
-
     }
+
+    fun hentMidletidigStansForSekvensnr(sekvensnr: Int): List<MidlertidigStansTable> =
+        dataSource.connection.useAndHandleErrors { con ->
+            con.fetcMidletidigStansForSekvensnr(sekvensnr)
+        }
 }

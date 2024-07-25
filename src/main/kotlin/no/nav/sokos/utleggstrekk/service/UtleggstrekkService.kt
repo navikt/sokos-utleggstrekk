@@ -26,7 +26,7 @@ class UtleggstrekkService(
         val sendTrekkListe = databaseService.hentAlleTrekkSomIkkeErSendt()
         println("Antall trekk lest fra db: ${sendTrekkListe.size}")
         val xmlList = sendTrekkListe.map {
-            XmlService.createTrekkXml(it)
+            XmlService.createTrekkXmlObjects(it)
         }
         println("Sender ${xmlList.size} til MQ")
         XmlService.generateXmlStringListFromTrekkXmlList(xmlList).forEach { mqProducer.send(it) }

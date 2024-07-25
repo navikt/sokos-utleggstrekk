@@ -38,7 +38,7 @@ object XmlService {
         }
     }
 
-    fun createTrekkXml(trekk: TrekkTable): TrekkXml {
+    fun createTrekkXmlObjects(trekk: TrekkTable): TrekkXml {
         val sats = when {
             trekk.trekkbelop == null -> trekk.trekkprosent!!
             else -> trekk.trekkbelop

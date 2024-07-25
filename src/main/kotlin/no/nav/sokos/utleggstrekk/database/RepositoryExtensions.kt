@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.UtcOffset
 import kotlinx.datetime.toLocalDateTime
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
+import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import java.math.BigDecimal
 import java.sql.Connection
@@ -110,4 +111,20 @@ object RepositoryExtensions {
         )
     }
 
+    fun ResultSet.toMidlertidigStans() = toList {
+        MidlertidigStansTable(
+            midlertidigstansid = getColumn("id"),
+            trekksekvensnr = getColumn("trekksekvensnr"),
+            startPeriode = getColumn("startperiode"),
+            sluttPeriode = getColumn("sluttperiode")
+        )
+    }
+
 }
+    fun periodeEndDay(periode: String): String {
+        return when (periode.split("-").get(1).toInt()) {
+            1,3,5,7,8,10,12 -> "$periode-31"
+            2 -> "$periode-28"
+            else -> "$periode-30"
+        }
+    }
