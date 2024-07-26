@@ -78,8 +78,8 @@ object Repository {
             prepStmt1.setString(5, it.trekkpliktig)
             prepStmt1.setString(6, it.skyldner)
             prepStmt1.setString(7, it.trekkstatus)
-            prepStmt1.setString(8, "${it.startPeriode}-1")
-            prepStmt1.setString(9, periodeEndDay(it.sluttPeriode))
+            prepStmt1.setString(8, it.startPeriode)
+            prepStmt1.setString(9, it.sluttPeriode)
             prepStmt1.setDouble(10, trekkBelop ?: 0.0)
             prepStmt1.setDouble(11, trekkProsent ?: 0.0)
             prepStmt1.setString(12, UUID.randomUUID().toString())
@@ -90,14 +90,64 @@ object Repository {
             if (!it.midlertidigStans.isNullOrEmpty()) {
                 it.midlertidigStans.forEach { stans ->
                     prepStmt2.setInt(1, it.sekvensnummer)
-                    prepStmt2.setString(2, stans.startPeriode ?: "ikke satt")
-                    prepStmt2.setString(3, stans.sluttPeriode ?: "ikke satt")
+                    prepStmt2.setString(2, stans.startPeriode)
+                    prepStmt2.setString(3, stans.sluttPeriode)
                     prepStmt2.addBatch()
                 }
             }
         }
         prepStmt1.executeBatch()
         prepStmt2.executeBatch()
+        commit()
+    }
+
+    fun Connection.saveAllGeneratedTrekk(trekkTableList: List<TrekkTable>) {
+        val prepStmt =
+            prepareStatement(
+                """
+                insert into generertetrekk (
+                sekvensnr,
+                sekvensnr_nav,
+                trekkid_ske, 
+                trekkversjon, 
+                trekkopprettet, 
+                trekkpliktig, 
+                skyldner, 
+                trekkstatus, 
+                startperiode, 
+                sluttperiode, 
+                trekkbelop, 
+                trekkprosent, 
+                corrid,
+                status,
+                kid, 
+                kontonummer 
+                ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,'MOTTATT',?,?)
+                """.trimIndent(),
+            )
+        trekkTableList.forEach {
+            val trekkBelop = it.trekkbelop
+            val trekkProsent = it.trekkprosent
+            val sekvensnrNav = it.corrid.substring(it.corrid.length-4).substringAfterLast("-", "0")
+            prepStmt.setInt(1, it.sekvensnr)
+            prepStmt.setInt(2, sekvensnrNav.toInt())
+            prepStmt.setString(3, it.trekkid)
+            prepStmt.setInt(4, it.trekkversjon)
+            prepStmt.setString(5, it.tidspunktOpprettet.toString())
+            prepStmt.setString(6, it.trekkpliktig)
+            prepStmt.setString(7, it.skyldner)
+            prepStmt.setString(8, it.trekkstatus)
+            prepStmt.setString(9, it.startPeriode)
+            prepStmt.setString(10, it.sluttPeriode)
+            prepStmt.setDouble(11, trekkBelop ?: 0.0)
+            prepStmt.setDouble(12, trekkProsent ?: 0.0)
+            prepStmt.setString(13, UUID.randomUUID().toString())
+            prepStmt.setString(14, it.kid)
+            prepStmt.setString(15, it.kontonummer)
+            prepStmt.addBatch()
+
+        }
+        prepStmt.executeBatch()
         commit()
     }
 

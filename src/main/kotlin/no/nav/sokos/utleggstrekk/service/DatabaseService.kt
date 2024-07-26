@@ -7,6 +7,7 @@ import no.nav.sokos.utleggstrekk.database.Repository.checkIfTrekkfinnes
 import no.nav.sokos.utleggstrekk.database.Repository.fetcMidletidigStansForSekvensnr
 import no.nav.sokos.utleggstrekk.database.Repository.fetchAllTrekkNotSent
 import no.nav.sokos.utleggstrekk.database.Repository.fetchLastSekvensnr
+import no.nav.sokos.utleggstrekk.database.Repository.saveAllGeneratedTrekk
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
 import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
@@ -31,6 +32,12 @@ class DatabaseService(
     fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>) {
         dataSource.connection.useAndHandleErrors { con ->
             con.saveAllNewUtleggstrekk(trekkListe).also { con.close() }
+        }
+    }
+
+    fun lagreAlleGenererteTrekk(trekkTableList: List<TrekkTable>) {
+        dataSource.connection.useAndHandleErrors { con ->
+            con.saveAllGeneratedTrekk(trekkTableList).also { con.close() }
         }
     }
 

@@ -121,10 +121,3 @@ object RepositoryExtensions {
     }
 
 }
-    fun periodeEndDay(periode: String): String {
-        return when (periode.split("-").get(1).toInt()) {
-            1,3,5,7,8,10,12 -> "$periode-31"
-            2 -> "$periode-28"
-            else -> "$periode-30"
-        }
-    }

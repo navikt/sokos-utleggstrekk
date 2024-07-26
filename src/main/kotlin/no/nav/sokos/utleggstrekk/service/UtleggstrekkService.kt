@@ -61,4 +61,5 @@ class UtleggstrekkService(
         trekkListe.map {
             it.takeIf{!databaseService.trekkFinnes(it.sekvensnummer) }.also { println("take if: $it") }
         }.filterNotNull().also { println("Etter filtrering av de vi har fra før : ${it.size}") }.also { databaseService.lagreAlleNyeUtleggstrekk(it) }
+
 }

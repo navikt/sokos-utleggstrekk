@@ -8,19 +8,28 @@ class GenererTrekkService(
 ) {
 
 
-    fun lagTrekkTilOsFraMidlertidigeTrekk(trekkListe:List<TrekkTable>){
+    fun lagTrekkTilOsFraMidlertidigeTrekk(trekkListe:List<TrekkTable>): List<TrekkTable> {
         val trekkOgStansListe = trekkListe.map {
             TrekkOgStans(
                 it,
-                databaseService.hentMidletidigStansForSekvensnr(it.sekvensnr)
+                databaseService.hentMidletidigStansForSekvensnr(it.sekvensnr).sortedBy { it.startPeriode }
             )
         }
 
+        val nyeTrekkListe = mutableListOf<TrekkTable>()
         trekkOgStansListe.forEach { tos ->
-            tos.midlertidigStansList.map { ms ->
-                tos.trekk.copy(sluttPeriode = ms.startPeriode)
-            }
+            var startNeste = tos.trekk.startPeriode
+            var i =  1
+            nyeTrekkListe.addAll(
+                tos.midlertidigStansList.map { ms ->
+                    val res = tos.trekk.copy(corrid = "${tos.trekk.corrid}-i", startPeriode = startNeste, sluttPeriode = ms.startPeriode.previousPeriod())
+                    startNeste = ms.sluttPeriode.nextPeriod()
+                    i += 1
+                    res
+                }
+            )
         }
+        return nyeTrekkListe
     }
 }
 
@@ -28,3 +37,4 @@ data class TrekkOgStans(
     val trekk: TrekkTable,
     val midlertidigStansList: List<MidlertidigStansTable>
 )
+
