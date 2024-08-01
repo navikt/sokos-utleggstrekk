@@ -8,7 +8,7 @@ class GenererTrekkService(
 ) {
 
 
-    fun lagTrekkTilOsFraMidlertidigeTrekk(trekkListe:List<TrekkTable>): List<TrekkTable> {
+    fun lagTrekkTilOsFraMidlertidigeTrekk(trekkListe: List<TrekkTable>): List<TrekkTable> {
         val trekkOgStansListe = trekkListe.map {
             TrekkOgStans(
                 it,
@@ -18,16 +18,23 @@ class GenererTrekkService(
 
         val nyeTrekkListe = mutableListOf<TrekkTable>()
         trekkOgStansListe.forEach { tos ->
-            var startNeste = tos.trekk.startPeriode
-            var i =  1
-            nyeTrekkListe.addAll(
-                tos.midlertidigStansList.map { ms ->
-                    val res = tos.trekk.copy(corrid = "${tos.trekk.corrid}-i", startPeriode = startNeste, sluttPeriode = ms.startPeriode.previousPeriod())
-                    startNeste = ms.sluttPeriode.nextPeriod()
-                    i += 1
-                    res
+            var startNeste = "${tos.trekk.startPeriode}-01"
+            var i = 1
+            if (tos.midlertidigStansList.isNotEmpty()) {
+                nyeTrekkListe.addAll(
+                    tos.midlertidigStansList.map { ms ->
+                        val res = tos.trekk.copy(corrid = "${tos.trekk.corrid}-$i", startPeriode = "$startNeste", sluttPeriode = ms.startPeriode.previousPeriod())
+                        startNeste = ms.sluttPeriode.nextPeriod()
+                        i += 1
+                        res
+                    }
+                )
+                nyeTrekkListe.add(tos.trekk.copy(corrid = "${tos.trekk.corrid}-$i", startPeriode = "$startNeste", sluttPeriode = "${tos.trekk.sluttPeriode.addPeriodEndDay()}"))
+            } else {
+                with (tos.trekk) {
+                    nyeTrekkListe.add(copy(startPeriode ="$startPeriode-01", sluttPeriode = "${sluttPeriode.addPeriodEndDay()}"))
                 }
-            )
+            }
         }
         return nyeTrekkListe
     }

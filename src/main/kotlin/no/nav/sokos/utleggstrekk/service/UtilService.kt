@@ -24,8 +24,8 @@ fun String.nextPeriod(): String {
     val ar = sp.get(0)
     val mnd = sp.get(1)
     return when (mnd.toInt()) {
-        12 -> "${ar.toInt()+1}-01"
-        in 1..8 -> "$ar-0${mnd.toInt()+1}"
-        else -> "$ar-${(mnd.toInt()+1)}"
-    }
+        12 -> "${ar.toInt()+1}-01-01"
+        in 1..8 -> "$ar-0${mnd.toInt()+1}-01"
+        else -> "$ar-${(mnd.toInt()+1)}-01"
+    }.also { println("NExtPeriod: $it") }
 }
