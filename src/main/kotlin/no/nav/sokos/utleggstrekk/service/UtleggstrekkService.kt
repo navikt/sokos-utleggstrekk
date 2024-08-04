@@ -13,19 +13,22 @@ private val logger = KotlinLogging.logger { }
 
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
+    private val genererTrekkService:GenererTrekkService,
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: MqProducer = MqProducer(PropertiesConfig.MqProperties())
 ) {
 
 
-    suspend fun hentAlleUtleggstrekk(): List<Utleggstrekk> {
+    suspend fun behandleUtleggstrekk(): List<Utleggstrekk> {
         println("skeClient.hentalle kalles:")
         val nyeTrekkListe = utleggstrekkResponseToList(skeClient.hentAlleUtleggstrekk())
         println("Antall trekk mottatt: ${nyeTrekkListe.size}")
         lagreAlleNyeUtleggstrekk(nyeTrekkListe)
-        val sendTrekkListe = databaseService.hentAlleTrekkSomIkkeErSendt()
-        println("Antall trekk lest fra db: ${sendTrekkListe.size}")
-        val xmlList = sendTrekkListe.map {
+        val trekkListeFraDb = databaseService.hentAlleTrekkSomIkkeErSendt()
+        val genererteTrekk = genererTrekkService.lagTrekkTilOsFraMidlertidigeTrekk(trekkListeFraDb)
+        println("Antall trekk lest fra db: ${trekkListeFraDb.size}")
+        println("Antall trekk generert: ${genererteTrekk.size}")
+        val xmlList = trekkListeFraDb.map {
             XmlService.createTrekkXmlObjects(it)
         }
         println("Sender ${xmlList.size} til MQ")

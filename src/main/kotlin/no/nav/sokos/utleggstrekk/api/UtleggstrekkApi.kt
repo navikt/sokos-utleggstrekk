@@ -23,7 +23,7 @@ fun Routing.utleggstrekkApi(
         }
 
         get("hent") {
-            val utleggstrekk = utleggstrekkService.hentAlleUtleggstrekk()
+            val utleggstrekk = utleggstrekkService.behandleUtleggstrekk()
             println("antall elementer: ${utleggstrekk.size}")
             call.respond(HttpStatusCode.OK, utleggstrekk.toString())
         }

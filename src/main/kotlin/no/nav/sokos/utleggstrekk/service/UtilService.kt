@@ -1,6 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
-internal fun String.previousPeriod():String {
+internal fun String.previousPeriodWithEndDay():String {
     val sp = this.split("-")
     val ar = sp.get(0)
     val mnd = sp.get(1)
@@ -19,7 +19,7 @@ fun String.addPeriodEndDay(): String {
     }
 }
 
-fun String.nextPeriod(): String {
+fun String.nextPeriodWithStartDay(): String {
     val sp = this.split("-")
     val ar = sp.get(0)
     val mnd = sp.get(1)
@@ -27,5 +27,5 @@ fun String.nextPeriod(): String {
         12 -> "${ar.toInt()+1}-01-01"
         in 1..8 -> "$ar-0${mnd.toInt()+1}-01"
         else -> "$ar-${(mnd.toInt()+1)}-01"
-    }.also { println("NExtPeriod: $it") }
+    }
 }

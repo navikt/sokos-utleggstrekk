@@ -58,12 +58,7 @@ object Responses {
             "trekkstatus": "aktiv",
             "startPeriode": "2024-12",
             "sluttPeriode": "2024-12",
-            "midlertidigStans": [
-              {
-                "startPeriode": "2024-12",
-                "sluttPeriode": "2024-12"
-              }
-            ],
+            "midlertidigStans":  null,
             "trekkbeloep": {
               "trekkbeloep": 1000
             },
@@ -80,12 +75,7 @@ object Responses {
             "trekkstatus": "inaktiv",
             "startPeriode": "2024-11",
             "sluttPeriode": "2024-11",
-            "midlertidigStans": [
-              {
-                "startPeriode": "2024-11",
-                "sluttPeriode": "2024-11"
-              }
-            ],
+            "midlertidigStans": null,
             "trekkprosent": {
               "trekkprosent": 10.0
             },

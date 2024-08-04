@@ -23,8 +23,8 @@ class GenererTrekkService(
             if (tos.midlertidigStansList.isNotEmpty()) {
                 nyeTrekkListe.addAll(
                     tos.midlertidigStansList.map { ms ->
-                        val res = tos.trekk.copy(corrid = "${tos.trekk.corrid}-$i", startPeriode = "$startNeste", sluttPeriode = ms.startPeriode.previousPeriod())
-                        startNeste = ms.sluttPeriode.nextPeriod()
+                        val res = tos.trekk.copy(corrid = "${tos.trekk.corrid}-$i", startPeriode = "$startNeste", sluttPeriode = ms.startPeriode.previousPeriodWithEndDay())
+                        startNeste = ms.sluttPeriode.nextPeriodWithStartDay()
                         i += 1
                         res
                     }

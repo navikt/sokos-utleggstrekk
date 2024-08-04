@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 
 class GenererTrekkServiceTest : FunSpec({
 
-    test("lagTrekkTilOsFraMidlertidigeTrekk") {
+    test("når et av to trekk fra SKE har 3 midlertidig  stans skal det genereres 4 trekk for dette trekk og et trekk for det uten midlertidig stans") {
         val trekkliste = testTrekkTableList
         val stansListe1 = testMidlertidigStansTable1
         val stansListe2 =  testMidlertidigStansTable2
@@ -22,22 +22,30 @@ class GenererTrekkServiceTest : FunSpec({
         val genererteTrekk = generertrekkService.lagTrekkTilOsFraMidlertidigeTrekk(trekkliste)
 
         stansListe1.size shouldBe 3
+        stansListe1.get(0).trekksekvensnr shouldBe 1
         stansListe1.get(0).startPeriode shouldBe "2024-12"
         stansListe1.get(0).sluttPeriode shouldBe "2024-12"
+        stansListe1.get(1).trekksekvensnr shouldBe 1
         stansListe1.get(1).startPeriode shouldBe "2025-06"
         stansListe1.get(1).sluttPeriode shouldBe "2025-07"
+        stansListe1.get(2).trekksekvensnr shouldBe 1
         stansListe1.get(2).startPeriode shouldBe "2026-01"
         stansListe1.get(2).sluttPeriode shouldBe "2026-01"
 
         genererteTrekk.size shouldBe 5
+        genererteTrekk.get(0).sekvensnr shouldBe 1
         genererteTrekk.get(0).startPeriode shouldBe "2024-01-01"
         genererteTrekk.get(0).sluttPeriode shouldBe "2024-11-30"
+        genererteTrekk.get(1).sekvensnr shouldBe 1
         genererteTrekk.get(1).startPeriode shouldBe "2025-01-01"
         genererteTrekk.get(1).sluttPeriode shouldBe "2025-05-31"
+        genererteTrekk.get(2).sekvensnr shouldBe 1
         genererteTrekk.get(2).startPeriode shouldBe "2025-08-01"
         genererteTrekk.get(2).sluttPeriode shouldBe "2025-12-31"
+        genererteTrekk.get(3).sekvensnr shouldBe 1
         genererteTrekk.get(3).startPeriode shouldBe "2026-02-01"
         genererteTrekk.get(3).sluttPeriode shouldBe "2026-04-30"
+        genererteTrekk.get(4).sekvensnr shouldBe 2
         genererteTrekk.get(4).startPeriode shouldBe "2024-01-01"
         genererteTrekk.get(4).sluttPeriode shouldBe "2026-04-30"
 
