@@ -16,7 +16,7 @@ data class Utleggstrekk(
     val midlertidigStans: List<MidlertidigStans>? = null,
     val trekkbeloep: TrekkBeloep? = null,
     val trekkprosent: TrekkProsent? = null,
-    val kid: String?,
+    val kidnummer: String?,
     val kontonummer: String,
 )
 
