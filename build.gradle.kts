@@ -17,7 +17,7 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
-val ktorVersion = "2.3.6"
+val ktorVersion = "2.3.12"
 val hikaricpVersion = "5.1.0"
 val oracleJdbcVersion = "19.22.0.0"
 val nimbusVersion = "9.37.2"
@@ -31,7 +31,7 @@ val kotlinxSerializationVersion = "1.6.0"
 val prometheusVersion = "1.11.5"
 val flywayVersion = "9.16.1"
 val postgresqlVersion = "42.6.1"
-val jacksonVersion = "2.13.4"
+val jacksonVersion = "2.15.0"
 
 // Test
 val kotestVersion = "5.8.0"
