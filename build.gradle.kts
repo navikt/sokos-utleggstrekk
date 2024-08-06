@@ -1,10 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.9.20"
     kotlin("plugin.serialization") version "1.8.21"
-//    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jetbrains.kotlinx.kover") version "0.8.2"
 }
@@ -25,7 +26,7 @@ val logbackVersion = "1.5.6"
 val logstashVersion = "7.3"
 val kotlinLoggingVersion = "3.0.4"
 val kotlinxDatetimeVersion = "0.4.1"
-val natpryceVersion = "1.6.10.0"
+val konfigVersion = "1.6.10.0"
 val kotlinxSerializationVersion = "1.6.0"
 val prometheusVersion = "1.11.5"
 val flywayVersion = "9.16.1"
@@ -41,8 +42,7 @@ val testContainerVersion = "1.19.1"
 val mockFtpServerVersion = "3.1.0"
 val swaggerRequestValidatorVersion = "2.40.0"
 val janinoVersion = "3.1.10"
-val ibm_mq_version="9.4.0.0"
-
+val ibmMqVersion = "9.4.0.0"
 
 dependencies {
     // Ktor Server
@@ -73,7 +73,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:$prometheusVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime-jvm:$kotlinxDatetimeVersion")
-    implementation("com.natpryce:konfig:$natpryceVersion")
+    implementation("com.natpryce:konfig:$konfigVersion")
 
     // Security
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
@@ -88,11 +88,10 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
     // MQ
-    implementation("com.ibm.mq:com.ibm.mq.allclient:$ibm_mq_version")
-
+    implementation("com.ibm.mq:com.ibm.mq.allclient:$ibmMqVersion")
 
     // XML
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:${jacksonVersion}")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
     // Test
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
@@ -102,7 +101,6 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("commons-net:commons-net:$commonsVersion")
     testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
 kotlin {
@@ -119,9 +117,9 @@ sourceSets {
 }
 
 tasks {
-//    withType<KotlinCompile>().configureEach {
-//        dependsOn("ktlintFormat")
-//    }
+    withType<KotlinCompile>().configureEach {
+        dependsOn("ktlintFormat")
+    }
     withType<ShadowJar>().configureEach {
         enabled = true
         archiveFileName.set("sokos-utleggstrekk.jar")

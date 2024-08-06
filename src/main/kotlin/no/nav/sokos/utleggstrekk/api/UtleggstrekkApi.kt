@@ -43,13 +43,13 @@ fun Routing.utleggstrekkApi(
             call.respond(HttpStatusCode.OK, utleggstrekk.toString())
         }
     }
-    route("mq/"){
+    route("mq/") {
         get("a") {
             val mq = ShowAllQueueDepth()
             val res = mq.allLocalQueueDepths()
             call.respond(HttpStatusCode.OK, res.joinToString("\n"))
         }
-        get("a/{namePart}"){
+        get("a/{namePart}") {
             val namePart = call.parameters["namePart"]
             val mq = ShowAllQueueDepth()
             val res = mq.allLocalQueueDepths(namePart!!)

@@ -117,7 +117,6 @@ object PropertiesConfig {
         val username: String = getOrEmpty("MQ_USERNAME").also(::println),
         val password: String = getOrEmpty("MQ_PASSWORD").also(::println),
         val inqUsername: String = getOrEmpty("MQ_INQ_USERNAME").also(::println),
-        val inqPassword: String = getOrEmpty("MQ_INQ_PASSWORD").also(::println)
+        val inqPassword: String = getOrEmpty("MQ_INQ_PASSWORD").also(::println),
     )
-
 }

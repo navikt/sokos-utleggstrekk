@@ -5,11 +5,10 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
-import java.util.*
+import java.util.UUID
 
 private const val ORGNR = "889640782"
 private const val FRA_SEKVENSNR = "?fraSekvensnummer="
@@ -21,7 +20,7 @@ class SkeClient(
 ) {
     val basePath = "${PropertiesConfig.SKEConfig().skeRestUrl}$ORGNR"
 
-    suspend fun hentAlleUtleggstrekk() = doGet("$basePath", UUID.randomUUID().toString()).also { println(it.bodyAsText()) }
+    suspend fun hentAlleUtleggstrekk() = doGet(basePath, UUID.randomUUID().toString())
 
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int) =
         doGet("${basePath}$FRA_SEKVENSNR$sekvensnr", UUID.randomUUID().toString())

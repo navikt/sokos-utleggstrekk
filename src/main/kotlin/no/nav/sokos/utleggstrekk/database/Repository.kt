@@ -10,7 +10,7 @@ import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import java.sql.Connection
-import java.util.*
+import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
 
@@ -26,12 +26,13 @@ object Repository {
 
     fun Connection.checkIfTrekkfinnes(sekvensnr: Int): Boolean =
         prepareStatement(
-        """
-           select 1 from trekk where sekvensnr = ? 
-        """.trimIndent()
+            """
+            select 1 from trekk where sekvensnr = ? 
+            """.trimIndent(),
         ).withParameters(
-            param(sekvensnr)
-        ).executeQuery().next()
+            param(sekvensnr),
+        ).executeQuery()
+            .next()
 
     fun Connection.saveAllNewUtleggstrekk(
         trekkListe: List<Utleggstrekk>,
@@ -66,7 +67,7 @@ object Repository {
                 startperiode, 
                 sluttperiode
                 ) values (?, ?, ?)        
-               """.trimIndent(),
+                """.trimIndent(),
             )
         trekkListe.forEach {
             val trekkBelop = it.trekkbeloep?.trekkbeloep
@@ -128,7 +129,7 @@ object Repository {
         trekkTableList.forEach {
             val trekkBelop = it.trekkbelop
             val trekkProsent = it.trekkprosent
-            val sekvensnrNav = it.corrid.substring(it.corrid.length-4).substringAfterLast("-", "0")
+            val sekvensnrNav = it.corrid.substring(it.corrid.length - 4).substringAfterLast("-", "0")
             prepStmt.setInt(1, it.sekvensnr)
             prepStmt.setInt(2, sekvensnrNav.toInt())
             prepStmt.setString(3, it.trekkid)
@@ -145,27 +146,23 @@ object Repository {
             prepStmt.setString(14, it.kid)
             prepStmt.setString(15, it.kontonummer)
             prepStmt.addBatch()
-
         }
         prepStmt.executeBatch()
         commit()
     }
 
-    fun Connection.fetchAllTrekkNotSent(): List<TrekkTable> {
-        return prepareStatement("""select * from trekk where status = 'MOTTATT'""")
-            .executeQuery().toTrekkTable()
+    fun Connection.fetchAllTrekkNotSent(): List<TrekkTable> =
+        prepareStatement("""select * from trekk where status     = 'MOTTATT'""")
+            .executeQuery()
+            .toTrekkTable()
 
-    }
-
-    fun Connection.fetcMidletidigStansForSekvensnr(sekvensnr: Int): List<MidlertidigStansTable> {
-        return prepareStatement(
+    fun Connection.fetcMidletidigStansForSekvensnr(sekvensnr: Int): List<MidlertidigStansTable> =
+        prepareStatement(
             """
-                select * from midlertidigstans where trekksekvensnr = ?
-            """.trimIndent()
+            select * from midlertidigstans where trekksekvensnr = ?
+            """.trimIndent(),
         ).withParameters(
-            param(sekvensnr)
-        ).executeQuery().toMidlertidigStans()
-
-    }
-
+            param(sekvensnr),
+        ).executeQuery()
+            .toMidlertidigStans()
 }

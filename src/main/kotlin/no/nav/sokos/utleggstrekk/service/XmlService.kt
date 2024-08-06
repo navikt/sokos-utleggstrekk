@@ -21,15 +21,15 @@ import no.nav.sokos.utleggstrekk.domene.nav.VDN
 import no.nav.sokos.utleggstrekk.domene.nav.VSDN
 
 object XmlService {
-
-    fun generateXmlStringListFromTrekkXmlList(xmlDataList: List<TrekkXml>): List<String>{
-        val xmlMapper = XmlMapper(
-            JacksonXmlModule().apply {  }
-        ).apply {
-            enable(SerializationFeature.INDENT_OUTPUT)
-            enable(SerializationFeature.WRAP_ROOT_VALUE)
-            enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION)
-        }
+    fun generateXmlStringListFromTrekkXmlList(xmlDataList: List<TrekkXml>): List<String> {
+        val xmlMapper =
+            XmlMapper(
+                JacksonXmlModule().apply { },
+            ).apply {
+                enable(SerializationFeature.INDENT_OUTPUT)
+                enable(SerializationFeature.WRAP_ROOT_VALUE)
+                enable(ToXmlGenerator.Feature.WRITE_XML_DECLARATION)
+            }
         return xmlDataList.map {
             println("Mapper ${it.msgInfo.msgId}")
             val xml = xmlMapper.writeValueAsString(it)
@@ -39,47 +39,58 @@ object XmlService {
     }
 
     fun createTrekkXmlObjects(trekk: TrekkTable): TrekkXml {
-        val sats = when {
-            trekk.trekkbelop == null -> trekk.trekkprosent!!
-            else -> trekk.trekkbelop
-        }
+        val sats =
+            when {
+                trekk.trekkbelop == null -> trekk.trekkprosent!!
+                else -> trekk.trekkbelop
+            }
         return TrekkXml(
-                msgInfo = MsgInfo(
+            msgInfo =
+                MsgInfo(
                     msgId = trekk.corrid,
                 ),
-                document = Document(
-                    refDoc = RefDoc(
-                        content = Content(
-                            innrapporteringTrekk = InnrapporteringTrekk(
-                                aksjonskode = VDN(v = "NY", dn = "Nytt trekk"),  //TODO Dette må sikker være dynamisk.(Ny, endring eller  stopp)
-                                identifisering = Identifisering(
-                                    kreditorTrekkId = trekk.trekkid,
-                                    debitorId = DebitorId(
-                                        id = trekk.skyldner,
-                                        typeId = VSDN(v = "FNR", s = "2.16.578.1.12.4.1.1.8116", dn = "Fødselsnummer") //TODO verifisere om debitorId kan være annet enn fnr??
-                                    ),
-                                ),
-                                trekk = Trekk(
-                                    kodeTrekktype = VDN(v = "KRED", dn = "Deknings.§ bokstav f"),  //TODO Verifiosere hvilke kode trekktype som finnes og hva som definerer de
-                                    kodeTrekkAlternativ = VDN(v = "SALM", dn = "Saldotrekk månedssats"),  //TODO HVike alternativeTrekkalternativer finnes
-                                    sats = V(v = "$sats"),
-                                    saldo = V(v = "10000.00"), //TODO Hva F bvruker vi her hvis det  er % sats, ved beløp kan vi kange med antall måneder?
-                                    prioritetFomDato = trekk.startPeriode,  //TODO AVklare/verifisere hva er/hvilket felt skal bukes
-                                    gyldigTomDato = trekk.sluttPeriode   //TODO AVklare/verifisere hva er/hvilket felt skal bukes
-                                ),
-                                periode = Periode(
-                                    periodeFomDato = trekk.startPeriode,  //TODO fra trekket Start ??
-                                    periodeTomDato = trekk.sluttPeriode //TODO  fra trekket Slutt ??
-                                ),
-                                kreditor = Kreditor( //TODO  Denne vil vel alltid være skatteetaten? så den kan gjøres som default? evt samme som sender??
-                                    ref = trekk.trekkid,
-                                    kontonr = trekk.kontonummer,
-                                    kid = trekk.kid
-                                ),
-                            ) //innrapporteringTrekk
-                        ) //content
-                    ) //refDoc
-                ) //document
-            ) //xmldata/TrekkXml
+            document =
+                Document(
+                    refDoc =
+                        RefDoc(
+                            content =
+                                Content(
+                                    innrapporteringTrekk =
+                                        InnrapporteringTrekk(
+                                            aksjonskode = VDN(v = "NY", dn = "Nytt trekk"), // TODO Dette må sikker være dynamisk.(Ny, endring eller  stopp)
+                                            identifisering =
+                                                Identifisering(
+                                                    kreditorTrekkId = trekk.trekkid,
+                                                    debitorId =
+                                                        DebitorId(
+                                                            id = trekk.skyldner,
+                                                            typeId = VSDN(v = "FNR", s = "2.16.578.1.12.4.1.1.8116", dn = "Fødselsnummer"), // TODO verifisere om debitorId kan være annet enn fnr??
+                                                        ),
+                                                ),
+                                            trekk =
+                                                Trekk(
+                                                    kodeTrekktype = VDN(v = "KRED", dn = "Deknings.§ bokstav f"), // TODO Verifiosere hvilke kode trekktype som finnes og hva som definerer de
+                                                    kodeTrekkAlternativ = VDN(v = "SALM", dn = "Saldotrekk månedssats"), // TODO HVike alternativeTrekkalternativer finnes
+                                                    sats = V(v = "$sats"),
+                                                    saldo = V(v = "10000.00"), // TODO Hva F bvruker vi her hvis det  er % sats, ved beløp kan vi kange med antall måneder?
+                                                    prioritetFomDato = trekk.startPeriode, // TODO AVklare/verifisere hva er/hvilket felt skal bukes
+                                                    gyldigTomDato = trekk.sluttPeriode, // TODO AVklare/verifisere hva er/hvilket felt skal bukes
+                                                ),
+                                            periode =
+                                                Periode(
+                                                    periodeFomDato = trekk.startPeriode, // TODO fra trekket Start ??
+                                                    periodeTomDato = trekk.sluttPeriode, // TODO  fra trekket Slutt ??
+                                                ),
+                                            kreditor =
+                                                Kreditor( // TODO  Denne vil vel alltid være skatteetaten? så den kan gjøres som default? evt samme som sender??
+                                                    ref = trekk.trekkid,
+                                                    kontonr = trekk.kontonummer,
+                                                    kid = trekk.kid,
+                                                ),
+                                        ), // innrapporteringTrekk
+                                ), // content
+                        ), // refDoc
+                ), // document
+        ) // xmldata/TrekkXml
     }
 }

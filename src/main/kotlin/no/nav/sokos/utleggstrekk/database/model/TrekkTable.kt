@@ -2,7 +2,6 @@ package no.nav.sokos.utleggstrekk.database.model
 
 import java.time.LocalDateTime
 
-
 data class TrekkTable(
     val trekktableid: Long,
     val sekvensnr: Int,

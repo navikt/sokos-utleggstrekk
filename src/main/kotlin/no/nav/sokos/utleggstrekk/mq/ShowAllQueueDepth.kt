@@ -13,9 +13,8 @@ import com.ibm.mq.headers.pcf.PCFMessageAgent
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import java.util.regex.Pattern
 
-
 class ShowAllQueueDepth(
-    val mqConfig: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties()
+    val mqConfig: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties(),
 ) {
     init {
         MQEnvironment.hostname = mqConfig.host
@@ -25,7 +24,7 @@ class ShowAllQueueDepth(
         MQEnvironment.password = mqConfig.inqPassword
     }
 
-    fun allLocalQueueDepths(namePart:String  = ""):List<String> {
+    fun allLocalQueueDepths(namePart: String = ""): List<String> {
         val qmgr = MQQueueManager(mqConfig.qmgrName)
         val pcfCmd = PCFMessage(MQConstants.MQCMD_INQUIRE_Q)
         val agent = PCFMessageAgent(qmgr)
@@ -36,30 +35,32 @@ class ShowAllQueueDepth(
 
         val pcfResponse = agent.send(pcfCmd).asList()
 
-
         return pcfResponse.filterNotNull().let {
-            val respList = if (namePart.isNotBlank()) {
-                it.filter { java.lang.String.valueOf(it.getParameterValue(MQCA_Q_NAME)).contains(namePart)}
-            } else { it }
+            val respList =
+                if (namePart.isNotBlank()) {
+                    it.filter { java.lang.String.valueOf(it.getParameterValue(MQCA_Q_NAME)).contains(namePart) }
+                } else {
+                    it
+                }
             respList
 //                .filter { Pattern.matches("^.*_BOQ.*", java.lang.String.valueOf( it.getParameterValue(MQCA_Q_NAME))) }
-            .filter { !Pattern.matches("^SYSTEM.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
-            .filter { !Pattern.matches("^AMK.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
-            .filter { !Pattern.matches("^AMQ.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
-            .map { pcfm ->
-                val queueName = pcfm.getParameterValue(MQCA_Q_NAME).toString()
-                val depth = pcfm.getParameterValue(MQIA_CURRENT_Q_DEPTH).toString()
-                var write = false
-                try {
-                    val queue: MQQueue = qmgr.accessQueue(queueName, MQOO_OUTPUT)
-                    write = true
-                    println("*****$queueName KAN skrive = $write")
-                } catch (e: MQException) {
-                    println("*****$queueName kan IKKE skrive = $write -  ${e.reasonCode}")
-                }
+                .filter { !Pattern.matches("^SYSTEM.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
+                .filter { !Pattern.matches("^AMK.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
+                .filter { !Pattern.matches("^AMQ.*$", (it.getParameterValue(MQCA_Q_NAME) as String)) }
+                .map { pcfm ->
+                    val queueName = pcfm.getParameterValue(MQCA_Q_NAME).toString()
+                    val depth = pcfm.getParameterValue(MQIA_CURRENT_Q_DEPTH).toString()
+                    var write = false
+                    try {
+                        val queue: MQQueue = qmgr.accessQueue(queueName, MQOO_OUTPUT)
+                        write = true
+                        println("*****$queueName KAN skrive = $write")
+                    } catch (e: MQException) {
+                        println("*****$queueName kan IKKE skrive = $write -  ${e.reasonCode}")
+                    }
 
-                "\nNavn: $queueName Dybde: $depth Kan skrive: $write"
-            }
+                    "\nNavn: $queueName Dybde: $depth Kan skrive: $write"
+                }
         }
     }
 }

@@ -44,7 +44,7 @@ class DatabaseService(
     fun hentAlleTrekkSomIkkeErSendt(): List<TrekkTable> =
         dataSource.connection.useAndHandleErrors { con ->
             con.fetchAllTrekkNotSent().also { con.close() }
-    }
+        }
 
     fun hentMidletidigStansForSekvensnr(sekvensnr: Int): List<MidlertidigStansTable> =
         dataSource.connection.useAndHandleErrors { con ->

@@ -25,7 +25,7 @@ private fun Application.module() {
     val azureConfiguration = AzureConfiguration()
     val databaseService = DatabaseService()
     val genererTrekkService = GenererTrekkService(databaseService)
-    val utleggstrekkService = UtleggstrekkService(databaseService,genererTrekkService)
+    val utleggstrekkService = UtleggstrekkService(databaseService, genererTrekkService)
 
     commonConfig(azureConfiguration)
     applicationLifecycleConfig(applicationState)
