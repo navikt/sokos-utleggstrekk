@@ -28,7 +28,6 @@ class MockHttpClient {
         response: String,
         statusCode: HttpStatusCode,
     ) = HttpClient(MockEngine) {
-        println("baseurl: $baseUrl")
         install(ContentNegotiation) { json(jsonConfig) }
         engine {
             addHandler { request ->
@@ -45,7 +44,7 @@ class MockHttpClient {
 
 object Responses {
     //language=json
-    val utleggsTrekkListe =
+    val utleggsTrekkListeUtenMidlertidigStans =
         """
         [
           {
@@ -59,6 +58,52 @@ object Responses {
             "startPeriode": "2024-12",
             "sluttPeriode": "2024-12",
             "midlertidigStans":  null,
+            "trekkbeloep": {
+              "trekkbeloep": 1000
+            },
+            "kid": "8981238184016280475641088",
+            "kontonummer": "19019019019"
+          },
+          {
+            "trekkid": "2",
+            "trekkversjon": 1,
+            "sekvensnummer": 1,
+            "opprettet": "2024-07-10T08:24:34.143Z",
+            "trekkpliktig": "987654321",
+            "skyldner": "22003648649",
+            "trekkstatus": "inaktiv",
+            "startPeriode": "2024-11",
+            "sluttPeriode": "2024-11",
+            "midlertidigStans": null,
+            "trekkprosent": {
+              "trekkprosent": 10.0
+            },
+            "kid": "9981238184016280475641088",
+            "kontonummer": "12012012012"
+          }
+        ]
+        """.trimIndent()
+
+    //language=json
+    val utleggsTrekkListeMedMidlertidigStans =
+        """
+        [
+          {
+            "trekkid": "1",
+            "trekkversjon": 1,
+            "sekvensnummer": 1,
+            "opprettet": "2024-07-10T08:24:34.143Z",
+            "trekkpliktig": "123456789",
+            "skyldner": "22003648649",
+            "trekkstatus": "aktiv",
+            "startPeriode": "2024-12",
+            "sluttPeriode": "2024-12",
+            "midlertidigStans":  [
+            {
+              "startPeriode": "2024-12",
+              "sluttPeriode": "2024-12"
+            }
+          ],
             "trekkbeloep": {
               "trekkbeloep": 1000
             },

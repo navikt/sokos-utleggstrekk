@@ -17,8 +17,11 @@ object PostgresDataSource {
             .configure()
             .dataSource(dataSource)
             .initSql("""SET ROLE "${ postgresConfig.adminUser}"""")
+            .lockRetryCount(-1)
+            .validateMigrationNaming(true)
             .load()
             .migrate()
+            .migrationsExecuted
         logger.info { "Migration finished" }
     }
 
@@ -41,7 +44,6 @@ object PostgresDataSource {
             connectionTimeout = 10000
             isAutoCommit = false
             idleTimeout = 10000
-            // connectionTestQuery = "SELECT * FROM ${dbConfig.testTable} LIMIT 1"
             jdbcUrl = postgresConfig.jdbcUrl
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()
