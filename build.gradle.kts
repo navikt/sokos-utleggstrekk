@@ -3,7 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.20"
+    kotlin("jvm") version "2.0.0-RC1"
     kotlin("plugin.serialization") version "1.8.21"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -15,6 +15,9 @@ group = "no.nav.sokos"
 repositories {
     mavenCentral()
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
+    maven {
+        url = uri("https://s01.oss.sonatype.org/content/repositories/releases/")
+    }
 }
 
 val ktorVersion = "2.3.12"
@@ -60,7 +63,10 @@ dependencies {
     // Serialization
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktorVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$kotlinxSerializationVersion")
+    implementation("io.github.pdvrieze.xmlutil:core-jvm:0.86.3")
+    implementation("io.github.pdvrieze.xmlutil:serialization-jvm:0.86.3")
 
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     // Logging
     implementation("ch.qos.logback:logback-core:$logbackVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -91,7 +97,6 @@ dependencies {
     implementation("com.ibm.mq:com.ibm.mq.allclient:$ibmMqVersion")
 
     // XML
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
     // Test
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
