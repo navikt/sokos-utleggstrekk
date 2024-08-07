@@ -1,13 +1,25 @@
 package no.nav.sokos.utleggstrekk.service
 
 import kotlinx.serialization.Serializable
+import nl.adaptivity.xmlutil.XmlDeclMode
+import nl.adaptivity.xmlutil.core.XmlVersion
+import nl.adaptivity.xmlutil.serialization.XML
+import nl.adaptivity.xmlutil.serialization.XmlAfter
+import nl.adaptivity.xmlutil.serialization.XmlBefore
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import java.lang.String.valueOf
 
-class NyXmlService {
-    fun createNyTrekkXMLObjects(trekk: TrekkTable) {
+object NyXmlService {
+    fun OSUtleggsTrekk.toXml() =
+        XML {
+            xmlVersion = XmlVersion.XML10
+            xmlDeclMode = XmlDeclMode.Charset
+            indent = 4
+        }.encodeToString(OSUtleggsTrekk.serializer(), this)
+
+    fun createNyTrekkXMLObjects(trekk: TrekkTable): OSUtleggsTrekk {
         val (sats, kodeTrekkAlternativ) =
             if (trekk.trekkbelop == null) {
                 Pair(trekk.trekkprosent!!, KodeTrekkAlternativ.LOPP)
@@ -23,11 +35,12 @@ class NyXmlService {
                 kid = trekk.kid,
                 kreditorsRef = trekk.trekkid,
                 kodeTrekkAlternativ = valueOf(kodeTrekkAlternativ),
-                periode = Periode(trekk.startPeriode, trekk.sluttPeriode, sats),
+                periode = Periode(trekk.startPeriode, trekk.sluttPeriode, "%.2f".format(sats)),
             )
+        return OSUtleggsTrekk(dokument = innrapporteringTrekk)
     }
 
-    private enum class KodeTrekkAlternativ {
+    enum class KodeTrekkAlternativ {
         LOPM,
         LOPP,
     }
@@ -47,14 +60,28 @@ data class InnrapporteringTrekk(
          aksjonskode kan ha NY, ENDR (endring av feks sats), ENRS (endring av restsaldo), KANS (kansellering) og OPPH (opphør).
         Jeg er usikker på når ENRS skal brukes i stedet for ENDR, og når OPPH skal brukes i stedet for KANS. Men dette finner vi ut etterhvert
      */
-    @XmlElement val aksjonskode: String = "NY",
-    @XmlElement val kreditorTrekkId: String,
-    @XmlElement val kontonr: String,
-    @XmlElement val debitorId: String,
-    // LOPM hvis beløp, LOPP hvis prosent
-    @XmlElement val kodeTrekkAlternativ: String,
-    @XmlElement val kid: String,
-    @XmlElement val kreditorsRef: String,
+    @XmlElement
+    @XmlBefore("navTrekkId")
+    val aksjonskode: String = "NY",
+    @XmlElement
+    @XmlAfter("kreditorIdTss")
+    val kreditorTrekkId: String,
+    @XmlElement
+    @XmlAfter("kreditorOrgnr")
+    val kontonr: String,
+    @XmlElement
+    @XmlAfter("kontonr")
+    val debitorId: String,
+    @XmlElement
+    @XmlAfter("kodeTrekktype")
+    val kodeTrekkAlternativ: String,
+    @XmlElement
+    @XmlAfter("kodeTrekkAlternativ")
+    val kid: String,
+    @XmlElement
+    @XmlAfter("kid")
+    val kreditorsRef: String,
+    @XmlAfter("gyldigTomDato")
     val periode: Periode,
     /*
      * saldo er beløpet som debitor skylder. Brukes ved saldo-trekk, ikke løpende trekk.
@@ -79,19 +106,33 @@ data class InnrapporteringTrekk(
      * ved trekkbeløp: kodeTrekkAlternativ = LOPM
      * ved trekkprosent: kodeTrekkAlternativ = LOPP
      * */
-    @XmlElement private val saldo: String = "0.0",
-    @XmlElement private val prioritetFomDato: String = "",
-    @XmlElement private val gyldigTomDato: String = "",
-    @XmlElement private val kreditorIdTss: String = "00987654321",
-    @XmlElement private val kodeTrekktype: String = "KRED",
+    @XmlElement
+    @XmlAfter("navTrekkId")
+    val kreditorIdTss: String = "00987654321",
+    @XmlElement
+    @XmlAfter("debitorId")
+    val kodeTrekktype: String = "KRED",
+    @XmlElement
+    @XmlAfter("kreditorsRef")
+    val saldo: String = "0.00",
+    @XmlElement
+    @XmlAfter("saldo")
+    val prioritetFomDato: String = "",
+    @XmlElement
+    @XmlAfter("prioritetFomDato")
+    val gyldigTomDato: String = "",
     /*
     navTrekkId er den id'en som OS identifiserer trekket med.
     Vi trenger ikke sende navTrekkId.
     Feltet kan brukes til å identifisere trekket ved endringer.
      Men vi (dere) vil sikkert bruke kombinasjonen kreditorIdTss og kreditorTrekkId.
      */
-    @XmlElement private val navTrekkId: String = "$kreditorIdTss-$kreditorTrekkId",
-    @XmlElement private val kreditorOrgnr: String = "00987654321",
+    @XmlElement
+    @XmlAfter("aksjonskode")
+    val navTrekkId: String = "$kreditorIdTss-$kreditorTrekkId",
+    @XmlElement
+    @XmlAfter("kreditorTrekkId")
+    val kreditorOrgnr: String = "00987654321",
 )
 
 @Serializable
@@ -99,5 +140,5 @@ data class InnrapporteringTrekk(
 data class Periode(
     @XmlElement val periodeFomDato: String,
     @XmlElement val periodeTomDato: String,
-    @XmlElement val sats: Double,
+    @XmlElement val sats: String,
 )

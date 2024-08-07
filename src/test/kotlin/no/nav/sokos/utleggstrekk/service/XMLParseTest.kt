@@ -4,20 +4,8 @@ import io.kotest.core.spec.style.FunSpec
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.serialization.XML
-import no.nav.sokos.utleggstrekk.domene.nav.Content
-import no.nav.sokos.utleggstrekk.domene.nav.DebitorId
-import no.nav.sokos.utleggstrekk.domene.nav.Document
-import no.nav.sokos.utleggstrekk.domene.nav.Identifisering
-import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
-import no.nav.sokos.utleggstrekk.domene.nav.Kreditor
-import no.nav.sokos.utleggstrekk.domene.nav.MsgInfo
-import no.nav.sokos.utleggstrekk.domene.nav.Periode
-import no.nav.sokos.utleggstrekk.domene.nav.RefDoc
-import no.nav.sokos.utleggstrekk.domene.nav.Trekk
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkXml
-import no.nav.sokos.utleggstrekk.domene.nav.V
-import no.nav.sokos.utleggstrekk.domene.nav.VDN
-import no.nav.sokos.utleggstrekk.domene.nav.VSDN
+import no.nav.sokos.utleggstrekk.database.model.TrekkTable
+import java.time.LocalDateTime
 
 internal class XMLParseTest :
     FunSpec({
@@ -33,58 +21,149 @@ internal class XMLParseTest :
                 }.encodeToString(OSUtleggsTrekk.serializer(), testObj)
             println(testStr)
         }
+
+        test("trekktable til xml objekt") {
+            val xmlObjekter =
+                trekkTableListGenerert.map {
+                    NyXmlService.createNyTrekkXMLObjects(it)
+                }
+
+            xmlObjekter.forEach { println(it) }
+            xmlObjekter.forEach {
+                val testStr =
+                    XML {
+                        xmlVersion = XmlVersion.XML10
+                        xmlDeclMode = XmlDeclMode.Charset
+                        indent = 4
+                    }.encodeToString(OSUtleggsTrekk.serializer(), it)
+                println(testStr)
+            }
+        }
     })
 
-val gammelXmlObj =
-    TrekkXml(
-        msgInfo =
-            MsgInfo(
-                msgId = "En gguid",
-            ),
-        // msgInfo
-        document =
-            Document(
-                refDoc =
-                    RefDoc(
-                        content =
-                            Content(
-                                innrapporteringTrekk =
-                                    InnrapporteringTrekk(
-                                        aksjonskode = VDN(v = "NY", dn = "Nytt trekk"),
-                                        identifisering =
-                                            Identifisering(
-                                                kreditorTrekkId = "TREKKID_000001",
-                                                debitorId =
-                                                    DebitorId(
-                                                        id = "09876543219",
-                                                        typeId = VSDN(v = "FNR", s = "2.16.578.1.12.4.1.1.8116", dn = "Fødselsnummer"),
-                                                    ),
-                                            ),
-                                        trekk =
-                                            Trekk(
-                                                kodeTrekktype = VDN(v = "KRED", dn = "Deknings.§ bokstav f"),
-                                                kodeTrekkAlternativ = VDN(v = "SALM", dn = "Saldotrekk månedssats"),
-                                                sats = V(v = "12345.50"),
-                                                saldo = V(v = "10000.00"),
-                                                prioritetFomDato = "2024-05-06+02:00",
-                                                gyldigTomDato = "2026-05-06+02:00",
-                                            ),
-                                        periode =
-                                            Periode(
-                                                periodeFomDato = "2025-09-01+02:00",
-                                                periodeTomDato = "2025-09-30+02:00",
-                                            ),
-                                        kreditor =
-                                            Kreditor(
-                                                ref = "Dette er kreditorREF",
-                                                kontonr = "Kontonummer12345",
-                                                kid = "kid1234567890",
-                                            ),
-                                    ), // innrapporteringTrekk
-                            ), // content
-                    ), // refDoc
-            ), // document
-    ) // xmldata
+val trekkTableListGenerert =
+    listOf(
+        TrekkTable(
+            trekktableid = 1,
+            trekkid = "1",
+            sekvensnr = 1,
+            trekkversjon = 1,
+            trekkopprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+            trekkpliktig = "987654321",
+            skyldner = "12345678901",
+            trekkstatus = "AKTIV",
+            startPeriode = "2024-01-01",
+            sluttPeriode = "2024-11-30",
+            trekkbelop = 1000.0,
+            kid = "12345678901234567890",
+            kontonummer = "12341212345",
+            corrid = "corrID_1A",
+            status = "MOTTATT",
+            tidspunktMottatt = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktSisteStatus = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktOpprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+        ),
+        TrekkTable(
+            trekktableid = 1,
+            trekkid = "1",
+            sekvensnr = 1,
+            trekkversjon = 1,
+            trekkopprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+            trekkpliktig = "987654321",
+            skyldner = "12345678901",
+            trekkstatus = "AKTIV",
+            startPeriode = "2025-01-01",
+            sluttPeriode = "2025-05-31",
+            trekkbelop = 1000.0,
+            kid = "12345678901234567890",
+            kontonummer = "12341212345",
+            corrid = "corrID_1A",
+            status = "MOTTATT",
+            tidspunktMottatt = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktSisteStatus = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktOpprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+        ),
+        TrekkTable(
+            trekktableid = 1,
+            trekkid = "1",
+            sekvensnr = 1,
+            trekkversjon = 1,
+            trekkopprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+            trekkpliktig = "987654321",
+            skyldner = "12345678901",
+            trekkstatus = "AKTIV",
+            startPeriode = "2025-08-01",
+            sluttPeriode = "2025-12-31",
+            trekkbelop = 1000.0,
+            kid = "12345678901234567890",
+            kontonummer = "12341212345",
+            corrid = "corrID_1A",
+            status = "MOTTATT",
+            tidspunktMottatt = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktSisteStatus = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktOpprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+        ),
+        TrekkTable(
+            trekktableid = 1,
+            trekkid = "1",
+            sekvensnr = 1,
+            trekkversjon = 1,
+            trekkopprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+            trekkpliktig = "987654321",
+            skyldner = "12345678901",
+            trekkstatus = "AKTIV",
+            startPeriode = "2026-02-01",
+            sluttPeriode = "2025-04-30",
+            trekkbelop = 1000.0,
+            kid = "12345678901234567890",
+            kontonummer = "12341212345",
+            corrid = "corrID_1A",
+            status = "MOTTATT",
+            tidspunktMottatt = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktSisteStatus = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktOpprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+        ),
+        TrekkTable(
+            trekktableid = 2,
+            trekkid = "2",
+            sekvensnr = 2,
+            trekkversjon = 1,
+            trekkopprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+            trekkpliktig = "987654322",
+            skyldner = "12345678902",
+            trekkstatus = "AKTIV",
+            startPeriode = "2024-01-01",
+            sluttPeriode = "2024-04-30",
+            trekkbelop = 1000.0,
+            kid = "12345678901234567892",
+            kontonummer = "12341212342",
+            corrid = "corrID_2A",
+            status = "MOTTATT",
+            tidspunktMottatt = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktSisteStatus = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktOpprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+        ),
+        TrekkTable(
+            trekktableid = 3,
+            trekkid = "3",
+            sekvensnr = 3,
+            trekkversjon = 1,
+            trekkopprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+            trekkpliktig = "987654322",
+            skyldner = "12345678902",
+            trekkstatus = "AKTIV",
+            startPeriode = "2024-01-01",
+            sluttPeriode = "2026-04-30",
+            trekkprosent = 15.0,
+            kid = "12345678901234567892",
+            kontonummer = "12341212342",
+            corrid = "corrID_EA",
+            status = "MOTTATT",
+            tidspunktMottatt = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktSisteStatus = LocalDateTime.of(2023, 12, 1, 12, 0),
+            tidspunktOpprettet = LocalDateTime.of(2023, 12, 1, 12, 0),
+        ),
+    )
 val xmlToParse =
     """
     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
