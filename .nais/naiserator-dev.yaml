@@ -38,18 +38,11 @@ spec:
     - https://sokos-utleggstrekk.intern.dev.nav.no
   vault:
     enabled: true
-    paths:
-      - kvPath: /serviceuser/data/dev/srvutleggstrekk
-        mountPath: /var/run/secrets/nais.io/srvutleggstrekk
-      - kvPath: /serviceuser/data/dev/srvokonomiadmin
-        mountPath: /var/run/secrets/nais.io/srvokonomiadmin
-
   maskinporten:
     enabled: true
     scopes:
       consumes:
         - name: skatteetaten:utleggstrekkformidling
-
   envFrom:
     - secret: sokos-utleggstrekk-mq
   env:

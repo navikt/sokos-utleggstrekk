@@ -44,6 +44,7 @@ class MqProducer(
         val antallMeldingerSendt = AtomicInteger(0)
         val antallMeldingerFeilet = AtomicInteger(0)
         messages.forEach {
+            println(it)
             try {
                 if (!connected) connect()
                 messageProducer.send(session.createTextMessage(it))
