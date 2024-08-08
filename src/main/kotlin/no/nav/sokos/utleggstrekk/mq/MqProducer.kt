@@ -6,7 +6,6 @@ import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.wmq.WMQConstants
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import java.util.concurrent.atomic.AtomicInteger
 import javax.jms.Connection
 import javax.jms.MessageProducer
 import javax.jms.Session
@@ -39,37 +38,17 @@ class MqProducer(
         connected = true
     }
 
-    fun send(messages: List<String>): Pair<AtomicInteger, AtomicInteger> {
-        println("sender meldinger")
-        val antallMeldingerSendt = AtomicInteger(0)
-        val antallMeldingerFeilet = AtomicInteger(0)
-        messages.forEach {
-            println(it)
-            try {
-                if (!connected) connect()
-                messageProducer.send(session.createTextMessage(it))
-                println("Sendte melding")
-                antallMeldingerSendt.addAndGet(1)
-            } catch (ex: Exception) {
-                logger.error("Feilet ved sending via MQ til OS")
-                connected = false
-                antallMeldingerFeilet.addAndGet(1)
-                // throw ex
-            }
-        }
-        return Pair(antallMeldingerSendt, antallMeldingerFeilet)
-    }
-
-    fun send(message: String) {
+    fun send(message: String): Boolean =
         try {
             if (!connected) connect()
-            messageProducer.send(session.createTextMessage(message))
+            val jmsMessage = session.createTextMessage(message)
+            messageProducer.send(jmsMessage)
+            true
         } catch (ex: Exception) {
             logger.error("Feilet ved sending via MQ til OS")
             connected = false
-            throw ex
+            false
         }
-    }
 
     fun commit() = session.commit()
 

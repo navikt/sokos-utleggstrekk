@@ -24,15 +24,32 @@ object Repository {
         }
     }
 
-    fun Connection.checkIfTrekkfinnes(sekvensnr: Int): Boolean =
+    fun Connection.doesTrekkExist(trekkid_ske: String, sekvensnr: Int, trekkversjon: Int): Boolean =
         prepareStatement(
             """
-            select 1 from trekk where sekvensnr = ? 
+            select 1 from trekk where sekvensnr = ? and trekkid_ske = ? and trekkversjon = ?
             """.trimIndent(),
         ).withParameters(
             param(sekvensnr),
+            param(trekkid_ske),
+            param(trekkversjon),
         ).executeQuery()
             .next()
+
+    fun Connection.updateTrekkStatus(corrid: String, status: String) {
+        println("oppdaterer status for corrid $corrid")
+        val result =
+            prepareStatement(
+                """
+                update trekk set status = ? where corrid = ?;
+                """.trimIndent(),
+            ).withParameters(
+                param(status),
+                param(corrid),
+            ).executeUpdate()
+        commit()
+        println("oppdaterte $result rad")
+    }
 
     fun Connection.saveAllNewUtleggstrekk(
         trekkListe: List<Utleggstrekk>,

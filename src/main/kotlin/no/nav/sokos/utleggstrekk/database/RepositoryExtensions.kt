@@ -28,6 +28,9 @@ object RepositoryExtensions {
     fun param(value: Int) =
         Parameter { statement: PreparedStatement, index: Int -> statement.setInt(index, value) }
 
+    fun param(value: String) =
+        Parameter { statement: PreparedStatement, index: Int -> statement.setString(index, value) }
+
     fun PreparedStatement.withParameters(vararg parameters: Parameter?) =
         apply {
             parameters.forEachIndexed { index, param -> param?.addToPreparedStatement(this, index + 1) }

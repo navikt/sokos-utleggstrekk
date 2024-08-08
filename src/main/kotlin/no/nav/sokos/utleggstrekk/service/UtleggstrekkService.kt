@@ -5,9 +5,9 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
+import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
 import no.nav.sokos.utleggstrekk.mq.MqProducer
-import java.util.concurrent.atomic.AtomicInteger
 
 private val logger = KotlinLogging.logger { }
 
@@ -17,25 +17,34 @@ class UtleggstrekkService(
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: MqProducer = MqProducer(),
 ) {
-    suspend fun behandleUtleggstrekk(): Pair<AtomicInteger, AtomicInteger> {
+    suspend fun behandleUtleggstrekk(): List<Boolean> {
         lagreNyeUtleggstrekk()
         return sendTrekkTilOS()
     }
 
-    suspend fun lagreNyeUtleggstrekk(): List<Utleggstrekk> =
+    suspend fun lagreNyeUtleggstrekk() {
         skeClient
             .hentAlleUtleggstrekk()
             .toUtleggsTrekk()
-            .filter { !databaseService.trekkFinnes(it.sekvensnummer) }
+            .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
+            .let {
+                databaseService.lagreUtleggstrekk(it)
+            }
+    }
 
-    private fun sendTrekkTilOS(): Pair<AtomicInteger, AtomicInteger> {
-        val resultat = mqProducer.send(lagXmlAvNyeTrekk())
+    private fun sendTrekkTilOS(): List<Boolean> {
+        val alleNyeTrekk = databaseService.hentAlleTrekkSomIkkeErSendt()
+        val resultat = lagXmlAvTrekk(alleNyeTrekk).map { mqProducer.send(it) }
         mqProducer.commit()
+
+        alleNyeTrekk.forEach {
+            databaseService.oppdaterTrekkStatus(it)
+        }
         return resultat
     }
 
-    private fun lagXmlAvNyeTrekk(): List<String> =
-        databaseService.hentAlleTrekkSomIkkeErSendt().run {
+    private fun lagXmlAvTrekk(trekk: List<TrekkTable>): List<String> =
+        trekk.run {
             genererTrekkService.lagTrekkTilOs(this).map {
                 NyXmlService.xmlOf(it)
             }
@@ -43,7 +52,7 @@ class UtleggstrekkService(
 
     private suspend fun HttpResponse.toUtleggsTrekk() =
         try {
-            body<List<Utleggstrekk>>()
+            body<List<Utleggstrekk>>().also { println(it) }
         } catch (e: JsonConvertException) {
             logger.error { "Feil i konvertering av response: ${e.message}" }
             emptyList()
@@ -57,10 +66,12 @@ class UtleggstrekkService(
         return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
+    suspend fun hentAlleNye() = skeClient.hentAlleUtleggstrekk().body<List<Utleggstrekk>>()
+
     // Brukes kun av testAPI
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Utleggstrekk> {
         println("henter allefra sekvensnr sekvensnr: $sekvensnr")
         val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr).toUtleggsTrekk()
-        return trekkListe.mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.sekvensnummer) } }
+        return trekkListe.mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
     }
 }

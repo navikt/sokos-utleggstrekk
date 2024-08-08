@@ -26,6 +26,8 @@ class GenererTrekkService(
             nyTrekkListe.add(trekk.copy(corrid = corrid, startPeriode = nesteStartPeriode.toString(), sluttPeriode = sluttPeriodeForTrekk.toString()))
         }
 
+        println("genererte trekk: ")
+        nyTrekkListe.forEach { println(it) }
         return nyTrekkListe
     }
 }

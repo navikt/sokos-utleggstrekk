@@ -20,15 +20,11 @@ fun Routing.utleggstrekkApi(
     route("utleggstrekk/") {
         get("behandle") {
             val resultat = utleggstrekkService.behandleUtleggstrekk()
-
-            call.respond(HttpStatusCode.OK, "Antall meldinger sendt: ${resultat.first}, antall meldinger feilet: ${resultat.second}")
+            val gikkbra = resultat.filter { true }
+            val gikkikkebra = resultat.filter { false }
+            call.respond(HttpStatusCode.OK, "Antall meldinger sendt: ${gikkbra.size}, antall meldinger feilet: ${gikkikkebra.size}")
         }
 
-        get("hent") {
-            val utleggstrekk = utleggstrekkService.lagreNyeUtleggstrekk()
-            println("antall trekk mottatt: ${utleggstrekk.size}")
-            call.respond(HttpStatusCode.OK, utleggstrekk.toString())
-        }
         get("hent/{sekvensnr}") {
             val sekvensnr = call.parameters["sekvensnr"]
             if (sekvensnr.isNullOrBlank() || sekvensnr.toInt() < 0) {
@@ -39,7 +35,11 @@ fun Routing.utleggstrekkApi(
                 call.respond(HttpStatusCode.OK, utleggstrekk.toString())
             }
         }
-        get("hentnye}") {
+        get("hentNye") {
+            val nye = utleggstrekkService.hentAlleNye()
+            call.respond(HttpStatusCode.OK, nye)
+        }
+        get("hentnyeOgLagre}") {
             val utleggstrekk = utleggstrekkService.hentAlleNyeUtleggstrekk()
             println("Antall Nye: ${utleggstrekk.size}")
             call.respond(HttpStatusCode.OK, utleggstrekk.toString())

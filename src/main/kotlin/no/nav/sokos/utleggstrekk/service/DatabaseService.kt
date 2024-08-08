@@ -3,12 +3,13 @@ package no.nav.sokos.utleggstrekk.service
 import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
-import no.nav.sokos.utleggstrekk.database.Repository.checkIfTrekkfinnes
+import no.nav.sokos.utleggstrekk.database.Repository.doesTrekkExist
 import no.nav.sokos.utleggstrekk.database.Repository.fetcMidletidigStansForSekvensnr
 import no.nav.sokos.utleggstrekk.database.Repository.fetchAllTrekkNotSent
 import no.nav.sokos.utleggstrekk.database.Repository.fetchLastSekvensnr
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllGeneratedTrekk
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
+import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatus
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
 import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
@@ -19,10 +20,16 @@ private val logger = KotlinLogging.logger { }
 class DatabaseService(
     private val dataSource: HikariDataSource = PostgresDataSource.dataSource(),
 ) {
-    fun trekkFinnes(sekvensnr: Int): Boolean =
+    fun trekkFinnes(trekkid_ske: String, sekvensnr: Int, trekkversjon: Int) =
         dataSource.connection.useAndHandleErrors { con ->
-            con.checkIfTrekkfinnes(sekvensnr)
+            con.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon)
         }
+
+    fun oppdaterTrekkStatus(trekk: TrekkTable) {
+        dataSource.connection.useAndHandleErrors { con ->
+            con.updateTrekkStatus(trekk.corrid, "SENDT")
+        }
+    }
 
     fun hentAlleTrekkSomIkkeErSendt(): List<TrekkTable> =
         dataSource.connection.useAndHandleErrors { con ->
@@ -35,8 +42,7 @@ class DatabaseService(
             con.fetchLastSekvensnr()
         }
 
-    // brukes av testAPI
-    fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>) {
+    fun lagreUtleggstrekk(trekkListe: List<Utleggstrekk>) {
         dataSource.connection.useAndHandleErrors { con ->
             con.saveAllNewUtleggstrekk(trekkListe)
         }
