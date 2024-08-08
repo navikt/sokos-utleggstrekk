@@ -49,6 +49,9 @@ spec:
     scopes:
       consumes:
         - name: skatteetaten:utleggstrekkformidling
+
+  envFrom:
+    - secret: sokos-utleggstrekk-mq
   env:
     - name: USE_AUTHENTICATION
       value: "false"
