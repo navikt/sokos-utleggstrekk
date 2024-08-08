@@ -31,6 +31,11 @@ object PropertiesConfig {
             "POSTGRES_NAME" to "sokos-utleggstrekk",
             "SKE_REST_URL" to "https://api-test.sits.no/api/utleggstrekk/v1/",
             "USE_AUTHENTICATION" to "false",
+            "MQ_HOST" to "10.53.17.118",
+            "MQ_PORT" to "1413",
+            "MQ_QMGR_NAME" to "MQLS02",
+            "MQ_CHANNEL" to "Q1_UTLEGGSTREKK",
+            "MQ_SEND_TIL_OS" to "QA.DY_231.OB04_INNRAPPORTERING_TREKK",
         )
 
     private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))

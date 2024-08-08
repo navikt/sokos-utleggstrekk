@@ -14,7 +14,7 @@ object RepositoryExtensions {
     inline fun <R> Connection.useAndHandleErrors(block: (Connection) -> R): R {
         try {
             use {
-                return block(this)
+                return block(this).also { close() }
             }
         } catch (ex: SQLException) {
             throw ex

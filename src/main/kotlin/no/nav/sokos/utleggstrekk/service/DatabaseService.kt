@@ -19,33 +19,37 @@ private val logger = KotlinLogging.logger { }
 class DatabaseService(
     private val dataSource: HikariDataSource = PostgresDataSource.dataSource(),
 ) {
-    fun hentSisteSekvensnummer(): Int =
-        dataSource.connection.useAndHandleErrors { con ->
-            con.fetchLastSekvensnr().also { con.close() }
-        }
-
     fun trekkFinnes(sekvensnr: Int): Boolean =
         dataSource.connection.useAndHandleErrors { con ->
-            con.checkIfTrekkfinnes(sekvensnr).also { con.close() }
+            con.checkIfTrekkfinnes(sekvensnr)
         }
-
-    fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>) {
-        dataSource.connection.useAndHandleErrors { con ->
-            con.saveAllNewUtleggstrekk(trekkListe).also { con.close() }
-        }
-    }
-
-    fun lagreAlleGenererteTrekk(trekkTableList: List<TrekkTable>) {
-        dataSource.connection.useAndHandleErrors { con ->
-            con.saveAllGeneratedTrekk(trekkTableList).also { con.close() }
-        }
-    }
 
     fun hentAlleTrekkSomIkkeErSendt(): List<TrekkTable> =
         dataSource.connection.useAndHandleErrors { con ->
-            con.fetchAllTrekkNotSent().also { con.close() }
+            con.fetchAllTrekkNotSent()
         }
 
+    // brukes av testAPI
+    fun hentSisteSekvensnummer(): Int =
+        dataSource.connection.useAndHandleErrors { con ->
+            con.fetchLastSekvensnr()
+        }
+
+    // brukes av testAPI
+    fun lagreAlleNyeUtleggstrekk(trekkListe: List<Utleggstrekk>) {
+        dataSource.connection.useAndHandleErrors { con ->
+            con.saveAllNewUtleggstrekk(trekkListe)
+        }
+    }
+
+    // brukes av testAPI
+    fun lagreAlleGenererteTrekk(trekkTableList: List<TrekkTable>) {
+        dataSource.connection.useAndHandleErrors { con ->
+            con.saveAllGeneratedTrekk(trekkTableList)
+        }
+    }
+
+    // brukes av testAPI
     fun hentMidletidigStansForSekvensnr(sekvensnr: Int): List<MidlertidigStansTable> =
         dataSource.connection.useAndHandleErrors { con ->
             con.fetcMidletidigStansForSekvensnr(sekvensnr)

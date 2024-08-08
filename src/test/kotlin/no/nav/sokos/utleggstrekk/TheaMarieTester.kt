@@ -1,10 +1,12 @@
-package no.nav.sokos.utleggstrekk.service
+package no.nav.sokos.utleggstrekk
 
 import io.kotest.core.spec.style.FunSpec
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.serialization.XML
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
+import no.nav.sokos.utleggstrekk.service.NyXmlService
+import no.nav.sokos.utleggstrekk.service.OSUtleggsTrekk
 import java.time.LocalDateTime
 
 internal class XMLParseTest :

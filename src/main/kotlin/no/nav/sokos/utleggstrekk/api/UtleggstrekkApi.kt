@@ -18,13 +18,15 @@ fun Routing.utleggstrekkApi(
     val logger = KotlinLogging.logger { }
 
     route("utleggstrekk/") {
-        get("hei") {
-            call.respond(HttpStatusCode.OK, "Hellu")
+        get("behandle") {
+            val resultat = utleggstrekkService.behandleUtleggstrekk()
+
+            call.respond(HttpStatusCode.OK, "Antall meldinger sendt: ${resultat.first}, antall meldinger feilet: ${resultat.second}")
         }
 
         get("hent") {
-            val utleggstrekk = utleggstrekkService.behandleUtleggstrekk()
-            println("antall elementer: ${utleggstrekk.size}")
+            val utleggstrekk = utleggstrekkService.lagreNyeUtleggstrekk()
+            println("antall trekk mottatt: ${utleggstrekk.size}")
             call.respond(HttpStatusCode.OK, utleggstrekk.toString())
         }
         get("hent/{sekvensnr}") {

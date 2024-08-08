@@ -23,7 +23,7 @@ internal class UtleggstrekkServiceTest :
                     mockk<MqProducer>(relaxed = true),
                 )
 
-            val utleggsTrekk = utleggsTrekkService.behandleUtleggstrekk()
+            val utleggsTrekk = utleggsTrekkService.lagreNyeUtleggstrekk()
 
             utleggsTrekk.size shouldBe 2
             with(utleggsTrekk.first()) {
