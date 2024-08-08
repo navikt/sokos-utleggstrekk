@@ -25,7 +25,7 @@ class ShowAllQueueDepth(
     }
 
     fun allLocalQueueDepths(namePart: String = ""): List<String> {
-        val qmgr = MQQueueManager(mqConfig.qmgrName)
+        val qmgr = MQQueueManager(mqConfig.queueManagerName)
         val pcfCmd = PCFMessage(MQConstants.MQCMD_INQUIRE_Q)
         val agent = PCFMessageAgent(qmgr)
 
@@ -38,7 +38,11 @@ class ShowAllQueueDepth(
         return pcfResponse.filterNotNull().let {
             val respList =
                 if (namePart.isNotBlank()) {
-                    it.filter { java.lang.String.valueOf(it.getParameterValue(MQCA_Q_NAME)).contains(namePart) }
+                    it.filter {
+                        java.lang.String
+                            .valueOf(it.getParameterValue(MQCA_Q_NAME))
+                            .contains(namePart)
+                    }
                 } else {
                     it
                 }

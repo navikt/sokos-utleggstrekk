@@ -114,14 +114,14 @@ object PropertiesConfig {
     }
 
     data class MqProperties(
-        val queue: String = getOrEmpty("MQ_SEND_TIL_OS").also(::println),
-        val host: String = getOrEmpty("MQ_HOST").also(::println),
-        val port: String = getOrEmpty("MQ_PORT").also(::println),
-        val qmgrName: String = getOrEmpty("MQ_QMGR_NAME").also(::println),
-        val channel: String = getOrEmpty("MQ_CHANNEL").also(::println),
-        val username: String = getOrEmpty("MQ_USERNAME").also(::println),
-        val password: String = getOrEmpty("MQ_PASSWORD").also(::println),
-        val inqUsername: String = getOrEmpty("MQ_INQ_USERNAME").also(::println),
-        val inqPassword: String = getOrEmpty("MQ_INQ_PASSWORD").also(::println),
+        val queue: String = getOrEmpty("MQ_SEND_TIL_OS"),
+        val host: String = getOrEmpty("MQ_HOST"),
+        val port: String = getOrEmpty("MQ_PORT"),
+        val queueManagerName: String = getOrEmpty("MQ_QMGR_NAME"),
+        val channel: String = getOrEmpty("MQ_CHANNEL"),
+        val username: String = getOrEmpty("MQ_USERNAME"),
+        val password: String = getOrEmpty("MQ_PASSWORD"),
+        val inqUsername: String = getOrEmpty("MQ_INQ_USERNAME"),
+        val inqPassword: String = getOrEmpty("MQ_INQ_PASSWORD"),
     )
 }

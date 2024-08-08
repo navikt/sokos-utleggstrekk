@@ -81,7 +81,7 @@ class MqProducer(
                 it.hostName = host
                 it.port = port.toInt()
                 it.channel = channel
-                it.queueManager = qmgrName
+                it.queueManager = queueManagerName
                 it.targetClientMatching = true
                 it.setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
             }.createConnection(username, password)

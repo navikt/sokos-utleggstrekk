@@ -12,7 +12,7 @@ kubectl config set-context --current --namespace=okonomi
 [[ "$(vault token lookup -format=json | jq '.data.display_name' -r; exit ${PIPESTATUS[0]})" =~ "nav.no" ]] &>/dev/null || vault login -method=oidc -no-print
 
 # Get AZURE system variables
-envValue=$(kubectl exec -it $(kubectl get pods | grep sokos-utleggstrekk | cut -f1 -d' ') -c sokos-utleggstrekk -- env | egrep "^MASKINPORTEN|AZURE_APP_CLIENT_ID|AZURE_APP_WELL_KNOWN_URL" )
+envValue=$(kubectl exec -it $(kubectl get pods | grep sokos-utleggstrekk | cut -f1 -d' ') -c sokos-utleggstrekk -- env | egrep "^MASKINPORTEN|AZURE_APP_CLIENT_ID|AZURE_APP_WELL_KNOWN_URL|MQ_USERNAME|MQ_PASSWORD|MQ_INQ_USERNAME|MQ_INQ_PASSWORD" )
 
 
 POSTGRES_USER=$(vault kv get -field=data postgresql/preprod-fss/creds/sokos-utleggstrekk-user)
