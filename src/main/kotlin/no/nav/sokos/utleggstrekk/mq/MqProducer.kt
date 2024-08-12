@@ -26,11 +26,11 @@ class MqProducer(
     }
 
     private fun connect() {
-        logger.info("Connecting to MQ queue ${config.queue}")
+        logger.info("Connecting to MQ queue ${config.queueName}")
         val connection = config.connect()
         session = connection.createSession(Session.SESSION_TRANSACTED)
         val queue =
-            (session.createQueue(config.queue) as MQQueue).apply {
+            (session.createQueue(config.queueName) as MQQueue).apply {
                 targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
             }
         messageProducer = session.createProducer(queue)
@@ -58,8 +58,8 @@ class MqProducer(
         MQConnectionFactory()
             .also {
                 it.transportType = WMQConstants.WMQ_CM_CLIENT
-                it.hostName = host
-                it.port = port.toInt()
+                it.hostName = hostName
+                it.port = port
                 it.channel = channel
                 it.queueManager = queueManagerName
                 it.targetClientMatching = true

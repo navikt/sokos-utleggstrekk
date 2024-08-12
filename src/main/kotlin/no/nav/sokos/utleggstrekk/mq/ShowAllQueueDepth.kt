@@ -17,11 +17,11 @@ class ShowAllQueueDepth(
     val mqConfig: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties(),
 ) {
     init {
-        MQEnvironment.hostname = mqConfig.host
-        MQEnvironment.port = mqConfig.port.toInt()
+        MQEnvironment.hostname = mqConfig.hostName
+        MQEnvironment.port = mqConfig.port
         MQEnvironment.channel = mqConfig.channel
-        MQEnvironment.userID = mqConfig.inqUsername
-        MQEnvironment.password = mqConfig.inqPassword
+        MQEnvironment.userID = mqConfig.replyQueueUsername
+        MQEnvironment.password = mqConfig.replyQueuePassword
     }
 
     fun allLocalQueueDepths(namePart: String = ""): List<String> {

@@ -32,8 +32,8 @@ val kotlinxDatetimeVersion = "0.4.1"
 val konfigVersion = "1.6.10.0"
 val kotlinxSerializationVersion = "1.6.0"
 val prometheusVersion = "1.11.5"
-val flywayVersion = "9.16.1"
-val postgresqlVersion = "42.6.1"
+val flywayVersion = "10.17.0"
+val postgresqlVersion = "42.7.3"
 val jacksonVersion = "2.15.0"
 
 // Test
@@ -90,7 +90,7 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("no.nav:vault-jdbc:$vaultVersion")
 
-    // Flyway
+    runtimeOnly("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
     // MQ
@@ -132,6 +132,10 @@ tasks {
             attributes["Main-Class"] = "no.nav.sokos.utleggstrekk.ApplicationKt"
         }
 //        finalizedBy(koverHtmlReport)
+
+        mergeServiceFiles {
+            setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
+        }
     }
 
     ("jar") {

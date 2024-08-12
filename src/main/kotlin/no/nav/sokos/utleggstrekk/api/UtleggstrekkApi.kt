@@ -20,9 +20,7 @@ fun Routing.utleggstrekkApi(
     route("utleggstrekk/") {
         get("behandle") {
             val resultat = utleggstrekkService.behandleUtleggstrekk()
-            val gikkbra = resultat.filter { true }
-            val gikkikkebra = resultat.filter { false }
-            call.respond(HttpStatusCode.OK, "Antall meldinger sendt: ${gikkbra.size}, antall meldinger feilet: ${gikkikkebra.size}")
+            call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
         }
 
         get("hent/{sekvensnr}") {

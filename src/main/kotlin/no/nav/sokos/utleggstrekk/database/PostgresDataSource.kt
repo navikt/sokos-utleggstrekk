@@ -6,17 +6,19 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration
 import org.flywaydb.core.Flyway
+import org.postgresql.ds.PGSimpleDataSource
+import java.time.Duration
 
 object PostgresDataSource {
-    private val postgresConfig: PropertiesConfig.PostgresConfig = PropertiesConfig.PostgresConfig()
     private val logger = KotlinLogging.logger {}
 
-    fun postgresMigrate(dataSource: HikariDataSource = dataSource(postgresConfig.adminUser)) {
+    fun migrate(dataSource: HikariDataSource = dataSource(role = PropertiesConfig.PostgresConfig().adminUser)) {
+        println("migratign with ${dataSource.jdbcUrl}")
         logger.info { "Flyway migration" }
         Flyway
             .configure()
             .dataSource(dataSource)
-            .initSql("""SET ROLE "${ postgresConfig.adminUser}"""")
+            .initSql("""SET ROLE "${ PropertiesConfig.PostgresConfig().adminUser}"""")
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
             .load()
@@ -25,31 +27,39 @@ object PostgresDataSource {
         logger.info { "Migration finished" }
     }
 
-    fun dataSource(role: String = postgresConfig.user): HikariDataSource =
+    fun dataSource(
+        hikariConfig: HikariConfig = hikariConfig(),
+        role: String = PropertiesConfig.PostgresConfig().user,
+    ): HikariDataSource =
         if (PropertiesConfig.isLocal()) {
-            HikariDataSource(hikariConfig())
+            HikariDataSource(hikariConfig)
         } else {
             createHikariDataSourceWithVaultIntegration(
-                hikariConfig(),
-                postgresConfig.vaultMountPath,
+                hikariConfig,
+                PropertiesConfig.PostgresConfig().vaultMountPath,
                 role,
             )
         }
 
-    private fun hikariConfig() =
-        HikariConfig().apply {
+    private fun hikariConfig(): HikariConfig {
+        val postgresConfig = PropertiesConfig.PostgresConfig()
+        return HikariConfig().apply {
+            maximumPoolSize = 5
             minimumIdle = 1
-            maxLifetime = 30000
-            maximumPoolSize = 4
-            connectionTimeout = 10000
             isAutoCommit = false
-            idleTimeout = 10000
-            jdbcUrl = postgresConfig.jdbcUrl
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-            validate()
-            if (PropertiesConfig.isLocal()) {
-                username = postgresConfig.username
-                password = postgresConfig.password
-            }
+            dataSource =
+                PGSimpleDataSource().apply {
+                    if (PropertiesConfig.isLocal()) {
+                        user = postgresConfig.username
+                        password = postgresConfig.password
+                    }
+                    serverNames = arrayOf(postgresConfig.hostName)
+                    databaseName = postgresConfig.name
+                    portNumbers = intArrayOf(postgresConfig.port.toInt())
+                    connectionTimeout = Duration.ofSeconds(10).toMillis()
+                    maxLifetime = Duration.ofMinutes(30).toMillis()
+                    initializationFailTimeout = Duration.ofMinutes(30).toMillis()
+                }
         }
+    }
 }

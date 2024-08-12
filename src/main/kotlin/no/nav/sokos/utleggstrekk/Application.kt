@@ -35,7 +35,7 @@ private fun Application.module() {
     }
 
     if (!PropertiesConfig.isLocal()) {
-        PostgresDataSource.postgresMigrate()
+        PostgresDataSource.migrate()
     }
 }
 

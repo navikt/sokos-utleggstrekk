@@ -26,16 +26,18 @@ object PropertiesConfig {
     private val localDevProperties =
         ConfigurationMap(
             "APPLICATION_PROFILE" to Profile.LOCAL.toString(),
-            "POSTGRES_HOST" to "dev-pg.intern.nav.no",
+            "POSTGRES_HOST_NAME" to "dev-pg.intern.nav.no",
             "POSTGRES_PORT" to "5432",
             "POSTGRES_NAME" to "sokos-utleggstrekk",
             "SKE_REST_URL" to "https://api-test.sits.no/api/utleggstrekk/v1/",
             "USE_AUTHENTICATION" to "false",
-            "MQ_HOST" to "10.53.17.118",
+            "MQ_HOSTNAME" to "10.53.17.118",
             "MQ_PORT" to "1413",
-            "MQ_QMGR_NAME" to "MQLS02",
+            "MQ_QUEUE_MANAGER_NAME" to "MQLS02",
             "MQ_CHANNEL" to "Q1_UTLEGGSTREKK",
-            "MQ_SEND_TIL_OS" to "QA.DY_231.OB04_INNRAPPORTERING_TREKK",
+            "MQ_QUEUE_NAME" to "QA.DY_231.OB04_INNRAPPORTERING_TREKK",
+            "MQ_INQ_USERNAME" to "INQ_USERNAME",
+            "MQ_INQ_PASSWORD" to "INQ_USERNAME",
         )
 
     private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))
@@ -91,14 +93,14 @@ object PropertiesConfig {
     )
 
     data class PostgresConfig(
-        val host: String = getOrEmpty("POSTGRES_HOST"),
+        val hostName: String = getOrEmpty("POSTGRES_HOST_NAME"),
         val port: String = getOrEmpty("POSTGRES_PORT"),
         val name: String = getOrEmpty("POSTGRES_NAME"),
         val username: String = getOrEmpty("POSTGRES_USERNAME").trim(),
         val password: String = getOrEmpty("POSTGRES_PASSWORD").trim(),
         val vaultMountPath: String = getOrEmpty("VAULT_MOUNTPATH"),
     ) {
-        val jdbcUrl: String = "jdbc:postgresql://$host:$port/$name"
+        val jdbcUrl: String = "jdbc:postgresql://$hostName:$port/$name"
         val adminUser = "$name-admin"
         val user = "$name-user"
     }
@@ -114,14 +116,16 @@ object PropertiesConfig {
     }
 
     data class MqProperties(
-        val queue: String = getOrEmpty("MQ_SEND_TIL_OS"),
-        val host: String = getOrEmpty("MQ_HOST"),
-        val port: String = getOrEmpty("MQ_PORT"),
-        val queueManagerName: String = getOrEmpty("MQ_QMGR_NAME"),
+        val hostName: String = getOrEmpty("MQ_HOSTNAME"),
+        val port: Int = getOrEmpty("MQ_PORT").toInt(),
+        val queueManagerName: String = getOrEmpty("MQ_QUEUE_MANAGER_NAME"),
         val channel: String = getOrEmpty("MQ_CHANNEL"),
         val username: String = getOrEmpty("MQ_USERNAME"),
         val password: String = getOrEmpty("MQ_PASSWORD"),
-        val inqUsername: String = getOrEmpty("MQ_INQ_USERNAME"),
-        val inqPassword: String = getOrEmpty("MQ_INQ_PASSWORD"),
+        val queueName: String = getOrEmpty("MQ_QUEUE_NAME"),
+        val replyQueueName: String = getOrEmpty("MQ_QUEUE_NAME"),
+        val replyQueueUsername: String = getOrEmpty("MQ_INQ_USERNAME"),
+        val replyQueuePassword: String = getOrEmpty("MQ_INQ_PASSWORD"),
+        val userAuth: Boolean = true,
     )
 }

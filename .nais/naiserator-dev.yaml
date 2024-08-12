@@ -50,7 +50,7 @@ spec:
       value: "false"
     - name: SKE_REST_URL
       value: https://api-test.sits.no/api/utleggstrekk/v1/
-    - name: POSTGRES_HOST
+    - name: POSTGRES_HOST_NAME
       value: b27dbvl035.preprod.local
     - name: POSTGRES_PORT
       value: "5432"
@@ -60,16 +60,15 @@ spec:
       value: postgresql/preprod-fss/
     - name: LOG_APPENDER
       value: CONSOLE
-    - name: MQ_HOST
+    - name: MQ_HOSTNAME
       value: mqls02.preprod.local
     - name: MQ_PORT
       value: "1413"
-    - name: MQ_QMGR_NAME
+    - name: MQ_QUEUE_MANAGER_NAME
       value: MQLS02
     - name: MQ_CHANNEL
       value: Q1_UTLEGGSTREKK
-    - name: MQ_SEND_TIL_OS
+    - name: MQ_QUEUE_NAME
       value: QA.DY_231.OB04_INNRAPPORTERING_TREKK
-
 
 
