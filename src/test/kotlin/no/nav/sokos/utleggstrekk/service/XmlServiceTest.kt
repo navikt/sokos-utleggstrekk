@@ -28,11 +28,13 @@ internal class XmlServiceTest :
                     saldo = "4598.37",
                     prioritetFomDato = "2024-05-06+02:00",
                     gyldigTomDato = "2026-05-06+02:00",
-                    periode =
-                        Periode(
-                            periodeFomDato = "2025-09-01+02:00",
-                            periodeTomDato = "2025-09-30+02:00",
-                            sats = "4598.37",
+                    perioder =
+                        listOf(
+                            Periode(
+                                periodeFomDato = "2025-09-01+02:00",
+                                periodeTomDato = "2025-09-30+02:00",
+                                sats = "4598.37",
+                            ),
                         ),
                 )
 
@@ -70,7 +72,7 @@ internal class XmlServiceTest :
                 `when`("XML objekt genereres") {
                     val trekkMedBelopXmlObjekt = NyXmlService.createNyTrekkXMLObjects(trekkMedBelop)
                     then("skal sats være lik trekkbeløp") {
-                        trekkMedBelopXmlObjekt.dokument.periode.sats shouldBe "1000.00"
+                        trekkMedBelopXmlObjekt.dokument.perioder[0].sats shouldBe "1000.00"
                     }
                     then("skal kodeTrekkAlternativ være LOPM") {
                         trekkMedBelopXmlObjekt.dokument.kodeTrekkAlternativ shouldBe valueOf(NyXmlService.KodeTrekkAlternativ.LOPM)
@@ -83,7 +85,7 @@ internal class XmlServiceTest :
                 `when`("XML objekt genereres") {
                     val trekkMedProsentXmlObjekt = NyXmlService.createNyTrekkXMLObjects(trekkMedProsent)
                     then("skal sats være lik trekkprosent") {
-                        trekkMedProsentXmlObjekt.dokument.periode.sats shouldBe "15.00"
+                        trekkMedProsentXmlObjekt.dokument.perioder[0].sats shouldBe "15.00"
                     }
                     then("skal kodeTrekkAlternativ være LOPP") {
                         trekkMedProsentXmlObjekt.dokument.kodeTrekkAlternativ shouldBe valueOf(NyXmlService.KodeTrekkAlternativ.LOPP)

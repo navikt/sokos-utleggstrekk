@@ -37,7 +37,7 @@ object NyXmlService {
                 kid = trekk.kid,
                 kreditorsRef = trekk.trekkid,
                 kodeTrekkAlternativ = valueOf(kodeTrekkAlternativ),
-                periode = Periode(trekk.startPeriode, trekk.sluttPeriode, "%.2f".format(sats)),
+                perioder = listOf(Periode(trekk.startPeriode, trekk.sluttPeriode, "%.2f".format(sats))),
             )
         return OSUtleggsTrekk(dokument = innrapporteringTrekk)
     }
@@ -75,7 +75,7 @@ Feltet kan brukes til å identifisere trekket ved endringer.
      */
     @XmlAfter("aksjonskode")
     @XmlBefore("kreditorIdTss")
-    @XmlElement val navTrekkId: String = "$kreditorIdTss-$kreditorTrekkId",
+    @XmlElement val navTrekkId: String = "$kreditorIdTss-$kreditorTrekkId", // nummerisk max 10
     @XmlElement val kreditorOrgnr: String = "00987654321",
     @XmlElement val kontonr: String,
     @XmlElement val debitorId: String,
@@ -86,7 +86,7 @@ Feltet kan brukes til å identifisere trekket ved endringer.
     @XmlElement val saldo: String = "0.00",
     @XmlElement val prioritetFomDato: String = "",
     @XmlElement val gyldigTomDato: String = "",
-    val periode: Periode,
+    val perioder: List<Periode>,
     /*
      * saldo er beløpet som debitor skylder. Brukes ved saldo-trekk, ikke løpende trekk.
      * Slik at hvis en skylder 10000kr og skal betale 1000pr måned vil felt saldo være lik 10000,

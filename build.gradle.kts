@@ -1,13 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+
 
 plugins {
-    kotlin("jvm") version "2.0.0-RC1"
-    kotlin("plugin.serialization") version "1.8.21"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+    kotlin("jvm") version "2.0.20"
+    kotlin("plugin.serialization") version "2.0.20"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jetbrains.kotlinx.kover") version "0.8.2"
 }
 
 group = "no.nav.sokos"
@@ -15,9 +13,6 @@ group = "no.nav.sokos"
 repositories {
     mavenCentral()
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
-    maven {
-        url = uri("https://s01.oss.sonatype.org/content/repositories/releases/")
-    }
 }
 
 val ktorVersion = "2.3.12"
@@ -106,6 +101,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("commons-net:commons-net:$commonsVersion")
     testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
+
 }
 
 kotlin {
@@ -122,9 +118,6 @@ sourceSets {
 }
 
 tasks {
-    withType<KotlinCompile>().configureEach {
-        dependsOn("ktlintFormat")
-    }
     withType<ShadowJar>().configureEach {
         enabled = true
         archiveFileName.set("sokos-utleggstrekk.jar")
@@ -145,13 +138,15 @@ tasks {
     withType<Test>().configureEach {
         useJUnitPlatform()
         testLogging {
-            exceptionFormat = TestExceptionFormat.FULL
+            showExceptions = true
+            showStackTraces = true
+            exceptionFormat = FULL
             events("passed", "skipped", "failed")
         }
         reports.forEach { report -> report.required.value(false) }
     }
 
     withType<Wrapper> {
-        gradleVersion = "8.4"
+        gradleVersion = "8.9"
     }
 }
