@@ -17,7 +17,7 @@ fun Routing.utleggstrekkApi(
 ) {
     val logger = KotlinLogging.logger { }
 
-    route("utleggstrekk/") {
+    route("utleggstrekk") {
         get("behandle") {
             val resultat = utleggstrekkService.behandleUtleggstrekk()
             call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
@@ -33,7 +33,7 @@ fun Routing.utleggstrekkApi(
                 call.respond(HttpStatusCode.OK, utleggstrekk.toString())
             }
         }
-        get("hentNye") {
+        get("hentnye") {
             val nye = utleggstrekkService.hentAlleNye()
             call.respond(HttpStatusCode.OK, nye)
         }
