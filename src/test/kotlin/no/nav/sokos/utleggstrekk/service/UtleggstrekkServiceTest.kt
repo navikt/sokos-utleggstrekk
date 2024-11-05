@@ -14,14 +14,13 @@ import no.nav.sokos.utleggstrekk.util.TestContainer
 internal class UtleggstrekkServiceTest :
     BehaviorSpec({
 
-        extensions(TestContainer)
-
         Given("SKE returnerer en liste av utleggstrekk") {
-
+            val testContainer = TestContainer()
+            testContainer.migrate()
             val mockClient = MockHttpClient().getClient(Responses.utleggsTrekkListeMedMidlertidigStans, HttpStatusCode.OK)
             val utleggsTrekkService =
                 UtleggstrekkService(
-                    DatabaseService(TestContainer.dataSource),
+                    DatabaseService(testContainer.dataSource),
                     mockk<GenererTrekkService>(relaxed = true),
                     SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)),
                     mockk<MQProducerService>(relaxed = true),
