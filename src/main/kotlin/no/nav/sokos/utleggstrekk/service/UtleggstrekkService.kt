@@ -2,6 +2,7 @@ package no.nav.sokos.utleggstrekk.service
 
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
@@ -20,7 +21,7 @@ class UtleggstrekkService(
 
     private suspend fun lagreNyeUtleggstrekk() =
         skeClient
-            .hentAlleUtleggstrekk()
+            .hentAlleUtleggstrekk().also { println(it.bodyAsText()) }
             .toUtleggsTrekk()
             .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
             .also {
