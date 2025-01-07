@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.api
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -19,6 +18,7 @@ fun Routing.utleggstrekkApi(
 
     route("utleggstrekk") {
         get("behandle") {
+            call.respond("Behandler")
             val resultat = utleggstrekkService.behandleUtleggstrekk()
             call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
         }

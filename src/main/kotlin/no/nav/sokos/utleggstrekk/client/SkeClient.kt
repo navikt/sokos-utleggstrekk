@@ -20,7 +20,7 @@ class SkeClient(
 ) {
     val basePath = "${PropertiesConfig.SKEConfig().skeRestUrl}$ORGNR"
 
-    suspend fun hentAlleUtleggstrekk() = doGet(basePath, UUID.randomUUID().toString()).also { println(it) }
+    suspend fun hentAlleUtleggstrekk() = doGet(basePath, UUID.randomUUID().toString()).also { println("Fra GET: $it") }
 
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int) =
         doGet("${basePath}$FRA_SEKVENSNR$sekvensnr", UUID.randomUUID().toString())
