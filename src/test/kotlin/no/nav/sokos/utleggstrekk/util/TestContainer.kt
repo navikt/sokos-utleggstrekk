@@ -6,12 +6,14 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.jdbc.JdbcDatabaseDelegate
+import org.testcontainers.utility.DockerImageName
 
 class TestContainer {
     private val properties = PropertiesConfig.PostgresConfig()
+    private val dockerImageName = "postgres:latest"
 
     private val container =
-        PostgreSQLContainer<Nothing>("postgres:latest")
+        PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName))
             .apply {
                 withReuse(false)
                 withUsername(properties.adminUser)

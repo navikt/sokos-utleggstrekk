@@ -1,10 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 
 plugins {
-    kotlin("jvm") version "2.0.20"
-    kotlin("plugin.serialization") version "2.0.20"
+    kotlin("jvm") version "2.1.0"
+    kotlin("plugin.serialization") version "2.1.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -15,21 +16,25 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
-val ktorVersion = "2.3.12"
-val hikaricpVersion = "5.1.0"
-val oracleJdbcVersion = "19.22.0.0"
-val nimbusVersion = "9.37.2"
+val ktorVersion = "3.0.1"
+val kotlinxDatetimeVersion = "0.4.1"
+val kotlinxSerializationVersion = "1.6.0"
+val nimbusVersion = "9.47"
+
 val vaultVersion = "1.3.10"
+val konfigVersion = "1.6.10.0"
+val prometheusVersion = "1.11.5"
+val jacksonVersion = "2.15.0"
+
+//DB
+val hikaricpVersion = "5.1.0"
+val flywayVersion = "10.17.0"
+val postgresqlVersion = "42.7.3"
+
+//Logging
 val logbackVersion = "1.5.6"
 val logstashVersion = "7.3"
 val kotlinLoggingVersion = "3.0.4"
-val kotlinxDatetimeVersion = "0.4.1"
-val konfigVersion = "1.6.10.0"
-val kotlinxSerializationVersion = "1.6.0"
-val prometheusVersion = "1.11.5"
-val flywayVersion = "10.17.0"
-val postgresqlVersion = "42.7.3"
-val jacksonVersion = "2.15.0"
 
 // Test
 val kotestVersion = "5.8.0"
@@ -124,7 +129,6 @@ tasks {
         manifest {
             attributes["Main-Class"] = "no.nav.sokos.utleggstrekk.ApplicationKt"
         }
-//        finalizedBy(koverHtmlReport)
 
         mergeServiceFiles {
             setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
@@ -141,7 +145,7 @@ tasks {
             showExceptions = true
             showStackTraces = true
             exceptionFormat = FULL
-            events("passed", "skipped", "failed")
+            events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
         }
         reports.forEach { report -> report.required.value(false) }
     }
