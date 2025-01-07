@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -20,7 +21,7 @@ class SkeClient(
 ) {
     val basePath = "${PropertiesConfig.SKEConfig().skeRestUrl}$ORGNR"
 
-    suspend fun hentAlleUtleggstrekk() = doGet(basePath, UUID.randomUUID().toString()).also { println("Fra GET: $it") }
+    suspend fun hentAlleUtleggstrekk() = doGet(basePath, UUID.randomUUID().toString()).also { println("Fra GET: ${it.body<String>()}") }
 
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int) =
         doGet("${basePath}$FRA_SEKVENSNR$sekvensnr", UUID.randomUUID().toString())
@@ -28,7 +29,7 @@ class SkeClient(
     private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID))
 
     private suspend fun buildHttpRequest(path: String, corrID: String): HttpRequestBuilder {
-        val token = tokenProvider.hentAccessToken()
+        val token = tokenProvider.hentAccessToken().also { println("Token: $it") }
         return HttpRequestBuilder().apply {
             println("henter $path")
             url(path)
