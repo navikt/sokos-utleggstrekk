@@ -19,15 +19,15 @@ class UtleggstrekkService(
 ) {
     suspend fun behandleUtleggstrekk(): Int = lagreNyeUtleggstrekk().run { sendTrekkTilOS() }
 
-    private suspend fun lagreNyeUtleggstrekk() =
-        skeClient
-            .hentAlleUtleggstrekk().also { println(it.bodyAsText()) }
-            .toUtleggsTrekk()
-            .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
-            .also {
-                databaseService.lagreUtleggstrekk(it)
-            }
-
+    private suspend fun lagreNyeUtleggstrekk() {
+        val body = skeClient.hentAlleUtleggstrekk()
+        println(body.bodyAsText())
+//            .toUtleggsTrekk()
+//            .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
+//            .also {
+//                databaseService.lagreUtleggstrekk(it)
+//            }
+    }
     private fun sendTrekkTilOS(): Int {
         databaseService.hentAlleTrekkSomIkkeErSendt().run {
             val trekkSomXmlObjekter = genererTrekkService.lagTrekkTilOs(this)
