@@ -52,14 +52,12 @@ class MaskinportenAccessTokenClient(
     }
 
     private suspend fun hentAccessTokenFraProvider(): Token {
-/*
         println("Issuer")
         println(maskinportenConfig.openIdConfiguration.issuer)
         println("tokenendpoint")
         println(maskinportenConfig.openIdConfiguration.tokenEndpoint)
         println("jwksuri")
         println(maskinportenConfig.openIdConfiguration.jwksUri)
-*/
 
         //      println("fun hentAccessTokenFraProvider")
         val jwt =
@@ -87,7 +85,7 @@ class MaskinportenAccessTokenClient(
             }
 
         return try {
-            //   println(response.bodyAsText())
+               println(response.bodyAsText())
             response.body()
         } catch (ex: NoTransformationFoundException) {
             logger.error("Kunne ikke lese accessToken, se sikker log for meldingen som string")
