@@ -22,7 +22,7 @@ class UtleggstrekkService(
     private suspend fun lagreNyeUtleggstrekk() {
         val body = skeClient.hentAlleUtleggstrekk()
         println(body.bodyAsText())
-//            .toUtleggsTrekk()
+            body.toUtleggsTrekk().also(::println)
 //            .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
 //            .also {
 //                databaseService.lagreUtleggstrekk(it)

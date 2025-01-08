@@ -5,6 +5,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
@@ -25,7 +26,7 @@ class SkeClient(
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int) =
         doGet("${basePath}$FRA_SEKVENSNR$sekvensnr", UUID.randomUUID().toString())
 
-    private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID))
+    private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID)).also { println(it.bodyAsText()) }
 
     private suspend fun buildHttpRequest(path: String, corrID: String): HttpRequestBuilder {
         val token = tokenProvider.hentAccessToken().also { println("Token: $it") }
