@@ -59,7 +59,7 @@ class MaskinportenAccessTokenClient(
         println("jwksuri")
         println(maskinportenConfig.openIdConfiguration.jwksUri)
 
-        //      println("fun hentAccessTokenFraProvider")
+        println("fun hentAccessTokenFraProvider")
         val jwt =
             JWT
                 .create()
