@@ -15,9 +15,7 @@ data class Trekkpaalegg(
     val skyldner: String,
     val trekkstatus: Trekkstatus,
     val trekkstoerrelseForPeriode: List<TrekkstorrelseForPeriode>,
-    val kidnummer: String,
-    val kontonummer: String,
-    val betaleTilOrgnummer: String
+    val betalingsinformasjon: Betalingsinformasjon,
 )
 
 @Serializable
@@ -42,4 +40,11 @@ data class TrekkstorrelseForPeriode(
     val sluttdato: LocalDate?,
     val trekkbelop: TrekkBeloep?,
     val trekkprosent: TrekkProsent?
+)
+
+@Serializable
+data class Betalingsinformasjon(
+    val betalingsmottaker: String,
+    val kidnummer: String,
+    val kontonummer: String
 )

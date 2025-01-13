@@ -42,7 +42,7 @@ spec:
     enabled: true
     scopes:
       consumes:
-        - name: skatteetaten:trekkpaalegg
+        - name: skatteetaten:utleggstrekkformidling
   envFrom:
     - secret: sokos-utleggstrekk-mq
   env:

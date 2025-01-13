@@ -13,7 +13,7 @@ import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatus
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
 import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
-import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 private val logger = KotlinLogging.logger { }
 
@@ -42,7 +42,7 @@ class DatabaseService(
             con.fetchLastSekvensnr()
         }
 
-    fun lagreUtleggstrekk(trekkListe: List<Utleggstrekk>) {
+    fun lagreUtleggstrekk(trekkListe: List<Trekkpaalegg>) {
         dataSource.connection.useAndHandleErrors { con ->
             con.saveAllNewUtleggstrekk(trekkListe)
         }

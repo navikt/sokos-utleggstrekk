@@ -6,7 +6,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
-import no.nav.sokos.utleggstrekk.domene.ske.Utleggstrekk
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.MQProducerService
 
 private val logger = KotlinLogging.logger { }
@@ -48,24 +48,24 @@ class UtleggstrekkService(
 
     private suspend fun HttpResponse.toUtleggsTrekk() =
         try {
-            body<List<Utleggstrekk>>().also { println(it) }
+            body<List<Trekkpaalegg>>().also { println(it) }
         } catch (e: JsonConvertException) {
             logger.error { "Feil i konvertering av response: ${e.message}" }
             emptyList()
         }
 
     // Brukes kun av testAPI
-    suspend fun hentAlleNyeUtleggstrekk(): List<Utleggstrekk> {
+    suspend fun hentAlleNyeUtleggstrekk(): List<Trekkpaalegg> {
         println("hent alle NYE!")
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
         println("Henter fra siste sekvensnr: $sisteSekvensnr")
         return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
-    suspend fun hentAlleNye() = skeClient.hentAlleUtleggstrekk().body<List<Utleggstrekk>>()
+    suspend fun hentAlleNye() = skeClient.hentAlleUtleggstrekk().body<List<Trekkpaalegg>>()
 
     // Brukes kun av testAPI
-    suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Utleggstrekk> {
+    suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
         println("henter allefra sekvensnr sekvensnr: $sekvensnr")
         val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr).toUtleggsTrekk()
         return trekkListe.mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
