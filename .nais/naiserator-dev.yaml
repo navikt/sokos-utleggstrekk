@@ -70,7 +70,5 @@ spec:
       value: Q1_UTLEGGSTREKK
     - name: MQ_QUEUE_NAME
       value: QA.DY_231.OB04_INNRAPPORTERING_TREKK
-    - name: TEST
-      value: test_value
 
 
