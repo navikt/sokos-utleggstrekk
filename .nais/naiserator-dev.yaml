@@ -49,7 +49,7 @@ spec:
     - name: USE_AUTHENTICATION
       value: "false"
     - name: SKE_REST_URL
-      value: https://api-test.sits.no/api/trekkpaalegg/v1/
+      value: https://api-test.sits.no/api/trekkpaalegg/v1
     - name: POSTGRES_HOST_NAME
       value: b27dbvl035.preprod.local
     - name: POSTGRES_PORT
