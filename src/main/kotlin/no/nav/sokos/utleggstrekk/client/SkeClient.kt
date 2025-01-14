@@ -1,12 +1,15 @@
 package no.nav.sokos.utleggstrekk.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
+import io.ktor.utils.io.InternalAPI
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import java.util.UUID
@@ -26,7 +29,19 @@ class SkeClient(
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int) =
         doGet("${basePath}$FRA_SEKVENSNR$sekvensnr", UUID.randomUUID().toString())
 
-    private suspend fun doGet(path: String, corrID: String) = client.get(buildHttpRequest(path, corrID)).also { println(it.bodyAsText()) }
+    @OptIn(InternalAPI::class)
+    private suspend fun doGet(path: String, corrID: String):HttpResponse {
+        println("GET::")
+        val response= client.get(buildHttpRequest(path, corrID))
+        println("********RESPONSE")
+        println(response.status)
+        println(response.bodyAsText())
+        println(response.rawContent.toString())
+        val body: String =response.body()
+        println(body)
+        println("RESPONSE********")
+        return response
+    }
 
     private suspend fun buildHttpRequest(path: String, corrID: String): HttpRequestBuilder {
         val token = tokenProvider.hentAccessToken().also { println("Token: $it") }
