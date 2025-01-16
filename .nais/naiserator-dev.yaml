@@ -69,6 +69,6 @@ spec:
     - name: MQ_CHANNEL
       value: Q1_UTLEGGSTREKK
     - name: MQ_QUEUE_NAME
-      value: QA.DY_231.OB04_INNRAPPORTERING_TREKK
+      value: QA.Q1_231.OB04_TREKK_FRASKATT_JSON
 
 

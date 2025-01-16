@@ -87,7 +87,7 @@ object Repository {
                 """.trimIndent(),
             )
         trekkListe.forEach {
-            val trekkBelop = it.trekkstoerrelseForPeriode[0].trekkbelop?.trekkbeloep
+            val trekkBelop = it.trekkstoerrelseForPeriode[0].trekkbeloep?.trekkbeloep
             val trekkProsent = it.trekkstoerrelseForPeriode[0].trekkprosent?.trekkprosent
             prepStmt1.setInt(1, it.sekvensnummer)
             prepStmt1.setString(2, it.trekkid)

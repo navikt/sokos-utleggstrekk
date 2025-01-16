@@ -17,7 +17,7 @@ fun Routing.utleggstrekkApi(
     val logger = KotlinLogging.logger { }
 
     route("utleggstrekk") {
-        get("behandle") {
+        get("hent") {
 //            call.respond("Behandler")
             val resultat = utleggstrekkService.behandleUtleggstrekk()
             call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")

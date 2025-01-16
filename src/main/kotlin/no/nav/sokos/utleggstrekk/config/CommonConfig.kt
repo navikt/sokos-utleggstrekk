@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.config
 
 import io.ktor.http.HttpHeaders
+import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
@@ -9,8 +10,10 @@ import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import org.slf4j.event.Level
 import java.util.UUID
@@ -32,17 +35,15 @@ fun Application.commonConfig(
         filter { call -> call.request.path().startsWith("/utleggstrekk") }
         disableDefaultColors()
     }
-//    install(MicrometerMetrics) {
-//        registry = Metrics.registry
-//        meterBinders =
-//            listOf(
-//                UptimeMetrics(),
-//                JvmMemoryMetrics(),
-//                JvmGcMetrics(),
-//                JvmThreadMetrics(),
-//                ProcessorMetrics(),
-//            )
-//    }
+    install(ContentNegotiation) {
+        json(Json {
+            prettyPrint = true
+            isLenient = true
+            decodeEnumsCaseInsensitive = true
+            explicitNulls = false
+        })
+    }
+
     install(Authentication) {
         jwt {
             verifier(azureConfiguration.azureAd.jwkProvider, azureConfiguration.azureAd.openIdConfiguration.issuer)

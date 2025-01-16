@@ -36,6 +36,8 @@ val logbackVersion = "1.5.6"
 val logstashVersion = "7.3"
 val kotlinLoggingVersion = "3.0.4"
 
+val gsonVersion = "2.11.0"
+
 // Test
 val kotestVersion = "5.8.0"
 val kotestTestContainerExtensionVersion = "2.0.2"
@@ -96,7 +98,8 @@ dependencies {
     // MQ
     implementation("com.ibm.mq:com.ibm.mq.allclient:$ibmMqVersion")
 
-    // XML
+    //
+    implementation("com.google.code.gson:gson:$gsonVersion" )
 
     // Test
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
