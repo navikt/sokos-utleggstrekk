@@ -56,6 +56,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-server-swagger:$ktorVersion")
+    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
 
     // Ktor Client
     implementation("io.ktor:ktor-client-content-negotiation-jvm:$ktorVersion")

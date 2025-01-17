@@ -11,8 +11,8 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 @Serializable
 data class Trekkpaalegg(
     val trekkid: String,
-    val trekkversjon: Int,
     val sekvensnummer: Int,
+    val trekkversjon: Int,
     val opprettet: String,
     val saksnummer: String,
     val trekkpliktig: String,

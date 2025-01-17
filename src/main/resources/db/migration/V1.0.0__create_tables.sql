@@ -1,64 +1,41 @@
-drop table if exists trekk;
-create table "trekk"
+drop table if exists trekkpaleg;
+create table "trekkpalegg"
 (
     id                     bigserial primary key,
-    sekvensnr              numeric,
-    trekkid_ske            text,
-    trekkversjon           smallint,
-    trekkopprettet         Timestamp,
-    trekkpliktig           text,
-    skyldner               text,
-    trekkstatus            text,
-    startPeriode           text,
-    sluttPeriode           text,
-    trekkbelop             decimal,
-    trekkprosent           decimal,
-    kid                    text,
-    kontonummer            text,
-    corrid                 text,
-    status                 text,
+    sekvensnummer          int  NOT NULL,
+    trekkid_ske            text      NOT NULL,
+    trekkid_nav            text,
+    trekkversjon           smallint  NOT NULL,
+    saksnummer             text      NOT NULL,
+    trekkopprettet         text NOT NULL,
+    trekkpliktig           text      NOT NULL,
+    skyldner               text      NOT NULL,
+    trekkstatus            text      NOT NULL,
+    betalingsmottaker      text      NOT NULL,
+    kid                    text      NOT NULL,
+    kontonummer            text      NOT NULL,
+    corrid                 text      NOT NULL,
+    status                 text      NOT NULL,
     tidspunkt_mottatt      timestamp NOT NULL DEFAULT NOW(),
     tidspunkt_sendt_os     timestamp null,
     tidspunkt_siste_status timestamp NOT NULL DEFAULT NOW(),
     tidspunkt_opprettet    timestamp NOT NULL DEFAULT NOW()
 );
 
-drop table if exists generertetrekk;
-create table "generertetrekk"
+drop table if exists trekkperiode;
+create table "trekkperiode"
 (
-    id                     bigserial primary key,
-    sekvensnr              numeric,
-    sekvensnr_nav          numeric,
-    trekkid_ske            text,
-    trekkversjon           smallint,
-    trekkopprettet         Timestamp,
-    trekkpliktig           text,
-    skyldner               text,
-    trekkstatus            text,
-    startPeriode           text,
-    sluttPeriode           text,
-    trekkbelop             decimal,
-    trekkprosent           decimal,
-    kid                    text,
-    kontonummer            text,
-    corrid                 text,
-    status                 text,
-    tidspunkt_mottatt      timestamp NOT NULL DEFAULT NOW(),
-    tidspunkt_sendt_os     timestamp null,
-    tidspunkt_siste_status timestamp NOT NULL DEFAULT NOW(),
-    tidspunkt_opprettet    timestamp NOT NULL DEFAULT NOW()
+    id                  bigserial primary key,
+    sekvensnummer       int  NOT NULL,
+    trekkid_ske         bigserial NOT NULL,
+    trekkversjon        smallint  NOT NULL,
+    dato_start          text      NOT NULL,
+    dato_slutt          text,
+    trekkbelop          decimal,
+    trekkprosent        decimal,
+    tidspunkt_opprettet timestamp NOT NULL DEFAULT NOW()
 );
 
-drop table if exists midlertidigstans;
-create table "midlertidigstans"
-(
-    id              bigserial primary key,
-    trekksekvensnr  numeric,
-    startPeriode    text,
-    sluttPeriode    text
-);
 
-create index if not exists idxmidlertidigtrekksekvensnr on midlertidigstans (trekksekvensnr);
-create index if not exists idxtrekksekvensnr on trekk(sekvensnr);
-create index if not exists idxtrekkid_ske on trekk (trekkid_ske, trekkversjon);
-create index if not exists idxsekvensnr_nav on generertetrekk (sekvensnr, sekvensnr_nav);
+create unique index if not exists idxu_trekk on trekkpalegg (trekkid_ske, sekvensnummer, trekkversjon);
+create index if not exists idx_periode on trekkperiode (trekkid_ske, sekvensnummer, trekkversjon)

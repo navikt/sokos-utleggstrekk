@@ -3,10 +3,8 @@ package no.nav.sokos.utleggstrekk.database
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toMidlertidigStans
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
-import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import java.sql.Connection
@@ -16,7 +14,7 @@ private val logger = KotlinLogging.logger { }
 
 object Repository {
     fun Connection.fetchLastSekvensnr(): Int {
-        val rs = prepareStatement("""select max(sekvensnr) from trekk""").executeQuery()
+        val rs = prepareStatement("""select max(sekvensnr) from trekkpalegg""").executeQuery()
         return if (rs.next()) {
             rs.getColumn("sekvensnr")
         } else {
@@ -27,7 +25,7 @@ object Repository {
     fun Connection.doesTrekkExist(trekkid_ske: String, sekvensnr: Int, trekkversjon: Int): Boolean =
         prepareStatement(
             """
-            select 1 from trekk where sekvensnr = ? and trekkid_ske = ? and trekkversjon = ?
+            select 1 from trekkpalegg where sekvensnr = ? and trekkid_ske = ? and trekkversjon = ?
             """.trimIndent(),
         ).withParameters(
             param(sekvensnr),
@@ -41,7 +39,7 @@ object Repository {
         val result =
             prepareStatement(
                 """
-                update trekk set status = ? where corrid = ?;
+                update trekkpalegg set status = ? where corrid = ?;
                 """.trimIndent(),
             ).withParameters(
                 param(status),
@@ -57,121 +55,71 @@ object Repository {
         val prepStmt1 =
             prepareStatement(
                 """
-                insert into trekk (
+                insert into trekkpalegg (
                 sekvensnr,
                 trekkid_ske, 
                 trekkversjon, 
+                saksnummer,
                 trekkopprettet, 
                 trekkpliktig, 
                 skyldner, 
                 trekkstatus, 
-                startperiode, 
-                sluttperiode, 
-                trekkbelop, 
-                trekkprosent, 
-                corrid,
-                status,
+                betalingsmottaker,
                 kid, 
-                kontonummer 
-                ) values (?,?,?,TO_TIMESTAMP(?, 'YYYY-MM-DD"T"HH24:MI:SS.MSZ'),?,?,?,?,?,?,?,?,'MOTTATT',?,?)
+                kontonummer, 
+                corrid,
+                status
+                ) values (?,?,?,?,?,?,?,?,?,?,?,?,'MOTTATT')
                 """.trimIndent(),
             )
         val prepStmt2 =
             prepareStatement(
                 """
-                insert into midlertidigstans (
-                trekksekvensnr, 
-                startperiode, 
-                sluttperiode
-                ) values (?, ?, ?)        
+                insert into trekkperiode (
+                trekksekvensnr,
+                trekkid_ske,
+                trekkversjon,
+                dato_start, 
+                dato_slutt,
+                trekkbelop,
+                trellprosent
+                ) values (?,?,?,?,?,?,?)        
                 """.trimIndent(),
             )
-        trekkListe.forEach {
-            val trekkBelop = it.trekkstoerrelseForPeriode[0].trekkbeloep?.trekkbeloep
-            val trekkProsent = it.trekkstoerrelseForPeriode[0].trekkprosent?.trekkprosent
-            prepStmt1.setInt(1, it.sekvensnummer)
-            prepStmt1.setString(2, it.trekkid)
-            prepStmt1.setInt(3, it.trekkversjon)
-            prepStmt1.setString(4, it.opprettet.toString())
-            prepStmt1.setString(5, it.trekkpliktig)
-            prepStmt1.setString(6, it.skyldner)
-            prepStmt1.setString(7, it.trekkstatus.toString())
-            prepStmt1.setString(8, it.trekkstoerrelseForPeriode[0].startdato.toString())
-            prepStmt1.setString(9, it.trekkstoerrelseForPeriode[0].sluttdato.toString())
-            prepStmt1.setDouble(10, trekkBelop ?: 0.0)
-            prepStmt1.setDouble(11, trekkProsent ?: 0.0)
-            prepStmt1.setString(12, UUID.randomUUID().toString())
-            prepStmt1.setString(13, it.betalingsinformasjon.kidnummer)
-            prepStmt1.setString(14, it.betalingsinformasjon.kontonummer)
+        trekkListe.forEach { trekk ->
+            prepStmt1.setInt(1, trekk.sekvensnummer)
+            prepStmt1.setString(2, trekk.trekkid)
+            prepStmt1.setInt(3, trekk.trekkversjon)
+            prepStmt1.setString(4, trekk.saksnummer)
+            prepStmt1.setString(5, trekk.opprettet)
+            prepStmt1.setString(6, trekk.trekkpliktig)
+            prepStmt1.setString(7, trekk.skyldner)
+            prepStmt1.setString(8, trekk.trekkstatus.toString())
+            prepStmt1.setString(9, UUID.randomUUID().toString())
+            prepStmt1.setString(10, trekk.betalingsinformasjon.betalingsmottaker)
+            prepStmt1.setString(11, trekk.betalingsinformasjon.kidnummer)
+            prepStmt1.setString(12, trekk.betalingsinformasjon.kontonummer)
             prepStmt1.addBatch()
-
+            trekk.trekkstoerrelseForPeriode.forEach{ periode ->
+                prepStmt2.setInt(1, trekk.sekvensnummer)
+                prepStmt2.setString(2, trekk.trekkid)
+                prepStmt2.setInt(3, trekk.trekkversjon)
+                prepStmt2.setString(4, periode.startdato)
+                prepStmt2.setString(5, periode.sluttdato)
+                periode.trekkbeloep?.trekkbeloep?.let { prepStmt2.setDouble(6, it) }
+                periode.trekkprosent?.trekkprosent?.let { prepStmt2.setDouble(7, it) }
+                prepStmt2.addBatch()
+            }
         }
         prepStmt1.executeBatch()
         prepStmt2.executeBatch()
         commit()
     }
 
-    fun Connection.saveAllGeneratedTrekk(trekkTableList: List<TrekkTable>) {
-        val prepStmt =
-            prepareStatement(
-                """
-                insert into generertetrekk (
-                sekvensnr,
-                sekvensnr_nav,
-                trekkid_ske, 
-                trekkversjon, 
-                trekkopprettet, 
-                trekkpliktig, 
-                skyldner, 
-                trekkstatus, 
-                startperiode, 
-                sluttperiode, 
-                trekkbelop, 
-                trekkprosent, 
-                corrid,
-                status,
-                kid, 
-                kontonummer 
-                ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,'MOTTATT',?,?)
-                """.trimIndent(),
-            )
-        trekkTableList.forEach {
-            val trekkBelop = it.trekkbelop
-            val trekkProsent = it.trekkprosent
-            val sekvensnrNav = it.corrid.substring(it.corrid.length - 4).substringAfterLast("-", "0")
-            prepStmt.setInt(1, it.sekvensnr)
-            prepStmt.setInt(2, sekvensnrNav.toInt())
-            prepStmt.setString(3, it.trekkid)
-            prepStmt.setInt(4, it.trekkversjon)
-            prepStmt.setString(5, it.tidspunktOpprettet.toString())
-            prepStmt.setString(6, it.trekkpliktig)
-            prepStmt.setString(7, it.skyldner)
-            prepStmt.setString(8, it.trekkstatus)
-            prepStmt.setString(9, it.startPeriode)
-            prepStmt.setString(10, it.sluttPeriode)
-            prepStmt.setDouble(11, trekkBelop ?: 0.0)
-            prepStmt.setDouble(12, trekkProsent ?: 0.0)
-            prepStmt.setString(13, UUID.randomUUID().toString())
-            prepStmt.setString(14, it.kid)
-            prepStmt.setString(15, it.kontonummer)
-            prepStmt.addBatch()
-        }
-        prepStmt.executeBatch()
-        commit()
-    }
-
     fun Connection.fetchAllTrekkNotSent(): List<TrekkTable> =
-        prepareStatement("""select * from trekk where status     = 'MOTTATT'""")
+        prepareStatement("""select * from trekkpalegg where status     = 'MOTTATT'""")
             .executeQuery()
             .toTrekkTable()
 
-    fun Connection.fetcMidletidigStansForSekvensnr(sekvensnr: Int): List<MidlertidigStansTable> =
-        prepareStatement(
-            """
-            select * from midlertidigstans where trekksekvensnr = ?
-            """.trimIndent(),
-        ).withParameters(
-            param(sekvensnr),
-        ).executeQuery()
-            .toMidlertidigStans()
+
 }

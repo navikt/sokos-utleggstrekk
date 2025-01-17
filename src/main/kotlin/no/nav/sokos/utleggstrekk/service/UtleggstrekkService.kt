@@ -23,10 +23,10 @@ class UtleggstrekkService(
         val body = skeClient.hentAlleUtleggstrekk()
         println(body.bodyAsText())
             body.toUtleggsTrekk().also(::println)
-//            .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
-//            .also {
-//                databaseService.lagreUtleggstrekk(it)
-//            }
+            .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
+            .also {
+                databaseService.lagreUtleggstrekk(it)
+            }
     }
     private fun sendTrekkTilOS(): Int {
         databaseService.hentAlleTrekkSomIkkeErSendt().run {
