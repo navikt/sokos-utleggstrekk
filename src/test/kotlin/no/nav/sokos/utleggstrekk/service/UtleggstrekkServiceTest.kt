@@ -21,7 +21,6 @@ internal class UtleggstrekkServiceTest :
             val utleggsTrekkService =
                 UtleggstrekkService(
                     DatabaseService(testContainer.dataSource),
-                    mockk<GenererTrekkService>(relaxed = true),
                     SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)),
                     mockk<MQProducerService>(relaxed = true),
                 )

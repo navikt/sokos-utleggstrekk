@@ -1,7 +1,7 @@
 package no.nav.sokos.utleggstrekk.database
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
-import no.nav.sokos.utleggstrekk.database.model.MidlertidigStansTable
-import no.nav.sokos.utleggstrekk.database.model.TrekkTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -72,39 +72,41 @@ object RepositoryExtensions {
         return transform(columnValue as T)
     }
 
-    fun ResultSet.toTrekkTable() =
+    fun ResultSet.toTrekkpalegTable() =
         toList {
-            TrekkTable(
-                trekktableid = getColumn("id"),
-                sekvensnr = getColumn("sekvensnr"),
-                trekkid = getColumn("trekkid_ske"),
+            TrekkpaleggTable(
+                trekkpaleggTableId = getColumn("id"),
+                sekvensnummer = getColumn("sekvensnr"),
+                saksnummer = getColumn("saksnummer"),
+                trekkidSke = getColumn("trekkid_ske"),
                 trekkversjon = getColumn("trekkversjon"),
-                trekkopprettet = getColumn("trekkopprettet"),
+                opprettetSke = getColumn("opprettet_ske"),
                 trekkpliktig = getColumn("trekkpliktig"),
                 skyldner = getColumn("skyldner"),
                 trekkstatus = getColumn("trekkstatus"),
-                startPeriode = getColumn("startperiode"),
-                sluttPeriode = getColumn("sluttperiode"),
-                trekkbelop = getColumn("trekkbelop"),
-                trekkprosent = getColumn("trekkprosent"),
                 kid = getColumn("kid"),
                 kontonummer = getColumn("kontonummer"),
+                orgnummer = getColumn("orgnummer"),
                 corrid = getColumn("corrid"),
                 status = getColumn("status"),
-                tidspunktMottatt = getColumn("tidspunkt_mottatt"),
                 tidspunktSendtOs = getColumn("tidspunkt_sendt_os"),
                 tidspunktSisteStatus = getColumn("tidspunkt_siste_status"),
                 tidspunktOpprettet = getColumn("tidspunkt_opprettet"),
             )
         }
 
-    fun ResultSet.toMidlertidigStans() =
+    fun ResultSet.toTrekkPeriodeTable() =
         toList {
-            MidlertidigStansTable(
-                midlertidigstansid = getColumn("id"),
-                trekksekvensnr = getColumn("trekksekvensnr"),
-                startPeriode = getColumn("startperiode"),
-                sluttPeriode = getColumn("sluttperiode"),
+            TrekkPeriodeTable(
+                trekkPeriodeTableId = getColumn("id"),
+                sekvensnummer = getColumn("sekvensnummer"),
+                trekkidSke = getColumn("trekkid_ske"),
+                trekkversjon = getColumn("trekkversjon"),
+                datoStart = getColumn("dato_start"),
+                datoSlutt = getColumn("dato_slutt"),
+                trekkbelop = getColumn("trekkbelop"),
+                trekkprosent = getColumn("trekkprosent")
             )
         }
+
 }

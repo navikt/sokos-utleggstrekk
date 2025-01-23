@@ -1,12 +1,6 @@
 package no.nav.sokos.utleggstrekk.domene.ske
 
 import kotlinx.serialization.Serializable
-import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
-import no.nav.sokos.utleggstrekk.domene.nav.Document
-import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
-import no.nav.sokos.utleggstrekk.domene.nav.Periode
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 
 @Serializable
 data class Trekkpaalegg(
@@ -53,37 +47,4 @@ data class Betalingsinformasjon(
     val kontonummer: String
 )
 
-fun Trekkpaalegg.toTrekkDokument(): TrekkTilOppdrag {
-    return TrekkTilOppdrag(
-        document = Document(
-            transaksjonsId = "??",
-            innrapporteringTrekk = InnrapporteringTrekk(
-                aksjonskode = Aksjonskode.NY,
-                kreditorIdTss = this.betalingsinformasjon.betalingsmottaker,
-                kreditorTrekkId = this.saksnummer,
-                debitorId = this.skyldner,
-                kodeTrekkAlternativ = TrekkAlternativ.LOPD,
-                kid = this.betalingsinformasjon.kidnummer,
-                kreditorsRef = this.saksnummer,
-                kilde = "?",
-                saldo = 0.0,
-                prioritetFomDato = this.opprettet,
-                perioder = this.trekkstoerrelseForPeriode.map {
-                    Periode(
-                        periodeFomDato = it.startdato,
-                        periodeTomDato = it.sluttdato,
-                        sats = it.trekkbeloep?.trekkbeloep ?: it.trekkprosent?.trekkprosent!!
-                    )
-                }
-            )
-        )
-    )
-}
 
-fun TrekkstorrelseForPeriode.toTrekkTilOppdragPeriode(): Periode {
-    return Periode(
-        periodeFomDato = this.startdato,
-        periodeTomDato = this.sluttdato ?: "",
-        sats = this.trekkbeloep?.trekkbeloep ?: this.trekkprosent!!.trekkprosent!!
-    )
-}

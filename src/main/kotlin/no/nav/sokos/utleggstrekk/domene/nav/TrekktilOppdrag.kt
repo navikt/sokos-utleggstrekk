@@ -1,6 +1,8 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
 import kotlinx.serialization.Serializable
+import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 @Serializable
 data class TrekkTilOppdrag(
@@ -44,7 +46,19 @@ enum class Aksjonskode(val value: String){
     ENDR("ENDR"),
     KANS("KANS"),
     OPPH("OPPH"),
-    ENRS("ENRS")
+    ENRS("ENRS"),
+    ;
+    companion object {
+        fun getAksjonskodeForTrekk(trekkpaleggTable: TrekkpaleggTable): Aksjonskode {
+            if (trekkpaleggTable.trekkstatus.equals(Trekkstatus.AKTIV.value) && trekkpaleggTable.trekkversjon == 1)
+                return NY
+            else if (trekkpaleggTable.trekkstatus.equals(Trekkstatus.AVSLUTTET.value))
+                return OPPH
+            else
+                return ENDR
+        }
+    }
+
 }
 //Aksjonskoder er NY, ENDR (endring), KANS (kanseller), OPPH (opphør), ENRS (endring restsaldo).
 @Serializable
@@ -56,3 +70,5 @@ enum class TrekkAlternativ(val value: String) {
     SALM("SALM"),   //   Saldotrekk månedssats
     SALP("SALP"),   //   Saldotrekk prosentsats
 }
+
+

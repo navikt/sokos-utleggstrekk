@@ -3,9 +3,11 @@ package no.nav.sokos.utleggstrekk.database
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkTable
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkpalegTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
-import no.nav.sokos.utleggstrekk.database.model.TrekkTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import java.sql.Connection
 import java.util.UUID
@@ -116,10 +118,27 @@ object Repository {
         commit()
     }
 
-    fun Connection.fetchAllTrekkNotSent(): List<TrekkTable> =
+    fun Connection.fetchAllTrekkNotSent(): List<TrekkpaleggTable> =
         prepareStatement("""select * from trekkpalegg where status     = 'MOTTATT'""")
             .executeQuery()
-            .toTrekkTable()
+            .toTrekkpalegTable()
+
+
+    fun Connection.fetchPerioderForTrekk(trekk: TrekkpaleggTable):List<TrekkPeriodeTable> =
+        prepareStatement("""
+            select * from trekkperiode 
+            where trekksekvensnr = ?
+                and trekkid_ske = ?
+                and trekkversjon= ?
+
+        """.trimIndent())
+            .withParameters(
+                param(trekk.sekvensnummer),
+                param(trekk.trekkidSke),
+                param(trekk.trekkversjon)
+            )
+            .executeQuery()
+            .toTrekkPeriodeTable()
 
 
 }

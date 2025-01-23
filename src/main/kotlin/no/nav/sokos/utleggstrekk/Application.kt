@@ -13,7 +13,6 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.service.DatabaseService
-import no.nav.sokos.utleggstrekk.service.GenererTrekkService
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 
 fun main() {
@@ -24,8 +23,7 @@ private fun Application.module() {
     val applicationState = ApplicationState()
     val azureConfiguration = AzureConfiguration()
     val databaseService = DatabaseService()
-    val genererTrekkService = GenererTrekkService(databaseService)
-    val utleggstrekkService = UtleggstrekkService(databaseService, genererTrekkService)
+    val utleggstrekkService = UtleggstrekkService(databaseService)
 
     commonConfig(azureConfiguration)
     applicationLifecycleConfig(applicationState)

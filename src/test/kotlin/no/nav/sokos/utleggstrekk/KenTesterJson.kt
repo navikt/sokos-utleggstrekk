@@ -3,7 +3,6 @@ package no.nav.sokos.utleggstrekk
 import com.google.gson.Gson
 import io.kotest.core.spec.style.FunSpec
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.domene.ske.toTrekkDokument
 import org.testcontainers.shaded.com.google.common.reflect.TypeToken
 
 internal class KenTesterJson : FunSpec({
@@ -33,7 +32,7 @@ internal class KenTesterJson : FunSpec({
         val typeToken = object : TypeToken<List<Trekkpaalegg>>() {}.type
         val trekkpaalegg: List<Trekkpaalegg> = Gson().fromJson<List<Trekkpaalegg>>(bodyFraSkatt.toString(), typeToken)
         val osDokument = trekkpaalegg.map {
-            it.toTrekkDokument()
+            //it.toTrekkDokument()
         }
         println(trekkpaalegg.forEach { println(it) })
         println(osDokument.forEach { println(it) })

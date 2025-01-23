@@ -13,7 +13,6 @@ private val logger = KotlinLogging.logger { }
 
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
-    private val genererTrekkService: GenererTrekkService,
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: MQProducerService = MQProducerService(),
 ) {
@@ -29,20 +28,25 @@ class UtleggstrekkService(
             }
     }
     private fun sendTrekkTilOS(): Int {
-        databaseService.hentAlleTrekkSomIkkeErSendt().run {
-            val trekkSomXmlObjekter = genererTrekkService.lagTrekkTilOs(this)
-            val trekkSomXml = trekkSomXmlObjekter.map { NyXmlService.xmlOf(it) }
+        val trekkTilSending = databaseService.hentAlleTrekkSomIkkeErSendt()
+
+            val trekkSomXmlObjekter = trekkTilSending.map { trekk ->
+                val perioder = databaseService.hentPerioderForTrekk(trekk)
+                //val trekkDomument = trekk.toTrekkDokument()
+            }
+
+            //val trekkSomXml = trekkSomXmlObjekter.map { NyXmlService.xmlOf(it) }
 
             runCatching {
-                mqProducer.send(trekkSomXml)
+                //mqProducer.send(trekkSomXml)
             }.onSuccess {
                 trekkSomXmlObjekter.forEach {
                     // gjøre dette etter at vi har mottatt kvittering?
-                    databaseService.oppdaterTrekkStatus(it)
+                    //databaseService.oppdaterTrekkStatus(it)
                 }
                 return trekkSomXmlObjekter.size // for test api
             }
-        }
+
         return 0 // for test api
     }
 
