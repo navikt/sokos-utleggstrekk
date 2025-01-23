@@ -11,7 +11,7 @@ data class Trekkpaalegg(
     val saksnummer: String,
     val trekkpliktig: String,
     val skyldner: String,
-    val trekkstatus: Trekkstatus,
+    val trekkstatus: String,
     val trekkstoerrelseForPeriode: List<TrekkstorrelseForPeriode>,
     val betalingsinformasjon: Betalingsinformasjon,
 )

@@ -7,7 +7,6 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.utils.io.InternalAPI
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
@@ -34,10 +33,9 @@ class SkeClient(
         val response= client.get(buildHttpRequest(path, corrID))
         println("********RESPONSE")
         println(response.status)
-        println(response.bodyAsText())
-        println(response.rawContent.toString())
+        println("ResponseBody: \n")
         val body: String =response.body()
-        println(body)
+        println("BODY as String:\n $body")
         println("RESPONSE********")
         return response
     }

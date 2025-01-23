@@ -7,6 +7,7 @@ import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.domene.toTrekkDokument
 import no.nav.sokos.utleggstrekk.mq.MQProducerService
 
 private val logger = KotlinLogging.logger { }
@@ -20,10 +21,11 @@ class UtleggstrekkService(
 
     private suspend fun lagreNyeUtleggstrekk() {
         val body = skeClient.hentAlleUtleggstrekk()
-        println(body.bodyAsText())
+        println("Inne i lagre:\n${body.bodyAsText()}")
             body.toUtleggsTrekk().also(::println)
             .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
             .also {
+                println("Det er ${it.size} som skal lagres")
                 databaseService.lagreUtleggstrekk(it)
             }
     }
@@ -32,7 +34,8 @@ class UtleggstrekkService(
 
             val trekkSomXmlObjekter = trekkTilSending.map { trekk ->
                 val perioder = databaseService.hentPerioderForTrekk(trekk)
-                //val trekkDomument = trekk.toTrekkDokument()
+                val trekkDomument = trekk.toTrekkDokument(perioder)
+                println(trekkDomument)
             }
 
             //val trekkSomXml = trekkSomXmlObjekter.map { NyXmlService.xmlOf(it) }
