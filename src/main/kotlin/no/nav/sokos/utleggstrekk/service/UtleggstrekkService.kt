@@ -55,7 +55,7 @@ class UtleggstrekkService(
 
     private suspend fun HttpResponse.toUtleggsTrekk() =
         try {
-            body<List<Trekkpaalegg>>().also { println(it) }
+            body<List<Trekkpaalegg>>().also { println("JSON ER KOVERTERT:\n") }
         } catch (e: JsonConvertException) {
             logger.error { "Feil i konvertering av response: ${e.message}" }
             emptyList()

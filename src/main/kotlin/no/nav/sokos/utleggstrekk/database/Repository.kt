@@ -16,21 +16,21 @@ private val logger = KotlinLogging.logger { }
 
 object Repository {
     fun Connection.fetchLastSekvensnr(): Int {
-        val rs = prepareStatement("""select max(sekvensnr) from trekkpalegg""").executeQuery()
+        val rs = prepareStatement("""select max(sekvensnummer) from trekkpalegg""").executeQuery()
         return if (rs.next()) {
-            rs.getColumn("sekvensnr")
+            rs.getColumn("sekvensnummer")
         } else {
             0
         }
     }
 
-    fun Connection.doesTrekkExist(trekkid_ske: String, sekvensnr: Int, trekkversjon: Int): Boolean =
+    fun Connection.doesTrekkExist(trekkid_ske: String, sekvensnummer: Int, trekkversjon: Int): Boolean =
         prepareStatement(
             """
-            select 1 from trekkpalegg where sekvensnr = ? and trekkid_ske = ? and trekkversjon = ?
+            select 1 from trekkpalegg where sekvensnummer = ? and trekkid_ske = ? and trekkversjon = ?
             """.trimIndent(),
         ).withParameters(
-            param(sekvensnr),
+            param(sekvensnummer),
             param(trekkid_ske),
             param(trekkversjon),
         ).executeQuery()
@@ -58,11 +58,11 @@ object Repository {
             prepareStatement(
                 """
                 insert into trekkpalegg (
-                sekvensnr,
+                sekvensnummer,
                 trekkid_ske, 
                 trekkversjon, 
                 saksnummer,
-                trekkopprettet, 
+                opprettet_ske, 
                 trekkpliktig, 
                 skyldner, 
                 trekkstatus, 
@@ -78,13 +78,13 @@ object Repository {
             prepareStatement(
                 """
                 insert into trekkperiode (
-                trekksekvensnr,
+                sekvensnummer,
                 trekkid_ske,
                 trekkversjon,
                 dato_start, 
                 dato_slutt,
                 trekkbelop,
-                trellprosent
+                trekkprosent
                 ) values (?,?,?,?,?,?,?)        
                 """.trimIndent(),
             )
@@ -96,11 +96,11 @@ object Repository {
             prepStmt1.setString(5, trekk.opprettet)
             prepStmt1.setString(6, trekk.trekkpliktig)
             prepStmt1.setString(7, trekk.skyldner)
-            prepStmt1.setString(8, trekk.trekkstatus.toString())
-            prepStmt1.setString(9, UUID.randomUUID().toString())
-            prepStmt1.setString(10, trekk.betalingsinformasjon.betalingsmottaker)
-            prepStmt1.setString(11, trekk.betalingsinformasjon.kidnummer)
-            prepStmt1.setString(12, trekk.betalingsinformasjon.kontonummer)
+            prepStmt1.setString(8, trekk.trekkstatus)
+            prepStmt1.setString(9, trekk.betalingsinformasjon.betalingsmottaker)
+            prepStmt1.setString(10, trekk.betalingsinformasjon.kidnummer)
+            prepStmt1.setString(11, trekk.betalingsinformasjon.kontonummer)
+            prepStmt1.setString(12, UUID.randomUUID().toString())
             prepStmt1.addBatch()
             trekk.trekkstoerrelseForPeriode.forEach{ periode ->
                 prepStmt2.setInt(1, trekk.sekvensnummer)
@@ -127,7 +127,7 @@ object Repository {
     fun Connection.fetchPerioderForTrekk(trekk: TrekkpaleggTable):List<TrekkPeriodeTable> =
         prepareStatement("""
             select * from trekkperiode 
-            where trekksekvensnr = ?
+            where sekvensnummer = ?
                 and trekkid_ske = ?
                 and trekkversjon= ?
 

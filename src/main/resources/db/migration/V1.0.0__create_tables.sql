@@ -14,7 +14,6 @@ create table "trekkpalegg"
     betalingsmottaker      text      NOT NULL,
     kid                    text      NOT NULL,
     kontonummer            text      NOT NULL,
-    orgnummer              text      NOT NULL,
     corrid                 text      NOT NULL,
     status                 text      NOT NULL,
     tidspunkt_sendt_os     timestamp null,

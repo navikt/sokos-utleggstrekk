@@ -76,7 +76,7 @@ object RepositoryExtensions {
         toList {
             TrekkpaleggTable(
                 trekkpaleggTableId = getColumn("id"),
-                sekvensnummer = getColumn("sekvensnr"),
+                sekvensnummer = getColumn("sekvensnummer"),
                 saksnummer = getColumn("saksnummer"),
                 trekkidSke = getColumn("trekkid_ske"),
                 trekkversjon = getColumn("trekkversjon"),
