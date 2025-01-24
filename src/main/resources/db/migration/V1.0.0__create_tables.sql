@@ -26,7 +26,7 @@ create table "trekkperiode"
 (
     id                  bigserial primary key,
     sekvensnummer       int  NOT NULL,
-    trekkid_ske         bigserial NOT NULL,
+    trekkid_ske         text NOT NULL,
     trekkversjon        smallint  NOT NULL,
     dato_start          text      NOT NULL,
     dato_slutt          text,
