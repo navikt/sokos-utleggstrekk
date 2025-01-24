@@ -86,7 +86,7 @@ object RepositoryExtensions {
                 trekkstatus = getColumn("trekkstatus"),
                 kid = getColumn("kid"),
                 kontonummer = getColumn("kontonummer"),
-                orgnummer = getColumn("orgnummer"),
+                betalingsmottaker = getColumn("betalingsmottaker"),
                 corrid = getColumn("corrid"),
                 status = getColumn("status"),
                 tidspunktSendtOs = getColumn("tidspunkt_sendt_os"),

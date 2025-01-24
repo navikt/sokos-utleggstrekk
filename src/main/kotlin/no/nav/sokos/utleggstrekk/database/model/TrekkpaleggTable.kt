@@ -15,7 +15,7 @@ data class TrekkpaleggTable(
     val trekkstatus: String,
     val kid: String,
     val kontonummer: String,
-    val orgnummer: String,
+    val betalingsmottaker: String,
     val corrid: String,
     val status: String,
     val tidspunktSendtOs: LocalDateTime? = null,

@@ -22,7 +22,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
                 transaksjonsId = this.trekkidNav ?: "",
                 innrapporteringTrekk = InnrapporteringTrekk(
                     aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),
-                    kreditorIdTss = this.orgnummer,
+                    kreditorIdTss = this.betalingsmottaker,
                     kreditorTrekkId = this.trekkidSke,
                     debitorId = this.skyldner,
                     kodeTrekkAlternativ = TrekkAlternativ.LOPD,
