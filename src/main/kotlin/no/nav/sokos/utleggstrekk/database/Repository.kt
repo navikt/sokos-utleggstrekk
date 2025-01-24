@@ -108,8 +108,19 @@ object Repository {
                 prepStmt2.setInt(3, trekk.trekkversjon)
                 prepStmt2.setString(4, periode.startdato)
                 prepStmt2.setString(5, periode.sluttdato)
-                periode.trekkbeloep?.trekkbeloep?.let { prepStmt2.setDouble(6, it) }
-                periode.trekkprosent?.trekkprosent?.let { prepStmt2.setDouble(7, it) }
+                prepStmt2.setObject(6, periode.trekkbeloep?.trekkbeloep, java.sql.Types.DOUBLE)
+                prepStmt2.setObject(7, periode.trekkprosent?.trekkprosent, java.sql.Types.DOUBLE)
+
+//                periode.trekkbeloep.let {
+//                    if (it == null || it.trekkbeloep == null) prepStmt2.setObject(6, it, java.sql.Types.DOUBLE)
+//                    else prepStmt2.setObject(6, it.trekkbeloep, java.sql.Types.DOUBLE)
+//                }
+
+//                periode.trekkprosent.let {
+//                    if (it == null || it.trekkprosent == null) prepStmt2.setNull(7, java.sql.Types.NULL)
+//                    else prepStmt2.setObject(7, it.trekkprosent)
+//                }
+
                 prepStmt2.addBatch()
             }
         }
