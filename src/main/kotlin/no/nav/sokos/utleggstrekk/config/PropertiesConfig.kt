@@ -35,7 +35,7 @@ object PropertiesConfig {
             "MQ_PORT" to "1413",
             "MQ_QUEUE_MANAGER_NAME" to "MQLS02",
             "MQ_CHANNEL" to "Q1_UTLEGGSTREKK",
-            "MQ_QUEUE_NAME" to "QA.DY_231.OB04_INNRAPPORTERING_TREKK",
+            "MQ_QUEUE_NAME" to "Q1_231.OB04_TREKK_FRASKATT_JSON",
             "MQ_INQ_USERNAME" to "INQ_USERNAME",
             "MQ_INQ_PASSWORD" to "INQ_USERNAME",
         )
@@ -123,7 +123,7 @@ object PropertiesConfig {
         val username: String = getOrEmpty("MQ_USERNAME"),
         val password: String = getOrEmpty("MQ_PASSWORD"),
         val queueName: String = getOrEmpty("MQ_QUEUE_NAME"),
-        val replyQueueName: String = getOrEmpty("MQ_QUEUE_NAME"),
+        val replyQueueName: String = getOrEmpty("MQ_REPLYQUEUE_NAME"),
         val replyQueueUsername: String = getOrEmpty("MQ_INQ_USERNAME"),
         val replyQueuePassword: String = getOrEmpty("MQ_INQ_PASSWORD"),
         val userAuth: Boolean = true,

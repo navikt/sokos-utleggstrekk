@@ -70,5 +70,8 @@ spec:
       value: Q1_UTLEGGSTREKK
     - name: MQ_QUEUE_NAME
       value: QA.Q1_231.OB04_TREKK_FRASKATT_JSON
+    - name: MQ_REPLYQUEUE_NAME
+      value: QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING
+
 
 

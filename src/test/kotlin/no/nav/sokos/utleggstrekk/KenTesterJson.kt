@@ -2,6 +2,8 @@ package no.nav.sokos.utleggstrekk
 
 import com.google.gson.Gson
 import io.kotest.core.spec.style.FunSpec
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import org.testcontainers.shaded.com.google.common.reflect.TypeToken
 
@@ -28,7 +30,10 @@ internal class KenTesterJson : FunSpec({
                 if (it == null || it.trekkprosent == null) java.sql.Types.NULL.toDouble()
                 else it.trekkprosent
             }}")
+            println("OBJECT*************")
             println(it)
+            println("JSON***************")
+            println(Json.encodeToString(it))
         }
     }
 

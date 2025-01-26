@@ -4,6 +4,8 @@ import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -32,26 +34,25 @@ class UtleggstrekkService(
     private fun sendTrekkTilOS(): Int {
         val trekkTilSending = databaseService.hentAlleTrekkSomIkkeErSendt()
 
-            val trekkSomXmlObjekter = trekkTilSending.map { trekk ->
-                val perioder = databaseService.hentPerioderForTrekk(trekk)
-                val trekkDomument = trekk.toTrekkDokument(perioder)
-                println(trekkDomument)
+        val trekkSomJsonListe = trekkTilSending.map { trekk ->
+            val perioder = databaseService.hentPerioderForTrekk(trekk)
+            val trekkDomument = trekk.toTrekkDokument(perioder)
+            println(trekkDomument)
+
+            Json.encodeToString(trekkDomument).also { println(it) }
+        }
+        runCatching {
+            mqProducer.send(trekkSomJsonListe)
+        }.onSuccess {
+            trekkSomJsonListe.forEach {
+                // gjøre dette etter at vi har mottatt kvittering?
+                //databaseService.oppdaterTrekkStatus(it)
             }
-
-            //val trekkSomXml = trekkSomXmlObjekter.map { NyXmlService.xmlOf(it) }
-
-            runCatching {
-                //mqProducer.send(trekkSomXml)
-            }.onSuccess {
-                trekkSomXmlObjekter.forEach {
-                    // gjøre dette etter at vi har mottatt kvittering?
-                    //databaseService.oppdaterTrekkStatus(it)
-                }
-                return trekkSomXmlObjekter.size // for test api
-            }
-
+            return trekkSomJsonListe.size // for test api
+        }
         return 0 // for test api
     }
+
 
     private suspend fun HttpResponse.toUtleggsTrekk() =
         try {
