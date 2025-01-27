@@ -8,7 +8,7 @@ import javax.jms.ConnectionFactory
 import javax.jms.JMSContext
 import javax.jms.Queue
 
-class MQProducerService(
+class MQProducerServicex(
     private val connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),
 ) {
     private val jmsContext: JMSContext = connectionFactory.createContext()

@@ -40,9 +40,13 @@ class MqProducer(
 
     fun send(message: String): Boolean =
         try {
+            println("CONNECT ?")
             if (!connected) connect()
+            println("LAGER MELDING")
             val jmsMessage = session.createTextMessage(message)
+            println("SENDER MELDING")
             messageProducer.send(jmsMessage)
+            println("SENDT OK")
             true
         } catch (ex: Exception) {
             logger.error("Feilet ved sending via MQ til OS")
@@ -57,11 +61,11 @@ class MqProducer(
     private fun PropertiesConfig.MqProperties.connect(): Connection =
         MQConnectionFactory()
             .also {
-                it.transportType = WMQConstants.WMQ_CM_CLIENT
-                it.hostName = hostName
-                it.port = port
-                it.channel = channel
-                it.queueManager = queueManagerName
+                it.transportType = WMQConstants.WMQ_CM_CLIENT.also { println(it) }
+                it.hostName = hostName.also { println(it) }
+                it.port = port.also { println(it) }
+                it.channel = channel.also { println(it) }
+                it.queueManager = queueManagerName.also { println(it) }
                 it.targetClientMatching = true
                 it.setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
             }.createConnection(username, password)
