@@ -10,14 +10,14 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.toTrekkDokument
-import no.nav.sokos.utleggstrekk.mq.MQProducerService
+import no.nav.sokos.utleggstrekk.mq.MqProducer
 
 private val logger = KotlinLogging.logger { }
 
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
     private val skeClient: SkeClient = SkeClient(),
-    private val mqProducer: MQProducerService = MQProducerService(),
+    private val mqProducer: MqProducer = MqProducer(),
 ) {
     suspend fun behandleUtleggstrekk(): Int = lagreNyeUtleggstrekk().run { sendTrekkTilOS() }
 
@@ -42,7 +42,9 @@ class UtleggstrekkService(
             Json.encodeToString(trekkDomument).also { println(it) }
         }
         runCatching {
-            mqProducer.send(trekkSomJsonListe)
+            trekkSomJsonListe.forEach {
+                mqProducer.send(it)
+            }
         }.onSuccess {
             trekkSomJsonListe.forEach {
                 // gjøre dette etter at vi har mottatt kvittering?

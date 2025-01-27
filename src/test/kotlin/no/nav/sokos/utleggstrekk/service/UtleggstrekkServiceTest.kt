@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpStatusCode
 import io.mockk.mockk
 import no.nav.sokos.utleggstrekk.client.SkeClient
-import no.nav.sokos.utleggstrekk.mq.MQProducerService
+import no.nav.sokos.utleggstrekk.mq.MqProducer
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.util.MockHttpClient
 import no.nav.sokos.utleggstrekk.util.Responses
@@ -22,7 +22,8 @@ internal class UtleggstrekkServiceTest :
                 UtleggstrekkService(
                     DatabaseService(testContainer.dataSource),
                     SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)),
-                    mockk<MQProducerService>(relaxed = true),
+//                    mockk<MQProducerService>(relaxed = true),
+                    mockk<MqProducer>(relaxed = true),
                 )
 
             then("skal disse lagres i databasen") {
