@@ -58,7 +58,7 @@ class UtleggstrekkService(
 
     private suspend fun HttpResponse.toUtleggsTrekk() =
         try {
-            body<List<Trekkpaalegg>>().also { println("JSON ER KOVERTERT:\n") }
+            body<List<Trekkpaalegg>>()
         } catch (e: JsonConvertException) {
             logger.error { "Feil i konvertering av response: ${e.message}" }
             emptyList()
@@ -66,7 +66,6 @@ class UtleggstrekkService(
 
     // Brukes kun av testAPI
     suspend fun hentAlleNyeUtleggstrekk(): List<Trekkpaalegg> {
-        println("hent alle NYE!")
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
         println("Henter fra siste sekvensnr: $sisteSekvensnr")
         return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
