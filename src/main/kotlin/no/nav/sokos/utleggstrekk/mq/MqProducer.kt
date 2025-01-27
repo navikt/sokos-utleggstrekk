@@ -46,6 +46,7 @@ class MqProducer(
             val jmsMessage = session.createTextMessage(message)
             println("SENDER MELDING")
             messageProducer.send(jmsMessage)
+            commit()
             println("SENDT OK")
             true
         } catch (ex: Exception) {
