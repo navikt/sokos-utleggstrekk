@@ -44,6 +44,11 @@ class MqProducer(
             if (!connected) connect()
             println("LAGER MELDING")
             val jmsMessage = session.createTextMessage(message)
+            val replyQueue =
+                (session.createQueue(config.replyQueueName) as MQQueue).apply {
+                    targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
+                }
+            jmsMessage.jmsReplyTo = replyQueue
             println("SENDER MELDING")
             messageProducer.send(jmsMessage)
             commit()
