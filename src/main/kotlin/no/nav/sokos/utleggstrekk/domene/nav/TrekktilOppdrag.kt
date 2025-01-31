@@ -30,9 +30,13 @@ data class InnrapporteringTrekk(
     val saldo: Double,
     val prioritetFomDato: String,
     val gyldigTomDato:String? = null,
-    val perioder: List<Periode>,
+    val perioder: Perioder,
 )
 
+@Serializable
+data class Perioder(
+    val periode: List<Periode>
+)
 @Serializable
 data class Periode(
     val periodeFomDato: String,

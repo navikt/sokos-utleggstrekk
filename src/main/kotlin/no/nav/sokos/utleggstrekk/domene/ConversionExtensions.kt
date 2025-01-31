@@ -6,6 +6,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.Periode
+import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 
@@ -31,9 +32,11 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
                     kilde = "?",
                     saldo = 0.0,
                     prioritetFomDato = this.opprettetSke,
-                    perioder = periodeTableList.map {
-                        it.toTrekkDokumentPeriode()
-                    }
+                    perioder = Perioder(
+                        periode = periodeTableList.map {
+                            it.toTrekkDokumentPeriode()
+                        }
+                    )
                 )
             )
         )

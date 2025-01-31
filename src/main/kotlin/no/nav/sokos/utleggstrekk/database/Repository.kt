@@ -36,16 +36,18 @@ object Repository {
         ).executeQuery()
             .next()
 
-    fun Connection.updateTrekkStatus(corrid: String, status: String) {
-        println("oppdaterer status for corrid $corrid")
+    fun Connection.updateTrekkStatus(trekk: TrekkpaleggTable, status: String) {
+        println("oppdaterer status for trekkidSKE ${trekk.trekkidSke}, trekversjon ${trekk.trekkversjon}")
         val result =
             prepareStatement(
                 """
-                update trekkpalegg set status = ? where corrid = ?;
+                update trekkpalegg set status = ? 
+                where trekkid_ske = ? and trekkversjon = ?;
                 """.trimIndent(),
             ).withParameters(
                 param(status),
-                param(corrid),
+                param(trekk.trekkidSke),
+                param(trekk.trekkversjon),
             ).executeUpdate()
         commit()
         println("oppdaterte $result rad")

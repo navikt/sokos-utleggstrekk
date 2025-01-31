@@ -14,6 +14,8 @@ import no.nav.sokos.utleggstrekk.mq.MqProducer
 
 private val logger = KotlinLogging.logger { }
 
+private const val SENDT = "SENDT"
+
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
     private val skeClient: SkeClient = SkeClient(),
@@ -34,23 +36,21 @@ class UtleggstrekkService(
     private fun sendTrekkTilOS(): Int {
         val trekkTilSending = databaseService.hentAlleTrekkSomIkkeErSendt()
 
-        val trekkSomJsonListe = trekkTilSending.map { trekk ->
+        val trekkDokumentPairList = trekkTilSending.map { trekk ->
             val perioder = databaseService.hentPerioderForTrekk(trekk)
-            val trekkDomument = trekk.toTrekkDokument(perioder)
-            println(trekkDomument)
-
-            Json.encodeToString(trekkDomument).also { println(it) }
+            trekk.toTrekkDokument(perioder) to trekk
         }
+
         runCatching {
-            trekkSomJsonListe.forEach {
-                mqProducer.send(it)
+            trekkDokumentPairList.map { trekkDokumentPair ->
+                val dokument = Json.encodeToString(trekkDokumentPair.first)
+                mqProducer.send(dokument) to trekkDokumentPair.second
             }
         }.onSuccess {
-            trekkSomJsonListe.forEach {
-                // gjøre dette etter at vi har mottatt kvittering?
-                //databaseService.oppdaterTrekkStatus(it)
+            it.forEach { forsokPair->
+                if (forsokPair.first) databaseService.oppdaterTrekkStatus(forsokPair.second, SENDT)
             }
-            return trekkSomJsonListe.size // for test api
+            return it.size // for test api
         }
         return 0 // for test api
     }

@@ -24,9 +24,9 @@ class DatabaseService(
             con.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon)
         }
 
-    fun oppdaterTrekkStatus(trekk: TrekkpaleggTable) {
+    fun oppdaterTrekkStatus(trekk: TrekkpaleggTable, status: String) {
         dataSource.connection.useAndHandleErrors { con ->
-            con.updateTrekkStatus(trekk.corrid, "SENDT")
+            con.updateTrekkStatus(trekk, status)
         }
     }
 
