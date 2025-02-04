@@ -8,7 +8,6 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import mu.KotlinLogging
-import no.nav.sokos.utleggstrekk.mq.ShowAllQueueDepth
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 
 fun Routing.utleggstrekkApi(
@@ -43,20 +42,8 @@ fun Routing.utleggstrekkApi(
             call.respond(HttpStatusCode.OK, utleggstrekk.toString())
         }
     }
-    route("mq/") {
-        get("a") {
-            val mq = ShowAllQueueDepth()
-            val res = mq.allLocalQueueDepths()
-            call.respond(HttpStatusCode.OK, res.joinToString("\n"))
-        }
-        get("a/{namePart}") {
-            val namePart = call.parameters["namePart"]
-            val mq = ShowAllQueueDepth()
-            val res = mq.allLocalQueueDepths(namePart!!)
-            call.respond(HttpStatusCode.OK, res.joinToString("\n"))
-        }
-    }
 }
+
 
 private fun Route.authenticate(
     useAuthentication: Boolean,

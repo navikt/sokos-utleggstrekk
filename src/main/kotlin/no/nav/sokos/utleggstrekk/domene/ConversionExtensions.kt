@@ -19,7 +19,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 
     fun TrekkpaleggTable.toTrekkDokument(periodeTableList: List<TrekkPeriodeTable>): TrekkTilOppdrag {
         return TrekkTilOppdrag(
-            document = Document(
+            dokument = Document(
                 transaksjonsId = this.trekkidNav ?: "",
                 innrapporteringTrekk = InnrapporteringTrekk(
                     aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),

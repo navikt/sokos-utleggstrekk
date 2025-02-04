@@ -6,7 +6,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 @Serializable
 data class TrekkTilOppdrag(
-    val dokument: Document  ,
+    val dokument: Document,
 )
 
 @Serializable
