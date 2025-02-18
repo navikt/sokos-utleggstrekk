@@ -2,30 +2,52 @@ package no.nav.sokos.utleggstrekk
 
 import com.google.gson.Gson
 import io.kotest.core.spec.style.FunSpec
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toInstant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
+import no.nav.sokos.utleggstrekk.domene.LocalDateSerializer
+import no.nav.sokos.utleggstrekk.domene.LocalDateTimeSerializer
+import no.nav.sokos.utleggstrekk.domene.ZonedDateTimeSerializer
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.toTrekkDokument
 import org.testcontainers.shaded.com.google.common.reflect.TypeToken
+import java.sql.Timestamp
 import java.time.LocalDateTime
 
 internal class KenTesterJson : FunSpec({
+    val json = Json {
+        prettyPrint = true
+        isLenient = true
+        decodeEnumsCaseInsensitive = true
+        explicitNulls = false
+        serializersModule = SerializersModule {
+            contextual(ZonedDateTimeSerializer)
+            contextual(LocalDateTimeSerializer)
+            contextual(LocalDateSerializer)
+        }}
+
 
     test("db timeformats") {
         val strDato = "2024-06-17T13:33:05.672Z"
+        val instant:Instant = strDato.toInstant()
+        val sql: java.sql.Timestamp = Timestamp(instant.toEpochMilliseconds())
+        val l: LocalDateTime = sql.toLocalDateTime()
+        println("sd: $strDato, i: $instant t: $sql l: $l")
     }
 
-    test("parsing av reposnse fra skatt") {
+    test("parsing av reponse fra skatt") {
         println(bodyFraSkatt)
         val typeToken = object : TypeToken<List<Trekkpaalegg>>() {}.type
-        val trekkpaalegg: List<Trekkpaalegg> = Gson().fromJson<List<Trekkpaalegg>>(bodyFraSkatt.toString(), typeToken)
+
+            val trekkpaalegg: List<Trekkpaalegg> = json.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
         println("antall: ${trekkpaalegg.size}")
         trekkpaalegg.forEach {
-            println("TrekkID: ${it.trekkid}")
-            println("TrekkVersjon${it.trekkversjon}")
-            println("fnr: ${it.skyldner}")
             println("trekkbeløp: ${it.trekkstoerrelseForPeriode[0].trekkbeloep.let { 
                 if (it == null || it.trekkbeloep == null) java.sql.Types.NULL.toDouble()
                 else it.trekkbeloep
@@ -54,46 +76,20 @@ internal class KenTesterJson : FunSpec({
     }
 
     test("Sjekk reponse body"){
-        val typeToken = object : TypeToken<List<Trekkpaalegg>>() {}.type
-        val trekkpaalegg: List<Trekkpaalegg> = Gson().fromJson<List<Trekkpaalegg>>(bodyFraSkatt.toString(), typeToken)
+        val trekkpaalegg: List<Trekkpaalegg> = json.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
         //println(Gson().fromJson(trekkJson, TrekkTilOppdrag.javaClass))
 
+    }
+
+    test("sjekke Kvitteringsmelding med feil"){
+        val fraOs = json.decodeFromString<TrekkTilOppdrag>(kvitteringMedFeil)
+        println(fraOs)
+        println(Gson().toJson(fraOs))
     }
 
 
 
 })
-val trekkJson =
-    """
-        {"dokument":
-        	{"transaksjonsId":"ABCDEFGHIJKLMN",	
-        	 "innrapporteringTrekk":
-        		{"aksjonskode":"NY",							
-        		 "navTrekkId": "0013209905",		
-        		 "kreditorIdTss":"80000000000",		
-        		 "kreditorTrekkId":"ABCDEFGHIJKLMN",	
-        		 "debitorId":"01048012345",		
-        		 "kodeTrekktype":"FRIS",	
-        		 "kodeTrekkAlternativ":"LOPM",	
-        		 "kid":"1234567890",					
-        		 "kreditorsRef":"ABCDEFGHIJKLMN",		
-        		 "kilde":"ABCDEFGHIJK"			
-        		 "saldo":5000,					
-        		 "prioritetFomDato":"YYYY-MM-DD",			
-        		 "gyldigTomDato":"YYYY-MM-DD",				
-        		 "perioder":
-        			{"periode":					
-        				[
-        				 {"periodeFomDato":"YYYY-MM-DD",	
-        				  "periodeTomDato":"YYYY-MM-DD",	
-        				  "sats":2000				
-        				 }
-        				]
-        			}
-        		}
-        	}
-        }
-        """.trimIndent()
 
 val bodyFraSkatt = """
         [{"trekkid":"1","trekkversjon":1,"sekvensnummer":1,"opprettet":"2024-06-16T13:33:05.672Z","saksnummer":"sak-2023-899","trekkpliktig":"889640782","skyldner":"19628198007","trekkstatus":"aktiv","trekkstoerrelseForPeriode":[{"startdato":"2023-06-13","sluttdato":"2024-11-30","trekkbeloep":{"trekkbeloep":5000.0}},{"startdato":"2024-12-01","sluttdato":"2024-12-31","trekkbeloep":{"trekkbeloep":0.0}},{"startdato":"2025-01-01","trekkbeloep":{"trekkbeloep":5000.0}}],"betalingsinformasjon":{"betalingsmottaker":"971648198","kidnummer":"17654202404","kontonummer":"76940512057"}},{"trekkid":"2_xx","trekkversjon":1,"sekvensnummer":2,"opprettet":"2024-06-16T14:33:05.672Z","saksnummer":"sak-2023-900","trekkpliktig":"889640782","skyldner":"11656296129","trekkstatus":"aktiv","trekkstoerrelseForPeriode":[{"startdato":"2023-06-13","sluttdato":"2024-11-30","trekkbeloep":{"trekkbeloep":800.5}}],"betalingsinformasjon":{"betalingsmottaker":"971648198","kidnummer":"45645202404","kontonummer":"76940512057"}}]
@@ -107,7 +103,7 @@ fun trekkTable():TrekkpaleggTable =
         trekkversjon = 2,
         sekvensnummer = 3,
         saksnummer = "sak01",
-        opprettetSke = "2024-05-20",
+        opprettetSke = Timestamp("2024-06-16T13:33:05.672Z".toInstant().toEpochMilliseconds()).toLocalDateTime(),
         trekkpliktig = "987654321",
         skyldner = "12345678901",
         trekkstatus = "active",
@@ -121,9 +117,9 @@ fun trekkTable():TrekkpaleggTable =
         tidspunktOpprettet = LocalDateTime.now()
     )
 
-fun perioder():List<TrekkPeriodeTable>  = listOf(
-        TrekkPeriodeTable(
-            trekkPeriodeTableId = 1,
+fun perioder():List<TrekkpaleggPeriodeTable>  = listOf(
+        TrekkpaleggPeriodeTable(
+            trekkpaleggPeriodeTableId = 1,
             sekvensnummer = 3,
             trekkidSke = "SKEID",
             trekkversjon = 2,
@@ -132,8 +128,8 @@ fun perioder():List<TrekkPeriodeTable>  = listOf(
             trekkbelop = 2000.00,
             trekkprosent = 0.0
         ),
-        TrekkPeriodeTable(
-            trekkPeriodeTableId = 1,
+        TrekkpaleggPeriodeTable(
+            trekkpaleggPeriodeTableId = 1,
             sekvensnummer = 3,
             trekkidSke = "SKEID",
             trekkversjon = 2,
@@ -142,8 +138,8 @@ fun perioder():List<TrekkPeriodeTable>  = listOf(
             trekkbelop = 0.0,
             trekkprosent = 15.0
         ),
-        TrekkPeriodeTable(
-            trekkPeriodeTableId = 1,
+        TrekkpaleggPeriodeTable(
+            trekkpaleggPeriodeTableId = 1,
             sekvensnummer = 3,
             trekkidSke = "SKEID",
             trekkversjon = 2,
@@ -154,3 +150,86 @@ fun perioder():List<TrekkPeriodeTable>  = listOf(
         )
     )
 
+val tilOs = """
+{"dokument":
+    {"transaksjonsId":"",
+        "innrapporteringTrekk":
+        {"aksjonskode":"NY",
+            "kreditorIdTss":"80000345435",
+            "kreditorTrekkId":"4",
+            "debitorId":"01018941372",
+            "kodeTrekkAlternativ":"LOPM",
+            "kid":"17654202400",
+            "kreditorsRef":"sak-2023-899",
+            "kodeTrekktype":"KRED",
+            "kilde":"?",
+            "saldo":0.0,
+            "prioritetFomDato":"2024-06-16",
+            "perioder":
+            {"periode": [
+                {"periodeFomDato":"2023-06-13",
+                    "periodeTomDato":"2024-11-30",
+                    "sats":5000.0},
+                "periode":
+                {"periodeFomDato":"2024-12-01",
+                    "periodeTomDato":"2024-12-31",
+                    "sats":0.0},
+                "periode":
+                {"periodeFomDato":"2025-01-01",
+                    "periodeTomDato":"",
+                    "sats":5000.0}
+                ]}
+        }
+    }
+}
+""".trimIndent()
+val kvitteringMedFeil = """
+{
+    "mmel":
+    {
+        "systemId":"231-OPPD",
+        "kodeMelding":"B199006F",
+        "alvorlighetsgrad":"08",
+        "beskrMelding":"Personen finnes ikke i PDL: 19628198007",
+        "programId":"K231B199", "sectionNavn":"CA30-SJEKK-PDL"
+    },
+    "dokument":
+    {
+        "transaksjonsId": "transid1",
+        "innrapporteringTrekk":
+        {
+            "aksjonskode":"NY",
+            "kreditorIdTss":"971648198",
+            "kreditorTrekkId":"1",
+            "debitorId":"19628198007",
+            "kodeTrekktype":"KRED",
+            "kodeTrekkAlternativ":"LOPM",
+            "kid":"17654202404",
+            "kreditorsRef":"sak-2023-899",
+            "kilde":"SOKO",
+            "prioritetFomDato":"2024-06-16",
+            "saldo": 0.0,
+            "perioder":
+            {
+                "periode":
+                [
+                    {
+                        "periodeFomDato":"2023-06-13",
+                        "periodeTomDato":"2024-11-30",
+                        "sats":5000.00
+                    },
+                    {
+                        "periodeFomDato":"2024-12-01",
+                        "periodeTomDato":"2024-12-31",
+                        "sats":0.00
+                    },
+                    {
+                        "periodeFomDato":"2025-01-01",
+                        "sats":5000.00
+                    }
+                ]
+            }
+        }
+    }
+}
+ """.trimIndent()

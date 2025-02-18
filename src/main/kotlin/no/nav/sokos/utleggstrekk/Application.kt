@@ -32,7 +32,7 @@ private fun Application.module() {
         utleggstrekkApi(utleggstrekkService)
     }
 
-    if (!PropertiesConfig.isLocal()) {
+    if (!PropertiesConfig.isLocal) {
         PostgresDataSource.migrate()
     }
 }

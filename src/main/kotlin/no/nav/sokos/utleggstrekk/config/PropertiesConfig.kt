@@ -60,7 +60,7 @@ object PropertiesConfig {
         PROD,
     }
 
-    fun isLocal() = Configuration().profile == Profile.LOCAL
+    val isLocal = Configuration().profile == Profile.LOCAL
 
     operator fun get(key: String): String = config[Key(key, stringType)]
 
@@ -92,15 +92,13 @@ object PropertiesConfig {
         val skeRestUrl: String = getOrEmpty("SKE_REST_URL"),
     )
 
-    data class PostgresConfig(
-        val hostName: String = getOrEmpty("POSTGRES_HOST_NAME"),
-        val port: String = getOrEmpty("POSTGRES_PORT"),
-        val name: String = getOrEmpty("POSTGRES_NAME"),
-        val username: String = getOrEmpty("POSTGRES_USERNAME").trim(),
-        val password: String = getOrEmpty("POSTGRES_PASSWORD").trim(),
-        val vaultMountPath: String = getOrEmpty("VAULT_MOUNTPATH"),
-    ) {
-        val jdbcUrl: String = "jdbc:postgresql://$hostName:$port/$name"
+    data object PostgresConfig {
+        val host: String = getOrEmpty("POSTGRES_HOST")
+        val port: String = getOrEmpty("POSTGRES_PORT")
+        val name: String = getOrEmpty("POSTGRES_NAME")
+        val username: String = getOrEmpty("POSTGRES_USERNAME").trim()
+        val password: String = getOrEmpty("POSTGRES_PASSWORD").trim()
+        val vaultMountPath: String = getOrEmpty("VAULT_MOUNTPATH")
         val adminUser = "$name-admin"
         val user = "$name-user"
     }

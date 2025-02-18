@@ -4,12 +4,12 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.http.HttpStatusCode
 import io.mockk.mockk
+import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.mq.MqProducer
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.util.MockHttpClient
 import no.nav.sokos.utleggstrekk.util.Responses
-import no.nav.sokos.utleggstrekk.util.TestContainer
 
 internal class UtleggstrekkServiceTest :
     BehaviorSpec({
@@ -17,7 +17,7 @@ internal class UtleggstrekkServiceTest :
         Given("SKE returnerer en liste av utleggstrekk") {
             val testContainer = TestContainer()
             testContainer.migrate()
-            val mockClient = MockHttpClient().getClient(Responses.utleggsTrekkListeMedMidlertidigStans, HttpStatusCode.OK)
+            val mockClient = MockHttpClient().getClient(Responses.utleggsTrekkListeFraSkatt, HttpStatusCode.OK)
             val utleggsTrekkService =
                 UtleggstrekkService(
                     DatabaseService(testContainer.dataSource),

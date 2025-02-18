@@ -10,23 +10,23 @@ import no.nav.sokos.utleggstrekk.database.Repository.fetchPerioderForTrekk
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatus
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 private val logger = KotlinLogging.logger { }
 
 class DatabaseService(
-    private val dataSource: HikariDataSource = PostgresDataSource.dataSource(),
+    private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
 ) {
     fun trekkFinnes(trekkid_ske: String, sekvensnr: Int, trekkversjon: Int) =
         dataSource.connection.useAndHandleErrors { con ->
             con.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon)
         }
 
-    fun oppdaterTrekkStatus(trekk: TrekkpaleggTable, status: String) {
+    fun oppdaterTrekkStatus(corrId: String, status: String) {
         dataSource.connection.useAndHandleErrors { con ->
-            con.updateTrekkStatus(trekk, status)
+            con.updateTrekkStatus(corrId, status)
         }
     }
 
@@ -35,7 +35,7 @@ class DatabaseService(
             con.fetchAllTrekkNotSent()
         }
 
-    fun hentPerioderForTrekk(trekk:TrekkpaleggTable):List<TrekkPeriodeTable> =
+    fun hentPerioderForTrekk(trekk:TrekkpaleggTable):List<TrekkpaleggPeriodeTable> =
         dataSource.connection.useAndHandleErrors { con ->
             con.fetchPerioderForTrekk(trekk)
         }

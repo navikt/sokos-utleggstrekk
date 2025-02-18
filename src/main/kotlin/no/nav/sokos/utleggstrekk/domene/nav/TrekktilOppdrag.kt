@@ -6,8 +6,25 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 @Serializable
 data class TrekkTilOppdrag(
+    val mmel: Mmel? = null,
     val dokument: Document,
 )
+
+@Serializable
+data class Mmel(
+    val systemId: String?,
+    val kodeMelding: String?,
+    val alvorlighetsgrad: String,
+    val beskrMelding: String?,
+    val sqlKode: String?,
+    val sqlStateMmel: String?,
+    val sqlMelding: String?,
+    val mqCompletionKode: String?,
+    val mqReasonKode: String?,
+    val programId: String?,
+    val sectionNavn: String?,
+)
+
 
 @Serializable
 data class Document(
@@ -26,7 +43,7 @@ data class InnrapporteringTrekk(
     val kodeTrekkAlternativ: TrekkAlternativ,
     val kid: String,
     val kreditorsRef: String,
-    val kilde: String,
+    val kilde: String = "SOKOSUTLEGG",
     val saldo: Double,
     val prioritetFomDato: String,
     val gyldigTomDato:String? = null,

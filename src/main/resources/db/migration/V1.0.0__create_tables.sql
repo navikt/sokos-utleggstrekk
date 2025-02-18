@@ -7,7 +7,7 @@ create table "trekkpalegg"
     trekkid_nav            text,
     trekkversjon           smallint  NOT NULL,
     saksnummer             text      NOT NULL,
-    opprettet_ske          text      NOT NULL,
+    opprettet_ske          timestamp      NOT NULL,
     trekkpliktig           text      NOT NULL,
     skyldner               text      NOT NULL,
     trekkstatus            text      NOT NULL,
@@ -16,13 +16,14 @@ create table "trekkpalegg"
     kontonummer            text      NOT NULL,
     corrid                 text      NOT NULL,
     status                 text      NOT NULL,
+    kvittering             text,
     tidspunkt_sendt_os     timestamp null,
     tidspunkt_siste_status timestamp NOT NULL DEFAULT NOW(),
     tidspunkt_opprettet    timestamp NOT NULL DEFAULT NOW()
 );
 
-drop table if exists trekkperiode;
-create table "trekkperiode"
+drop table if exists trekkpaleggperiode;
+create table "trekkpaleggperiode"
 (
     id                  bigserial primary key,
     sekvensnummer       int  NOT NULL,
@@ -37,4 +38,5 @@ create table "trekkperiode"
 
 
 create unique index if not exists idxu_trekk on trekkpalegg (trekkid_ske, sekvensnummer, trekkversjon);
-create index if not exists idx_periode on trekkperiode (trekkid_ske, sekvensnummer, trekkversjon)
+create index if not exists idx_periode on trekkpaleggperiode (trekkid_ske, sekvensnummer, trekkversjon)
+

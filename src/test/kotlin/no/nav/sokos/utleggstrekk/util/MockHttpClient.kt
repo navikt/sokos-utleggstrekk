@@ -44,119 +44,69 @@ class MockHttpClient {
 
 object Responses {
     //language=json
-    val utleggsTrekkListeUtenMidlertidigStans =
+    val utleggsTrekkListeFraSkatt =
         """
-        [
-          {
-            "trekkid": "1",
-            "trekkversjon": 1,
-            "sekvensnummer": 1,
-            "opprettet": "2024-07-10T08:24:34.143Z",
-            "trekkpliktig": "123456789",
-            "skyldner": "22003648649",
-            "trekkstatus": "aktiv",
-            "startPeriode": "2024-12",
-            "sluttPeriode": "2024-12",
-            "midlertidigStans":  null,
-            "trekkbeloep": {
-              "trekkbeloep": 1000
-            },
-            "kidnummer": "8981238184016280475641088",
-            "kontonummer": "19019019019"
-          },
-          {
-            "trekkid": "2",
-            "trekkversjon": 1,
-            "sekvensnummer": 1,
-            "opprettet": "2024-07-10T08:24:34.143Z",
-            "trekkpliktig": "987654321",
-            "skyldner": "22003648649",
-            "trekkstatus": "inaktiv",
-            "startPeriode": "2024-11",
-            "sluttPeriode": "2024-11",
-            "midlertidigStans": null,
-            "trekkprosent": {
-              "trekkprosent": 10.0
-            },
-            "kidnummer": "9981238184016280475641088",
-            "kontonummer": "12012012012"
-          }
-        ]
-        """.trimIndent()
-
-    //language=json
-    val utleggsTrekkListeMedMidlertidigStans =
-        """
-        [
-          {
-            "trekkid": "1",
-            "trekkversjon": 1,
-            "sekvensnummer": 1,
-            "opprettet": "2024-07-10T08:24:34.143Z",
-            "trekkpliktig": "123456789",
-            "skyldner": "22003648649",
-            "trekkstatus": "aktiv",
-            "startPeriode": "2024-12",
-            "sluttPeriode": "2024-12",
-            "midlertidigStans":  [
-            {
-              "startPeriode": "2024-12",
-              "sluttPeriode": "2024-12"
-            }
-          ],
-            "trekkbeloep": {
-              "trekkbeloep": 1000
-            },
-            "kidnummer": "8981238184016280475641088",
-            "kontonummer": "19019019019"
-          },
-          {
-            "trekkid": "2",
-            "trekkversjon": 1,
-            "sekvensnummer": 1,
-            "opprettet": "2024-07-10T08:24:34.143Z",
-            "trekkpliktig": "987654321",
-            "skyldner": "22003648649",
-            "trekkstatus": "inaktiv",
-            "startPeriode": "2024-11",
-            "sluttPeriode": "2024-11",
-            "midlertidigStans": null,
-            "trekkprosent": {
-              "trekkprosent": 10.0
-            },
-            "kidnummer": "9981238184016280475641088",
-            "kontonummer": "12012012012"
-          }
-        ]
-        """.trimIndent()
-
-    //language=json
-    val utleggsTrekk =
-        """
-        {
-          "trekkid": "string",
-          "trekkversjon": 1,
-          "sekvensnummer": 1,
-          "opprettet": "2024-07-10T08:25:37.020Z",
-          "trekkpliktig": "123456789",
-          "skyldner": "13088839702",
-          "trekkstatus": "aktiv",
-          "startPeriode": "2024-12",
-          "sluttPeriode": "2024-12",
-          "midlertidigStans": [
-            {
-              "startPeriode": "2024-12",
-              "sluttPeriode": "2024-12"
-            }
-          ],
-          "trekkbeloep": {
-            "trekkbeloep": 0
-          },
-          "trekkprosent": {
-            "trekkprosent": 10.0
-          },
-          "kidnummer": "824776336890844418867",
-          "kontonummer": "61588822927"
+[
+  {
+    "trekkid": "1",
+    "trekkversjon": 1,
+    "sekvensnummer": 1,
+    "opprettet": "2024-06-16T13:33:05.672Z",
+    "saksnummer": "sak-2023-899",
+    "trekkpliktig": "889640782",
+    "skyldner": "19628198007",
+    "trekkstatus": "aktiv",
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2023-06-13",
+        "sluttdato": "2024-11-30",
+        "trekkbeloep": {
+          "trekkbeloep": 5000.0
         }
-        """.trimIndent()
+      },
+      {
+        "startdato": "2024-12-01",
+        "sluttdato": "2024-12-31",
+        "trekkbeloep": {
+          "trekkbeloep": 0.0
+        }
+      },
+      {
+        "startdato": "2025-01-01",
+        "trekkbeloep": {
+          "trekkbeloep": 5000.0
+        }
+      }
+    ],
+    "betalingsinformasjon": {
+      "betalingsmottaker": "971648198",
+      "kidnummer": "17654202404",
+      "kontonummer": "76940512057"
+    }
+  },
+  {
+    "trekkid": "2_xx",
+    "trekkversjon": 1,
+    "sekvensnummer": 2,
+    "opprettet": "2024-06-16T14:33:05.672Z",
+    "saksnummer": "sak-2023-900",
+    "trekkpliktig": "889640782",
+    "skyldner": "11656296129",
+    "trekkstatus": "aktiv",
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2023-06-13",
+        "sluttdato": "2024-11-30",
+        "trekkbeloep": {
+          "trekkbeloep": 800.5
+        }
+      }
+    ],
+    "betalingsinformasjon": {
+      "betalingsmottaker": "971648198",
+      "kidnummer": "45645202404",
+      "kontonummer": "76940512057"
+    }
+  }
+] """.trimIndent()
 }

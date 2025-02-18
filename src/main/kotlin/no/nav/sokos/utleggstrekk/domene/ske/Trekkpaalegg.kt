@@ -1,5 +1,6 @@
 package no.nav.sokos.utleggstrekk.domene.ske
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -7,7 +8,7 @@ data class Trekkpaalegg(
     val trekkid: String,
     val sekvensnummer: Int,
     val trekkversjon: Int,
-    val opprettet: String,
+    val opprettet: Instant,
     val saksnummer: String,
     val trekkpliktig: String,
     val skyldner: String,

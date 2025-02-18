@@ -9,7 +9,7 @@ data class TrekkpaleggTable(
     val saksnummer: String,
     val trekkidSke: String,
     val trekkversjon: Int,
-    val opprettetSke: String,
+    val opprettetSke: LocalDateTime,
     val trekkpliktig: String,
     val skyldner: String,
     val trekkstatus: String,

@@ -1,7 +1,7 @@
 package no.nav.sokos.utleggstrekk.database.model
 
-data class TrekkPeriodeTable(
-    val trekkPeriodeTableId: Int,
+data class TrekkpaleggPeriodeTable(
+    val trekkpaleggPeriodeTableId: Int,
     val sekvensnummer: Int,
     val trekkidSke: String,
     val trekkversjon: Int,

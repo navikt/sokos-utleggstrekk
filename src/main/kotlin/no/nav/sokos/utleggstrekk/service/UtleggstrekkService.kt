@@ -2,7 +2,6 @@ package no.nav.sokos.utleggstrekk.service
 
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -15,6 +14,9 @@ import no.nav.sokos.utleggstrekk.mq.MqProducer
 private val logger = KotlinLogging.logger { }
 
 private const val SENDT = "SENDT"
+private const val TSSID = "80000423362"
+private const val TSS_ORGNR = "971648198"
+private const val TSS_KTO =  "76940512057"
 
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
@@ -23,12 +25,11 @@ class UtleggstrekkService(
 ) {
     suspend fun behandleUtleggstrekk(): Int = lagreNyeUtleggstrekk().run { sendTrekkTilOS() }
 
-    private suspend fun lagreNyeUtleggstrekk() {
+    suspend fun lagreNyeUtleggstrekk() {
         val body = skeClient.hentAlleUtleggstrekk()
-        println("Inne i lagre:\n${body.bodyAsText()}")
-            body.toUtleggsTrekk().also(::println)
+            body.toUtleggsTrekk()
             .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
-            .also {
+            .let {
                 println("Det er ${it.size} som skal lagres")
                 databaseService.lagreUtleggstrekk(it)
             }
@@ -48,7 +49,7 @@ class UtleggstrekkService(
             }
         }.onSuccess {
             it.forEach { forsokPair->
-                if (forsokPair.first) databaseService.oppdaterTrekkStatus(forsokPair.second, SENDT)
+                if (forsokPair.first) databaseService.oppdaterTrekkStatus(forsokPair.second.corrid, SENDT)
             }
             return it.size // for test api
         }

@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.database
+import io.ktor.utils.io.InternalAPI
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
 import java.math.BigDecimal
 import java.sql.Connection
@@ -43,6 +44,7 @@ object RepositoryExtensions {
             }
         }
 
+    @OptIn(InternalAPI::class)
     inline fun <reified T : Any?> ResultSet.getColumn(
         columnLabel: String,
         transform: (T) -> T = { it },
@@ -72,7 +74,7 @@ object RepositoryExtensions {
         return transform(columnValue as T)
     }
 
-    fun ResultSet.toTrekkpalegTable() =
+    fun ResultSet.toTrekkpaleggTable() =
         toList {
             TrekkpaleggTable(
                 trekkpaleggTableId = getColumn("id"),
@@ -95,10 +97,10 @@ object RepositoryExtensions {
             )
         }
 
-    fun ResultSet.toTrekkPeriodeTable() =
+    fun ResultSet.toTrekkpaleggperiodeTable() =
         toList {
-            TrekkPeriodeTable(
-                trekkPeriodeTableId = getColumn("id"),
+            TrekkpaleggPeriodeTable(
+                trekkpaleggPeriodeTableId = getColumn("id"),
                 sekvensnummer = getColumn("sekvensnummer"),
                 trekkidSke = getColumn("trekkid_ske"),
                 trekkversjon = getColumn("trekkversjon"),

@@ -3,13 +3,14 @@ package no.nav.sokos.utleggstrekk.database
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkPeriodeTable
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkpalegTable
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkpaleggTable
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkpaleggperiodeTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import java.sql.Connection
+import java.sql.Timestamp
 import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
@@ -36,18 +37,35 @@ object Repository {
         ).executeQuery()
             .next()
 
-    fun Connection.updateTrekkStatus(trekk: TrekkpaleggTable, status: String) {
-        println("oppdaterer status for trekkidSKE ${trekk.trekkidSke}, trekversjon ${trekk.trekkversjon}")
+    fun Connection.updateTrekkStatus(corrId: String, status: String) {
+        println("oppdaterer status for trekkidSKE correlationId ${corrId} til status: ${status}")
         val result =
             prepareStatement(
                 """
                 update trekkpalegg set status = ? 
-                where trekkid_ske = ? and trekkversjon = ?;
+                where corrid = ?;
                 """.trimIndent(),
             ).withParameters(
                 param(status),
-                param(trekk.trekkidSke),
-                param(trekk.trekkversjon),
+                param(corrId),
+            ).executeUpdate()
+        commit()
+        println("oppdaterte $result rad")
+    }
+
+    fun Connection.updateKvitteringStatus(corrId: String, status: String, kvittering: String, navTrekkId: String) {
+        println("oppdaterer kvitteringstatus for trekkidSKE correlationId ${corrId}")
+        val result =
+            prepareStatement(
+                """
+                update trekkpalegg set status = ?, kvittering = ?, trekkid_nav = ?  
+                where corrid = ?;
+                """.trimIndent(),
+            ).withParameters(
+                param(status),
+                param(kvittering),
+                param(navTrekkId),
+                param(corrId)
             ).executeUpdate()
         commit()
         println("oppdaterte $result rad")
@@ -79,7 +97,7 @@ object Repository {
         val prepStmt2 =
             prepareStatement(
                 """
-                insert into trekkperiode (
+                insert into trekkpaleggperiode (
                 sekvensnummer,
                 trekkid_ske,
                 trekkversjon,
@@ -95,7 +113,7 @@ object Repository {
             prepStmt1.setString(2, trekk.trekkid)
             prepStmt1.setInt(3, trekk.trekkversjon)
             prepStmt1.setString(4, trekk.saksnummer)
-            prepStmt1.setString(5, trekk.opprettet)
+            prepStmt1.setTimestamp(5, Timestamp(trekk.opprettet.toEpochMilliseconds()))
             prepStmt1.setString(6, trekk.trekkpliktig)
             prepStmt1.setString(7, trekk.skyldner)
             prepStmt1.setString(8, trekk.trekkstatus)
@@ -134,12 +152,12 @@ object Repository {
     fun Connection.fetchAllTrekkNotSent(): List<TrekkpaleggTable> =
         prepareStatement("""select * from trekkpalegg where status     = 'MOTTATT'""")
             .executeQuery()
-            .toTrekkpalegTable()
+            .toTrekkpaleggTable()
 
 
-    fun Connection.fetchPerioderForTrekk(trekk: TrekkpaleggTable):List<TrekkPeriodeTable> =
+    fun Connection.fetchPerioderForTrekk(trekk: TrekkpaleggTable):List<TrekkpaleggPeriodeTable> =
         prepareStatement("""
-            select * from trekkperiode 
+            select * from trekkpaleggperiode 
             where sekvensnummer = ?
                 and trekkid_ske = ?
                 and trekkversjon= ?
@@ -151,7 +169,7 @@ object Repository {
                 param(trekk.trekkversjon)
             )
             .executeQuery()
-            .toTrekkPeriodeTable()
+            .toTrekkpaleggperiodeTable()
 
 
 }
