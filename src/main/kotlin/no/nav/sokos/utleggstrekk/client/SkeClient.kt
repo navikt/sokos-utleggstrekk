@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -29,21 +28,13 @@ class SkeClient(
 
     @OptIn(InternalAPI::class)
     private suspend fun doGet(path: String, corrID: String):HttpResponse {
-        println("GET::")
         val response= client.get(buildHttpRequest(path, corrID))
-        println("********RESPONSE")
-        println(response.status)
-        println("ResponseBody: \n")
-        val body: String =response.body()
-        println("BODY as String:\n $body")
-        println("RESPONSE********")
         return response
     }
 
     private suspend fun buildHttpRequest(path: String, corrID: String): HttpRequestBuilder {
-        val token = tokenProvider.hentAccessToken().also { println("Token: $it") }
+        val token = tokenProvider.hentAccessToken()
         return HttpRequestBuilder().apply {
-            println("henter $path")
             url(path)
             headers {
                 append("Klientid", KLIENT_ID)

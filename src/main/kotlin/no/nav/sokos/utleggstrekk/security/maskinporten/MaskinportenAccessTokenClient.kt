@@ -43,7 +43,6 @@ class MaskinportenAccessTokenClient(
                 }
 
                 else -> {
-                    println("bruker samme")
                     logger.info { "bruker samme" }
                     token.accessToken
                 }
@@ -52,14 +51,14 @@ class MaskinportenAccessTokenClient(
     }
 
     private suspend fun hentAccessTokenFraProvider(): Token {
-        println("Issuer")
-        println(maskinportenConfig.openIdConfiguration.issuer)
-        println("tokenendpoint")
-        println(maskinportenConfig.openIdConfiguration.tokenEndpoint)
-        println("jwksuri")
-        println(maskinportenConfig.openIdConfiguration.jwksUri)
+//        println("Issuer")
+//        println(maskinportenConfig.openIdConfiguration.issuer)
+//        println("tokenendpoint")
+//        println(maskinportenConfig.openIdConfiguration.tokenEndpoint)
+//        println("jwksuri")
+//        println(maskinportenConfig.openIdConfiguration.jwksUri)
 
-        println("fun hentAccessTokenFraProvider")
+//        println("fun hentAccessTokenFraProvider")
         val jwt =
             JWT
                 .create()
@@ -85,7 +84,7 @@ class MaskinportenAccessTokenClient(
             }
 
         return try {
-               println(response.bodyAsText())
+//               println(response.bodyAsText())
             response.body()
         } catch (ex: NoTransformationFoundException) {
             logger.error("Kunne ikke lese accessToken, se sikker log for meldingen som string")
