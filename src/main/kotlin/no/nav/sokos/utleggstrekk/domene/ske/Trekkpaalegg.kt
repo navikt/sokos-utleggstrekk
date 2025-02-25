@@ -36,9 +36,9 @@ enum class Trekkstatus(val value: String) {
 @Serializable
 data class TrekkstorrelseForPeriode(
     val startdato: String,
-    val sluttdato: String?,
-    val trekkbeloep: Trekkbeloep?,
-    val trekkprosent: Trekkprosent?
+    val sluttdato: String? = null,
+    val trekkbeloep: Trekkbeloep? = null,
+    val trekkprosent: Trekkprosent? = null
 )
 
 @Serializable

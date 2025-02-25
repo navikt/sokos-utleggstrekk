@@ -1,8 +1,9 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
 import kotlinx.serialization.Serializable
-import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
+import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 @Serializable
 data class TrekkTilOppdrag(
@@ -25,7 +26,6 @@ data class Mmel(
     val sectionNavn: String?,
 )
 
-
 @Serializable
 data class Document(
     val transaksjonsId: String,
@@ -40,7 +40,7 @@ data class InnrapporteringTrekk(
     val kreditorTrekkId:String,
     val debitorId: String,
     val kodeTrekktype:String = "KRED",  //TODO få riktig fra Endre bruker denne foreløpig
-    val kodeTrekkAlternativ: TrekkAlternativ,
+    val kodeTrekkAlternativ: String,
     val kid: String,
     val kreditorsRef: String,
     val kilde: String = "SOKOSUTLEGG",
@@ -58,38 +58,42 @@ data class Perioder(
 data class Periode(
     val periodeFomDato: String,
     val periodeTomDato: String?,
-    val sats: Double
+    val sats: Double,
+    val kodeTrekkAlternativ: TrekkAlternativ? = null,
 )
 
 @Serializable
 enum class Aksjonskode(val value: String){
     NY("NY"),
     ENDR("ENDR"),
-    KANS("KANS"),
     OPPH("OPPH"),
-    ENRS("ENRS"),
     ;
     companion object {
-        fun getAksjonskodeForTrekk(trekkpaleggTable: TrekkpaleggTable): Aksjonskode {
-            if (trekkpaleggTable.trekkstatus.equals(Trekkstatus.AKTIV.value) && trekkpaleggTable.trekkversjon == 1)
+        fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode {
+            if (utleggstrekkTable.trekkstatus.equals(Trekkstatus.AKTIV.value) && utleggstrekkTable.trekkversjon == 1)
                 return NY
-            else if (trekkpaleggTable.trekkstatus.equals(Trekkstatus.AVSLUTTET.value))
+            else if (utleggstrekkTable.trekkstatus.equals(Trekkstatus.AVSLUTTET.value))
                 return OPPH
             else
                 return ENDR
         }
     }
-
 }
+
 //Aksjonskoder er NY, ENDR (endring), KANS (kanseller), OPPH (opphør), ENRS (endring restsaldo).
 @Serializable
 enum class TrekkAlternativ(val value: String) {
-    LOPD("LOPD"),   //   Løpende trekk dagsats
     LOPM("LOPM"),   //   Løpende trekk månedssats
     LOPP("LOPP"),   //   Løpende trekk prosentsats
-    SALD("SALD"),   //   Saldotrekk dagsats
-    SALM("SALM"),   //   Saldotrekk månedssats
-    SALP("SALP"),   //   Saldotrekk prosentsats
+;
+    companion object {
+        fun getTrekkAlternativ(periode: TrekkstorrelseForPeriode): TrekkAlternativ {
+            if (periode.trekkbeloep != null && periode.trekkprosent == null) return LOPM
+            else if (periode.trekkprosent != null && periode.trekkbeloep == null)  return LOPP
+            else throw NotImplementedError(
+                "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode")
+        }
+    }
 }
 
 

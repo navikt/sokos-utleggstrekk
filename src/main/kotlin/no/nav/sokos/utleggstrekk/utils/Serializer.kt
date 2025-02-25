@@ -1,14 +1,16 @@
-package no.nav.sokos.utleggstrekk.domene
+package no.nav.sokos.utleggstrekk.utils
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 
 object LocalDateSerializer : KSerializer<LocalDate> {
@@ -20,6 +22,22 @@ object LocalDateSerializer : KSerializer<LocalDate> {
 
     override fun deserialize(decoder: Decoder): LocalDate {
         return LocalDate.parse(decoder.decodeString())
+    }
+}
+
+@Serializer(forClass = java.time.LocalDateTime::class)
+object JavaLocaldateTimeSerializer: KSerializer<java.time.LocalDateTime>{
+    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+
+    override fun serialize(encoder: Encoder, value: java.time.LocalDateTime){
+        encoder.encodeString(value.format(formatter))
+    }
+
+    override val descriptor: SerialDescriptor
+        get() = TODO("Not yet implemented")
+
+    override fun deserialize(decoder: Decoder):java.time.LocalDateTime{
+        return java.time.LocalDateTime.parse(decoder.decodeString(), formatter)
     }
 }
 

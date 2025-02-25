@@ -1,7 +1,7 @@
-package no.nav.sokos.utleggstrekk.domene
+package no.nav.sokos.utleggstrekk.utils
 
-import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggPeriodeTable
-import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
@@ -10,23 +10,26 @@ import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 
-fun TrekkpaleggPeriodeTable.toTrekkDokumentPeriode() =
+fun TrekkPeriodeTable.toTrekkDokumentPeriode() =
     Periode(
             periodeFomDato = this.datoStart,
             periodeTomDato = this.datoSlutt,
-            sats = this.trekkbelop ?: this.trekkprosent!!
+            sats = this.sats
     )
 
-fun TrekkpaleggTable.toTrekkDokument(periodeTableList: List<TrekkpaleggPeriodeTable>): TrekkTilOppdrag {
+fun UtleggstrekkTable.toTrekkDokument(periodeTableList: List<TrekkPeriodeTable>): TrekkTilOppdrag {
+    if (trekkidSkeOS.isNullOrBlank() || trekkAlternativ.isNullOrBlank()) {
+        throw RuntimeException("Kan ikke lage OS trekkdokument uten trekkidkombinasjonen trekkidSke og trekkalternativ")
+    }
     return TrekkTilOppdrag(
         dokument = Document(
             transaksjonsId = this.corrid,
             innrapporteringTrekk = InnrapporteringTrekk(
                 aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),
                 kreditorIdTss = this.betalingsmottaker,
-                kreditorTrekkId = this.trekkidSke,
+                kreditorTrekkId = this.trekkidSkeOS,
                 debitorId = this.skyldner,
-                kodeTrekkAlternativ = TrekkAlternativ.LOPM,
+                kodeTrekkAlternativ = this.trekkAlternativ,
                 kid = this.kid,
                 kreditorsRef = this.saksnummer,
                 kilde = "SOKOSUTLEGG",
@@ -39,5 +42,9 @@ fun TrekkpaleggTable.toTrekkDokument(periodeTableList: List<TrekkpaleggPeriodeTa
             )
         )
     )
-
 }
+
+suspend fun UtleggstrekkTable.copyWithTrekkAlternativ(alternativ: TrekkAlternativ):UtleggstrekkTable {
+    return this.copy(trekkAlternativ = alternativ.value, trekkidSkeOS = "$trekkidSke-${alternativ.value.last()}")
+}
+

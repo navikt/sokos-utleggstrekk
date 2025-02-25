@@ -8,8 +8,9 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.domene.toTrekkDokument
 import no.nav.sokos.utleggstrekk.mq.MqProducer
+import no.nav.sokos.utleggstrekk.utils.oppdaterTrekkMedForskjelligSatstype
+import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 private val logger = KotlinLogging.logger { }
 
@@ -23,7 +24,11 @@ class UtleggstrekkService(
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: MqProducer = MqProducer(),
 ) {
-    suspend fun behandleUtleggstrekk(): Int = lagreNyeUtleggstrekk().run { sendTrekkTilOS() }
+    suspend fun behandleUtleggstrekk(): Int {
+        lagreNyeUtleggstrekk()
+        setTrekkAlternativPaNyeTrekk()
+        return sendTrekkTilOS()
+    }
 
     suspend fun lagreNyeUtleggstrekk() {
         val body = skeClient.hentAlleUtleggstrekk()
@@ -38,7 +43,7 @@ class UtleggstrekkService(
         val trekkTilSending = databaseService.hentAlleTrekkSomIkkeErSendt()
 
         val trekkDokumentPairList = trekkTilSending.map { trekk ->
-            val perioder = databaseService.hentPerioderForTrekk(trekk)
+            val perioder = databaseService.hentAllePerioderForTrekkVersjon(trekk)
             trekk.toTrekkDokument(perioder) to trekk
         }
 
@@ -56,7 +61,6 @@ class UtleggstrekkService(
         return 0 // for test api
     }
 
-
     private suspend fun HttpResponse.toUtleggsTrekk() =
         try {
             body<List<Trekkpaalegg>>()
@@ -65,19 +69,27 @@ class UtleggstrekkService(
             emptyList()
         }
 
-    // Brukes kun av testAPI
     suspend fun hentAlleNyeUtleggstrekk(): List<Trekkpaalegg> {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
         println("Henter fra siste sekvensnr: $sisteSekvensnr")
         return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
-    suspend fun hentAlleNye() = skeClient.hentAlleUtleggstrekk().body<List<Trekkpaalegg>>()
+    suspend fun hentAlleUtleggstrekk() = skeClient.hentAlleUtleggstrekk().body<List<Trekkpaalegg>>()
 
-    // Brukes kun av testAPI
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
         println("henter allefra sekvensnr sekvensnr: $sekvensnr")
         val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr).toUtleggsTrekk()
         return trekkListe.mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
     }
+
+    suspend fun setTrekkAlternativPaNyeTrekk(){
+        val trekkTilSjekk = databaseService.hentAlleTrekkutenTrekkAlternativ()
+        trekkTilSjekk.map {
+            val oppdatert = oppdaterTrekkMedForskjelligSatstype(it, databaseService.hentAllePerioderForTrekkVersjon(it))
+            databaseService.oppdaterTrekkMedTrekkAlternativ(oppdatert)
+        }
+    }
 }
+
+

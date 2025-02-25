@@ -6,8 +6,9 @@ import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkpaleggTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkpaleggperiodeTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
-import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggPeriodeTable
-import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import java.sql.Connection
 import java.sql.Timestamp
@@ -17,7 +18,7 @@ private val logger = KotlinLogging.logger { }
 
 object Repository {
     fun Connection.fetchLastSekvensnr(): Int {
-        val rs = prepareStatement("""select max(sekvensnummer) from trekkpalegg""").executeQuery()
+        val rs = prepareStatement("""select max(sekvensnummer) from utleggstrekk""").executeQuery()
         return if (rs.next()) {
             rs.getColumn("sekvensnummer")
         } else {
@@ -28,7 +29,7 @@ object Repository {
     fun Connection.doesTrekkExist(trekkid_ske: String, sekvensnummer: Int, trekkversjon: Int): Boolean =
         prepareStatement(
             """
-            select 1 from trekkpalegg where sekvensnummer = ? and trekkid_ske = ? and trekkversjon = ?
+            select 1 from utleggstrekk where sekvensnummer = ? and trekkid_ske = ? and trekkversjon = ?
             """.trimIndent(),
         ).withParameters(
             param(sekvensnummer),
@@ -38,37 +39,31 @@ object Repository {
             .next()
 
     fun Connection.updateTrekkStatus(corrId: String, status: String) {
-        println("oppdaterer status for trekkidSKE correlationId ${corrId} til status: ${status}")
-        val result =
-            prepareStatement(
-                """
-                update trekkpalegg set status = ? 
+        prepareStatement(
+            """
+                update utleggstrekk set status = ? 
                 where corrid = ?;
                 """.trimIndent(),
-            ).withParameters(
-                param(status),
-                param(corrId),
-            ).executeUpdate()
+        ).withParameters(
+            param(status),
+            param(corrId),
+        ).executeUpdate()
         commit()
-        println("oppdaterte $result rad")
     }
 
     fun Connection.updateKvitteringStatus(corrId: String, status: String, kvittering: String, navTrekkId: String) {
-        println("oppdaterer kvitteringstatus for trekkidSKE correlationId ${corrId}")
-        val result =
-            prepareStatement(
-                """
-                update trekkpalegg set status = ?, kvittering = ?, trekkid_nav = ?  
+        prepareStatement(
+            """
+                update utleggstrekk set status = ?, kvittering = ?, trekkid_nav = ?  
                 where corrid = ?;
                 """.trimIndent(),
-            ).withParameters(
-                param(status),
-                param(kvittering),
-                param(navTrekkId),
-                param(corrId)
-            ).executeUpdate()
+        ).withParameters(
+            param(status),
+            param(kvittering),
+            param(navTrekkId),
+            param(corrId)
+        ).executeUpdate()
         commit()
-        println("oppdaterte $result rad")
     }
 
     fun Connection.saveAllNewUtleggstrekk(
@@ -77,7 +72,7 @@ object Repository {
         val prepStmt1 =
             prepareStatement(
                 """
-                insert into trekkpalegg (
+                insert into utleggstrekk (
                 sekvensnummer,
                 trekkid_ske, 
                 trekkversjon, 
@@ -97,14 +92,14 @@ object Repository {
         val prepStmt2 =
             prepareStatement(
                 """
-                insert into trekkpaleggperiode (
+                insert into trekkperiode (
                 sekvensnummer,
                 trekkid_ske,
                 trekkversjon,
                 dato_start, 
                 dato_slutt,
-                trekkbelop,
-                trekkprosent
+                sats,
+                trekkalternativ
                 ) values (?,?,?,?,?,?,?)        
                 """.trimIndent(),
             )
@@ -122,25 +117,15 @@ object Repository {
             prepStmt1.setString(11, trekk.betalingsinformasjon.kontonummer)
             prepStmt1.setString(12, UUID.randomUUID().toString())
             prepStmt1.addBatch()
-            trekk.trekkstoerrelseForPeriode.forEach{ periode ->
+            trekk.trekkstoerrelseForPeriode.forEach { periode ->
+                val trekkalternativ = TrekkAlternativ.getTrekkAlternativ(periode).value
                 prepStmt2.setInt(1, trekk.sekvensnummer)
                 prepStmt2.setString(2, trekk.trekkid)
                 prepStmt2.setInt(3, trekk.trekkversjon)
                 prepStmt2.setString(4, periode.startdato)
                 prepStmt2.setString(5, periode.sluttdato)
-                prepStmt2.setObject(6, periode.trekkbeloep?.trekkbeloep, java.sql.Types.DOUBLE)
-                prepStmt2.setObject(7, periode.trekkprosent?.trekkprosent, java.sql.Types.DOUBLE)
-
-//                periode.trekkbeloep.let {
-//                    if (it == null || it.trekkbeloep == null) prepStmt2.setObject(6, it, java.sql.Types.DOUBLE)
-//                    else prepStmt2.setObject(6, it.trekkbeloep, java.sql.Types.DOUBLE)
-//                }
-
-//                periode.trekkprosent.let {
-//                    if (it == null || it.trekkprosent == null) prepStmt2.setNull(7, java.sql.Types.NULL)
-//                    else prepStmt2.setObject(7, it.trekkprosent)
-//                }
-
+                prepStmt2.setObject(6, periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent, java.sql.Types.DOUBLE)
+                prepStmt2.setString(7, trekkalternativ)
                 prepStmt2.addBatch()
             }
         }
@@ -149,20 +134,89 @@ object Repository {
         commit()
     }
 
-    fun Connection.fetchAllTrekkNotSent(): List<TrekkpaleggTable> =
-        prepareStatement("""select * from trekkpalegg where status     = 'MOTTATT'""")
+    fun Connection.updateWithTrekkAlternativ(trekk: UtleggstrekkTable) {
+        if (trekk.trekkidSkeOS == null || trekk.trekkAlternativ == null)
+            throw RuntimeException("TrekkidSkeOs/Trekkalternativ må være satt for for at de skal oppdateres (trekkid: ${trekk.trekkidSke}, versjon: ${trekk.trekkversjon} ${trekk.utleggstrekkTableId}")
+        prepareStatement(
+            """
+            update utleggstrekk
+            set trekkid_ske_os = ?, trekkalternativ = ?
+            where id = ?
+        """.trimIndent()
+        )
+            .withParameters(
+                param(trekk.trekkidSkeOS),
+                param(trekk.trekkAlternativ),
+                param(trekk.utleggstrekkTableId)
+            )
+            .executeUpdate()
+        commit()
+    }
+
+    fun Connection.insertGeneratedTrekkpalegg(trekk: UtleggstrekkTable) {
+        prepareStatement(
+            """
+                insert into utleggstrekk (
+                sekvensnummer,
+                trekkid_ske, 
+                trekkid_ske_os,
+                trekkversjon, 
+                saksnummer,
+                opprettet_ske, 
+                trekkpliktig, 
+                skyldner, 
+                trekkstatus,
+                trekkalternativ,
+                betalingsmottaker,
+                kid, 
+                kontonummer, 
+                corrid,
+                status
+                ) values (?,?,?, ?,?,?,?,?,?,?,?,?,?,?,'MOTTATT')
+                """.trimIndent()
+        )
+            .withParameters(
+                param(trekk.sekvensnummer),
+                param(trekk.trekkidSke),
+                param(trekk.trekkidSkeOS!!),
+                param(trekk.trekkversjon),
+                param(trekk.saksnummer),
+                param(trekk.opprettetSke),
+                param(trekk.trekkpliktig),
+                param(trekk.skyldner),
+                param(trekk.trekkstatus),
+                param(trekk.trekkAlternativ!!),
+                param(trekk.betalingsmottaker),
+                param(trekk.kid),
+                param(trekk.kontonummer),
+                param(UUID.randomUUID().toString()),
+            )
+            .executeUpdate()
+        commit()
+
+    }
+
+    fun Connection.fetchAllTrekkNotSent(): List<UtleggstrekkTable> =
+        prepareStatement("""select * from utleggstrekk where status     = 'MOTTATT'""")
+            .executeQuery()
+            .toTrekkpaleggTable()
+
+    fun Connection.fetchAllTrekkWithoutTrekkAlternativ(): List<UtleggstrekkTable> =
+        prepareStatement("""select * from utleggstrekk where trekkalternativ is null or trekkalternativ = ''""")
             .executeQuery()
             .toTrekkpaleggTable()
 
 
-    fun Connection.fetchPerioderForTrekk(trekk: TrekkpaleggTable):List<TrekkpaleggPeriodeTable> =
-        prepareStatement("""
-            select * from trekkpaleggperiode 
+    fun Connection.fetchAllPerioderForTrekkVersion(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
+        prepareStatement(
+            """
+            select * from trekkperiode 
             where sekvensnummer = ?
                 and trekkid_ske = ?
                 and trekkversjon= ?
 
-        """.trimIndent())
+        """.trimIndent()
+        )
             .withParameters(
                 param(trekk.sekvensnummer),
                 param(trekk.trekkidSke),
@@ -171,5 +225,30 @@ object Repository {
             .executeQuery()
             .toTrekkpaleggperiodeTable()
 
+    fun Connection.fetchPerioderForTrekkWithTrekkAlternativ(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> {
+
+        if (trekk.trekkAlternativ == null) {
+            throw RuntimeException("Kan ikke søke opp perioder med trekkalternativ for Trekk som ikke har satt trekkalternativ(trekkidske: ${trekk.trekkidSke} trekkversjon: ${trekk.trekkversjon})")
+        }
+
+        return prepareStatement(
+            """
+            select * from trekkperiode 
+            where sekvensnummer = ?
+                and trekkid_ske = ?
+                and trekkversjon = ?
+                and trekkalternativ = ?
+
+        """.trimIndent()
+        )
+            .withParameters(
+                param(trekk.sekvensnummer),
+                param(trekk.trekkidSke),
+                param(trekk.trekkversjon),
+                param(trekk.trekkAlternativ)
+            )
+            .executeQuery()
+            .toTrekkpaleggperiodeTable()
+    }
 
 }

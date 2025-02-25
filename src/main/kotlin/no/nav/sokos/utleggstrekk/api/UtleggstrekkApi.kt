@@ -33,7 +33,7 @@ fun Routing.utleggstrekkApi(
             }
         }
         get("hentnye") {
-            val nye = utleggstrekkService.hentAlleNye()
+            val nye = utleggstrekkService.hentAlleUtleggstrekk()
             call.respond(HttpStatusCode.OK, nye)
         }
         get("hentnyeOgLagre}") {

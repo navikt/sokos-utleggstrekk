@@ -1,13 +1,14 @@
 package no.nav.sokos.utleggstrekk.database
 import io.ktor.utils.io.InternalAPI
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
-import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggPeriodeTable
-import no.nav.sokos.utleggstrekk.database.model.TrekkpaleggTable
+import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -18,6 +19,7 @@ object RepositoryExtensions {
                 return block(this).also { close() }
             }
         } catch (ex: SQLException) {
+            println("Feil ved kall til database: ${ex.errorCode}, ${ex.message}.")
             throw ex
         }
     }
@@ -29,8 +31,14 @@ object RepositoryExtensions {
     fun param(value: Int) =
         Parameter { statement: PreparedStatement, index: Int -> statement.setInt(index, value) }
 
+    fun param(value: Long) =
+        Parameter { statement: PreparedStatement, index: Int -> statement.setLong(index, value) }
+
     fun param(value: String) =
         Parameter { statement: PreparedStatement, index: Int -> statement.setString(index, value) }
+
+    fun param(value: LocalDateTime) =
+        Parameter { statement: PreparedStatement, index: Int -> statement.setTimestamp(index, Timestamp.valueOf(value)) }
 
     fun PreparedStatement.withParameters(vararg parameters: Parameter?) =
         apply {
@@ -54,7 +62,7 @@ object RepositoryExtensions {
                 Int::class -> getInt(columnLabel)
                 Long::class -> getLong(columnLabel)
                 Char::class -> getString(columnLabel)?.get(0) ?: ' '
-                Double::class -> getDouble(columnLabel)
+                Double::class -> getString(columnLabel)?.toDouble()
                 String::class -> getString(columnLabel)?.trim() ?: ""
                 Boolean::class -> getBoolean(columnLabel)
                 BigDecimal::class -> getBigDecimal(columnLabel)
@@ -76,16 +84,18 @@ object RepositoryExtensions {
 
     fun ResultSet.toTrekkpaleggTable() =
         toList {
-            TrekkpaleggTable(
-                trekkpaleggTableId = getColumn("id"),
+            UtleggstrekkTable(
+                utleggstrekkTableId = getColumn("id"),
                 sekvensnummer = getColumn("sekvensnummer"),
                 saksnummer = getColumn("saksnummer"),
                 trekkidSke = getColumn("trekkid_ske"),
                 trekkversjon = getColumn("trekkversjon"),
+                trekkidSkeOS = getColumn("trekkid_ske_os"),
                 opprettetSke = getColumn("opprettet_ske"),
                 trekkpliktig = getColumn("trekkpliktig"),
                 skyldner = getColumn("skyldner"),
                 trekkstatus = getColumn("trekkstatus"),
+                trekkAlternativ = getColumn("trekkalternativ"),
                 kid = getColumn("kid"),
                 kontonummer = getColumn("kontonummer"),
                 betalingsmottaker = getColumn("betalingsmottaker"),
@@ -99,15 +109,15 @@ object RepositoryExtensions {
 
     fun ResultSet.toTrekkpaleggperiodeTable() =
         toList {
-            TrekkpaleggPeriodeTable(
-                trekkpaleggPeriodeTableId = getColumn("id"),
+            TrekkPeriodeTable(
+                trekkPeriodeTableId = getColumn("id"),
                 sekvensnummer = getColumn("sekvensnummer"),
                 trekkidSke = getColumn("trekkid_ske"),
                 trekkversjon = getColumn("trekkversjon"),
                 datoStart = getColumn("dato_start"),
                 datoSlutt = getColumn("dato_slutt"),
-                trekkbelop = getColumn("trekkbelop"),
-                trekkprosent = getColumn("trekkprosent")
+                sats = getColumn("sats"),
+                trekkAlternativ = getColumn("trekkalternativ")
             )
         }
 
