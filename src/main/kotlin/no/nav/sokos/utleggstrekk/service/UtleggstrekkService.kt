@@ -32,10 +32,10 @@ class UtleggstrekkService(
 
     suspend fun lagreNyeUtleggstrekk() {
         val body = skeClient.hentAlleUtleggstrekk()
-            body.toUtleggsTrekk()
+            body.toUtleggsTrekk().also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
             .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
             .let {
-                println("Det er ${it.size} som skal lagres")
+                logger.info("Det er ${it.size} som skal lagres")
                 databaseService.lagreUtleggstrekk(it)
             }
     }

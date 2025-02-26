@@ -17,7 +17,6 @@ class TSSIdTest : FunSpec({
     val json = Json {
         prettyPrint = true
         isLenient = true
-        decodeEnumsCaseInsensitive = true
         explicitNulls = false
         serializersModule = SerializersModule {
             contextual(ZonedDateTimeSerializer)
