@@ -39,7 +39,7 @@ data class InnrapporteringTrekk(
     val kreditorIdTss: String,
     val kreditorTrekkId:String,
     val debitorId: String,
-    val kodeTrekktype:String = "KRED",  //TODO få riktig fra Endre bruker denne foreløpig
+    val kodeTrekktype:String = "TRK1",
     val kodeTrekkAlternativ: String,
     val kid: String,
     val kreditorsRef: String,
