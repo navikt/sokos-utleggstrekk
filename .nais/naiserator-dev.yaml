@@ -45,6 +45,8 @@ spec:
         - name: skatteetaten:trekkpaalegg
   envFrom:
     - secret: sokos-utleggstrekk-mq
+    - secret: team-best-slackbot-webhook
+
   env:
     - name: USE_AUTHENTICATION
       value: "false"

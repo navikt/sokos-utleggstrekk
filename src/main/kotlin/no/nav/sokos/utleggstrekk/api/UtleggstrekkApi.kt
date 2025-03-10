@@ -8,10 +8,12 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import mu.KotlinLogging
+import no.nav.sokos.utleggstrekk.service.KvitteringService
 import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
 
 fun Routing.utleggstrekkApi(
     utleggstrekkService: UtleggstrekkService,
+    kvitteringService: KvitteringService
 ) {
     val logger = KotlinLogging.logger { }
 
@@ -35,6 +37,10 @@ fun Routing.utleggstrekkApi(
         get("hentnye") {
             val nye = utleggstrekkService.hentAlleUtleggstrekk()
             call.respond(HttpStatusCode.OK, nye)
+        }
+        get("kvittering") {
+            val nye = kvitteringService.hentAlleKvitteringer()
+            call.respond(HttpStatusCode.OK, nye.toString())
         }
         get("hentnyeOgLagre}") {
             val utleggstrekk = utleggstrekkService.hentAlleNyeUtleggstrekk()

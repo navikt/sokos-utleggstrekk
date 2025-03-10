@@ -3,7 +3,6 @@ package no.nav.sokos.utleggstrekk.utils
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -25,7 +24,7 @@ object LocalDateSerializer : KSerializer<LocalDate> {
     }
 }
 
-@Serializer(forClass = java.time.LocalDateTime::class)
+
 object JavaLocaldateTimeSerializer: KSerializer<java.time.LocalDateTime>{
     private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 

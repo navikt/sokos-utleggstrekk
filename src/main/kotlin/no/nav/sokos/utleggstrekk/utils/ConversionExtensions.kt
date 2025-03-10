@@ -1,5 +1,9 @@
 package no.nav.sokos.utleggstrekk.utils
 
+import io.ktor.client.call.body
+import io.ktor.client.statement.HttpResponse
+import io.ktor.serialization.JsonConvertException
+import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
@@ -9,6 +13,9 @@ import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+
+private val logger =KotlinLogging.logger {  }
 
 fun TrekkPeriodeTable.toTrekkDokumentPeriode() =
     Periode(
@@ -47,4 +54,13 @@ fun UtleggstrekkTable.toTrekkDokument(periodeTableList: List<TrekkPeriodeTable>)
 suspend fun UtleggstrekkTable.copyWithTrekkAlternativ(alternativ: TrekkAlternativ):UtleggstrekkTable {
     return this.copy(trekkAlternativ = alternativ.value, trekkidSkeOS = "$trekkidSke-${alternativ.value.last()}")
 }
+
+suspend fun HttpResponse.toTrekkpaalegg() =
+    try {
+        body<List<Trekkpaalegg>>()
+    } catch (e: JsonConvertException) {
+        logger.error { "Feil i konvertering av response: ${e.message}" }
+        emptyList()
+    }
+
 

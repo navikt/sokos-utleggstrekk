@@ -1,38 +1,37 @@
 package no.nav.sokos.utleggstrekk.service
 
 import io.ktor.client.call.body
-import io.ktor.client.statement.HttpResponse
-import io.ktor.serialization.JsonConvertException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.mq.MqConsumer
 import no.nav.sokos.utleggstrekk.mq.MqProducer
 import no.nav.sokos.utleggstrekk.utils.oppdaterTrekkMedForskjelligSatstype
 import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
+import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
+
 
 private val logger = KotlinLogging.logger { }
 
 private const val SENDT = "SENDT"
-private const val TSSID = "80000423362"
-private const val TSS_ORGNR = "971648198"
-private const val TSS_KTO =  "76940512057"
 
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: MqProducer = MqProducer(),
+    private val mqConsumer: MqConsumer = MqConsumer(),
 ) {
     suspend fun behandleUtleggstrekk(): Int {
-        lagreNyeUtleggstrekk()
+        hentOgLagreNyeUtleggstrekk()
         setTrekkAlternativPaNyeTrekk()
         return sendTrekkTilOS()
     }
 
-    suspend fun lagreNyeUtleggstrekk() {
+    suspend fun hentOgLagreNyeUtleggstrekk() {
         val body = skeClient.hentAlleUtleggstrekk()
-            body.toUtleggsTrekk().also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
+            body.toTrekkpaalegg().also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
             .mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
             .let {
                 logger.info("Det er ${it.size} som skal lagres")
@@ -61,14 +60,6 @@ class UtleggstrekkService(
         return 0 // for test api
     }
 
-    private suspend fun HttpResponse.toUtleggsTrekk() =
-        try {
-            body<List<Trekkpaalegg>>()
-        } catch (e: JsonConvertException) {
-            logger.error { "Feil i konvertering av response: ${e.message}" }
-            emptyList()
-        }
-
     suspend fun hentAlleNyeUtleggstrekk(): List<Trekkpaalegg> {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
         println("Henter fra siste sekvensnr: $sisteSekvensnr")
@@ -79,7 +70,7 @@ class UtleggstrekkService(
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
         println("henter allefra sekvensnr sekvensnr: $sekvensnr")
-        val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr).toUtleggsTrekk()
+        val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr).toTrekkpaalegg()
         return trekkListe.mapNotNull { it.takeIf { !databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) } }
     }
 
