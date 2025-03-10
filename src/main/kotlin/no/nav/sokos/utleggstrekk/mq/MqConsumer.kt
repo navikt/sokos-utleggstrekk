@@ -13,15 +13,15 @@ class MqConsumer(
     val mqConfig: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties(),
 ) {
     init {
-        MQEnvironment.hostname = mqConfig.hostName
-        MQEnvironment.port = mqConfig.port
-        MQEnvironment.channel = mqConfig.channel
-        MQEnvironment.userID = mqConfig.replyQueueUsername
-        MQEnvironment.password = mqConfig.replyQueuePassword
+        MQEnvironment.hostname = mqConfig.hostName.also { println(it) }
+        MQEnvironment.port = mqConfig.port.also { println(it) }
+        MQEnvironment.channel = mqConfig.channel.also { println(it) }
+        MQEnvironment.userID = mqConfig.replyQueueUsername.also { println(it) }
+        MQEnvironment.password = mqConfig.replyQueuePassword.also { println(it) }
     }
 
     fun getKvitteringFromMQ(): List<String> {
-        val qmgr = MQQueueManager(mqConfig.queueManagerName)
+        val qmgr = MQQueueManager(mqConfig.queueManagerName.also { println(it) })
 
         val meldinger = mutableListOf<String>()
         try {
