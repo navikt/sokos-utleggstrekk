@@ -82,7 +82,7 @@ object RepositoryExtensions {
         return transform(columnValue as T)
     }
 
-    fun ResultSet.toTrekkpaleggTable() =
+    fun ResultSet.toUtleggstrekkTable() =
         toList {
             UtleggstrekkTable(
                 utleggstrekkTableId = getColumn("id"),
@@ -90,12 +90,10 @@ object RepositoryExtensions {
                 saksnummer = getColumn("saksnummer"),
                 trekkidSke = getColumn("trekkid_ske"),
                 trekkversjon = getColumn("trekkversjon"),
-                trekkidSkeOS = getColumn("trekkid_ske_os"),
                 opprettetSke = getColumn("opprettet_ske"),
                 trekkpliktig = getColumn("trekkpliktig"),
                 skyldner = getColumn("skyldner"),
                 trekkstatus = getColumn("trekkstatus"),
-                trekkAlternativ = getColumn("trekkalternativ"),
                 kid = getColumn("kid"),
                 kontonummer = getColumn("kontonummer"),
                 betalingsmottaker = getColumn("betalingsmottaker"),
@@ -107,7 +105,7 @@ object RepositoryExtensions {
             )
         }
 
-    fun ResultSet.toTrekkpaleggperiodeTable() =
+    fun ResultSet.toTrekkPeriodeTable() =
         toList {
             TrekkPeriodeTable(
                 trekkPeriodeTableId = getColumn("id"),
@@ -117,7 +115,7 @@ object RepositoryExtensions {
                 datoStart = getColumn("dato_start"),
                 datoSlutt = getColumn("dato_slutt"),
                 sats = getColumn("sats"),
-                trekkAlternativ = getColumn("trekkalternativ")
+                trekkAlternativ = getColumn("trekkalternativ"),
             )
         }
 

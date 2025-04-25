@@ -113,7 +113,7 @@ fun perioder():List<TrekkPeriodeTable>  = listOf(
             datoStart = "2025-01-01",
             datoSlutt = "2025-02-28",
             sats = 2000.00,
-            trekkAlternativ = "LOPM"
+            trekkAlternativ = "LOPM",
         ),
         TrekkPeriodeTable(
             trekkPeriodeTableId = 1,
@@ -123,7 +123,7 @@ fun perioder():List<TrekkPeriodeTable>  = listOf(
             datoStart = "2025-03-01",
             datoSlutt = "2025-04-30",
             trekkAlternativ = "LOPP",
-            sats = 15.0
+            sats = 15.0,
         ),
         TrekkPeriodeTable(
             trekkPeriodeTableId = 1,
@@ -133,7 +133,8 @@ fun perioder():List<TrekkPeriodeTable>  = listOf(
             datoStart = "2025-05-01",
             datoSlutt = "2025-05-31",
             sats = 2000.00,
-            trekkAlternativ = "LOPM"
+            trekkAlternativ = "LOPM",
+
         )
     )
 

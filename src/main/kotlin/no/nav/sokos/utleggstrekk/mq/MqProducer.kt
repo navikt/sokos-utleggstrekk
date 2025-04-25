@@ -40,19 +40,16 @@ class MqProducer(
 
     fun send(message: String): Boolean =
         try {
-            println("CONNECT ?")
+            logger.info("Sender utleggstrekk til oppdrag \n$message")
             if (!connected) connect()
-            println("LAGER MELDING")
             val jmsMessage = session.createTextMessage(message)
             val replyQueue =
                 (session.createQueue(config.replyQueueName) as MQQueue).apply {
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 }
             jmsMessage.jmsReplyTo = replyQueue
-            println("SENDER MELDING")
             messageProducer.send(jmsMessage)
             commit()
-            println("SENDT OK")
             true
         } catch (ex: Exception) {
             logger.error("Feilet ved sending via MQ til OS")

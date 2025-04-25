@@ -4,10 +4,8 @@ create table "utleggstrekk"
     id                     bigserial primary key,
     sekvensnummer          int  NOT NULL,
     trekkid_ske            text      NOT NULL,
-    trekkid_ske_os         text,
     trekkid_nav            text,
     trekkversjon           smallint  NOT NULL,
-    trekkalternativ        text,
     saksnummer             text      NOT NULL,
     opprettet_ske          timestamp NOT NULL,
     trekkpliktig           text      NOT NULL,
@@ -17,7 +15,7 @@ create table "utleggstrekk"
     kid                    text      NOT NULL,
     kontonummer            text      NOT NULL,
     corrid                 text      NOT NULL,
-    status                 text      NOT NULL,
+    status                 text,
     kvittering             text,
     tidspunkt_sendt_os     timestamp ,
     tidspunkt_siste_status timestamp NOT NULL DEFAULT NOW(),
@@ -39,6 +37,6 @@ create table "trekkperiode"
 );
 
 
-create unique index if not exists idxu_trekk on utleggstrekk (trekkid_ske, sekvensnummer, trekkversjon, trekkid_ske_os);
+create unique index if not exists idxu_trekk on utleggstrekk (trekkid_ske, sekvensnummer, trekkversjon);
 create index if not exists idx_periode on trekkperiode (trekkid_ske, sekvensnummer, trekkversjon)
 

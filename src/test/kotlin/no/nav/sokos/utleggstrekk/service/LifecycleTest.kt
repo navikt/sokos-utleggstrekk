@@ -7,20 +7,15 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import no.nav.sokos.utleggstrekk.TestContainer
-import no.nav.sokos.utleggstrekk.database.Repository.fetchAllPerioderForTrekkVersion
-import no.nav.sokos.utleggstrekk.database.Repository.fetchAllTrekkNotSent
-import no.nav.sokos.utleggstrekk.database.Repository.fetchAllTrekkWithoutTrekkAlternativ
-import no.nav.sokos.utleggstrekk.database.Repository.fetchPerioderForTrekkWithTrekkAlternativ
-import no.nav.sokos.utleggstrekk.database.Repository.insertGeneratedTrekkpalegg
+import no.nav.sokos.utleggstrekk.database.Repository.fetchPerioderForTrekkVersion
+import no.nav.sokos.utleggstrekk.database.Repository.fetchTrekkNotSendt
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
-import no.nav.sokos.utleggstrekk.database.Repository.updateWithTrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.util.Responses
 import no.nav.sokos.utleggstrekk.utils.JavaLocaldateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
-import no.nav.sokos.utleggstrekk.utils.oppdaterTrekkMedForskjelligSatstype
 import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 internal class LifecycleTest :
@@ -58,8 +53,8 @@ internal class LifecycleTest :
                 }
             }
             then("sjekker at dataene er lagret riktig") {
-                val dbdataTrekk = testContainer.dataSource.connection.fetchAllTrekkNotSent()
-                val dbdataPerioder = testContainer.dataSource.connection.fetchAllPerioderForTrekkVersion(dbdataTrekk.first())
+                val dbdataTrekk = testContainer.dataSource.connection.fetchTrekkNotSendt()
+                val dbdataPerioder = testContainer.dataSource.connection.fetchPerioderForTrekkVersion(dbdataTrekk.first())
                 dbdataTrekk.first().trekkidSke shouldBe paleggstrekkFraSkatt.first().trekkid
                 dbdataTrekk.first().trekkversjon shouldBe paleggstrekkFraSkatt.first().trekkversjon
                 dbdataTrekk.first().skyldner shouldBe paleggstrekkFraSkatt.first().skyldner
@@ -72,39 +67,37 @@ internal class LifecycleTest :
                         periode.sats shouldBe paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).trekkbeloep?.trekkbeloep
                     }
                     periode.datoStart shouldBe paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).startdato
-                    periode.datoSlutt shouldBeIn arrayOf("", paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).sluttdato)
+                    periode.datoSlutt shouldBeIn arrayOf("9999-12-31", paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).sluttdato)
                 }
             }
-            then("sett riktig Trekkalternativ og kreditors trekkId (til os) med riktig suffix") {
-                val dbDataFor = testContainer.dataSource.connection.fetchAllTrekkWithoutTrekkAlternativ()
-                val perioder1 = testContainer.dataSource.connection.fetchAllPerioderForTrekkVersion(dbDataFor[0])
-                val perioder2 = testContainer.dataSource.connection.fetchAllPerioderForTrekkVersion(dbDataFor[1])
-                dbDataFor.size shouldBe 2
-
-                val oppdatert1 = oppdaterTrekkMedForskjelligSatstype(dbDataFor[0], perioder1)
-                val oppdatert2 = oppdaterTrekkMedForskjelligSatstype(dbDataFor[1], perioder2)
-                oppdatert1.size shouldBe 2
-                oppdatert2.size shouldBe 1
-
-                testContainer.dataSource.connection.updateWithTrekkAlternativ(oppdatert1[0])
-                testContainer.dataSource.connection.updateWithTrekkAlternativ(oppdatert2[0])
-                testContainer.dataSource.connection.insertGeneratedTrekkpalegg(oppdatert1[1])
-                val dbDataEtter = testContainer.dataSource.connection.fetchAllTrekkNotSent()
-                dbDataEtter.size shouldBe 3
-            }
-
-            then("hent fra databse og konverter til OS format") {
-                val dbdataTrekk = testContainer.dataSource.connection.fetchAllTrekkNotSent()
-                dbdataTrekk.size shouldBe 3
-                dbdataTrekk.forEach { trekk ->
-                    val dbperiode = testContainer.dataSource.connection.fetchPerioderForTrekkWithTrekkAlternativ(trekk)
-                    val osdok = trekk.toTrekkDokument(dbperiode)
-                    with(osdok.dokument.innrapporteringTrekk) {
-                        kreditorTrekkId shouldBe trekk.trekkidSkeOS
-                        kid shouldBe  trekk.kid
-                        kodeTrekkAlternativ shouldBe trekk.trekkAlternativ
+            then("Henter data fra database og sjekker perioder"){
+                val dbService =  DatabaseService(testContainer.dataSource)
+                val behandleTrekkService = BehandleTrekkService(dbService)
+                println("fra db1: ${dbService.hentAlleTrekkSomIkkeErSendt().size}")
+                println("fra db2: ${testContainer.dataSource.connection.fetchTrekkNotSendt().size}")
+                val trekkSomSkalSendes = behandleTrekkService.lagTrekkSomSkalSendes()
+                println("Antell trekk : ${trekkSomSkalSendes.size}")
+                trekkSomSkalSendes.map { (_, tilOs) ->
+                    tilOs.map {
+                        println(it.dokument)
                     }
                 }
+            }
+            then("hent fra databse og konverter til OS format") {
+                val dbdataTrekk = testContainer.dataSource.connection.fetchTrekkNotSendt()
+                dbdataTrekk.size shouldBe 2
+                val dbperiode = testContainer.dataSource.connection.fetchPerioderForTrekkVersion(dbdataTrekk[0])
+                dbperiode.size shouldBe 3
+                dbperiode.groupBy { it.trekkAlternativ }.size shouldBe 2
+                dbperiode.groupBy { it.trekkAlternativ }.get("LOPM")?.size shouldBe 2
+                dbperiode.groupBy { it.trekkAlternativ }.get("LOPP")?.size shouldBe 1
+                val osdok = dbdataTrekk[0].toTrekkDokument(dbperiode)
+                with(osdok.dokument.innrapporteringTrekk) {
+                    kreditorTrekkId shouldBe dbdataTrekk[0].trekkidSke + dbperiode[0].trekkAlternativ.get(3)
+                    kid shouldBe dbdataTrekk[0].kid
+                    kodeTrekkAlternativ shouldBe dbperiode[0].trekkAlternativ
+                }
+
             }
         }
     })

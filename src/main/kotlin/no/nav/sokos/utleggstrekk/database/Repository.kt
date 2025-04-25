@@ -3,8 +3,8 @@ package no.nav.sokos.utleggstrekk.database
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkpaleggTable
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkpaleggperiodeTable
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toUtleggstrekkTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -119,11 +119,12 @@ object Repository {
             prepStmt1.addBatch()
             trekk.trekkstoerrelseForPeriode.forEach { periode ->
                 val trekkalternativ = TrekkAlternativ.getTrekkAlternativ(periode).value
+                val sluttdato = periode.sluttdato ?: "9999-12-31"
                 prepStmt2.setInt(1, trekk.sekvensnummer)
                 prepStmt2.setString(2, trekk.trekkid)
                 prepStmt2.setInt(3, trekk.trekkversjon)
                 prepStmt2.setString(4, periode.startdato)
-                prepStmt2.setString(5, periode.sluttdato)
+                prepStmt2.setString(5, sluttdato)
                 prepStmt2.setObject(6, periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent, java.sql.Types.DOUBLE)
                 prepStmt2.setString(7, trekkalternativ)
                 prepStmt2.addBatch()
@@ -134,80 +135,20 @@ object Repository {
         commit()
     }
 
-    fun Connection.updateWithTrekkAlternativ(trekk: UtleggstrekkTable) {
-        if (trekk.trekkidSkeOS == null || trekk.trekkAlternativ == null)
-            throw RuntimeException("TrekkidSkeOs/Trekkalternativ må være satt for for at de skal oppdateres (trekkid: ${trekk.trekkidSke}, versjon: ${trekk.trekkversjon} ${trekk.utleggstrekkTableId}")
+    fun Connection.fetchTrekkNotSendt(): List<UtleggstrekkTable> =
         prepareStatement(
             """
-            update utleggstrekk
-            set trekkid_ske_os = ?, trekkalternativ = ?
-            where id = ?
-        """.trimIndent()
-        )
-            .withParameters(
-                param(trekk.trekkidSkeOS),
-                param(trekk.trekkAlternativ),
-                param(trekk.utleggstrekkTableId)
-            )
-            .executeUpdate()
-        commit()
-    }
-
-    fun Connection.insertGeneratedTrekkpalegg(trekk: UtleggstrekkTable) {
-        prepareStatement(
-            """
-                insert into utleggstrekk (
-                sekvensnummer,
-                trekkid_ske, 
-                trekkid_ske_os,
-                trekkversjon, 
-                saksnummer,
-                opprettet_ske, 
-                trekkpliktig, 
-                skyldner, 
-                trekkstatus,
-                trekkalternativ,
-                betalingsmottaker,
-                kid, 
-                kontonummer, 
-                corrid,
-                status
-                ) values (?,?,?, ?,?,?,?,?,?,?,?,?,?,?,'MOTTATT')
-                """.trimIndent()
-        )
-            .withParameters(
-                param(trekk.sekvensnummer),
-                param(trekk.trekkidSke),
-                param(trekk.trekkidSkeOS!!),
-                param(trekk.trekkversjon),
-                param(trekk.saksnummer),
-                param(trekk.opprettetSke),
-                param(trekk.trekkpliktig),
-                param(trekk.skyldner),
-                param(trekk.trekkstatus),
-                param(trekk.trekkAlternativ!!),
-                param(trekk.betalingsmottaker),
-                param(trekk.kid),
-                param(trekk.kontonummer),
-                param(UUID.randomUUID().toString()),
-            )
-            .executeUpdate()
-        commit()
-
-    }
-
-    fun Connection.fetchAllTrekkNotSent(): List<UtleggstrekkTable> =
-        prepareStatement("""select * from utleggstrekk where status     = 'MOTTATT'""")
+            select * from utleggstrekk where status = 'MOTTATT'
+            """.trimIndent())
             .executeQuery()
-            .toTrekkpaleggTable()
+            .toUtleggstrekkTable()
 
-    fun Connection.fetchAllTrekkWithoutTrekkAlternativ(): List<UtleggstrekkTable> =
-        prepareStatement("""select * from utleggstrekk where trekkalternativ is null or trekkalternativ = ''""")
+    fun Connection.fetchPerioderNotSent(): List<TrekkPeriodeTable> =
+        prepareStatement("""select * from trekkperiode where status = 'MOTTATT'""")
             .executeQuery()
-            .toTrekkpaleggTable()
+            .toTrekkPeriodeTable()
 
-
-    fun Connection.fetchAllPerioderForTrekkVersion(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
+    fun Connection.fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
         prepareStatement(
             """
             select * from trekkperiode 
@@ -223,13 +164,9 @@ object Repository {
                 param(trekk.trekkversjon)
             )
             .executeQuery()
-            .toTrekkpaleggperiodeTable()
+            .toTrekkPeriodeTable()
 
-    fun Connection.fetchPerioderForTrekkWithTrekkAlternativ(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> {
-
-        if (trekk.trekkAlternativ == null) {
-            throw RuntimeException("Kan ikke søke opp perioder med trekkalternativ for Trekk som ikke har satt trekkalternativ(trekkidske: ${trekk.trekkidSke} trekkversjon: ${trekk.trekkversjon})")
-        }
+    fun Connection.fetchAllPerioderForTrekk(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> {
 
         return prepareStatement(
             """
@@ -237,7 +174,6 @@ object Repository {
             where sekvensnummer = ?
                 and trekkid_ske = ?
                 and trekkversjon = ?
-                and trekkalternativ = ?
 
         """.trimIndent()
         )
@@ -245,10 +181,9 @@ object Repository {
                 param(trekk.sekvensnummer),
                 param(trekk.trekkidSke),
                 param(trekk.trekkversjon),
-                param(trekk.trekkAlternativ)
             )
             .executeQuery()
-            .toTrekkpaleggperiodeTable()
+            .toTrekkPeriodeTable()
     }
 
 }

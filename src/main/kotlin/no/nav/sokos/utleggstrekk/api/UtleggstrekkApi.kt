@@ -20,7 +20,7 @@ fun Routing.utleggstrekkApi(
     route("utleggstrekk") {
         get("hentalle") {
 //            call.respond("Behandler")
-            val resultat = utleggstrekkService.behandleUtleggstrekk()
+            val resultat = utleggstrekkService.HentOgSendUtleggstrekk()
             call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
         }
 

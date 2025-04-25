@@ -8,6 +8,6 @@ data class TrekkPeriodeTable(
     val datoStart: String,
     val datoSlutt: String?,
     val sats: Double,
-    val trekkAlternativ: String? = null
+    val trekkAlternativ: String,
 )
 

@@ -10,6 +10,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.utils.io.InternalAPI
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
+import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
 import java.util.UUID
 
 private const val maxAntall = 2500
@@ -21,7 +22,7 @@ class SkeClient(
 ) {
     val basePath = "${PropertiesConfig.SKEConfig().skeRestUrl}"
 
-    suspend fun hentAlleUtleggstrekk() = doGet(basePath, UUID.randomUUID().toString())
+    suspend fun hentAlleUtleggstrekk() = doGet(basePath, UUID.randomUUID().toString()).toTrekkpaalegg()
 
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int) =
         doGet("${basePath}$sekvensnr/$maxAntall", UUID.randomUUID().toString())

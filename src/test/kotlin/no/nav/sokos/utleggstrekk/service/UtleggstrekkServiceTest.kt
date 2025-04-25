@@ -19,14 +19,15 @@ internal class UtleggstrekkServiceTest :
             val testContainer = TestContainer()
             testContainer.migrate()
             val mockClient = MockHttpClient().getClient(Responses.utleggsTrekkListeFraSkatt, HttpStatusCode.OK)
+            val databaseService = DatabaseService(testContainer.dataSource)
             val utleggsTrekkService =
                 UtleggstrekkService(
-                    DatabaseService(testContainer.dataSource),
+                    databaseService,
+                    BehandleTrekkService(databaseService),
                     SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)),
                     mockk<MqProducer>(relaxed = true),
                     mockk<MqConsumer>(relaxed = true),
                 )
-
             then("skal disse lagres i databasen") {
                 true shouldBe true
             }
