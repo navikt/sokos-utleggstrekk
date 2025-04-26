@@ -5,9 +5,11 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
+private const val EGEN_KILDE = "SOKOS-UTLEGGSTREKK"
 class BehandleTrekkService(
     private val databaseService: DatabaseService,
 ) {
+
 
     fun lagTrekkSomSkalSendes(): List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>> {
         val trekkIkkeSendt = databaseService.hentAlleTrekkSomIkkeErSendt()
@@ -16,8 +18,9 @@ class BehandleTrekkService(
             val trekkAlternativMap = databaseService.hentAllePerioderForTrekkVersjon(trekk).groupBy { it.trekkAlternativ }
             val historiskTrekkAlternativMap = databaseService.hentAllePerioderForTrekkId(trekk).groupBy { it.trekkAlternativ }
 
-            val trekkDokumenter = utledAlleDuplikateTrekkPerioder(trekkAlternativMap, historiskTrekkAlternativMap).map {
-                trekk.toTrekkDokument(it)
+            val trekkDokumenter = utledAlleDuplikateTrekkPerioder(trekkAlternativMap, historiskTrekkAlternativMap).map { perioder ->
+                databaseService.lagreGenerertePerioder(perioder.filter { it.kilde == EGEN_KILDE })
+                trekk.toTrekkDokument(perioder)
             }
             trekk to trekkDokumenter
         }
@@ -32,8 +35,8 @@ class BehandleTrekkService(
             trekkAlternativMap.values.toList()
         } else {
             listOf(
-                trekkAlternativMap["LOPP"]!! + trekkAlternativMap["LOPM"]!!.map { it.copy(trekkAlternativ = "LOPP", sats = 0.0) }.sortedBy { it.datoStart },
-                trekkAlternativMap["LOPM"]!! + trekkAlternativMap["LOPP"]!!.map { it.copy(trekkAlternativ = "LOPM", sats = 0.0) }.sortedBy { it.datoStart }
+                trekkAlternativMap["LOPP"]!! + trekkAlternativMap["LOPM"]!!.filterNot { it.sats == 0.0 }.map { it.copy(trekkAlternativ = "LOPP", sats = 0.0, kilde = EGEN_KILDE) }.sortedBy { it.datoStart },
+                trekkAlternativMap["LOPM"]!! + trekkAlternativMap["LOPP"]!!.filterNot { it.sats == 0.0 }.map { it.copy(trekkAlternativ = "LOPM", sats = 0.0, kilde = EGEN_KILDE) }.sortedBy { it.datoStart }
             )
         }
     }

@@ -9,5 +9,6 @@ data class TrekkPeriodeTable(
     val datoSlutt: String?,
     val sats: Double,
     val trekkAlternativ: String,
+    val kilde: String = "SKATTEETATEN",
 )
 

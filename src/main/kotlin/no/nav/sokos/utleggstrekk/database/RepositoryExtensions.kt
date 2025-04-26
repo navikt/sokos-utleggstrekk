@@ -116,6 +116,7 @@ object RepositoryExtensions {
                 datoSlutt = getColumn("dato_slutt"),
                 sats = getColumn("sats"),
                 trekkAlternativ = getColumn("trekkalternativ"),
+                kilde = getColumn("kilde"),
             )
         }
 

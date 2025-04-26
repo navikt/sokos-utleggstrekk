@@ -6,7 +6,6 @@ import io.ktor.http.HttpStatusCode
 import io.mockk.mockk
 import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.client.SkeClient
-import no.nav.sokos.utleggstrekk.mq.MqConsumer
 import no.nav.sokos.utleggstrekk.mq.MqProducer
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.util.MockHttpClient
@@ -26,7 +25,6 @@ internal class UtleggstrekkServiceTest :
                     BehandleTrekkService(databaseService),
                     SkeClient(mockClient, mockk<MaskinportenAccessTokenClient>(relaxed = true)),
                     mockk<MqProducer>(relaxed = true),
-                    mockk<MqConsumer>(relaxed = true),
                 )
             then("skal disse lagres i databasen") {
                 true shouldBe true

@@ -93,7 +93,6 @@ enum class TrekkAlternativ(val value: String) {
             else throw NotImplementedError(
                 "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode")
         }
-
     }
 }
 

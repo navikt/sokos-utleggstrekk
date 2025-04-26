@@ -66,6 +66,39 @@ object Repository {
         commit()
     }
 
+    fun Connection.savePerioder(
+        perioder: List<TrekkPeriodeTable>
+    ){
+        val prepStmt =
+            prepareStatement(
+                """
+                insert into trekkperiode (
+                sekvensnummer,
+                trekkid_ske,
+                trekkversjon,
+                dato_start, 
+                dato_slutt,
+                sats,
+                trekkalternativ,
+                kilde
+                ) values (?,?,?,?,?,?,?,?)        
+                """.trimIndent(),
+            )
+        perioder.forEach { periode ->
+            prepStmt.setInt(1, periode.sekvensnummer)
+            prepStmt.setString(2, periode.trekkidSke)
+            prepStmt.setInt(3, periode.trekkversjon)
+            prepStmt.setString(4, periode.datoStart)
+            prepStmt.setString(5, periode.datoSlutt)
+            prepStmt.setObject(6, periode.sats, java.sql.Types.DOUBLE)
+            prepStmt.setString(7, periode.trekkAlternativ)
+            prepStmt.setString(8, periode.kilde)
+            prepStmt.addBatch()
+        }
+
+        prepStmt.executeBatch()
+        commit()
+    }
     fun Connection.saveAllNewUtleggstrekk(
         trekkListe: List<Trekkpaalegg>,
     ) {
@@ -99,8 +132,9 @@ object Repository {
                 dato_start, 
                 dato_slutt,
                 sats,
-                trekkalternativ
-                ) values (?,?,?,?,?,?,?)        
+                trekkalternativ,
+                kilde
+                ) values (?,?,?,?,?,?,?,?)        
                 """.trimIndent(),
             )
         trekkListe.forEach { trekk ->
@@ -127,6 +161,7 @@ object Repository {
                 prepStmt2.setString(5, sluttdato)
                 prepStmt2.setObject(6, periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent, java.sql.Types.DOUBLE)
                 prepStmt2.setString(7, trekkalternativ)
+                prepStmt2.setString(8, "SKATTEETATEN")
                 prepStmt2.addBatch()
             }
         }
@@ -142,11 +177,6 @@ object Repository {
             """.trimIndent())
             .executeQuery()
             .toUtleggstrekkTable()
-
-    fun Connection.fetchPerioderNotSent(): List<TrekkPeriodeTable> =
-        prepareStatement("""select * from trekkperiode where status = 'MOTTATT'""")
-            .executeQuery()
-            .toTrekkPeriodeTable()
 
     fun Connection.fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
         prepareStatement(

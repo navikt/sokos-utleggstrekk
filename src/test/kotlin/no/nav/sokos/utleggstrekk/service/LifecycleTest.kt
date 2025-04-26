@@ -1,5 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
@@ -73,29 +74,39 @@ internal class LifecycleTest :
             then("Henter data fra database og sjekker perioder"){
                 val dbService =  DatabaseService(testContainer.dataSource)
                 val behandleTrekkService = BehandleTrekkService(dbService)
-                println("fra db1: ${dbService.hentAlleTrekkSomIkkeErSendt().size}")
-                println("fra db2: ${testContainer.dataSource.connection.fetchTrekkNotSendt().size}")
                 val trekkSomSkalSendes = behandleTrekkService.lagTrekkSomSkalSendes()
-                println("Antell trekk : ${trekkSomSkalSendes.size}")
-                trekkSomSkalSendes.map { (_, tilOs) ->
-                    tilOs.map {
-                        println(it.dokument)
-                    }
-                }
+                trekkSomSkalSendes.size shouldBe 2
+                trekkSomSkalSendes[0].second.size shouldBe 2
+                trekkSomSkalSendes[1].second.size shouldBe 1
+                trekkSomSkalSendes[0].second[0].dokument.innrapporteringTrekk.perioder.periode.size shouldBe
+                        trekkSomSkalSendes[0].second[1].dokument.innrapporteringTrekk.perioder.periode.size
             }
             then("hent fra databse og konverter til OS format") {
                 val dbdataTrekk = testContainer.dataSource.connection.fetchTrekkNotSendt()
-                dbdataTrekk.size shouldBe 2
                 val dbperiode = testContainer.dataSource.connection.fetchPerioderForTrekkVersion(dbdataTrekk[0])
-                dbperiode.size shouldBe 3
-                dbperiode.groupBy { it.trekkAlternativ }.size shouldBe 2
-                dbperiode.groupBy { it.trekkAlternativ }.get("LOPM")?.size shouldBe 2
-                dbperiode.groupBy { it.trekkAlternativ }.get("LOPP")?.size shouldBe 1
+
+                withClue("Det skal være 2 trekk i db") {
+                    dbdataTrekk.size shouldBe 2
+                }
+                withClue("Det skal være 6 perioder for trekk 1") {
+                    dbperiode.size shouldBe 6
+                }
+                withClue("Det skal være 2 trekkalternativer for trekk 1") {
+                    dbperiode.groupBy { it.trekkAlternativ }.size shouldBe 2
+                }
+                withClue("Det skal være 3 perioder med LOPM, 1 med 0.0") {
+                    dbperiode.groupBy { it.trekkAlternativ }.get("LOPM")?.size shouldBe 3
+                }
+                withClue("Det skal være 3 periode med LOPP, 2 med 0.0") {
+                    dbperiode.groupBy { it.trekkAlternativ }.get("LOPP")?.size shouldBe 3
+                }
                 val osdok = dbdataTrekk[0].toTrekkDokument(dbperiode)
-                with(osdok.dokument.innrapporteringTrekk) {
-                    kreditorTrekkId shouldBe dbdataTrekk[0].trekkidSke + dbperiode[0].trekkAlternativ.get(3)
-                    kid shouldBe dbdataTrekk[0].kid
-                    kodeTrekkAlternativ shouldBe dbperiode[0].trekkAlternativ
+                withClue("osDokumentet skal ha samme info som i trekk og perioder") {
+                    with(osdok.dokument.innrapporteringTrekk) {
+                        kreditorTrekkId shouldBe dbdataTrekk[0].trekkidSke + dbperiode[0].trekkAlternativ.get(3)
+                        kid shouldBe dbdataTrekk[0].kid
+                        kodeTrekkAlternativ shouldBe dbperiode[0].trekkAlternativ
+                    }
                 }
 
             }

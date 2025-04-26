@@ -33,6 +33,7 @@ create table "trekkperiode"
     dato_slutt          text,
     sats                decimal NOT NULL ,
     trekkalternativ     text NOT NULL ,
+    kilde               text NOT NULL,
     tidspunkt_opprettet timestamp NOT NULL DEFAULT NOW()
 );
 
