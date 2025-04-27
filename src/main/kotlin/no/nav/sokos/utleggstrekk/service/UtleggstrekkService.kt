@@ -43,7 +43,7 @@ class UtleggstrekkService(
             dokument.forEach {
                 mqProducer.send(it)
             }
-            databaseService.oppdaterTrekkStatus(tilOsPair.first.corrid, "SENDT")
+            databaseService.oppdaterTrekkStatus(tilOsPair.first.corrid, SENDT)
         }.size
     }
 

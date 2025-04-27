@@ -15,6 +15,9 @@ import java.sql.Timestamp
 import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
+private const val MOTTATT = "MOTTATT"
+private const val SKATTEETATEN = "SKATTEETATEN"
+private const val MAX_SLUTTDATO = "9999-12-31"
 
 object Repository {
     fun Connection.fetchLastSekvensnr(): Int {
@@ -119,7 +122,7 @@ object Repository {
                 kontonummer, 
                 corrid,
                 status
-                ) values (?,?,?,?,?,?,?,?,?,?,?,?,'MOTTATT')
+                ) values (?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """.trimIndent(),
             )
         val prepStmt2 =
@@ -150,10 +153,11 @@ object Repository {
             prepStmt1.setString(10, trekk.betalingsinformasjon.kidnummer)
             prepStmt1.setString(11, trekk.betalingsinformasjon.kontonummer)
             prepStmt1.setString(12, UUID.randomUUID().toString())
+            prepStmt1.setString(13, MOTTATT)
             prepStmt1.addBatch()
             trekk.trekkstoerrelseForPeriode.forEach { periode ->
                 val trekkalternativ = TrekkAlternativ.getTrekkAlternativ(periode).value
-                val sluttdato = periode.sluttdato ?: "9999-12-31"
+                val sluttdato = periode.sluttdato ?: MAX_SLUTTDATO
                 prepStmt2.setInt(1, trekk.sekvensnummer)
                 prepStmt2.setString(2, trekk.trekkid)
                 prepStmt2.setInt(3, trekk.trekkversjon)
@@ -161,7 +165,7 @@ object Repository {
                 prepStmt2.setString(5, sluttdato)
                 prepStmt2.setObject(6, periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent, java.sql.Types.DOUBLE)
                 prepStmt2.setString(7, trekkalternativ)
-                prepStmt2.setString(8, "SKATTEETATEN")
+                prepStmt2.setString(8, SKATTEETATEN)
                 prepStmt2.addBatch()
             }
         }
@@ -173,8 +177,11 @@ object Repository {
     fun Connection.fetchTrekkNotSendt(): List<UtleggstrekkTable> =
         prepareStatement(
             """
-            select * from utleggstrekk where status = 'MOTTATT'
+            select * from utleggstrekk where status = ?
             """.trimIndent())
+            .withParameters(
+                param(MOTTATT)
+            )
             .executeQuery()
             .toUtleggstrekkTable()
 

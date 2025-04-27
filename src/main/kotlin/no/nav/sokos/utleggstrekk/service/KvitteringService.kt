@@ -1,13 +1,8 @@
 package no.nav.sokos.utleggstrekk.service
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.mq.MqConsumer
-import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
-import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
-import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
 
 class KvitteringService(
     private val databaseService: DatabaseService,
@@ -17,15 +12,7 @@ class KvitteringService(
     fun hentAlleKvitteringer():List<TrekkTilOppdrag>{
         val mqKvitteringer = hentAlleKvitteringerFraMq()
         return mqKvitteringer.map {
-            val kvittering = Json{
-                isLenient = true
-                explicitNulls = false
-                serializersModule = SerializersModule {
-                    contextual(ZonedDateTimeSerializer)
-                    contextual(LocalDateTimeSerializer)
-                    contextual(LocalDateSerializer)
-                }
-            }.decodeFromString<TrekkTilOppdrag>(it)
+            val kvittering = Json.decodeFromString<TrekkTilOppdrag>(it)
             println(kvittering)
             kvittering
         }

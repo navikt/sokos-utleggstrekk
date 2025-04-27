@@ -43,7 +43,6 @@ class TSSIdTest : FunSpec({
         val exception = shouldThrowExactly<NotImplementedError> {
             TSSId.getTSSId(feiltrekk)
         }
-        println(exception)
     }
 
     test("hvis vi spør med feil konto skal vi få NotImplementedError exception") {
