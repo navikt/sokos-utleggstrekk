@@ -126,8 +126,6 @@ object PropertiesConfig {
         val password: String = getOrEmpty("MQ_PASSWORD"),
         val queueName: String = getOrEmpty("MQ_QUEUE_NAME"),
         val replyQueueName: String = getOrEmpty("MQ_REPLYQUEUE_NAME"),
-        val replyQueueUsername: String = getOrEmpty("MQ_INQ_USERNAME"),
-        val replyQueuePassword: String = getOrEmpty("MQ_INQ_PASSWORD"),
         val userAuth: Boolean = true,
     )
 }

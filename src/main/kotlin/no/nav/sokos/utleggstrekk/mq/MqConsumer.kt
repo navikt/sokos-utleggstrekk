@@ -19,7 +19,6 @@ class MqConsumer(
     private var connected: Boolean = false
 
     private val logger = KotlinLogging.logger { }
-    private val secureLogger = KotlinLogging.logger("secureLogger")
 
     init {
         connect()
@@ -41,10 +40,14 @@ class MqConsumer(
         try {
             if (!connected) connect()
             return when (val message = mqConsumer.receive(500L)) {
-                is TextMessage -> message.text
-                else -> null
+                is TextMessage -> message.text.also { println(it) }
+                else -> {
+                    println("Ikke textmessage")
+                    null
+                }
             }
         } catch (ex: Exception) {
+            println("Exception i receive")
             connected = false
             throw ex
         }
