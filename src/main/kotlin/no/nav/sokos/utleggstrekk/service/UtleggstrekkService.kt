@@ -11,7 +11,6 @@ import no.nav.sokos.utleggstrekk.mq.MqProducer
 import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
 
 
-private val logger = KotlinLogging.logger { }
 
 private const val SENDT = "SENDT"
 
@@ -21,6 +20,7 @@ class UtleggstrekkService(
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: MqProducer = MqProducer(),
 ) {
+private val logger = KotlinLogging.logger {  }
     suspend fun HentOgSendUtleggstrekk(): Int {
         hentOgLagreNyeUtleggstrekk()
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
@@ -39,8 +39,9 @@ class UtleggstrekkService(
     private fun sendTrekkTilOS(trekkTilOppdragPairList: List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>): Int {
         return trekkTilOppdragPairList.map { tilOsPair ->
             val dokument = tilOsPair.second.map { Json.encodeToString(it) }
-            println("sender trekkid: ${tilOsPair.first.trekkidSke} versjon: ${tilOsPair.first.trekkversjon} sekvensnummer: ${tilOsPair.first.sekvensnummer}")
+            logger.info("sender trekkid: ${tilOsPair.first.trekkidSke} versjon: ${tilOsPair.first.trekkversjon} sekvensnummer: ${tilOsPair.first.sekvensnummer}")
             dokument.forEach {
+                println(it)
                 //mqProducer.send(it)
             }
             databaseService.oppdaterTrekkStatus(tilOsPair.first.corrid, SENDT)
