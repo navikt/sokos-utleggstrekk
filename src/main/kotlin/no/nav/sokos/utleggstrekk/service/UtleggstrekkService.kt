@@ -38,8 +38,15 @@ private val logger = KotlinLogging.logger {  }
             }
     }
     private fun sendTrekkTilOS(trekkTilOppdragPairList: List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>): Int {
+        val json = Json {
+            prettyPrint = true
+            isLenient = true
+            explicitNulls = false
+            ignoreUnknownKeys = true
+        }
+
         return trekkTilOppdragPairList.map { tilOsPair ->
-            val dokument = tilOsPair.second.map { Json.encodeToString(it) }
+            val dokument = tilOsPair.second.map { json.encodeToString(it) }
             logger.info("sender trekkid: ${tilOsPair.first.trekkidSke} versjon: ${tilOsPair.first.trekkversjon} sekvensnummer: ${tilOsPair.first.sekvensnummer}")
             dokument.forEach {
                 println(it)
