@@ -24,6 +24,7 @@ private val logger = KotlinLogging.logger {  }
     suspend fun HentOgSendUtleggstrekk(): Int {
         hentOgLagreNyeUtleggstrekk()
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
+        trekktilSending.forEach { it.second.forEach { println(it) } }
         return sendTrekkTilOS(trekktilSending)
     }
 
