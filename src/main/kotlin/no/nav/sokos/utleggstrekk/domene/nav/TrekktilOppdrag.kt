@@ -1,5 +1,6 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.Serializable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
@@ -39,11 +40,11 @@ data class InnrapporteringTrekk(
     val kreditorIdTss: String,
     val kreditorTrekkId:String,
     val debitorId: String,
-    val kodeTrekktype:String = "TRK1",
+    @EncodeDefault val kodeTrekktype:String = "TRK1",
     val kodeTrekkAlternativ: String,
     val kid: String,
     val kreditorsRef: String,
-    val kilde: String = "SOKOSUTLEGG",
+    @EncodeDefault val kilde: String = "SOKOSUTLEGG",
     val saldo: Double,
     val prioritetFomDato: String,
     val gyldigTomDato:String? = null,
