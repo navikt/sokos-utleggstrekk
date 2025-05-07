@@ -39,9 +39,9 @@ class UtleggstrekkService(
     private fun sendTrekkTilOS(trekkTilOppdragPairList: List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>): Int {
         return trekkTilOppdragPairList.map { tilOsPair ->
             val dokument = tilOsPair.second.map { Json.encodeToString(it) }
-            logger.info("sender trekkid: ${tilOsPair.first.trekkidSke} versjon: ${tilOsPair.first.trekkversjon} sekvensnummer: ${tilOsPair.first.sekvensnummer}")
+            println("sender trekkid: ${tilOsPair.first.trekkidSke} versjon: ${tilOsPair.first.trekkversjon} sekvensnummer: ${tilOsPair.first.sekvensnummer}")
             dokument.forEach {
-                mqProducer.send(it)
+                //mqProducer.send(it)
             }
             databaseService.oppdaterTrekkStatus(tilOsPair.first.corrid, SENDT)
         }.size
