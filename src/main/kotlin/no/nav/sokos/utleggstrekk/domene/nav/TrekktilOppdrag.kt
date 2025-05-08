@@ -14,17 +14,17 @@ data class TrekkTilOppdrag(
 
 @Serializable
 data class Mmel(
-    val systemId: String?,
-    val kodeMelding: String?,
+    val systemId: String? = null,
+    val kodeMelding: String? = null,
     val alvorlighetsgrad: String,
-    val beskrMelding: String?,
-    val sqlKode: String?,
-    val sqlStateMmel: String?,
-    val sqlMelding: String?,
-    val mqCompletionKode: String?,
-    val mqReasonKode: String?,
-    val programId: String?,
-    val sectionNavn: String?,
+    val beskrMelding: String? = null,
+    val sqlKode: String? = null,
+    val sqlStateMmel: String? = null,
+    val sqlMelding: String? = null,
+    val mqCompletionKode: String? = null,
+    val mqReasonKode: String? = null,
+    val programId: String? = null,
+    val sectionNavn: String? = null,
 )
 
 @Serializable

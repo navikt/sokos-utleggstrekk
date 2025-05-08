@@ -16,7 +16,7 @@ class MqProducer(
     private val config: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties(),
 ) {
     private lateinit var session: Session
-    private lateinit var messageProducer: MessageProducer
+    private lateinit var mqProducer: MessageProducer
     private var connected: Boolean = false
 
     private val logger = KotlinLogging.logger { }
@@ -33,7 +33,7 @@ class MqProducer(
             (session.createQueue(config.queueName) as MQQueue).apply {
                 targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
             }
-        messageProducer = session.createProducer(queue)
+        mqProducer = session.createProducer(queue)
         connection.start()
         connected = true
     }
@@ -48,7 +48,7 @@ class MqProducer(
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 }
             jmsMessage.jmsReplyTo = replyQueue
-            messageProducer.send(jmsMessage)
+            mqProducer.send(jmsMessage)
             commit()
             true
         } catch (ex: Exception) {
