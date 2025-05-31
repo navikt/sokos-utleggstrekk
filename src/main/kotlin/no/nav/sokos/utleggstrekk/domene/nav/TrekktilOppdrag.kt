@@ -29,7 +29,7 @@ data class Mmel(
 
 @Serializable
 data class Document(
-    val transaksjonsId: String,
+    val transaksjonsId: String? = null,
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
@@ -45,7 +45,7 @@ data class InnrapporteringTrekk(
     val kid: String,
     val kreditorsRef: String,
     @EncodeDefault val kilde: String = "SOKOSUTLEGG",
-    val saldo: Double,
+    val saldo: Double = 0.0,
     val prioritetFomDato: String,
     val gyldigTomDato:String? = null,
     val perioder: Perioder,
@@ -58,9 +58,8 @@ data class Perioder(
 @Serializable
 data class Periode(
     val periodeFomDato: String,
-    val periodeTomDato: String?,
-    val sats: Double,
-    val kodeTrekkAlternativ: TrekkAlternativ? = null,
+    val periodeTomDato: String = "9999-12-31",
+    val sats: Double = 0.0,
 )
 
 @Serializable
@@ -77,6 +76,10 @@ enum class Aksjonskode(val value: String){
                 return OPPH
             else
                 return ENDR
+        }
+        fun getAksjonskodeFromValue(value: String?): Aksjonskode? {
+            if (value == null) return value
+            else  return Aksjonskode.valueOf(value.toString())
         }
     }
 }

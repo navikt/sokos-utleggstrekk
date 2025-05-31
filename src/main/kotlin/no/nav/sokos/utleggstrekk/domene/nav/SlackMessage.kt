@@ -1,4 +1,4 @@
-package no.nav.sokos.utleggstrekk.slack
+package no.nav.sokos.utleggstrekk.domene.nav
 
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
@@ -31,15 +31,17 @@ data class Field(
 
 fun createSlackMessage(
     feilHeader: String,
-    content: List<String>,
+    filnavn: String,
+    content: Map<String, List<String>>,
 ) = Data(
     text = ":package: $feilHeader",
-    blocks = buildSections(feilHeader, content),
+    blocks = buildSections(feilHeader, filnavn, content),
 )
 
 private fun buildSections(
     feilHeader: String,
-    content: List<String>,
+    filnavn: String,
+    content: Map<String, List<String>>,
 ): MutableList<Block> {
     val dividerBlock = Block(type = "divider")
     val headerBlock =
@@ -52,13 +54,13 @@ private fun buildSections(
                     emoji = true,
                 ),
         )
-    val overordnetInfoBlock =
+    val filnavnBlock =
         Block(
             type = "section",
             fields =
                 listOf(
                     Field(
-                        text = "*FeilMelding* error",
+                        text = "*Filnavn* \n$filnavn",
                     ),
                     Field(
                         text = "*Dato* \n${LocalDate.now()}",
@@ -67,23 +69,25 @@ private fun buildSections(
         )
 
     val feilmeldinger =
-        content.map { utlegg ->
+        content.map { entry ->
+            entry.value.map { error ->
                 Block(
                     type = "section",
                     fields =
                         listOf(
-                            Field(text = "*Feilmelding*\n${utlegg}"),
-                            Field(text = "*Info* error"),
+                            Field(text = "*Feilmelding*\n${entry.key}"),
+                            Field(text = "*Info*\n$error"),
                         ),
                 )
+            }
         }
 
     val blocks = mutableListOf<Block>()
     blocks.add(headerBlock)
     blocks.add(dividerBlock)
-    blocks.add(overordnetInfoBlock)
+    blocks.add(filnavnBlock)
     blocks.add(dividerBlock)
-    blocks.addAll(feilmeldinger)
+    feilmeldinger.forEach { blocks.addAll(it) }
     blocks.add(dividerBlock)
     blocks.add(dividerBlock)
     return blocks

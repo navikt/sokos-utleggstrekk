@@ -15,28 +15,32 @@ class BehandleTrekkService(
         val trekkIkkeSendt = databaseService.hentAlleTrekkSomIkkeErSendt()
         return trekkIkkeSendt.map { trekk ->
 
-            val trekkAlternativMap = databaseService.hentAllePerioderForTrekkVersjon(trekk).groupBy { it.trekkAlternativ }
-            val historiskTrekkAlternativMap = databaseService.hentAllePerioderForTrekkId(trekk).groupBy { it.trekkAlternativ }
+            val perioderForTrekkversjonMap = databaseService.hentAllePerioderForTrekkVersjon(trekk).groupBy { it.trekkAlternativ }
+            val allePerioderForTrekkMap = databaseService.hentAllePerioderForTrekkId(trekk).groupBy { it.trekkAlternativ }
 
-            val trekkDokumenter = utledAlleDuplikateTrekkPerioder(trekkAlternativMap, historiskTrekkAlternativMap).map { perioder ->
+            val trekkDokumenter = utledAlleDuplikateTrekkPerioder(perioderForTrekkversjonMap, allePerioderForTrekkMap).map { perioder ->
                 databaseService.lagreGenerertePerioder(perioder.filter { it.kilde == EGEN_KILDE })
-                trekk.toTrekkDokument(perioder)
+                if (trekk.trekkversjon > 1 && allePerioderForTrekkMap[perioder[0].trekkAlternativ]!!.minBy { it.trekkversjon }.trekkversjon == trekk.trekkversjon) {
+                    trekk.toTrekkDokument(perioder, "NY")
+                } else {
+                    trekk.toTrekkDokument(perioder)
+                }
             }
             trekk to trekkDokumenter
         }
     }
 
     private fun utledAlleDuplikateTrekkPerioder(
-        trekkAlternativMap: Map<String, List<TrekkPeriodeTable>>,
-        historiskTrekkAlternativMap: Map<String, List<TrekkPeriodeTable>>
+        perioderForTrekkversjonMap: Map<String, List<TrekkPeriodeTable>>,
+        allePerioderForTrekkMap: Map<String, List<TrekkPeriodeTable>>
     ): List<List<TrekkPeriodeTable>> {
 
-        return if (historiskTrekkAlternativMap.size < 2) {
-            trekkAlternativMap.values.toList()
+        return if (allePerioderForTrekkMap.size < 2) {
+            perioderForTrekkversjonMap.values.toList().map { p -> p.sortedBy { it.datoStart } }
         } else {
             listOf(
-                trekkAlternativMap["LOPP"]!! + trekkAlternativMap["LOPM"]!!.filterNot { it.sats == 0.0 }.map { it.copy(trekkAlternativ = "LOPP", sats = 0.0, kilde = EGEN_KILDE) }.sortedBy { it.datoStart },
-                trekkAlternativMap["LOPM"]!! + trekkAlternativMap["LOPP"]!!.filterNot { it.sats == 0.0 }.map { it.copy(trekkAlternativ = "LOPM", sats = 0.0, kilde = EGEN_KILDE) }.sortedBy { it.datoStart }
+                perioderForTrekkversjonMap["LOPP"]!! + perioderForTrekkversjonMap["LOPM"]!!.filterNot { it.sats == 0.0 }.map { it.copy(trekkAlternativ = "LOPP", sats = 0.0, kilde = EGEN_KILDE) }.sortedBy { it.datoStart },
+                perioderForTrekkversjonMap["LOPM"]!! + perioderForTrekkversjonMap["LOPP"]!!.filterNot { it.sats == 0.0 }.map { it.copy(trekkAlternativ = "LOPM", sats = 0.0, kilde = EGEN_KILDE) }.sortedBy { it.datoStart }
             )
         }
     }

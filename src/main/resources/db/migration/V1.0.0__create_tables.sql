@@ -37,6 +37,18 @@ create table "trekkperiode"
     tidspunkt_opprettet timestamp NOT NULL DEFAULT NOW()
 );
 
+drop table if exists feilkoder;
+create table "feilkoder"
+(
+    id                  bigserial primary key,
+    Trekkid_nav         text NOT NULL,
+    corr_id             text NOT NULL,
+    trekkalternativ     text NOT NULL,
+    feilkode            text NOT NULL,
+    beskrivelse         text NOT NULL,
+    tidspunkt_opprettet timestamp NOT NULL DEFAULT NOW()
+);
+
 
 create unique index if not exists idxu_trekk on utleggstrekk (trekkid_ske, sekvensnummer, trekkversjon);
 create index if not exists idx_periode on trekkperiode (trekkid_ske, sekvensnummer, trekkversjon)

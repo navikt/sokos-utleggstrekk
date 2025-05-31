@@ -40,14 +40,11 @@ class MqConsumer(
         try {
             if (!connected) connect()
             return when (val message = mqConsumer.receive(500L)) {
-                is TextMessage -> message.text.also { println(it) }
-                else -> {
-                    println("Ikke textmessage")
-                    null
-                }
+                is TextMessage -> message.text
+                else -> null
             }
         } catch (ex: Exception) {
-            println("Exception i receive")
+            println("Exception i MQ receive, exception: ${ex.message}")
             connected = false
             throw ex
         }

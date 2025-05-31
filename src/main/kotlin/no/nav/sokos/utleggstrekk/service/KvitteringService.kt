@@ -9,16 +9,18 @@ class KvitteringService(
     private val mqConsumer: MqConsumer = MqConsumer(),
 ) {
 
-    fun hentAlleKvitteringer():List<TrekkTilOppdrag>{
-        val mqKvitteringer = hentAlleKvitteringerFraMq()
-        return mqKvitteringer.map {
-            val kvittering = Json.decodeFromString<TrekkTilOppdrag>(it)
-            println(kvittering)
-            kvittering
-        }
 
+    fun behandleKvitteringer(){
+        val kvitteringer = hentAlleKvitteringer()
+        lagreKvitteringer(kvitteringer)
+        varsleFeil(kvitteringer)
     }
-    fun hentAlleKvitteringerFraMq():List<String>{
+
+    fun hentAlleKvitteringer():List<TrekkTilOppdrag> =
+        hentAlleKvitteringerFraMq().map {
+            Json.decodeFromString<TrekkTilOppdrag>(it).also { println(it) }
+        }
+    private fun hentAlleKvitteringerFraMq():List<String>{
         val kvitteringer = mutableListOf<String>()
         do {
             val  svar = mqConsumer.receive()
@@ -26,9 +28,17 @@ class KvitteringService(
                 kvitteringer.add(svar)
                 println("fra MQ: $svar")
             }else{
-                println("Fikk NULL fra MQ")
+                println("Ingen melding fra MQ")
             }
         }while (svar != null)
         return kvitteringer
     }
+    private fun lagreKvitteringer(kvitteringer: List<TrekkTilOppdrag>) {
+        TODO("Not yet implemented")
+    }
+    private fun varsleFeil(kvitteringer: List<TrekkTilOppdrag>) {
+        TODO("Not yet implemented")
+    }
+
+
 }

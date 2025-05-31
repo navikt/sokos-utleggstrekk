@@ -9,11 +9,13 @@ import no.nav.sokos.utleggstrekk.database.Repository.fetchLastSekvensnr
 import no.nav.sokos.utleggstrekk.database.Repository.fetchPerioderForTrekkVersion
 import no.nav.sokos.utleggstrekk.database.Repository.fetchTrekkNotSendt
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
+import no.nav.sokos.utleggstrekk.database.Repository.saveFeilkoder
 import no.nav.sokos.utleggstrekk.database.Repository.savePerioder
 import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatus
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 private val logger = KotlinLogging.logger { }
@@ -61,6 +63,14 @@ class DatabaseService(
     fun lagreGenerertePerioder(perioder: List<TrekkPeriodeTable>){
         dataSource.connection.useAndHandleErrors { con ->
             con.savePerioder(perioder)
+        }
+    }
+
+    fun lagreFeilkoderFraOS(kvitteringer: List<TrekkTilOppdrag>){
+        val kvitteringerMedFeilkoder = kvitteringer.filter { it.mmel.alvorlighetsgrad != "00" }
+        if (kvitteringerMedFeilkoder.isNotEmpty()){
+        dataSource.connection.useAndHandleErrors { con ->
+            con.saveFeilkoder(kvitteringerMedFeilkoder)
         }
     }
 

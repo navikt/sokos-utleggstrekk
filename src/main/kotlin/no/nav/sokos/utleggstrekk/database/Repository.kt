@@ -9,6 +9,7 @@ import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import java.sql.Connection
 import java.sql.Timestamp
@@ -221,6 +222,29 @@ object Repository {
             )
             .executeQuery()
             .toTrekkPeriodeTable()
+    }
+
+    fun Connection.saveFeilkoder(kvitteringer: List<TrekkTilOppdrag>) {
+        kvitteringer.forEach { kvittering ->
+            prepareStatement(
+                """
+                insert into feilkoder (
+                trekkid_nav,
+                corr_id,
+                trekkalternativ,
+                feilkode,
+                beskrivelse
+                ) values (?,?,?,?,?)        
+            """.trimIndent()
+            )
+                .withParameters(
+                    param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
+                    param(kvittering.dokument.transaksjonsId!!),
+                    param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
+                    param(kvittering.mmel.kodeMelding!!),
+                    param(kvittering.mmel.beskrMelding!!)
+                )
+        }
     }
 
 }

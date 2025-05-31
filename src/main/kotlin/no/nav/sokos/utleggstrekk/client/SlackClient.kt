@@ -16,27 +16,24 @@ class SlackClient(
 ) {
     suspend fun sendMessage(
         header: String,
-        fileName: String,
-        messages: Map<String, List<String>>,
+        messages:List<String>,
     ) {
         client.post(
             HttpRequestBuilder().apply {
                 url(slackEndpoint)
                 contentType(ContentType.Application.Json)
-                setBody(createSlackMessage(header, fileName, messages))
+                setBody(createSlackMessage(header, messages))
             },
         )
     }
 
     suspend fun sendMessage(
         header: String,
-        fileName: String,
         messages: List<Pair<String, String>>,
-    ) = sendMessage(header, fileName, messages.groupBy({ it.first }, { it.second }))
+    ) = sendMessage(header, messages.groupBy({ it.first }, { it.second }))
 
     suspend fun sendMessage(
         header: String,
-        fileName: String,
         message: Pair<String, String>,
-    ) = sendMessage(header, fileName, mapOf(message.first to listOf(message.second)))
+    ) = sendMessage(header, mapOf(message.first to listOf(message.second)))
 }
