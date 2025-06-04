@@ -67,12 +67,12 @@ class DatabaseService(
     }
 
     fun lagreFeilkoderFraOS(kvitteringer: List<TrekkTilOppdrag>){
-        val kvitteringerMedFeilkoder = kvitteringer.filter { it.mmel.alvorlighetsgrad != "00" }
-        if (kvitteringerMedFeilkoder.isNotEmpty()){
-        dataSource.connection.useAndHandleErrors { con ->
-            con.saveFeilkoder(kvitteringerMedFeilkoder)
+        val kvitteringerMedFeilkoder = kvitteringer.filter { it.mmel!!.alvorlighetsgrad != "00" }
+        if (kvitteringerMedFeilkoder.isNotEmpty()) {
+            dataSource.connection.useAndHandleErrors { con ->
+                con.saveFeilkoder(kvitteringerMedFeilkoder)
+            }
         }
-    }
 
 
-}
+}}

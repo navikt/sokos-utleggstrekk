@@ -121,7 +121,7 @@ object Repository {
                 betalingsmottaker,
                 kid, 
                 kontonummer, 
-                corrid,
+                corr_id,
                 status
                 ) values (?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """.trimIndent(),
@@ -236,14 +236,14 @@ object Repository {
                 beskrivelse
                 ) values (?,?,?,?,?)        
             """.trimIndent()
-            )
-                .withParameters(
-                    param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
-                    param(kvittering.dokument.transaksjonsId!!),
-                    param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
-                    param(kvittering.mmel.kodeMelding!!),
-                    param(kvittering.mmel.beskrMelding!!)
-                )
+            ).withParameters(
+                param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
+                param(kvittering.dokument.transaksjonsId!!),
+                param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
+                param(kvittering.mmel?.kodeMelding ?: "INGEN KODEMELDING!!"),
+                param(kvittering.mmel?.beskrMelding ?: "INGEN MELDING!!")
+            ).execute()
+            commit()
         }
     }
 

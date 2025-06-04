@@ -2,8 +2,11 @@ package no.nav.sokos.utleggstrekk
 
 import com.google.gson.Gson
 import io.kotest.core.spec.style.FunSpec
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -34,7 +37,7 @@ internal class KenTesterJson : FunSpec({
     test("db timeformats") {
         val strDato = "2024-06-17T13:33:05.672Z"
         val instant:Instant = strDato.toInstant()
-        val sql: java.sql.Timestamp = Timestamp(instant.toEpochMilliseconds())
+        val sql = Timestamp(instant.toEpochMilliseconds())
         val l: LocalDateTime = sql.toLocalDateTime()
         println("sd: $strDato, i: $instant t: $sql l: $l")
     }
@@ -90,7 +93,7 @@ fun trekkTable():UtleggstrekkTable =
         trekkversjon = 2,
         sekvensnummer = 3,
         saksnummer = "sak01",
-        opprettetSke = Timestamp("2024-06-16T13:33:05.672Z".toInstant().toEpochMilliseconds()).toLocalDateTime(),
+        opprettetSke = kotlinx.datetime.LocalDateTime.parse("2024-06-16T13:33:05.672Z"),
         trekkpliktig = "987654321",
         skyldner = "12345678901",
         trekkstatus = "active",
@@ -99,9 +102,9 @@ fun trekkTable():UtleggstrekkTable =
         kontonummer = "12341212345",
         betalingsmottaker = "987654322",
         corrid = "dette_er_corrid",
-        tidspunktSisteStatus = LocalDateTime.now(),
+        tidspunktSisteStatus = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
         tidspunktSendtOs = null,
-        tidspunktOpprettet = LocalDateTime.now()
+        tidspunktOpprettet = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     )
 
 fun perioder():List<TrekkPeriodeTable>  = listOf(

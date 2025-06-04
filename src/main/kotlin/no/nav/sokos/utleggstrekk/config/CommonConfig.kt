@@ -14,12 +14,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
 import mu.KotlinLogging
-import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
-import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
-import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
 import org.slf4j.event.Level
 import java.util.UUID
 
@@ -46,11 +41,11 @@ fun Application.commonConfig(
             isLenient = true
             decodeEnumsCaseInsensitive = true
             explicitNulls = true
-            serializersModule = SerializersModule {
-                contextual(LocalDateTimeSerializer)
-                contextual(LocalDateSerializer)
-                contextual(ZonedDateTimeSerializer)
-            }
+//            serializersModule = SerializersModule {
+//                contextual(LocalDateTimeSerializer)
+//                contextual(LocalDateSerializer)
+//                contextual(ZonedDateTimeSerializer)
+//            }
         })
     }
 

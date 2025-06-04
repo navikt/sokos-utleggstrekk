@@ -1,8 +1,7 @@
 package no.nav.sokos.utleggstrekk.database.model
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
-import no.nav.sokos.utleggstrekk.utils.JavaLocaldateTimeSerializer
-import java.time.LocalDateTime
 
 @Serializable
 data class UtleggstrekkTable(
@@ -12,7 +11,7 @@ data class UtleggstrekkTable(
     val saksnummer: String,
     val trekkidSke: String,
     val trekkversjon: Int,
-    @Serializable(with = JavaLocaldateTimeSerializer::class)
+    //@Serializable(with = JavaLocaldateTimeSerializer::class)
     val opprettetSke: LocalDateTime,
     val trekkpliktig: String,
     val skyldner: String,
@@ -22,11 +21,11 @@ data class UtleggstrekkTable(
     val betalingsmottaker: String,
     val corrid: String,
     val status: String,
-    @Serializable(with = JavaLocaldateTimeSerializer::class)
+    //@Serializable(with = JavaLocaldateTimeSerializer::class)
     val tidspunktSendtOs: LocalDateTime? = null,
-    @Serializable(with = JavaLocaldateTimeSerializer::class)
+    //@Serializable(with = JavaLocaldateTimeSerializer::class)
     val tidspunktSisteStatus: LocalDateTime,
-    @Serializable(with = JavaLocaldateTimeSerializer::class)
+    //@Serializable(with = JavaLocaldateTimeSerializer::class)
     val tidspunktOpprettet: LocalDateTime,
 )
 

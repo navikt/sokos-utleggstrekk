@@ -14,7 +14,7 @@ create table "utleggstrekk"
     betalingsmottaker      text      NOT NULL,
     kid                    text      NOT NULL,
     kontonummer            text      NOT NULL,
-    corrid                 text      NOT NULL,
+    corr_id                text      NOT NULL,
     status                 text,
     kvittering             text,
     tidspunkt_sendt_os     timestamp ,
