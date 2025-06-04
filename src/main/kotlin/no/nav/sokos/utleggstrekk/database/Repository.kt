@@ -241,10 +241,9 @@ object Repository {
                     param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
                     param(kvittering.dokument.transaksjonsId!!),
                     param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
-                    param(kvittering.mmel.kodeMelding!!),
-                    param(kvittering.mmel.beskrMelding!!)
+                    param(kvittering.mmel?.kodeMelding ?: "INGEN KODE MOTTATT FRA OS"),
+                    param(kvittering.mmel?.beskrMelding ?: "INGEN BESKRIVELSE MOTTATT FRA OS")
                 )
         }
     }
-
 }

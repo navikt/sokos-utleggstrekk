@@ -26,14 +26,4 @@ class SlackClient(
             },
         )
     }
-
-    suspend fun sendMessage(
-        header: String,
-        messages: List<Pair<String, String>>,
-    ) = sendMessage(header, messages.groupBy({ it.first }, { it.second }))
-
-    suspend fun sendMessage(
-        header: String,
-        message: Pair<String, String>,
-    ) = sendMessage(header, mapOf(message.first to listOf(message.second)))
 }

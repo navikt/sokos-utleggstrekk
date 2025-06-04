@@ -38,7 +38,7 @@ fun UtleggstrekkTable.toTrekkDokument(periodeTableList: List<TrekkPeriodeTable>,
                 kreditorsRef = this.saksnummer,
                 kilde = "SOKOSUTLEGG",
                 saldo = 0.0,
-                prioritetFomDato = this.opprettetSke.toLocalDate().toString(),
+                prioritetFomDato = this.opprettetSke.toString(),
                 perioder = Perioder(
                     periode = periodeTableList.map {
                         it.toTrekkDokumentPeriode()
@@ -46,6 +46,7 @@ fun UtleggstrekkTable.toTrekkDokument(periodeTableList: List<TrekkPeriodeTable>,
             )
         )
     )
+
 }
 
 suspend fun HttpResponse.toTrekkpaalegg() =

@@ -65,6 +65,7 @@ private val logger = KotlinLogging.logger {  }
         return trekkListe.filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
         //TODO Må lagre også
     }
+
 }
 
 

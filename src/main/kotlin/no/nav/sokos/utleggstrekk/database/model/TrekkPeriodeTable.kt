@@ -6,7 +6,7 @@ data class TrekkPeriodeTable(
     val trekkidSke: String,
     val trekkversjon: Int,
     val datoStart: String,
-    val datoSlutt: String?,
+    val datoSlutt: String,
     val sats: Double,
     val trekkAlternativ: String,
     val kilde: String = "SKATTEETATEN",

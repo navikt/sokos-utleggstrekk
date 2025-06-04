@@ -72,4 +72,5 @@ class MqProducer(
                 it.targetClientMatching = true
                 it.setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
             }.createConnection(username, password)
+
 }

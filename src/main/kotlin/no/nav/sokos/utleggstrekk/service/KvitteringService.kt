@@ -40,5 +40,4 @@ class KvitteringService(
         TODO("Not yet implemented")
     }
 
-
 }

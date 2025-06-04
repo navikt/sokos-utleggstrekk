@@ -1,6 +1,6 @@
 package no.nav.sokos.utleggstrekk.database
 import io.ktor.utils.io.InternalAPI
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.Parameter
+import kotlinx.datetime.toKotlinLocalDateTime
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import java.math.BigDecimal
@@ -30,9 +30,6 @@ object RepositoryExtensions {
 
     fun param(value: Int) =
         Parameter { statement: PreparedStatement, index: Int -> statement.setInt(index, value) }
-
-    fun param(value: Long) =
-        Parameter { statement: PreparedStatement, index: Int -> statement.setLong(index, value) }
 
     fun param(value: String) =
         Parameter { statement: PreparedStatement, index: Int -> statement.setString(index, value) }
@@ -68,6 +65,7 @@ object RepositoryExtensions {
                 BigDecimal::class -> getBigDecimal(columnLabel)
                 LocalDate::class -> getDate(columnLabel)?.toLocalDate()
                 LocalDateTime::class -> getTimestamp(columnLabel)?.toLocalDateTime()
+                kotlinx.datetime.LocalDateTime::class -> getTimestamp(columnLabel)?.toLocalDateTime()?.toKotlinLocalDateTime()
                 else -> {
                     println("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
                     throw SQLException("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
