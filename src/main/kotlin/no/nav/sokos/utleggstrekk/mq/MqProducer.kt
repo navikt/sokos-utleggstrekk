@@ -10,6 +10,7 @@ import javax.jms.Connection
 import javax.jms.MessageProducer
 import javax.jms.Session
 
+private val logger = KotlinLogging.logger {}
 
 class MqProducer(
     private val config: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties(),
@@ -17,6 +18,7 @@ class MqProducer(
     private lateinit var session: Session
     private lateinit var mqProducer: MessageProducer
     private var connected: Boolean = false
+
     private val logger = KotlinLogging.logger { }
 
     init {
@@ -50,7 +52,7 @@ class MqProducer(
             commit()
             true
         } catch (ex: Exception) {
-            logger.error("Feilet ved sending via MQ til OS: ${ex.message}")
+            logger.error("Feilet ved sending via MQ til OS")
             connected = false
             false
         }

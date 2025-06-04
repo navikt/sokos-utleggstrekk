@@ -24,6 +24,7 @@ private val logger = KotlinLogging.logger {  }
     suspend fun HentOgSendUtleggstrekk(): Int {
         hentOgLagreNyeUtleggstrekk()
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
+        trekktilSending.forEach { it.second.forEach { println(it) } }
         return sendTrekkTilOS(trekktilSending)
     }
 
@@ -41,7 +42,10 @@ private val logger = KotlinLogging.logger {  }
         return trekkTilOppdragPairList.map { tilOsPair ->
             val dokument = tilOsPair.second.map { Json.encodeToString(it) }
             logger.info("sender trekkid: ${tilOsPair.first.trekkidSke} versjon: ${tilOsPair.first.trekkversjon} sekvensnummer: ${tilOsPair.first.sekvensnummer}")
-            dokument.forEach { mqProducer.send(it) }
+            dokument.forEach {
+                println(it)
+                mqProducer.send(it)
+            }
             databaseService.oppdaterTrekkStatus(tilOsPair.first.corrid, SENDT)
         }.size
     }

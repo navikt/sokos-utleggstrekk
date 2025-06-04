@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
 import kotlinx.serialization.json.Json
-import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.mq.MqConsumer
 
@@ -10,12 +9,10 @@ class KvitteringService(
     private val mqConsumer: MqConsumer = MqConsumer(),
 ) {
 
-    private val logger = KotlinLogging.logger {  }
-
 
     fun behandleKvitteringer(){
         val kvitteringer = hentAlleKvitteringer()
-        databaseService.lagreFeilkoderFraOS(kvitteringer)
+        lagreKvitteringer(kvitteringer)
         varsleFeil(kvitteringer)
     }
 
@@ -31,12 +28,14 @@ class KvitteringService(
                 kvitteringer.add(svar)
                 println("fra MQ: $svar")
             }else{
-                logger.info("Ingen flere melding fra MQ")
+                println("Ingen melding fra MQ")
             }
         }while (svar != null)
         return kvitteringer
     }
-
+    private fun lagreKvitteringer(kvitteringer: List<TrekkTilOppdrag>) {
+        TODO("Not yet implemented")
+    }
     private fun varsleFeil(kvitteringer: List<TrekkTilOppdrag>) {
         TODO("Not yet implemented")
     }

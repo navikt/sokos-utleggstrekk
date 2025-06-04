@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package no.nav.sokos.utleggstrekk.domene.nav
 
 import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
@@ -61,7 +58,7 @@ data class Perioder(
 @Serializable
 data class Periode(
     val periodeFomDato: String,
-    val periodeTomDato: String? = "9999-12-31",
+    val periodeTomDato: String = "9999-12-31",
     val sats: Double = 0.0,
 )
 
@@ -82,7 +79,7 @@ enum class Aksjonskode(val value: String){
         }
         fun getAksjonskodeFromValue(value: String?): Aksjonskode? {
             if (value == null) return value
-            else  return Aksjonskode.valueOf(value)
+            else  return Aksjonskode.valueOf(value.toString())
         }
     }
 }
