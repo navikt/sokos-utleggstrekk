@@ -12,7 +12,7 @@ import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
 
 
 
-private const val SENDT = "SENDT"
+const val SENDT = "SENDT"
 
 class UtleggstrekkService(
     private val databaseService: DatabaseService,
@@ -40,11 +40,11 @@ private val logger = KotlinLogging.logger {  }
     private fun sendTrekkTilOS(trekkTilOppdragPairList: List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>): Int {
 
         return trekkTilOppdragPairList.map { tilOsPair ->
-            val dokument = tilOsPair.second.map { Json.encodeToString(it) }
+            val dokumentListe = tilOsPair.second.map { Json.encodeToString(it) }
             logger.info("sender trekkid: ${tilOsPair.first.trekkidSke} versjon: ${tilOsPair.first.trekkversjon} sekvensnummer: ${tilOsPair.first.sekvensnummer}")
-            dokument.forEach {
-                println(it)
-                mqProducer.send(it)
+            dokumentListe.forEach { dokument ->
+                println(dokument)
+                mqProducer.send(dokument)
             }
             databaseService.oppdaterTrekkStatus(tilOsPair.first.corrid, SENDT)
         }.size

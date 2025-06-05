@@ -12,6 +12,7 @@ import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.database.Repository.saveFeilkoder
 import no.nav.sokos.utleggstrekk.database.Repository.savePerioder
 import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatus
+import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatusSentAndDateTimeSentOS
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -30,7 +31,11 @@ class DatabaseService(
 
     fun oppdaterTrekkStatus(corrId: String, status: String) {
         dataSource.connection.useAndHandleErrors { con ->
-            con.updateTrekkStatus(corrId, status)
+            if (status == SENDT) {
+                con.updateTrekkStatusSentAndDateTimeSentOS(corrId)
+            } else {
+                con.updateTrekkStatus(corrId, status)
+            }
         }
     }
 

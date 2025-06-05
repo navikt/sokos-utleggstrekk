@@ -11,6 +11,7 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.service.SENDT
 import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
@@ -45,7 +46,7 @@ object Repository {
     fun Connection.updateTrekkStatus(corrId: String, status: String) {
         prepareStatement(
             """
-                update utleggstrekk set status = ? 
+                update utleggstrekk set status = ?, tidspunkt_siste_status = now() 
                 where corrid = ?;
                 """.trimIndent(),
         ).withParameters(
@@ -54,6 +55,22 @@ object Repository {
         ).executeUpdate()
         commit()
     }
+
+    fun Connection.updateTrekkStatusSentAndDateTimeSentOS(corrId: String) {
+        prepareStatement(
+            """
+                update utleggstrekk set status = ?, 
+                                        tidspunkt_siste_status = now(),
+                                        tidspunkt_sendt_os = now()
+                where corr_id = ?
+            """.trimIndent()
+        ).withParameters(
+            param(SENDT),
+            param(corrId)
+        ).executeUpdate()
+        commit()
+    }
+
 
     fun Connection.updateKvitteringStatus(corrId: String, status: String, kvittering: String, navTrekkId: String) {
         prepareStatement(
@@ -223,6 +240,7 @@ object Repository {
             .executeQuery()
             .toTrekkPeriodeTable()
     }
+
 
     fun Connection.saveFeilkoder(kvitteringer: List<TrekkTilOppdrag>) {
         kvitteringer.forEach { kvittering ->
