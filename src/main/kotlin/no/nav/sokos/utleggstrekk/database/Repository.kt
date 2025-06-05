@@ -47,7 +47,7 @@ object Repository {
         prepareStatement(
             """
                 update utleggstrekk set status = ?, tidspunkt_siste_status = now() 
-                where corrid = ?;
+                where corr_id = ?;
                 """.trimIndent(),
         ).withParameters(
             param(status),
@@ -76,7 +76,7 @@ object Repository {
         prepareStatement(
             """
                 update utleggstrekk set status = ?, kvittering = ?, trekkid_nav = ?  
-                where corrid = ?;
+                where corr_id = ?;
                 """.trimIndent(),
         ).withParameters(
             param(status),
@@ -138,7 +138,7 @@ object Repository {
                 betalingsmottaker,
                 kid, 
                 kontonummer, 
-                corrid,
+                corr_id,
                 status
                 ) values (?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """.trimIndent(),

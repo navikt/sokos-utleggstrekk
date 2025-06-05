@@ -95,7 +95,7 @@ object RepositoryExtensions {
                 kid = getColumn("kid"),
                 kontonummer = getColumn("kontonummer"),
                 betalingsmottaker = getColumn("betalingsmottaker"),
-                corrid = getColumn("corrid"),
+                corrid = getColumn("corr_id"),
                 status = getColumn("status"),
                 tidspunktSendtOs = getColumn("tidspunkt_sendt_os"),
                 tidspunktSisteStatus = getColumn("tidspunkt_siste_status"),
