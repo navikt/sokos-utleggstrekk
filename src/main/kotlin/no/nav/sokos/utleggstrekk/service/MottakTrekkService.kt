@@ -14,7 +14,7 @@ import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
 
 const val SENDT = "SENDT"
 
-class UtleggstrekkService(
+class MottakTrekkService(
     private val databaseService: DatabaseService,
     private val behandleTrekkService: BehandleTrekkService,
     private val skeClient: SkeClient = SkeClient(),
@@ -24,7 +24,6 @@ private val logger = KotlinLogging.logger {  }
     suspend fun HentOgSendUtleggstrekk(): Int {
         hentOgLagreNyeUtleggstrekk()
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
-        trekktilSending.forEach { it.second.forEach { println(it) } }
         return sendTrekkTilOS(trekktilSending)
     }
 
@@ -37,7 +36,7 @@ private val logger = KotlinLogging.logger {  }
                 databaseService.lagreUtleggstrekk(it)
             }
     }
-    private fun sendTrekkTilOS(trekkTilOppdragPairList: List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>): Int {
+    fun sendTrekkTilOS(trekkTilOppdragPairList: List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>): Int {
 
         return trekkTilOppdragPairList.map { tilOsPair ->
             val dokumentListe = tilOsPair.second.map { Json.encodeToString(it) }

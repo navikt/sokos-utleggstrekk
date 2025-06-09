@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.util.Responses
+import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.TSSId
@@ -28,7 +28,7 @@ class TSSIdTest : FunSpec({
 
     test("hvis vi spør med korrekt ornr og konto skal vi få TSS id") {
         val skatt = TSSId.SKATT
-        val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(Responses.utleggsTrekkListeFraSkatt)
+        val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
         val tssId = TSSId.getTSSId(trekkpalegg.first())
 
         skatt.orgnr shouldBe trekkpalegg.first().betalingsinformasjon.betalingsmottaker
@@ -37,16 +37,16 @@ class TSSIdTest : FunSpec({
     }
 
     test("hvis vi spør med feil orgid skal vi få NotImplementedError exception") {
-        val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(Responses.utleggsTrekkListeFraSkatt).first()
+        val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")).first()
         val betalingsinfo = trekkpalegg.betalingsinformasjon.copy(betalingsmottaker = "123456789")
         val feiltrekk = trekkpalegg.copy(betalingsinformasjon = betalingsinfo)
-        val exception = shouldThrowExactly<NotImplementedError> {
+        shouldThrowExactly<NotImplementedError> {
             TSSId.getTSSId(feiltrekk)
         }
     }
 
     test("hvis vi spør med feil konto skal vi få NotImplementedError exception") {
-        val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(Responses.utleggsTrekkListeFraSkatt).first()
+        val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")).first()
         val betalingsinfo = trekkpalegg.betalingsinformasjon.copy(kontonummer = "123456789")
         val feiltrekk = trekkpalegg.copy(betalingsinformasjon = betalingsinfo)
         val exception = shouldThrowExactly<NotImplementedError> {

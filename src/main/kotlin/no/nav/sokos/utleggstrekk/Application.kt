@@ -15,7 +15,7 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
 import no.nav.sokos.utleggstrekk.service.DatabaseService
 import no.nav.sokos.utleggstrekk.service.KvitteringService
-import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
+import no.nav.sokos.utleggstrekk.service.MottakTrekkService
 
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::module).start(true)
@@ -26,14 +26,14 @@ private fun Application.module() {
     val azureConfiguration = AzureConfiguration()
     val databaseService = DatabaseService()
     val behandleTrekkService = BehandleTrekkService(databaseService)
-    val utleggstrekkService = UtleggstrekkService(databaseService, behandleTrekkService)
+    val mottakTrekkService = MottakTrekkService(databaseService, behandleTrekkService)
     val kvitteringService = KvitteringService(databaseService)
 
     commonConfig(azureConfiguration)
     applicationLifecycleConfig(applicationState)
     routing {
         internalNaisRoutes(applicationState)
-        utleggstrekkApi(utleggstrekkService, kvitteringService)
+        utleggstrekkApi(mottakTrekkService, kvitteringService)
     }
 
     if (!PropertiesConfig.isLocal) {

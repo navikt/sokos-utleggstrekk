@@ -13,7 +13,7 @@ import no.nav.sokos.utleggstrekk.database.Repository.fetchPerioderForTrekkVersio
 import no.nav.sokos.utleggstrekk.database.Repository.fetchTrekkNotSendt
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.util.Responses
+import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.JavaLocaldateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
@@ -38,7 +38,7 @@ internal class LifecycleTest :
         testContainer.migrate()
 
         Given("Vi har mottatt utleggstrekk...  ") {
-            val bodyFraSkatt = Responses.utleggsTrekkListeFraSkatt
+            val bodyFraSkatt = resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
             val paleggstrekkFraSkatt = json.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
 
             then("lagres disse i database") {

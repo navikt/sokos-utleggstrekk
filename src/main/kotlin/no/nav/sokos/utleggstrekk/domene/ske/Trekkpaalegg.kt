@@ -29,7 +29,7 @@ data class Trekkbeloep(
 
 @Serializable
 enum class Trekkstatus(val value: String) {
-    AKTIV("aktiv"),
+    AKTIV("active"),
     AVSLUTTET("avsluttet")
 }
 
