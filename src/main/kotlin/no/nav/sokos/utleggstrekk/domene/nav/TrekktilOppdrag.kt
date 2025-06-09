@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
 import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
@@ -33,6 +34,7 @@ data class Document(
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class InnrapporteringTrekk(
     val aksjonskode: Aksjonskode,

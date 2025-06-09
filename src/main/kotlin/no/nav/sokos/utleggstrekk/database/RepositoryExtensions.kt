@@ -8,7 +8,6 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.sql.Timestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -33,9 +32,6 @@ object RepositoryExtensions {
 
     fun param(value: String) =
         Parameter { statement: PreparedStatement, index: Int -> statement.setString(index, value) }
-
-    fun param(value: LocalDateTime) =
-        Parameter { statement: PreparedStatement, index: Int -> statement.setTimestamp(index, Timestamp.valueOf(value)) }
 
     fun PreparedStatement.withParameters(vararg parameters: Parameter?) =
         apply {
