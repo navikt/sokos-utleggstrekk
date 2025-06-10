@@ -56,7 +56,7 @@ private val logger = KotlinLogging.logger {  }
         return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
-    suspend fun hentAlleUtleggstrekk() = skeClient.hentAlleUtleggstrekk()
+    suspend fun hentAlleUtleggstrekk() = skeClient.hentAlleUtleggstrekk().also { it.forEach { t -> println(t)} }
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
         println("henter allefra sekvensnr sekvensnr: $sekvensnr")
