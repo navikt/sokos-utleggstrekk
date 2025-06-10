@@ -75,7 +75,7 @@ object Repository {
     fun Connection.updateKvitteringStatus(corrId: String, status: String, kvittering: String, navTrekkId: String) {
         prepareStatement(
             """
-                update utleggstrekk set status = ?, kvittering = ?, trekkid_nav = ?  
+                update utleggstrekk set status = ?, kvittering = ?, trekkid_nav = ?, tidspunkt_siste_status = NOW()  
                 where corr_id = ?;
                 """.trimIndent(),
         ).withParameters(
@@ -247,7 +247,7 @@ object Repository {
             prepareStatement(
                 """
                 insert into feilkoder (
-                trekkid_nav,
+                trekkid_nav ,
                 corr_id,
                 trekkalternativ,
                 feilkode,

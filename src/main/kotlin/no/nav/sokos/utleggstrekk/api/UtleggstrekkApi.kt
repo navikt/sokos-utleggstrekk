@@ -18,8 +18,7 @@ fun Routing.utleggstrekkApi(
     val logger = KotlinLogging.logger { }
 
     route("utleggstrekk") {
-        get("hentalle") {
-//            call.respond("Behandler")
+        get("hentalleFullPakke") {
             val resultat = mottakTrekkService.HentOgSendUtleggstrekk()
             call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
         }
@@ -34,15 +33,17 @@ fun Routing.utleggstrekkApi(
                 call.respond(HttpStatusCode.OK, utleggstrekk.toString())
             }
         }
-        get("hentnye") {
+        get("hentOgVisAlle") {
             val nye = mottakTrekkService.hentAlleUtleggstrekk()
             call.respond(HttpStatusCode.OK, nye)
         }
         get("kvittering") {
+            println("Henter kvitteringer")
             val nye = kvitteringService.hentAlleKvitteringer()
+            println("Kvitteringer mottatt: ${nye.size}")
             call.respond(HttpStatusCode.OK, nye.toString())
         }
-        get("hentnyeOgLagre}") {
+        get("hentnye}") {
             val utleggstrekk = mottakTrekkService.hentAlleNyeUtleggstrekk()
             println("Antall Nye: ${utleggstrekk.size}")
             call.respond(HttpStatusCode.OK, utleggstrekk.toString())

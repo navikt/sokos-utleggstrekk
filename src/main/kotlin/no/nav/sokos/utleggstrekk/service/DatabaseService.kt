@@ -11,6 +11,7 @@ import no.nav.sokos.utleggstrekk.database.Repository.fetchTrekkNotSendt
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.database.Repository.saveFeilkoder
 import no.nav.sokos.utleggstrekk.database.Repository.savePerioder
+import no.nav.sokos.utleggstrekk.database.Repository.updateKvitteringStatus
 import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatus
 import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatusSentAndDateTimeSentOS
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
@@ -36,6 +37,23 @@ class DatabaseService(
             } else {
                 con.updateTrekkStatus(corrId, status)
             }
+        }
+    }
+
+    fun oppdaterTrekkMedKvitteringsinfo(kvitteringer: List<TrekkTilOppdrag>) {
+        kvitteringer.map { kvittering ->
+            dataSource.connection.useAndHandleErrors { con ->
+                val status = when (kvittering.mmel?.alvorlighetsgrad) {
+                    "00" -> "KVITTERING_OK"
+                    else -> "KVITTERING_FEILET"
+                }
+                con.updateKvitteringStatus(
+                    kvittering.dokument.transaksjonsId!!,
+                    status, kvittering.mmel?.kodeMelding ?: "",
+                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: ""
+                )
+            }
+            kvittering
         }
     }
 
