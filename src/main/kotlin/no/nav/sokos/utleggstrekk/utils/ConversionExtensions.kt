@@ -27,18 +27,18 @@ fun UtleggstrekkTable.toTrekkDokument(periodeTableList: List<TrekkPeriodeTable>,
     val aksjonskodeBrukes = Aksjonskode.getAksjonskodeFromValue(aksjonskode) ?: Aksjonskode.getAksjonskodeForTrekk(this)
     return TrekkTilOppdrag(
         dokument = Document(
-            transaksjonsId = this.corrid,
+            transaksjonsId = corrid,
             innrapporteringTrekk = InnrapporteringTrekk(
                 aksjonskode = aksjonskodeBrukes,
-                kreditorIdTss = this.betalingsmottaker,
-                kreditorTrekkId = "${this.trekkidSke}${periodeTableList[0].trekkAlternativ[3]}",
-                debitorId = this.skyldner,
+                kreditorIdTss = betalingsmottaker,
+                kreditorTrekkId = "${trekkidSke}${periodeTableList[0].trekkAlternativ[3]}",
+                debitorId = skyldner,
                 kodeTrekkAlternativ = periodeTableList[0].trekkAlternativ,
-                kid = this.kid,
-                kreditorsRef = this.saksnummer,
+                kid = kid,
+                kreditorsRef = saksnummer,
                 kilde = "SOKOSUTLEGG",
                 saldo = 0.0,
-                prioritetFomDato = this.opprettetSke.toString(),
+                prioritetFomDato = "${opprettetSke.year}-${opprettetSke.month.value.toString().padStart(2,'0')}-${opprettetSke.dayOfMonth.toString().padStart(2,'0')}",
                 perioder = Perioder(
                     periode = periodeTableList.map {
                         it.toTrekkDokumentPeriode()
