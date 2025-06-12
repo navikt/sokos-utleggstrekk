@@ -10,11 +10,9 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.MqProducer
 import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
 
-
-
 const val SENDT = "SENDT"
 
-class MottakTrekkService(
+class UtleggsTrekkService(
     private val databaseService: DatabaseService,
     private val behandleTrekkService: BehandleTrekkService,
     private val skeClient: SkeClient = SkeClient(),
@@ -28,27 +26,25 @@ private val logger = KotlinLogging.logger {  }
     }
 
     suspend fun hentOgLagreNyeUtleggstrekk() {
-        val nyeTrekk = skeClient.hentAlleUtleggstrekk()
-        nyeTrekk.also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
+        val nyeTrekkListe = skeClient.hentAlleUtleggstrekk()
+        nyeTrekkListe.also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
             .filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
             .let {
                 logger.info("Det er ${it.size} som skal lagres")
                 databaseService.lagreUtleggstrekk(it)
             }
     }
-    fun sendTrekkTilOS(trekkTilOppdragPairList: List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>): Int {
-
-        return trekkTilOppdragPairList.map { tilOsPair ->
-            val dokumentListe = tilOsPair.second.map { Json.encodeToString(it) }
-            logger.info("sender trekkid: ${tilOsPair.first.trekkidSke} versjon: ${tilOsPair.first.trekkversjon} sekvensnummer: ${tilOsPair.first.sekvensnummer}")
+    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>): Int {
+        return trekkTilOppdragMap.map {
+            val dokumentListe = it.value.map { Json.encodeToString(it) }
+            logger.info("sender trekkid: ${it.key.trekkidSke} versjon: ${it.key.trekkversjon} sekvensnummer: ${it.key.sekvensnummer}")
             dokumentListe.forEach { dokument ->
                 println(dokument)
                 mqProducer.send(dokument)
             }
-            databaseService.oppdaterTrekkStatus(tilOsPair.first.corrid, SENDT)
+            databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
         }.size
     }
-
 
     suspend fun hentAlleNyeUtleggstrekk(): List<Trekkpaalegg> {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()

@@ -9,17 +9,17 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.service.KvitteringService
-import no.nav.sokos.utleggstrekk.service.MottakTrekkService
+import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 
 fun Routing.utleggstrekkApi(
-    mottakTrekkService: MottakTrekkService,
+    utleggsTrekkService: UtleggsTrekkService,
     kvitteringService: KvitteringService
 ) {
     val logger = KotlinLogging.logger { }
 
     route("utleggstrekk") {
         get("hentalleFullPakke") {
-            val resultat = mottakTrekkService.HentOgSendUtleggstrekk()
+            val resultat = utleggsTrekkService.HentOgSendUtleggstrekk()
             call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
         }
 
@@ -28,23 +28,33 @@ fun Routing.utleggstrekkApi(
             if (sekvensnr.isNullOrBlank() || sekvensnr.toInt() < 0) {
                 call.respond(HttpStatusCode.BadRequest, "Ugyldig sekvensnr")
             } else {
-                val utleggstrekk = mottakTrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
+                val utleggstrekk = utleggsTrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
                 println("Antall mottat på søk fra sekvensnr $sekvensnr: ${utleggstrekk.size}")
                 call.respond(HttpStatusCode.OK, utleggstrekk.toString())
             }
         }
+
         get("hentOgVisAlle") {
-            val nye = mottakTrekkService.hentAlleUtleggstrekk()
+            val nye = utleggsTrekkService.hentAlleUtleggstrekk()
             call.respond(HttpStatusCode.OK, nye)
         }
-        get("kvittering") {
+
+        get("bareHentkvittering") {
             println("Henter kvitteringer")
             val nye = kvitteringService.hentAlleKvitteringer()
             println("Kvitteringer mottatt: ${nye.size}")
             call.respond(HttpStatusCode.OK, nye.toString())
         }
+
+        get("behandlekvittering") {
+            println("Henter kvitteringer")
+            val nye = kvitteringService.hentAlleKvitteringer()
+            println("Kvitteringer mottatt: ${nye.size}")
+            call.respond(HttpStatusCode.OK, nye.toString())
+        }
+
         get("hentnye}") {
-            val utleggstrekk = mottakTrekkService.hentAlleNyeUtleggstrekk()
+            val utleggstrekk = utleggsTrekkService.hentAlleNyeUtleggstrekk()
             println("Antall Nye: ${utleggstrekk.size}")
             call.respond(HttpStatusCode.OK, utleggstrekk.toString())
         }

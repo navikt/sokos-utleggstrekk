@@ -23,13 +23,12 @@ fun TrekkPeriodeTable.toTrekkDokumentPeriode() =
             sats = this.sats
     )
 
-fun UtleggstrekkTable.toTrekkDokument(periodeTableList: List<TrekkPeriodeTable>, aksjonskode: String? = null): TrekkTilOppdrag {
-    val aksjonskodeBrukes = Aksjonskode.getAksjonskodeFromValue(aksjonskode) ?: Aksjonskode.getAksjonskodeForTrekk(this)
+fun UtleggstrekkTable.toTrekkDokument(periodeTableList: List<TrekkPeriodeTable>, aksjonskode: Aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this)): TrekkTilOppdrag {
     return TrekkTilOppdrag(
         dokument = Document(
             transaksjonsId = corrid,
             innrapporteringTrekk = InnrapporteringTrekk(
-                aksjonskode = aksjonskodeBrukes,
+                aksjonskode = aksjonskode,
                 kreditorIdTss = betalingsmottaker,
                 kreditorTrekkId = "${trekkidSke}${periodeTableList[0].trekkAlternativ[3]}",
                 debitorId = skyldner,

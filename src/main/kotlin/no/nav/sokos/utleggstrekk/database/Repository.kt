@@ -72,12 +72,16 @@ object Repository {
     }
 
 
-    fun Connection.updateKvitteringStatus(corrId: String, status: String, kvittering: String, navTrekkId: String) {
+    fun Connection.updateKvitteringStatus(corrId: String, status: String, kvittering: String, navTrekkId: String, trekkalternativ: String) {
+        val kvitteringAlternativ = when (trekkalternativ){
+            "LOPM" -> "kvitteringLOPM"
+            else -> "kvitteringLOPP"
+        }
         prepareStatement(
             """
-                update utleggstrekk set status = ?, kvittering = ?, trekkid_nav = ?, tidspunkt_siste_status = NOW()  
+                update utleggstrekk set status = ?, $kvitteringAlternativ = ?, trekkid_nav = ?, tidspunkt_siste_status = NOW()  
                 where corr_id = ?;
-                """.trimIndent(),
+            """.trimIndent()
         ).withParameters(
             param(status),
             param(kvittering),
@@ -247,7 +251,7 @@ object Repository {
             prepareStatement(
                 """
                 insert into feilkoder (
-                trekkid_nav ,
+                kreditor_trekk_id ,
                 corr_id,
                 trekkalternativ,
                 feilkode,

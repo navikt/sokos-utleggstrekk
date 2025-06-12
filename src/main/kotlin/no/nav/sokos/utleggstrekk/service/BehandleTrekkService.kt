@@ -3,6 +3,7 @@ package no.nav.sokos.utleggstrekk.service
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 import org.slf4j.MDC
@@ -13,9 +14,9 @@ class BehandleTrekkService(
 ) {
 
     val logger = KotlinLogging.logger { }
-    fun lagTrekkSomSkalSendes(): List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>> {
+    fun lagTrekkSomSkalSendes(): Map<UtleggstrekkTable, List<TrekkTilOppdrag>> {
         val trekkIkkeSendt = databaseService.hentAlleTrekkSomIkkeErSendt()
-        return trekkIkkeSendt.map { trekk ->
+        return trekkIkkeSendt.associateWith { trekk ->
             MDC.put("x-correlation-id", trekk.corrid)
 
             val perioderForTrekkversjonMap = databaseService.hentAllePerioderForTrekkVersjon(trekk).groupBy { it.trekkAlternativ }
@@ -25,12 +26,12 @@ class BehandleTrekkService(
                 databaseService.lagreGenerertePerioder(perioder.filter { it.kilde == EGEN_KILDE })
                 if (trekk.trekkversjon > 1 && allePerioderForTrekkMap[perioder[0].trekkAlternativ]!!.minBy { it.trekkversjon }.trekkversjon == trekk.trekkversjon) {
                     logger.info("Oppretter nytt trekk for ${trekk.trekkidSke}/${trekk.trekkversjon}/${perioder[0].trekkAlternativ}")
-                    trekk.toTrekkDokument(perioder, "NY")
+                    trekk.toTrekkDokument(perioder, Aksjonskode.NY)
                 } else {
                     trekk.toTrekkDokument(perioder)
                 }
             }
-            trekk to trekkDokumenter
+            trekkDokumenter
         }
     }
 

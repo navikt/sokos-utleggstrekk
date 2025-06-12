@@ -19,7 +19,7 @@ object PropertiesConfig {
     private val defaultProperties =
         ConfigurationMap(
             mapOf(
-                "NAIS_APP_NAME" to "sokos-ske-krav",
+                "NAIS_APP_NAME" to "sokos-utleggstrekk",
                 "NAIS_NAMESPACE" to "okonomi",
             ),
         )
@@ -36,6 +36,7 @@ object PropertiesConfig {
             "MQ_QUEUE_MANAGER_NAME" to "MQLS02",
             "MQ_CHANNEL" to "Q1_UTLEGGSTREKK",
             "MQ_QUEUE_NAME" to "Q1_231.OB04_TREKK_FRASKATT_JSON",
+            "MQ_REPLYQUEUE_NAME" to "QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING",
             "MQ_INQ_USERNAME" to "INQ_USERNAME",
             "MQ_INQ_PASSWORD" to "INQ_USERNAME",
         )

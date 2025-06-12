@@ -50,7 +50,8 @@ class DatabaseService(
                 con.updateKvitteringStatus(
                     kvittering.dokument.transaksjonsId!!,
                     status, kvittering.mmel?.kodeMelding ?: "",
-                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: ""
+                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "",
+                    kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
                 )
             }
             kvittering
@@ -89,8 +90,7 @@ class DatabaseService(
         }
     }
 
-    fun lagreFeilkoderFraOS(kvitteringer: List<TrekkTilOppdrag>){
-        val kvitteringerMedFeilkoder = kvitteringer.filter { it.mmel!!.alvorlighetsgrad != "00" }
+    fun lagreFeilkoderFraOS(kvitteringerMedFeilkoder: List<TrekkTilOppdrag>){
         if (kvitteringerMedFeilkoder.isNotEmpty()) {
             dataSource.connection.useAndHandleErrors { con ->
                 con.saveFeilkoder(kvitteringerMedFeilkoder)

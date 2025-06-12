@@ -2,7 +2,7 @@ drop table if exists utleggstrekk;
 create table "utleggstrekk"
 (
     id                     bigserial primary key,
-    sekvensnummer          int  NOT NULL,
+    sekvensnummer          int       NOT NULL,
     trekkid_ske            text      NOT NULL,
     trekkid_nav            text,
     trekkversjon           smallint  NOT NULL,
@@ -14,10 +14,11 @@ create table "utleggstrekk"
     betalingsmottaker      text      NOT NULL,
     kid                    text      NOT NULL,
     kontonummer            text      NOT NULL,
-    corr_id                 text      NOT NULL,
+    corr_id                text      NOT NULL,
     status                 text,
-    kvittering             text,
-    tidspunkt_sendt_os     timestamp ,
+    kvitteringLOPM         text,
+    kvitteringLOPP         text,
+    tidspunkt_sendt_os     timestamp,
     tidspunkt_siste_status timestamp NOT NULL DEFAULT NOW(),
     tidspunkt_opprettet    timestamp NOT NULL DEFAULT NOW()
 );
@@ -26,22 +27,22 @@ drop table if exists trekkperiode;
 create table "trekkperiode"
 (
     id                  bigserial primary key,
-    sekvensnummer       int  NOT NULL,
-    trekkid_ske         text NOT NULL,
-    trekkversjon        smallint  NOT NULL,
-    dato_start          text      NOT NULL,
+    sekvensnummer       int         NOT NULL,
+    trekkid_ske         text        NOT NULL,
+    trekkversjon        smallint    NOT NULL,
+    dato_start          text        NOT NULL,
     dato_slutt          text,
-    sats                decimal NOT NULL ,
-    trekkalternativ     text NOT NULL ,
-    kilde               text NOT NULL,
-    tidspunkt_opprettet timestamp NOT NULL DEFAULT NOW()
+    sats                decimal     NOT NULL ,
+    trekkalternativ     text        NOT NULL ,
+    kilde               text        NOT NULL,
+    tidspunkt_opprettet timestamp   NOT NULL DEFAULT NOW()
 );
 
 drop table if exists feilkoder;
 create table "feilkoder"
 (
     id                  bigserial primary key,
-    Trekkid_nav         text NOT NULL,
+    kreditor_trekk_id   text NOT NULL,
     corr_id             text NOT NULL,
     trekkalternativ     text NOT NULL,
     feilkode            text NOT NULL,

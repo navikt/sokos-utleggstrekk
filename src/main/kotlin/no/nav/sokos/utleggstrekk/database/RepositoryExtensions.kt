@@ -93,6 +93,8 @@ object RepositoryExtensions {
                 betalingsmottaker = getColumn("betalingsmottaker"),
                 corrid = getColumn("corr_id"),
                 status = getColumn("status"),
+                kvitteringLOPM = getColumn("kvitteringLOPM"),
+                kvitteringLOPP = getColumn("kvitteringLOPP"),
                 tidspunktSendtOs = getColumn("tidspunkt_sendt_os"),
                 tidspunktSisteStatus = getColumn("tidspunkt_siste_status"),
                 tidspunktOpprettet = getColumn("tidspunkt_opprettet"),

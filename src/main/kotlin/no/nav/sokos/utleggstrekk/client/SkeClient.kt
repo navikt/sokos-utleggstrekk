@@ -1,14 +1,14 @@
 package no.nav.sokos.utleggstrekk.client
 
 import io.ktor.client.HttpClient
-import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
-import io.ktor.utils.io.InternalAPI
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
 import java.util.UUID
@@ -20,28 +20,30 @@ class SkeClient(
     private val client: HttpClient = httpClient,
     private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), httpClient),
 ) {
-    val basePath = "${PropertiesConfig.SKEConfig().skeRestUrl}"
+    val basePath = PropertiesConfig.SKEConfig().skeRestUrl
 
-    suspend fun hentAlleUtleggstrekk() = doGet(basePath, UUID.randomUUID().toString()).toTrekkpaalegg()
-
-    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int) =
-        doGet("${basePath}$sekvensnr/$maxAntall", UUID.randomUUID().toString())
-
-    @OptIn(InternalAPI::class)
-    private suspend fun doGet(path: String, corrID: String):HttpResponse {
-        val response= client.get(buildHttpRequest(path, corrID))
-        return response
+    suspend fun hentAlleUtleggstrekk(): List<Trekkpaalegg> {
+        return client.get {
+            url(basePath)
+            headers(commonHeaders())
+        }.toTrekkpaalegg()
     }
 
-    private suspend fun buildHttpRequest(path: String, corrID: String): HttpRequestBuilder {
-        val token = tokenProvider.hentAccessToken()
-        return HttpRequestBuilder().apply {
-            url(path)
-            headers {
-                append("Klientid", KLIENT_ID)
-                append("Korrelasjonsid", corrID)
-                append(HttpHeaders.Authorization, "Bearer $token")
-            }
+    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): HttpResponse {
+        return client.get {
+            url("${basePath}$sekvensnr/$maxAntall")
+            headers(commonHeaders())
         }
     }
+
+    private suspend fun commonHeaders(): HeadersBuilder.() -> Unit  {
+        val token = tokenProvider.hentAccessToken()
+        return {
+            append("Klientid", KLIENT_ID)
+            append("Korrelasjonsid", UUID.randomUUID().toString())
+            append(HttpHeaders.Authorization, "Bearer $token")
+        }
+    }
+
+
 }

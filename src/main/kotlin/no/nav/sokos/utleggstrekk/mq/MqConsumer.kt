@@ -50,14 +50,10 @@ class MqConsumer(
         }
     }
 
-    fun commit()= session.commit()
-
-    fun rollback() = session.rollback()
-
     private fun PropertiesConfig.MqProperties.connect(): Connection = MQConnectionFactory().also {
         it.transportType = WMQConstants.WMQ_CM_CLIENT
         it.hostName = hostName
-        it.port = port.toInt()
+        it.port = port
         it.channel = channel
         it.queueManager = queueManagerName
         it.targetClientMatching = true

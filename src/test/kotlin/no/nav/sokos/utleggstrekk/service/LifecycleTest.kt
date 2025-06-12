@@ -4,7 +4,6 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
@@ -75,13 +74,13 @@ internal class LifecycleTest :
             then("Henter data fra database og sjekker perioder"){
                 val dbService =  DatabaseService(testContainer.dataSource)
                 val behandleTrekkService = BehandleTrekkService(dbService)
-                val trekkSomSkalSendes = behandleTrekkService.lagTrekkSomSkalSendes()
-                println(json.encodeToString(trekkSomSkalSendes))
-                trekkSomSkalSendes.size shouldBe 2
-                trekkSomSkalSendes[0].second.size shouldBe 2
-                trekkSomSkalSendes[1].second.size shouldBe 1
-                trekkSomSkalSendes[0].second[0].dokument.innrapporteringTrekk.perioder.periode.size shouldBe
-                        trekkSomSkalSendes[0].second[1].dokument.innrapporteringTrekk.perioder.periode.size
+                val trekkSomSkalSendesMap = behandleTrekkService.lagTrekkSomSkalSendes()
+
+                trekkSomSkalSendesMap.size shouldBe 2
+                trekkSomSkalSendesMap.entries.first().value.size shouldBe 2
+                trekkSomSkalSendesMap.entries.last().value.size shouldBe 1
+                trekkSomSkalSendesMap.entries.first().value.first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe
+                        trekkSomSkalSendesMap.entries.first().value.last().dokument.innrapporteringTrekk.perioder.periode.size
             }
             then("hent fra databse og konverter til OS format") {
                 val dbdataTrekk = testContainer.dataSource.connection.fetchTrekkNotSendt()

@@ -12,40 +12,42 @@ class KvitteringService(
 
     private val logger = KotlinLogging.logger { }
 
-    fun behandleKvitteringer(){
+    fun behandleKvitteringer() {
         val kvitteringer = hentAlleKvitteringer()
         lagreKvitteringerOgLoggFeil(kvitteringer)
-        varsleFeil(kvitteringer)
     }
 
-    fun hentAlleKvitteringer():List<TrekkTilOppdrag> =
-        hentAlleKvitteringerFraMq().map {
-            Json.decodeFromString<TrekkTilOppdrag>(it).also { println(it) }
-        }
+    fun hentAlleKvitteringer(): List<TrekkTilOppdrag> = hentAlleKvitteringerFraMq().map {
+        Json.decodeFromString<TrekkTilOppdrag>(it).also { println(it) }
+    }
 
-    private fun hentAlleKvitteringerFraMq():List<String>{
+    private fun hentAlleKvitteringerFraMq(): List<String> {
         val kvitteringer = mutableListOf<String>()
         do {
-            val  svar = mqConsumer.receive()
+            val svar = mqConsumer.receive()
             if (svar != null) {
                 kvitteringer.add(svar)
-                println("fra MQ: $svar")
-            }else{
-                println("Ingen melding fra MQ")
             }
-        }while (svar != null)
+        } while (svar != null)
         return kvitteringer
     }
+
     private fun lagreKvitteringerOgLoggFeil(kvitteringer: List<TrekkTilOppdrag>) {
         databaseService.oppdaterTrekkMedKvitteringsinfo(kvitteringer)
-        databaseService.lagreFeilkoderFraOS(kvitteringer)
-        varsleFeil(kvitteringer.filter { it.mmel!!.alvorlighetsgrad != "00" })
+        kvitteringer.filter { it.mmel!!.alvorlighetsgrad != "00" }.let {
+            databaseService.lagreFeilkoderFraOS(it)
+            varsleFeil(it)
+        }
     }
+
     private fun varsleFeil(kvitteringerMedFeil: List<TrekkTilOppdrag>) {
         kvitteringerMedFeil.forEach {
-                logger.info("Trekk med kreditorstrekkID: ${it.dokument.innrapporteringTrekk.kreditorTrekkId}," +
-                        " corrid: ${it.dokument.transaksjonsId} har feilkode: ${it.mmel?.kodeMelding} og beskrivelse: ${it.mmel?.beskrMelding}")
+            logger.info(
+                "Trekk med kreditorstrekkID: ${it.dokument.innrapporteringTrekk.kreditorTrekkId}," +
+                " corrid: ${it.dokument.transaksjonsId} har feilkode: ${it.mmel?.kodeMelding} og beskrivelse: ${it.mmel?.beskrMelding}"
+            )
         }
+        //TODO sjekke/vurdere om det skal sendes melding til slack og evt utføre det.
     }
 
 }

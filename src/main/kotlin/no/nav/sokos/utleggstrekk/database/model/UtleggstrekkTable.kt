@@ -20,6 +20,8 @@ data class UtleggstrekkTable(
     val betalingsmottaker: String,
     val corrid: String,
     val status: String,
+    val kvitteringLOPM: String? = null,
+    val kvitteringLOPP: String? = null,
     val tidspunktSendtOs: LocalDateTime? = null,
     val tidspunktSisteStatus: LocalDateTime,
     val tidspunktOpprettet: LocalDateTime,

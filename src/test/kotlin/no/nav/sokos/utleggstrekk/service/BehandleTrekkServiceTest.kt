@@ -30,10 +30,10 @@ class BehandleTrekkServiceTest : FunSpec(
             println(result)
 
             result.size shouldBe 1
-            result.first().first shouldBe trekkITest
-            result.first().second.size shouldBe 1
-            result.first().second.first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
-            result.first().second.first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
+            result.keys.first() shouldBe trekkITest
+            result.values.size shouldBe 1
+            result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
 
         }
         test("Trekk med perioder kun med 1 trekkalternativ i trekkversjon 2 skal bli 1 ENDRET trekk med 3 perioder") {
@@ -48,10 +48,10 @@ class BehandleTrekkServiceTest : FunSpec(
             println(result)
 
             result.size shouldBe 1
-            result.first().first shouldBe trekkITest
-            result.first().second.size shouldBe 1
-            result.first().second.first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
-            result.first().second.first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
+            result.keys.first() shouldBe trekkITest
+            result.values.size shouldBe 1
+            result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
 
         }
         test("Behandle nytt trekk med perioder kun med 1 trekkalternativ i trekkversjon 2 skal bli 1 NYTT trekk med 3 perioder") {
@@ -66,10 +66,10 @@ class BehandleTrekkServiceTest : FunSpec(
             println(result)
 
             result.size shouldBe 1
-            result.first().first shouldBe trekkITest
-            result.first().second.size shouldBe 1
-            result.first().second.first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
-            result.first().second.first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
+            result.keys.first() shouldBe trekkITest
+            result.values.size shouldBe 1
+            result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
 
         }
         test("Trekk med perioder med 2 trekkalternativ i trekkversjon 1 skal bli to trekk, begge NYE") {
@@ -83,11 +83,11 @@ class BehandleTrekkServiceTest : FunSpec(
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
             println(result)
 
-            result.first().second.size shouldBe 2
-            result.first().second.first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
-            result.first().second.first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
-            result.first().second.last().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
-            result.first().second.last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
+            result.values.first().size shouldBe 2
+            result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
+            result.values.first().last().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
+            result.values.first().last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
         }
         test("Trekk med perioder med 2 trekkalternativ i trekkversjon 2 skal bli to trekk, Ett NYTT og ett ENDRET") {
             val testNr = 5
@@ -100,11 +100,11 @@ class BehandleTrekkServiceTest : FunSpec(
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
             println(result)
 
-            result.first().second.size shouldBe 2
-            result.first().second.first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
-            result.first().second.first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
-            result.first().second.last().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
-            result.first().second.last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
+            result.values.first().size shouldBe 2
+            result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
+            result.values.first().last().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
+            result.values.first().last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
         }
     }
 )

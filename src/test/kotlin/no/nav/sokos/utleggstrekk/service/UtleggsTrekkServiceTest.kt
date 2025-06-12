@@ -20,7 +20,7 @@ import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
 
-internal class MottakTrekkServiceTest :
+internal class UtleggsTrekkServiceTest :
     BehaviorSpec({
 
         Given("hentOgSendUtleggstrekk initieres") {
@@ -42,8 +42,8 @@ internal class MottakTrekkServiceTest :
                 }
             }
 
-            val mottakTrekkService =
-                MottakTrekkService(
+            val utleggsTrekkService =
+                UtleggsTrekkService(
                     databaseService,
                     BehandleTrekkService(databaseService),
                     skeClientMock,
@@ -51,7 +51,7 @@ internal class MottakTrekkServiceTest :
                 )
             then("Først skal hentOgLagreNyeUtleggstrekk lagre alle i databasen") {
                 coEvery { skeClientMock.hentAlleUtleggstrekk() } returns json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-                mottakTrekkService.hentOgLagreNyeUtleggstrekk()
+                utleggsTrekkService.hentOgLagreNyeUtleggstrekk()
                 val trekkIdatabase = databaseService.hentAlleTrekkSomIkkeErSendt()
                 trekkIdatabase.size shouldBe 2
                 databaseService.hentAllePerioderForTrekkId(trekkIdatabase.first()).size shouldBe 3
@@ -61,9 +61,9 @@ internal class MottakTrekkServiceTest :
                 every {  mqMock.send(any()) } returns true
                 val trekkIdatabase = databaseService.hentAlleTrekkSomIkkeErSendt()
                 val trekkPairs = json.decodeFromString<List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>>(resourceToString("TrekkTilSendingPairMedRiktigCorrid.json"))
-                val trekkSomSkalSendes = trekkPairs.mapIndexed { i, p -> p.first.copy(corrid = trekkIdatabase[i].corrid)  to p.second }
-                mottakTrekkService.sendTrekkTilOS(trekkSomSkalSendes)
-                trekkSomSkalSendes.forEach { pair -> println(pair.first.corrid) }
+                val trekkSomSkalSendesMap = trekkPairs.mapIndexed { i, p -> p.first.copy(corrid = trekkIdatabase[i].corrid)  to p.second }.toMap()
+                utleggsTrekkService.sendTrekkTilOS(trekkSomSkalSendesMap)
+                trekkSomSkalSendesMap.forEach { println(it.key.corrid) }
                 databaseService.hentAlleTrekkSomIkkeErSendt().size shouldBe 0
 
 

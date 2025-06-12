@@ -59,8 +59,6 @@ class MqProducer(
 
     fun commit() = session.commit()
 
-    fun rollback() = session.rollback()
-
     private fun PropertiesConfig.MqProperties.connect(): Connection =
         MQConnectionFactory()
             .also {
