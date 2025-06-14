@@ -34,11 +34,6 @@ fun Routing.utleggstrekkApi(
             }
         }
 
-        get("hentOgVisAlle") {
-            val nye = utleggsTrekkService.hentAlleUtleggstrekk()
-            call.respond(HttpStatusCode.OK, nye)
-        }
-
         get("bareHentkvittering") {
             println("Henter kvitteringer")
             val nye = kvitteringService.hentAlleKvitteringer()
@@ -47,10 +42,9 @@ fun Routing.utleggstrekkApi(
         }
 
         get("behandlekvittering") {
-            println("Henter kvitteringer")
-            val nye = kvitteringService.hentAlleKvitteringer()
-            println("Kvitteringer mottatt: ${nye.size}")
-            call.respond(HttpStatusCode.OK, nye.toString())
+            println("Behandler kvitteringer")
+            val nye = kvitteringService.behandleKvitteringer()
+            call.respond(HttpStatusCode.OK)
         }
 
         get("hentnye}") {

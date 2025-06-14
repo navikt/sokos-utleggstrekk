@@ -65,8 +65,6 @@ internal class UtleggsTrekkServiceTest :
                 utleggsTrekkService.sendTrekkTilOS(trekkSomSkalSendesMap)
                 trekkSomSkalSendesMap.forEach { println(it.key.corrid) }
                 databaseService.hentAlleTrekkSomIkkeErSendt().size shouldBe 0
-
-
             }
         }
 

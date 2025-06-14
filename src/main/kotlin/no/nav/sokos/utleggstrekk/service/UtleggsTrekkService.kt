@@ -20,13 +20,15 @@ class UtleggsTrekkService(
 ) {
 private val logger = KotlinLogging.logger {  }
     suspend fun HentOgSendUtleggstrekk(): Int {
+        logger.info("Henter utleggstrekkfra skatt ")
         hentOgLagreNyeUtleggstrekk()
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
         return sendTrekkTilOS(trekktilSending)
     }
 
     suspend fun hentOgLagreNyeUtleggstrekk() {
-        val nyeTrekkListe = skeClient.hentAlleUtleggstrekk()
+        //TODO Denne henter alle hver gang, Den bør bare hente nye når den skal brukes mot skatt regelmessig
+        val nyeTrekkListe = skeClient.hentAlleUtleggstrekk()   //TODO endre til å kalle hentAlleNyeUtleggstrekk()
         nyeTrekkListe.also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
             .filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
             .let {
@@ -51,8 +53,6 @@ private val logger = KotlinLogging.logger {  }
         println("Henter fra siste sekvensnr: $sisteSekvensnr")
         return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
-
-    suspend fun hentAlleUtleggstrekk() = skeClient.hentAlleUtleggstrekk()
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
         println("henter allefra sekvensnr sekvensnr: $sekvensnr")
