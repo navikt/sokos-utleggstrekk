@@ -4,8 +4,8 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 
 plugins {
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.serialization") version "2.1.0"
+    kotlin("jvm") version "2.1.21"
+    kotlin("plugin.serialization") version "2.1.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -16,38 +16,38 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
-val ktorVersion = "3.0.1"
-val kotlinxDatetimeVersion = "0.4.1"
-val kotlinxSerializationVersion = "1.6.0"
-val nimbusVersion = "9.47"
+val ktorVersion = "3.2.0"
+val kotlinxDatetimeVersion = "0.6.2"
+val kotlinxSerializationVersion = "1.8.1"
+val nimbusVersion = "10.3"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
-val prometheusVersion = "1.11.5"
-val jacksonVersion = "2.15.0"
+val prometheusVersion = "1.15.1"
+val jacksonVersion = "2.19.1"
 
 //DB
-val hikaricpVersion = "5.1.0"
-val flywayVersion = "10.17.0"
-val postgresqlVersion = "42.7.3"
+val hikaricpVersion = "6.3.0"
+val flywayVersion = "11.9.1"
+val postgresqlVersion = "42.7.7"
 
 //Logging
-val logbackVersion = "1.5.6"
-val logstashVersion = "7.3"
-val kotlinLoggingVersion = "3.0.4"
+val logbackVersion = "1.5.18"
+val logstashVersion = "8.1"
+val kotlinLoggingVersion = "3.0.5"
 
-val gsonVersion = "2.11.0"
+val gsonVersion = "2.13.1"
 
 // Test
 val kotestVersion = "5.9.1"
-val mockkVersion = "1.13.13"
+val mockkVersion = "1.14.2"
 val commonsVersion = "3.11.1"
-val testContainerVersion = "1.20.4"
+val testContainerVersion = "1.21.1"
 val mockFtpServerVersion = "3.2.0"
 val kotestTestContainerExtensionVersion = "2.0.2"
 val swaggerRequestValidatorVersion = "2.40.0"
-val janinoVersion = "3.1.10"
-val ibmMqVersion = "9.4.0.0"
+val janinoVersion = "3.1.12"
+val ibmMqVersion = "9.4.2.1"
 
 dependencies {
     // Ktor Server
@@ -67,7 +67,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktorVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$kotlinxSerializationVersion")
     implementation("io.github.pdvrieze.xmlutil:core-jvm:0.86.3")
-    implementation("io.github.pdvrieze.xmlutil:serialization-jvm:0.86.3")
+    implementation("io.github.pdvrieze.xmlutil:serialization-jvm:0.91.1")
 
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     // Logging
