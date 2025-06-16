@@ -22,10 +22,10 @@
 2. henter kvitteringer fra OS og oppdaterer database
 
 ### Løype 1: 
-Henter trekk fra Skatt
+Henter trekk fra Skatt og sender til OS
    1. Henter via rest, bruker maskinporten.
    2. Lagrer alle trekk i UtleggstrekkTable og alle perioder i PeriodeTable
-   3. Bearbeider trekk slik at det kun er en trekkAlternativ per trekk
+   3. Bearbeider trekk slik at det kun er et trekkAlternativ per trekk
       - Setter sammen alle perioder av et trekkAlternativ for hvert trekk.  Derom et trekk har to trekkAlternativ blir det sendt to trekk til OS for hver versjon av trekket vi mottar fra SKATT
    4. Oppretter dokumentet som skal sendes til OS og sender på MQ
    
@@ -34,4 +34,4 @@ Henter og lagrer kvitteringer fra OS
   1. Henter kvitteringer fra MQ kø
   2. Lagrer alle kvitteringer for de trekk de gjelder
   3. Lagrer alle feilmeldinger i feilmeldingsTabell
-  4. IKKE IMPLEMENTERT: Bør varsle dersom det er feil 
+  4. IKKE IMPLEMENTERT: Bør varsle dersom det er feil. Har lagt til iler for å bruke Slack

@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.service
 
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -23,9 +24,9 @@ class BehandleTrekkServiceTest : FunSpec(
             val trekkITest = trekkTable1(testNr)
             val perioderiTest = periodetable1(testNr)
             coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon( any() as UtleggstrekkTable ) } returns  perioderiTest
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkId( any() as UtleggstrekkTable ) } returns  perioderiTest
-            coEvery { databaseServiceMock.lagreGenerertePerioder( any() as List<TrekkPeriodeTable> ) } just Runs
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
             println(result)
 
@@ -41,9 +42,9 @@ class BehandleTrekkServiceTest : FunSpec(
             val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
             val perioderiTest = periodetable1(testNr).map { periode -> periode.copy(trekkversjon = 2) }
             coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon( any() as UtleggstrekkTable ) } returns  perioderiTest
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkId( any() as UtleggstrekkTable ) } returns  periodetable1(testNr) + perioderiTest
-            coEvery { databaseServiceMock.lagreGenerertePerioder( any() as List<TrekkPeriodeTable> ) } just Runs
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
             println(result)
 
@@ -54,14 +55,14 @@ class BehandleTrekkServiceTest : FunSpec(
             result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
 
         }
-        test("Behandle nytt trekk med perioder kun med 1 trekkalternativ i trekkversjon 2 skal bli 1 NYTT trekk med 3 perioder") {
+        test("Trekk med perioder kun med 1 trekkalternativ i trekkversjon 2 skal bli 1 NYTT trekk med 3 perioder") {
             val testNr = 3
             val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
             val perioderiTest = periodetable1(testNr).map { periode -> periode.copy(trekkversjon = 2) }
             coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon( any() as UtleggstrekkTable ) } returns  perioderiTest
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkId( any() as UtleggstrekkTable ) } returns  perioderiTest
-            coEvery { databaseServiceMock.lagreGenerertePerioder( any() as List<TrekkPeriodeTable> ) } just Runs
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
             println(result)
 
@@ -77,9 +78,9 @@ class BehandleTrekkServiceTest : FunSpec(
             val trekkITest = trekkTable1(testNr)
             val perioderiTest = periodetable1(testNr) + periodetable2(testNr)
             coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon( any() as UtleggstrekkTable ) } returns  perioderiTest
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkId( any() as UtleggstrekkTable ) } returns  perioderiTest
-            coEvery { databaseServiceMock.lagreGenerertePerioder( any() as List<TrekkPeriodeTable> ) } just Runs
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
             println(result)
 
@@ -92,11 +93,11 @@ class BehandleTrekkServiceTest : FunSpec(
         test("Trekk med perioder med 2 trekkalternativ i trekkversjon 2 skal bli to trekk, Ett NYTT og ett ENDRET") {
             val testNr = 5
             val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
-            val perioderiTest = periodetable1(testNr).map{ it.copy(trekkversjon=2) } + periodetable2(testNr).map { it.copy(trekkversjon = 2) }
+            val perioderiTest = periodetable1(testNr).map { it.copy(trekkversjon = 2) } + periodetable2(testNr).map { it.copy(trekkversjon = 2) }
             coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon( any() as UtleggstrekkTable ) } returns  perioderiTest
-            coEvery { databaseServiceMock.hentAllePerioderForTrekkId( any() as UtleggstrekkTable ) } returns  periodetable1(testNr) + perioderiTest
-            coEvery { databaseServiceMock.lagreGenerertePerioder( any() as List<TrekkPeriodeTable> ) } just Runs
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
             println(result)
 
@@ -106,94 +107,156 @@ class BehandleTrekkServiceTest : FunSpec(
             result.values.first().last().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
             result.values.first().last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
         }
+        test("Trekk med perioder med 1 nytt trekkalternativ i trekkversjon 2 skal bli to trekk, Ett NYTT og ett ENDRET") {
+            val testNr = 5
+            val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
+            val perioderiTest = periodetable2(testNr).map { it.copy(trekkversjon = 2) }
+            coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+            val result = behandleTrekkService.lagTrekkSomSkalSendes()
+            println(result)
+
+            result.values.first().size shouldBe 2
+            result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
+            result.values.first().last().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
+            result.values.first().last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
+        }
+        test("Trekk med trekkversjon uten perioder og kun ett trekkalternativ skal avsluttes, BLir kun ett avsluttet trekk") {
+            val testNr = 6
+            val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2, trekkstatus = "avsluttet")
+            coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns emptyList()
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr)
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+            val result = behandleTrekkService.lagTrekkSomSkalSendes()
+            println(result)
+
+            result.values.size shouldBe 1
+            result.values.first().size shouldBe 1
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "OPPH"
+            result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.shouldBeEmpty()
+        }
+        test("Trekk med trekkversjon med kun ett trekkalternativ skal avsluttes, BLir kun ett avsluttet trekkmed periodene") {
+            val testNr = 7
+            val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2, trekkstatus = "avsluttet")
+            coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns periodetable1(testNr)
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr)
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+            val result = behandleTrekkService.lagTrekkSomSkalSendes()
+            println(result)
+
+            result.values.size shouldBe 1
+            result.values.first().size shouldBe 1
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "OPPH"
+        }
+        test("Trekk med trekkversjon med to trekkalternativ skal avsluttes, BLir to avsluttet trekk forventer ikke perioder i avsluttet trekk") {
+            val testNr = 8
+            val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2, trekkstatus = "avsluttet")
+            coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns emptyList()
+            coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + periodetable2(testNr)
+            coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+            val result = behandleTrekkService.lagTrekkSomSkalSendes()
+            result.forEach { println("Key:${it.key} value:${it.value})") }
+
+            result.size shouldBe 1
+            result.values.first().size shouldBe 2
+            result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "OPPH"
+            result.values.first().last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "OPPH"
+        }
     }
 )
 
 
-private fun  trekkTable1(testNr: Int) = UtleggstrekkTable(
-            utleggstrekkTableId = 1,
-            trekkidNav = null,
-            trekkidSke = "SKEID${testNr}",
-            trekkversjon = 1,
-            sekvensnummer = 1,
-            saksnummer = "sak01",
-            opprettetSke = Instant.parse("2024-06-16T13:33:05.672Z").toLocalDateTime(TimeZone.currentSystemDefault()),
-            trekkpliktig = "987654321",
-            skyldner = "12345678901",
-            trekkstatus = "aktive",
-            status = "MOTTATT",
-            kid = "12345654321",
-            kontonummer = "12341212345",
-            betalingsmottaker = "987654322",
-            corrid = "dette_er_corrid_1",
-            tidspunktSisteStatus = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
-            tidspunktSendtOs = null,
-            tidspunktOpprettet = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+private fun trekkTable1(testNr: Int) = UtleggstrekkTable(
+    utleggstrekkTableId = 1,
+    trekkidNav = null,
+    trekkidSke = "SKEID${testNr}",
+    trekkversjon = 1,
+    sekvensnummer = 1,
+    saksnummer = "sak01",
+    opprettetSke = Instant.parse("2024-06-16T13:33:05.672Z").toLocalDateTime(TimeZone.currentSystemDefault()),
+    trekkpliktig = "987654321",
+    skyldner = "12345678901",
+    trekkstatus = "aktive",
+    status = "MOTTATT",
+    kid = "12345654321",
+    kontonummer = "12341212345",
+    betalingsmottaker = "987654322",
+    corrid = "dette_er_corrid_1",
+    tidspunktSisteStatus = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+    tidspunktSendtOs = null,
+    tidspunktOpprettet = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+)
+
+private fun periodetable1(testNr: Int) = listOf(
+    TrekkPeriodeTable(
+        trekkPeriodeTableId = 1,
+        sekvensnummer = 1,
+        trekkidSke = "SKEID${testNr}",
+        trekkversjon = 1,
+        datoStart = "2025-01-01",
+        datoSlutt = "2025-02-28",
+        sats = 2000.00,
+        trekkAlternativ = "LOPM",
+    ),
+    TrekkPeriodeTable(
+        trekkPeriodeTableId = 1,
+        sekvensnummer = 1,
+        trekkidSke = "SKEID${testNr}",
+        trekkversjon = 1,
+        datoStart = "2025-03-01",
+        datoSlutt = "2025-04-30",
+        trekkAlternativ = "LOPM",
+        sats = 1000.00,
+    ),
+    TrekkPeriodeTable(
+        trekkPeriodeTableId = 1,
+        sekvensnummer = 1,
+        trekkidSke = "SKEID${testNr}",
+        trekkversjon = 1,
+        datoStart = "2025-05-01",
+        datoSlutt = "2025-05-31",
+        sats = 2500.00,
+        trekkAlternativ = "LOPM",
+
         )
+)
 
-private fun periodetable1(testNr:Int) = listOf(
-            TrekkPeriodeTable(
-                trekkPeriodeTableId = 1,
-                sekvensnummer = 1,
-                trekkidSke = "SKEID${testNr}",
-                trekkversjon = 1,
-                datoStart = "2025-01-01",
-                datoSlutt = "2025-02-28",
-                sats = 2000.00,
-                trekkAlternativ = "LOPM",
-            ),
-            TrekkPeriodeTable(
-                trekkPeriodeTableId = 1,
-                sekvensnummer = 1,
-                trekkidSke = "SKEID${testNr}",
-                trekkversjon = 1,
-                datoStart = "2025-03-01",
-                datoSlutt = "2025-04-30",
-                trekkAlternativ = "LOPM",
-                sats = 1000.00,
-            ),
-            TrekkPeriodeTable(
-                trekkPeriodeTableId = 1,
-                sekvensnummer = 1,
-                trekkidSke = "SKEID${testNr}",
-                trekkversjon = 1,
-                datoStart = "2025-05-01",
-                datoSlutt = "2025-05-31",
-                sats = 2500.00,
-                trekkAlternativ = "LOPM",
-
-                )
-    )
 private fun periodetable2(testNr: Int) = listOf(
-            TrekkPeriodeTable(
-                trekkPeriodeTableId = 1,
-                sekvensnummer = 1,
-                trekkidSke = "SKEID${testNr}",
-                trekkversjon = 1,
-                datoStart = "2025-02-01",
-                datoSlutt = "2025-02-28",
-                sats = 20.00,
-                trekkAlternativ = "LOPP",
-            ),
-            TrekkPeriodeTable(
-                trekkPeriodeTableId = 1,
-                sekvensnummer = 1,
-                trekkidSke = "SKEID${testNr}",
-                trekkversjon = 1,
-                datoStart = "2025-04-01",
-                datoSlutt = "2025-04-30",
-                trekkAlternativ = "LOPP",
-                sats = 10.00,
-            ),
-            TrekkPeriodeTable(
-                trekkPeriodeTableId = 1,
-                sekvensnummer = 1,
-                trekkidSke = "SKEID${testNr}",
-                trekkversjon = 1,
-                datoStart = "2025-06-01",
-                datoSlutt = "2025-06-31",
-                sats = 25.00,
-                trekkAlternativ = "LOPP",
+    TrekkPeriodeTable(
+        trekkPeriodeTableId = 1,
+        sekvensnummer = 1,
+        trekkidSke = "SKEID${testNr}",
+        trekkversjon = 1,
+        datoStart = "2025-02-01",
+        datoSlutt = "2025-02-28",
+        sats = 20.00,
+        trekkAlternativ = "LOPP",
+    ),
+    TrekkPeriodeTable(
+        trekkPeriodeTableId = 1,
+        sekvensnummer = 1,
+        trekkidSke = "SKEID${testNr}",
+        trekkversjon = 1,
+        datoStart = "2025-04-01",
+        datoSlutt = "2025-04-30",
+        trekkAlternativ = "LOPP",
+        sats = 10.00,
+    ),
+    TrekkPeriodeTable(
+        trekkPeriodeTableId = 1,
+        sekvensnummer = 1,
+        trekkidSke = "SKEID${testNr}",
+        trekkversjon = 1,
+        datoStart = "2025-06-01",
+        datoSlutt = "2025-06-31",
+        sats = 25.00,
+        trekkAlternativ = "LOPP",
 
-                )
-    )
+        )
+)

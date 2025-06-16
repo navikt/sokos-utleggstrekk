@@ -49,8 +49,8 @@ class DatabaseService(
                 }
                 con.updateKvitteringStatus(
                     kvittering.dokument.transaksjonsId!!,
-                    status, kvittering.mmel?.kodeMelding ?: "",
-                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "",
+                    status, kvittering.mmel?.kodeMelding ?: "Ingen kode i mmel",
+                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen beskrivelse i mmel",
                     kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
                 )
             }
