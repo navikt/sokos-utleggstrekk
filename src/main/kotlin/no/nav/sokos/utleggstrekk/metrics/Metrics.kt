@@ -1,25 +1,18 @@
 package no.nav.sokos.utleggstrekk.metrics
 
-import io.micrometer.prometheus.PrometheusConfig
-import io.micrometer.prometheus.PrometheusMeterRegistry
-import io.prometheus.client.Counter
-
-private const val NAMESPACE = "sokos_utleggstrekk"
+import io.micrometer.core.instrument.Counter
+import io.micrometer.prometheusmetrics.PrometheusConfig
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 
 object Metrics {
     val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
-    val appStateRunningFalse: Counter =
-        Counter.build()
-            .namespace(NAMESPACE)
-            .name("app_state_running_false")
-            .help("app state running changed to false")
-            .register(registry.prometheusRegistry)
+    val appStateRunningFalse: Counter = Counter.builder("app_state_running_false")
+            .description("app state running changed to false")
+            .register(registry)
 
     val appStateReadyFalse: Counter =
-        Counter.build()
-            .namespace(NAMESPACE)
-            .name("app_state_ready_false")
-            .help("app state ready changed to false")
-            .register(registry.prometheusRegistry)
+        Counter.builder("app_state_ready_false")
+            .description("app state ready changed to false")
+            .register(registry)
 }
