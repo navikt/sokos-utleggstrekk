@@ -47,7 +47,7 @@ fun Routing.utleggstrekkApi(
             call.respond(HttpStatusCode.OK)
         }
 
-        get("hentnye}") {
+        get("hentnye") {
             val utleggstrekk = utleggsTrekkService.hentAlleNyeUtleggstrekk()
             println("Antall Nye: ${utleggstrekk.size}")
             call.respond(HttpStatusCode.OK, utleggstrekk.toString())

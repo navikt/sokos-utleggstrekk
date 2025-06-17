@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.database
 
 import mu.KotlinLogging
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.getColumn
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toUtleggstrekkTable
@@ -23,9 +22,9 @@ private const val MAX_SLUTTDATO = "9999-12-31"
 
 object Repository {
     fun Connection.fetchLastSekvensnr(): Int {
-        val rs = prepareStatement("""select max(sekvensnummer) from utleggstrekk""").executeQuery()
+        val rs = prepareStatement("""select max(sekvensnummer)  from utleggstrekk""").executeQuery()
         return if (rs.next()) {
-            rs.getColumn("sekvensnummer")
+            rs.getInt(0)
         } else {
             0
         }
