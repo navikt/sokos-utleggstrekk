@@ -24,7 +24,7 @@ object Repository {
     fun Connection.fetchLastSekvensnr(): Int {
         val rs = prepareStatement("""select max(sekvensnummer)  from utleggstrekk""").executeQuery()
         return if (rs.next()) {
-            rs.getInt(0)
+            rs.getInt(1)
         } else {
             0
         }
