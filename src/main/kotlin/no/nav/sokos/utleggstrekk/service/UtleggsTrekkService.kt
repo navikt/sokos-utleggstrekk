@@ -8,7 +8,6 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.MqProducer
-import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
 
 const val SENDT = "SENDT"
 
@@ -56,7 +55,7 @@ private val logger = KotlinLogging.logger {  }
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
         println("henter allefra sekvensnr sekvensnr: $sekvensnr")
-        val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr).toTrekkpaalegg()
+        val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
         return trekkListe.filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
         //TODO Må lagre også
     }

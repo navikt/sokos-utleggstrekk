@@ -4,7 +4,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
@@ -29,11 +28,13 @@ class SkeClient(
         }.toTrekkpaalegg()
     }
 
-    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): HttpResponse {
-        return client.get {
-            url("${basePath}$sekvensnr/$maxAntall")
+    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> {
+        val body = client.get {
+            url("${basePath}/$sekvensnr/200")
             headers(commonHeaders())
         }
+        println("Body: $body")
+        return body.toTrekkpaalegg()
     }
 
     private suspend fun commonHeaders(): HeadersBuilder.() -> Unit  {

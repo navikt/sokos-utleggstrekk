@@ -11,14 +11,4 @@ class KvitteringServiceTest : FunSpec(
 
         val kvitteringService = KvitteringService(databaseServiceMock, mqConsumer)
 
-        test("hei") {
-//            //val kvitteringer = resourceToStringList("DiverseTestDokumenterKvitteringer_fraOs.txt").also { it.forEach { s -> println(s) }}
-//            val kvitteringer = resourceToStringList("Kvitteringer1.txt").also { it.forEach { s -> println(s) }}
-//            println("Kvitteringer ant: ${kvitteringer.size}")
-//            every { mqConsumer.receive()} returnsMany   kvitteringer  andThenAnswer  { nothing }
-//            val result = kvitteringService.hentAlleKvitteringer()
-//            println("meldinger fra MQ ant: ${result.size}")
-
-
-        }
 })
