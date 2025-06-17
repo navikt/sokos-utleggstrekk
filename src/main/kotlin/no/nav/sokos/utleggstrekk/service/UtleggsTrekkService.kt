@@ -18,6 +18,7 @@ class UtleggsTrekkService(
     private val mqProducer: MqProducer = MqProducer(),
 ) {
 private val logger = KotlinLogging.logger {  }
+
     suspend fun HentOgSendUtleggstrekk(): Int {
         logger.info("Henter utleggstrekkfra skatt ")
         hentOgLagreNyeUtleggstrekk()
@@ -40,7 +41,6 @@ private val logger = KotlinLogging.logger {  }
             val dokumentListe = it.value.map { Json.encodeToString(it) }
             logger.info("sender trekkid: ${it.key.trekkidSke} versjon: ${it.key.trekkversjon} sekvensnummer: ${it.key.sekvensnummer}")
             dokumentListe.forEach { dokument ->
-                println(dokument)
                 mqProducer.send(dokument)
             }
             databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
@@ -49,12 +49,11 @@ private val logger = KotlinLogging.logger {  }
 
     suspend fun hentAlleNyeUtleggstrekk(): List<Trekkpaalegg> {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
-        println("Henter fra siste sekvensnr: $sisteSekvensnr")
+        logger.info("Henter fra siste sekvensnr: $sisteSekvensnr")
         return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
-        println("henter allefra sekvensnr sekvensnr: $sekvensnr")
         val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
         return trekkListe.filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
         //TODO Må lagre også

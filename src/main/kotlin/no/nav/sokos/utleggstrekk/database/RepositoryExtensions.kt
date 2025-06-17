@@ -1,6 +1,8 @@
 package no.nav.sokos.utleggstrekk.database
+
 import io.ktor.utils.io.InternalAPI
 import kotlinx.datetime.toKotlinLocalDateTime
+import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import java.math.BigDecimal
@@ -12,13 +14,16 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 object RepositoryExtensions {
+
+    val logger = KotlinLogging.logger { }
+
     inline fun <R> Connection.useAndHandleErrors(block: (Connection) -> R): R {
         try {
             use {
                 return block(this).also { close() }
             }
         } catch (ex: SQLException) {
-            println("Feil ved kall til database: ${ex.errorCode}, ${ex.message}.")
+            logger.error("Feil ved kall til database: ${ex.errorCode}, ${ex.message}.")
             throw ex
         }
     }
@@ -63,13 +68,13 @@ object RepositoryExtensions {
                 LocalDateTime::class -> getTimestamp(columnLabel)?.toLocalDateTime()
                 kotlinx.datetime.LocalDateTime::class -> getTimestamp(columnLabel)?.toLocalDateTime()?.toKotlinLocalDateTime()
                 else -> {
-                    println("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
+                    logger.error("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
                     throw SQLException("Kunne ikke mappe fra resultatsett til datafelt av type ${T::class.simpleName}")
                 }
             }
 
         if (null !is T && columnValue == null) {
-            println("Påkrevet kolonne '$columnLabel' er null")
+            logger.info("Påkrevet kolonne '$columnLabel' er null")
             throw SQLException("Påkrevet kolonne '$columnLabel' er null")
         }
 

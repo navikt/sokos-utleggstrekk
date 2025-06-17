@@ -44,7 +44,7 @@ class MqConsumer(
                 else -> null
             }
         } catch (ex: Exception) {
-            println("Exception i MQ receive, exception: ${ex.message}")
+            logger.error("Exception i MQ receive, exception: ${ex.message}")
             connected = false
             throw ex
         }

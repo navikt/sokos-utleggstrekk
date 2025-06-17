@@ -28,7 +28,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            println(result)
 
             result.size shouldBe 1
             result.keys.first() shouldBe trekkITest
@@ -46,7 +45,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            println(result)
 
             result.size shouldBe 1
             result.keys.first() shouldBe trekkITest
@@ -64,7 +62,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            println(result)
 
             result.size shouldBe 1
             result.keys.first() shouldBe trekkITest
@@ -82,7 +79,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            println(result)
 
             result.values.first().size shouldBe 2
             result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
@@ -99,7 +95,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            println(result)
 
             result.values.first().size shouldBe 2
             result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
@@ -116,7 +111,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            println(result)
 
             result.values.first().size shouldBe 2
             result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
@@ -132,7 +126,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr)
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            println(result)
 
             result.values.size shouldBe 1
             result.values.first().size shouldBe 1
@@ -147,7 +140,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr)
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            println(result)
 
             result.values.size shouldBe 1
             result.values.first().size shouldBe 1
@@ -161,7 +153,6 @@ class BehandleTrekkServiceTest : FunSpec(
             coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + periodetable2(testNr)
             coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
             val result = behandleTrekkService.lagTrekkSomSkalSendes()
-            result.forEach { println("Key:${it.key} value:${it.value})") }
 
             result.size shouldBe 1
             result.values.first().size shouldBe 2

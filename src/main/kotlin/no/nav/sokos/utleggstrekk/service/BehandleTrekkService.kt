@@ -32,7 +32,6 @@ class BehandleTrekkService(
                 allePerioderForTrekkMap.keys.map { key -> trekk.toTrekkDokument(emptyList(), trekkAlternativ = key) }
             } else {
                 perioderSendesOS.map { perioder ->
-                    println("I MAP: $perioder")
                     databaseService.lagreGenerertePerioder(perioder.filter { it.kilde == EGEN_KILDE })
                     if (trekk.trekkversjon > 1 && allePerioderForTrekkMap[perioder.first().trekkAlternativ]!!.minBy { it.trekkversjon }.trekkversjon == trekk.trekkversjon) {
                         logger.info("Oppretter nytt trekk for ${trekk.trekkidSke}/${trekk.trekkversjon}/${perioder[0].trekkAlternativ}")

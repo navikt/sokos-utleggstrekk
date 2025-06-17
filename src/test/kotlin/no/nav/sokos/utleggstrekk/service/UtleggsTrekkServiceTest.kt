@@ -63,7 +63,6 @@ internal class UtleggsTrekkServiceTest :
                 val trekkPairs = json.decodeFromString<List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>>(resourceToString("TrekkTilSendingPairMedRiktigCorrid.json"))
                 val trekkSomSkalSendesMap = trekkPairs.mapIndexed { i, p -> p.first.copy(corrid = trekkIdatabase[i].corrid)  to p.second }.toMap()
                 utleggsTrekkService.sendTrekkTilOS(trekkSomSkalSendesMap)
-                trekkSomSkalSendesMap.forEach { println(it.key.corrid) }
                 databaseService.hentAlleTrekkSomIkkeErSendt().size shouldBe 0
             }
         }

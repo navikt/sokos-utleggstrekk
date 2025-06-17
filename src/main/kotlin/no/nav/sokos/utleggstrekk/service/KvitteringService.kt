@@ -18,7 +18,7 @@ class KvitteringService(
     }
 
     fun hentAlleKvitteringer(): List<TrekkTilOppdrag> = hentAlleKvitteringerFraMq().map {
-        Json.decodeFromString<TrekkTilOppdrag>(it).also { println(it) }
+        Json.decodeFromString<TrekkTilOppdrag>(it)
     }
 
     private fun hentAlleKvitteringerFraMq(): List<String> {

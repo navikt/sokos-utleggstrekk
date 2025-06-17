@@ -49,10 +49,9 @@ class TSSIdTest : FunSpec({
         val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")).first()
         val betalingsinfo = trekkpalegg.betalingsinformasjon.copy(kontonummer = "123456789")
         val feiltrekk = trekkpalegg.copy(betalingsinformasjon = betalingsinfo)
-        val exception = shouldThrowExactly<NotImplementedError> {
+        shouldThrowExactly<NotImplementedError> {
             TSSId.getTSSId(feiltrekk)
         }
-        println(exception)
     }
 
 })

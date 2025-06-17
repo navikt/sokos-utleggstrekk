@@ -30,10 +30,9 @@ class SkeClient(
 
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> {
         val body = client.get {
-            url("${basePath}/$sekvensnr/200")
+            url("${basePath}?fraSekvensnummer=$sekvensnr&maksAntall=$maxAntall")
             headers(commonHeaders())
         }
-        println("Body: $body")
         return body.toTrekkpaalegg()
     }
 
