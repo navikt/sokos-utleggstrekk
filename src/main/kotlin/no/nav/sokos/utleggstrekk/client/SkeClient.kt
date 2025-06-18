@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.client
 
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
@@ -32,7 +33,7 @@ class SkeClient(
         val body = client.get {
             url("${basePath}?fraSekvensnummer=$sekvensnr&maksAntall=$maxAntall")
             headers(commonHeaders())
-        }
+        }.also { response -> println(response.status.toString() + response.body()) }
         return body.toTrekkpaalegg()
     }
 

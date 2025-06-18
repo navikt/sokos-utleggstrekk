@@ -55,6 +55,7 @@ private val logger = KotlinLogging.logger {  }
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
         val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
+        println("Antall fra skatt(fra sekvensnr($sekvensnr)): ${trekkListe.size}")
         return trekkListe.filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
         //TODO Må lagre også
     }
