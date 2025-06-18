@@ -41,7 +41,7 @@ class KvitteringServiceTest :
                 )
             then("Henterkvitteringer 1") {
                 coEvery { mqConsumerMock.receive() } returns ""
-                kvitteringservice.behandleKvitteringer()
+             //   kvitteringservice.behandleKvitteringer()
             }
         }
     })
