@@ -80,7 +80,11 @@ class DatabaseService(
 
     fun lagreUtleggstrekk(trekkListe: List<Trekkpaalegg>) {
         dataSource.connection.useAndHandleErrors { con ->
-            con.saveAllNewUtleggstrekk(trekkListe)
+            trekkListe.filterNot { con.doesTrekkExist(it.trekkid, it.sekvensnummer, it.trekkversjon) }
+                .let { nyeTrekk ->
+                    logger.info("Det er ${nyeTrekk.size} som skal lagres")
+                    con.saveAllNewUtleggstrekk(nyeTrekk)
+                }
         }
     }
 

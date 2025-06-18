@@ -35,9 +35,8 @@ fun Routing.utleggstrekkApi(
         }
 
         get("hentnye") {
-            val utleggstrekk = utleggsTrekkService.hentAlleNyeUtleggstrekk()
-            println("Antall Nye: ${utleggstrekk.size}")
-            call.respond(HttpStatusCode.NotFound,"Denne tjenesten er ikke tigjengelig hos skatt")
+            utleggsTrekkService.hentAlleNyeUtleggstrekk()
+            call.respond(HttpStatusCode.OK)
         }
 
         get("hent/{sekvensnr}") {
@@ -45,9 +44,8 @@ fun Routing.utleggstrekkApi(
             if (sekvensnr.isNullOrBlank() || sekvensnr.toInt() < 0) {
                 call.respond(HttpStatusCode.BadRequest, "Ugyldig sekvensnr")
             } else {
-                val utleggstrekk = utleggsTrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
-                println("Antall mottat på søk fra sekvensnr $sekvensnr: ${utleggstrekk.size}")
-                call.respond(HttpStatusCode.NotFound, "Denne tjenesten finnes ikke lenger hos skatt")
+                utleggsTrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

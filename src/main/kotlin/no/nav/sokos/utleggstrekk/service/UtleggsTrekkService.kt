@@ -6,7 +6,6 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.MqProducer
 
 const val SENDT = "SENDT"
@@ -47,17 +46,16 @@ private val logger = KotlinLogging.logger {  }
         }.size
     }
 
-    suspend fun hentAlleNyeUtleggstrekk(): List<Trekkpaalegg> {
+    suspend fun hentAlleNyeUtleggstrekk() {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
         logger.info("Henter fra siste sekvensnr: $sisteSekvensnr")
-        return hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
+        hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
-    suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int): List<Trekkpaalegg> {
-        val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
-        println("Antall fra skatt(fra sekvensnr($sekvensnr)): ${trekkListe.size}")
-        return trekkListe.filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
-        //TODO Må lagre også
+    suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int) {
+        skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
+            .also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
+            .let { databaseService.lagreUtleggstrekk(it) }
     }
 
 }
