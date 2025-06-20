@@ -7,3 +7,4 @@ private fun String.asResource(): URL = {}::class.java.classLoader.getResource(th
 
 fun resourceToString(filename: String) = filename.asResource().readText()
 fun resourceToStringList(filename: String) = resourceToString(filename).lines()
+

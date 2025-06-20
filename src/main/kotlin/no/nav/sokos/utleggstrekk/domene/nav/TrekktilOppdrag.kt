@@ -30,7 +30,7 @@ data class Mmel(
 
 @Serializable
 data class Document(
-    val transaksjonsId: String? = null,
+    val transaksjonsId: String,
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
@@ -81,7 +81,7 @@ enum class Aksjonskode(val value: String){
         }
         fun getAksjonskodeFromValue(value: String?): Aksjonskode? {
             if (value == null) return value
-            else  return Aksjonskode.valueOf(value.toString())
+            else  return Aksjonskode.valueOf(value)
         }
     }
 }

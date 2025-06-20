@@ -7,6 +7,7 @@
     "programId":"K231B782"
   },
   "dokument": {
+    "transaksjonsId":"TRANSID01",
     "innrapporteringTrekk": {
       "aksjonskode":"NY",
       "navTrekkId":"0013444702",

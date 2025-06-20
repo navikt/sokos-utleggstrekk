@@ -12,7 +12,7 @@ import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
 import no.nav.sokos.utleggstrekk.database.Repository.saveFeilkoder
 import no.nav.sokos.utleggstrekk.database.Repository.savePerioder
 import no.nav.sokos.utleggstrekk.database.Repository.updateKvitteringStatus
-import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatus
+import no.nav.sokos.utleggstrekk.database.Repository.updateNavTrekkStatus
 import no.nav.sokos.utleggstrekk.database.Repository.updateTrekkStatusSentAndDateTimeSentOS
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.useAndHandleErrors
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
@@ -35,7 +35,7 @@ class DatabaseService(
             if (status == SENDT) {
                 con.updateTrekkStatusSentAndDateTimeSentOS(corrId)
             } else {
-                con.updateTrekkStatus(corrId, status)
+                con.updateNavTrekkStatus(corrId, status)
             }
         }
     }
@@ -48,9 +48,9 @@ class DatabaseService(
                     else -> "KVITTERING_FEILET"
                 }
                 con.updateKvitteringStatus(
-                    kvittering.dokument.transaksjonsId!!,
+                    kvittering.dokument.transaksjonsId,
                     status, kvittering.mmel?.kodeMelding ?: "Ingen kode i mmel",
-                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen beskrivelse i mmel",
+                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen Trekkid i kvittering",
                     kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
                 )
             }
