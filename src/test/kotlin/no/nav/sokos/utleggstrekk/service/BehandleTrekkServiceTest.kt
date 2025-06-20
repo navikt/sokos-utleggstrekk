@@ -53,7 +53,7 @@ class BehandleTrekkServiceTest : FunSpec(
             result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
 
         }
-        test("Trekk med perioder kun med 1 trekkalternativ i trekkversjon 2 skal bli 1 NYTT trekk med 3 perioder") {
+        test("Trekk med perioder kun med 1 trekkalternativ i trekkversjon 2 hvor vi ikke har fått trekkversjon 1 skal bli 1 NYTT trekk med 3 perioder") {
             val testNr = 3
             val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
             val perioderiTest = periodetable1(testNr).map { periode -> periode.copy(trekkversjon = 2) }
@@ -70,7 +70,7 @@ class BehandleTrekkServiceTest : FunSpec(
             result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
 
         }
-        test("Trekk med perioder med 2 trekkalternativ i trekkversjon 1 skal bli to trekk, begge NYE") {
+        test("Trekk med 3 perioder med 2 trekkalternativ i trekkversjon 1 skal bli to trekk, begge NYE") {
             val testNr = 4
             val trekkITest = trekkTable1(testNr)
             val perioderiTest = periodetable1(testNr) + periodetable2(testNr)
@@ -86,7 +86,7 @@ class BehandleTrekkServiceTest : FunSpec(
             result.values.first().last().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
             result.values.first().last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "NY"
         }
-        test("Trekk med perioder med 2 trekkalternativ i trekkversjon 2 skal bli to trekk, Ett NYTT og ett ENDRET") {
+        test("Trekk med 3 perioder med 2 trekkalternativ, ett nytt i denne versjonen, i trekkversjon 2 skal bli to trekk, Ett NYTT og ett ENDRET") {
             val testNr = 5
             val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
             val perioderiTest = periodetable1(testNr).map { it.copy(trekkversjon = 2) } + periodetable2(testNr).map { it.copy(trekkversjon = 2) }
@@ -102,7 +102,7 @@ class BehandleTrekkServiceTest : FunSpec(
             result.values.first().last().dokument.innrapporteringTrekk.perioder.periode.size shouldBe 6
             result.values.first().last().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "ENDR"
         }
-        test("Trekk med perioder med 1 nytt trekkalternativ i trekkversjon 2 skal bli to trekk, Ett NYTT og ett ENDRET") {
+        test("Trekk med 3 perioder med 1 nytt trekkalternativ i trekkversjon 2 skal bli to trekk, Ett NYTT og ett ENDRET") {
             val testNr = 5
             val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
             val perioderiTest = periodetable2(testNr).map { it.copy(trekkversjon = 2) }
@@ -132,7 +132,7 @@ class BehandleTrekkServiceTest : FunSpec(
             result.values.first().first().dokument.innrapporteringTrekk.aksjonskode.value shouldBe "OPPH"
             result.values.first().first().dokument.innrapporteringTrekk.perioder.periode.shouldBeEmpty()
         }
-        test("Trekk med trekkversjon med kun ett trekkalternativ skal avsluttes, BLir kun ett avsluttet trekkmed periodene") {
+        test("Trekk med trekkversjon med kun ett trekkalternativ skal avsluttes, BLir kun ett avsluttet trekk med periodene") {
             val testNr = 7
             val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2, trekkstatus = "avsluttet")
             coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)

@@ -28,6 +28,7 @@ class BehandleTrekkService(
             val allePerioderForTrekkMap = databaseService.hentAllePerioderForTrekkId(trekk).groupBy { it.trekkAlternativ }
 
             val perioderSendesOS = utledAlleDuplikateTrekkPerioder(perioderForTrekkversjonMap, allePerioderForTrekkMap)
+
             val trekkDokumenter = if (perioderSendesOS.isEmpty()) {
                 allePerioderForTrekkMap.keys.map { key -> trekk.toTrekkDokument(emptyList(), trekkAlternativ = key) }
             } else {
@@ -79,8 +80,6 @@ class BehandleTrekkService(
                     .sortedBy { it.datoStart }
             )
         }
-
-
     }
 
     private fun Map<String, List<TrekkPeriodeTable>>.utledFraTilTrekkalternativ() =
