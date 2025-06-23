@@ -27,7 +27,7 @@ val prometheusVersion = "1.15.1"
 
 //DB
 val hikaricpVersion = "6.3.0"
-val flywayVersion = "11.9.1"
+val flywayVersion = "11.9.2"
 val postgresqlVersion = "42.7.7"
 
 //Logging
@@ -39,12 +39,12 @@ val gsonVersion = "2.13.1"
 
 // Test
 val kotestVersion = "5.9.1"
-val mockkVersion = "1.14.2"
+val mockkVersion = "1.14.4"
 val commonsVersion = "3.11.1"
-val testContainerVersion = "1.21.1"
+val testContainerVersion = "1.21.2"
 val kotestTestContainerExtensionVersion = "2.0.2"
 val janinoVersion = "3.1.12"
-val ibmMqVersion = "9.4.2.1"
+val ibmMqVersion = "9.4.3.0"
 
 dependencies {
     // Ktor Server
