@@ -4,8 +4,8 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 
 plugins {
-    kotlin("jvm") version "2.1.21"
-    kotlin("plugin.serialization") version "2.1.21"
+    kotlin("jvm") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -16,18 +16,18 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
-val ktorVersion = "3.2.0"
-val kotlinxDatetimeVersion = "0.6.2"
-val kotlinxSerializationVersion = "1.8.1"
-val nimbusVersion = "10.3"
+val ktorVersion = "3.2.1"
+val kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
+val kotlinxSerializationVersion = "1.9.0"
+val nimbusVersion = "10.3.1"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
-val prometheusVersion = "1.15.1"
+val prometheusVersion = "1.15.2"
 
 //DB
 val hikaricpVersion = "6.3.0"
-val flywayVersion = "11.9.1"
+val flywayVersion = "11.10.2"
 val postgresqlVersion = "42.7.7"
 
 //Logging
@@ -39,12 +39,12 @@ val gsonVersion = "2.13.1"
 
 // Test
 val kotestVersion = "5.9.1"
-val mockkVersion = "1.14.2"
+val mockkVersion = "1.14.4"
 val commonsVersion = "3.11.1"
-val testContainerVersion = "1.21.1"
+val testContainerVersion = "1.21.3"
 val kotestTestContainerExtensionVersion = "2.0.2"
 val janinoVersion = "3.1.12"
-val ibmMqVersion = "9.4.2.1"
+val ibmMqVersion = "9.4.3.0"
 
 dependencies {
     // Ktor Server
