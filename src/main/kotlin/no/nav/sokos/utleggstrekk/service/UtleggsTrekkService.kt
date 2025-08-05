@@ -1,50 +1,65 @@
 package no.nav.sokos.utleggstrekk.service
 
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+
+import com.ibm.mq.jakarta.jms.MQQueue
+import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.client.SkeClient
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
-import no.nav.sokos.utleggstrekk.mq.MqProducer
+import no.nav.sokos.utleggstrekk.mq.JmsListenerService
+import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 
 const val SENDT = "SENDT"
 
-class UtleggsTrekkService(
-    private val databaseService: DatabaseService,
-    private val behandleTrekkService: BehandleTrekkService,
+class UtleggstrekkService(
+    private val databaseService: DatabaseService = DatabaseService(),
+    private val behandleTrekkService: BehandleTrekkService = BehandleTrekkService(databaseService),
     private val skeClient: SkeClient = SkeClient(),
-    private val mqProducer: MqProducer = MqProducer(),
+    private val mqProducer: JmsProducerService =
+        JmsProducerService(
+            senderQueue =
+                MQQueue(PropertiesConfig.MQProperties().queueName).apply {
+                    targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
+                },
+            replyQueue =
+                JmsListenerService().osKvitteringQueue,
+        ),
 ) {
-private val logger = KotlinLogging.logger {  }
+    private val logger = KotlinLogging.logger { }
 
-    suspend fun HentOgSendUtleggstrekk(): Int {
-        logger.info("Henter utleggstrekkfra skatt ")
+    suspend fun hentOgSendUtleggstrekk() {
         hentOgLagreNyeUtleggstrekk()
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
-        return sendTrekkTilOS(trekktilSending)
+        sendTrekkTilOS(trekktilSending)
     }
 
     suspend fun hentOgLagreNyeUtleggstrekk() {
-        //TODO Denne henter alle hver gang, Den bør bare hente nye når den skal brukes mot skatt regelmessig
-        val nyeTrekkListe = skeClient.hentAlleUtleggstrekk()   //TODO endre til å kalle hentAlleNyeUtleggstrekk()
-        nyeTrekkListe.also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
+        // TODO Denne henter alle hver gang, Den bør bare hente nye når den skal brukes mot skatt regelmessig
+        val nyeTrekkListe = skeClient.hentAlleUtleggstrekk() // TODO endre til å kalle hentAlleNyeUtleggstrekk()
+        // val nyeTrekkListe =hentAlleNyeUtleggstrekk() // TODO  bruke dette
+        logger.info("Hentet ${nyeTrekkListe.size} utleggstrekk fra Skatt")
+        nyeTrekkListe
             .filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
             .let {
                 logger.info("Det er ${it.size} som skal lagres")
                 databaseService.lagreUtleggstrekk(it)
             }
     }
-    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>): Int {
-        return trekkTilOppdragMap.map {
-            val dokumentListe = it.value.map { Json.encodeToString(it) }
-            logger.info("sender trekkid: ${it.key.trekkidSke} versjon: ${it.key.trekkversjon} sekvensnummer: ${it.key.sekvensnummer}")
-            dokumentListe.forEach { dokument ->
-                mqProducer.send(dokument)
-            }
-            databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
-        }.size
-    }
+
+    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>): Int =
+        trekkTilOppdragMap
+            .map {
+                val dokumentListe = it.value.map { Json.encodeToString(it) }
+                logger.info("sender trekkid: ${it.key.trekkidSke} versjon: ${it.key.trekkversjon} sekvensnummer: ${it.key.sekvensnummer}")
+                dokumentListe.forEach { dokument ->
+                    mqProducer.send(dokument)
+                }
+                databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
+            }.size
 
     suspend fun hentAlleNyeUtleggstrekk() {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
@@ -53,11 +68,8 @@ private val logger = KotlinLogging.logger {  }
     }
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int) {
-        skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
-            .also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
-            .let { databaseService.lagreUtleggstrekk(it) }
+        val trekk = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
+        logger.info { "Hentet ${trekk.size} utleggstrekk fra Skatt" }
+        databaseService.lagreUtleggstrekk(trekk)
     }
-
 }
-
-

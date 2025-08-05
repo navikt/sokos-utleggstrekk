@@ -93,7 +93,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
     // MQ
-    implementation("com.ibm.mq:com.ibm.mq.allclient:$ibmMqVersion")
+    implementation("com.ibm.mq:com.ibm.mq.jakarta.client:$ibmMqVersion")
 
     //
     implementation("com.google.code.gson:gson:$gsonVersion" )
@@ -140,6 +140,7 @@ tasks {
     }
 
     withType<Test>().configureEach {
+        systemProperty("isTest", "true")
         useJUnitPlatform()
         testLogging {
             showExceptions = true

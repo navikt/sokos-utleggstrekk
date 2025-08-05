@@ -1,15 +1,16 @@
-package no.nav.sokos.utleggstrekk
+package no.nav.sokos.utleggstrekk.util
 
 import io.kotest.extensions.testcontainers.toDataSource
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.database.PostgresDataSource
+import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+
 class TestContainer {
-    private val properties = PropertiesConfig.PostgresConfig
+    private val properties = PropertiesConfig.PostgresProperties
     private val dockerImageName = "postgres:latest"
     private val container =
         PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
@@ -26,14 +27,18 @@ class TestContainer {
         }
 
     init {
-        PostgresDataSource.migrate(ds)
+        Flyway
+            .configure()
+            .dataSource(ds)
+            .initSql("""SET ROLE "${PropertiesConfig.PostgresProperties.adminUser}"""")
+            .lockRetryCount(-1)
+            .validateMigrationNaming(true)
+            .load()
+            .migrate()
+            .migrationsExecuted
     }
 
     val dataSource = ds
 
-    fun migrate(script: String = "") {
-        if (script.isNotEmpty()) loadInitScript(script)
-    }
-
-    private fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
+    fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
 }

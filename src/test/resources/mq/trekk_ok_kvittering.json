@@ -1,0 +1,41 @@
+{
+  "mmel": {
+    "systemId": "231-OPPD",
+    "kodeMelding": "B782008I",
+    "alvorlighetsgrad": "00",
+    "beskrMelding":"Oppdatering foretatt.",
+    "programId":"K231B782"
+  },
+  "dokument": {
+    "transaksjonsId": "20425974",
+    "innrapporteringTrekk": {
+      "aksjonskode": "NY",
+      "kilde": "SOKOS-UTLEGG",
+      "navTrekkId": "12345",
+      "kreditorIdTss": "80000427901",
+      "kreditorTrekkId": "10342395",
+      "debitorId": "19074639472",
+      "kid":"17654202400",
+      "kreditorsRef":"sak-2023-899",
+      "kodeTrekktype": "KRED",
+      "kodeTrekkAlternativ": "LOPM",
+      "prioritetFomDato":"2024-06-16",
+      "perioder": {
+        "periode": [ {
+          "periodeFomDato":"2023-06-13",
+          "periodeTomDato":"2024-11-30",
+          "sats":5000.00 },
+          {
+            "periodeFomDato":"2024-12-01",
+            "periodeTomDato":"2024-12-31",
+            "sats":0.0
+          },
+          {
+            "periodeFomDato":"2025-01-01",
+            "sats":5000.00
+          }
+        ]
+      }
+    }
+  }
+}
