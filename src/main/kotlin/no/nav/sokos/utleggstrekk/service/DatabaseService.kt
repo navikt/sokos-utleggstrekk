@@ -2,6 +2,7 @@ package no.nav.sokos.utleggstrekk.service
 
 import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository.doesTrekkExist
 import no.nav.sokos.utleggstrekk.database.Repository.fetchAllPerioderForTrekk
@@ -25,12 +26,18 @@ private val logger = KotlinLogging.logger { }
 class DatabaseService(
     private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
 ) {
-    fun trekkFinnes(trekkid_ske: String, sekvensnr: Int, trekkversjon: Int) =
-        dataSource.connection.useAndHandleErrors { con ->
-            con.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon)
-        }
+    fun trekkFinnes(
+        trekkid_ske: String,
+        sekvensnr: Int,
+        trekkversjon: Int,
+    ) = dataSource.connection.useAndHandleErrors { con ->
+        con.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon)
+    }
 
-    fun oppdaterTrekkStatus(corrId: String, status: String) {
+    fun oppdaterTrekkStatus(
+        corrId: String,
+        status: String,
+    ) {
         dataSource.connection.useAndHandleErrors { con ->
             if (status == SENDT) {
                 con.updateTrekkStatusSentAndDateTimeSentOS(corrId)
@@ -40,22 +47,22 @@ class DatabaseService(
         }
     }
 
-    fun oppdaterTrekkMedKvitteringsinfo(kvitteringer: List<TrekkTilOppdrag>) {
-        kvitteringer.map { kvittering ->
-            dataSource.connection.useAndHandleErrors { con ->
-                val status = when (kvittering.mmel?.alvorlighetsgrad) {
+    fun oppdaterTrekkMedKvitteringsinfo(kvittering: TrekkTilOppdrag) {
+        dataSource.connection.useAndHandleErrors { con ->
+            val status =
+                when (kvittering.mmel?.alvorlighetsgrad) {
                     "00" -> "KVITTERING_OK"
                     else -> "KVITTERING_FEILET"
                 }
-                con.updateKvitteringStatus(
-                    kvittering.dokument.transaksjonsId,
-                    status, kvittering.mmel?.kodeMelding ?: "Ingen kode i mmel",
-                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen Trekkid i kvittering",
-                    kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
-                )
-            }
-            kvittering
+            con.updateKvitteringStatus(
+                kvittering.dokument.transaksjonsId,
+                status,
+                kvittering.mmel?.kodeMelding ?: "Ingen kode i mmel",
+                kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen Trekkid i kvittering",
+                kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
+            )
         }
+        kvittering
     }
 
     fun hentAlleTrekkSomIkkeErSendt(): List<UtleggstrekkTable> =
@@ -68,7 +75,7 @@ class DatabaseService(
             con.fetchAllPerioderForTrekk(trekk)
         }
 
-    fun hentAllePerioderForTrekkVersjon(trekk:UtleggstrekkTable):List<TrekkPeriodeTable> =
+    fun hentAllePerioderForTrekkVersjon(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
         dataSource.connection.useAndHandleErrors { con ->
             con.fetchPerioderForTrekkVersion(trekk)
         }
@@ -80,25 +87,19 @@ class DatabaseService(
 
     fun lagreUtleggstrekk(trekkListe: List<Trekkpaalegg>) {
         dataSource.connection.useAndHandleErrors { con ->
-            trekkListe.filterNot { con.doesTrekkExist(it.trekkid, it.sekvensnummer, it.trekkversjon) }
-                .let { nyeTrekk ->
-                    logger.info("Det er ${nyeTrekk.size} som skal lagres")
-                    con.saveAllNewUtleggstrekk(nyeTrekk)
-                }
+            con.saveAllNewUtleggstrekk(trekkListe)
         }
     }
 
-    fun lagreGenerertePerioder(perioder: List<TrekkPeriodeTable>){
+    fun lagreGenerertePerioder(perioder: List<TrekkPeriodeTable>) {
         dataSource.connection.useAndHandleErrors { con ->
             con.savePerioder(perioder)
         }
     }
 
-    fun lagreFeilkoderFraOS(kvitteringerMedFeilkoder: List<TrekkTilOppdrag>){
-        if (kvitteringerMedFeilkoder.isNotEmpty()) {
-            dataSource.connection.useAndHandleErrors { con ->
-                con.saveFeilkoder(kvitteringerMedFeilkoder)
-            }
+    fun lagreFeilkoderFraOS(kvitteringMedFeilkoder: TrekkTilOppdrag) {
+        dataSource.connection.useAndHandleErrors { con ->
+            con.saveFeilkoder(kvitteringMedFeilkoder)
         }
-
-}}
+    }
+}

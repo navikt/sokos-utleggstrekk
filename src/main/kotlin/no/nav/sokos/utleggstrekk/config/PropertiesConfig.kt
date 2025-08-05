@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.config
 
+import java.io.File
+
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.EnvironmentVariables
@@ -13,7 +15,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import no.nav.sokos.utleggstrekk.client.httpClient
-import java.io.File
 
 object PropertiesConfig {
     private val defaultProperties =
@@ -26,7 +27,7 @@ object PropertiesConfig {
     private val localDevProperties =
         ConfigurationMap(
             "APPLICATION_PROFILE" to Profile.LOCAL.toString(),
-            "POSTGRES_HOST_NAME" to "dev-pg.intern.nav.no",
+            "POSTGRES_HOST" to "dev-pg.intern.nav.no",
             "POSTGRES_PORT" to "5432",
             "POSTGRES_NAME" to "sokos-utleggstrekk",
             "SKE_REST_URL" to "https://api-test.sits.no/api/utleggstrekk/v1/",
@@ -35,10 +36,8 @@ object PropertiesConfig {
             "MQ_PORT" to "1413",
             "MQ_QUEUE_MANAGER_NAME" to "MQLS02",
             "MQ_CHANNEL" to "Q1_UTLEGGSTREKK",
-            "MQ_QUEUE_NAME" to "Q1_231.OB04_TREKK_FRASKATT_JSON",
+            "MQ_QUEUE_NAME" to "QA.Q1_231.OB04_TREKK_FRASKATT_JSON",
             "MQ_REPLYQUEUE_NAME" to "QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING",
-            "MQ_INQ_USERNAME" to "INQ_USERNAME",
-            "MQ_INQ_PASSWORD" to "INQ_USERNAME",
         )
 
     private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))
@@ -67,9 +66,9 @@ object PropertiesConfig {
 
     fun getOrEmpty(key: String): String = config.getOrElse(Key(key, stringType), "")
 
-    data class Configuration(
+    data class Configuration (
         val naisAppName: String = get("NAIS_APP_NAME"),
-        val profile: Profile = Profile.valueOf(this["APPLICATION_PROFILE"]),
+        val profile: Profile = Profile.valueOf(get("APPLICATION_PROFILE"))
     )
 
     data class MaskinportenClientConfig(
@@ -118,15 +117,15 @@ object PropertiesConfig {
         }
     }
 
-    data class MqProperties(
-        val hostName: String = getOrEmpty("MQ_HOSTNAME"),
-        val port: Int = getOrEmpty("MQ_PORT").toInt(),
-        val queueManagerName: String = getOrEmpty("MQ_QUEUE_MANAGER_NAME"),
-        val channel: String = getOrEmpty("MQ_CHANNEL"),
-        val username: String = getOrEmpty("MQ_USERNAME"),
-        val password: String = getOrEmpty("MQ_PASSWORD"),
-        val queueName: String = getOrEmpty("MQ_QUEUE_NAME"),
-        val replyQueueName: String = getOrEmpty("MQ_REPLYQUEUE_NAME"),
+    data class MQProperties(
+        val hostname: String = get("MQ_HOSTNAME"),
+        val port: Int = get("MQ_PORT").toInt(),
+        val mqQueueManagerName: String = get("MQ_QUEUE_MANAGER_NAME"),
+        val mqChannelName: String = get("MQ_CHANNEL"),
+        val queueName: String = get("MQ_QUEUE_NAME"),
+        val replyQueueName: String = get("MQ_REPLYQUEUE_NAME"),
+        val username: String = get("MQ_USERNAME"),
+        val password: String = get("MQ_PASSWORD"),
         val userAuth: Boolean = true,
     )
 }
