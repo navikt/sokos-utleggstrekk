@@ -1,0 +1,52 @@
+{
+  "mmel": {
+    "systemId": "231-OPPD",
+    "kodeMelding": "B199006F",
+    "alvorlighetsgrad": "08",
+    "beskrMelding": "Personen finnes ikke i PDL: 17880147595",
+    "sqlKode": null,
+    "sqlStateMmel": null,
+    "sqlMelding": null,
+    "mqCompletionKode": null,
+    "mqReasonKode": null,
+    "programId": "K231B199",
+    "sectionNavn": "CA30-SJEKK-PDL"
+  },
+  "dokument": {
+    "transaksjonsId": "0cf39d33-8b50-4694-8d70-7ff06c35e42a",
+    "innrapporteringTrekk": {
+      "aksjonskode": "NY",
+      "navTrekkId": null,
+      "kreditorIdTss": "971648198",
+      "kreditorTrekkId": "10013M",
+      "debitorId": "17880147595",
+      "kodeTrekktype": "TRK1",
+      "kodeTrekkAlternativ": "LOPM",
+      "kid": "6487719756",
+      "kreditorsRef": "2025-UTLEGG-1246",
+      "kilde": "SOKOSUTLEGG",
+      "saldo": "0.0",
+      "prioritetFomDato": "2024-10-19",
+      "gyldigTomDato": null,
+      "perioder": {
+        "periode": [
+          {
+            "periodeFomDato": "2024-06-13",
+            "periodeTomDato": "2024-11-30",
+            "sats": "4500.0"
+          },
+          {
+            "periodeFomDato": "2024-12-01",
+            "periodeTomDato": "2025-02-01",
+            "sats": "0.0"
+          },
+          {
+            "periodeFomDato": "2025-02-02",
+            "periodeTomDato": "9999-12-31",
+            "sats": "0.0"
+          }
+        ]
+      }
+    }
+  }
+}
