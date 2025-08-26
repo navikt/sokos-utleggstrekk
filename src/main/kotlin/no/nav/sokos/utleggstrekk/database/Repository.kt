@@ -244,27 +244,23 @@ object Repository {
             .toTrekkPeriodeTable()
     }
 
-
-    fun Connection.saveFeilkoder(kvitteringer: List<TrekkTilOppdrag>) {
-        kvitteringer.forEach { kvittering ->
-            prepareStatement(
-                """
-                insert into feilkoder (
-                kreditor_trekk_id ,
-                corr_id,
-                trekkalternativ,
-                feilkode,
-                beskrivelse
-                ) values (?,?,?,?,?)        
-            """.trimIndent()
-            )
-                .withParameters(
-                    param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
-                    param(kvittering.dokument.transaksjonsId),
-                    param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
-                    param(kvittering.mmel?.kodeMelding ?: "INGEN KODE MOTTATT FRA OS"),
-                    param(kvittering.mmel?.beskrMelding ?: "INGEN BESKRIVELSE MOTTATT FRA OS")
-                )
-        }
+    fun Connection.saveFeilkoder(kvittering: TrekkTilOppdrag) {
+        prepareStatement(
+            """
+            insert into feilkoder (
+            kreditor_trekk_id ,
+            corr_id,
+            trekkalternativ,
+            feilkode,
+            beskrivelse
+            ) values (?,?,?,?,?)        
+            """.trimIndent(),
+        ).withParameters(
+            param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
+            param(kvittering.dokument.transaksjonsId),
+            param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
+            param(kvittering.mmel?.kodeMelding ?: "INGEN KODE MOTTATT FRA OS"),
+            param(kvittering.mmel?.beskrMelding ?: "INGEN BESKRIVELSE MOTTATT FRA OS"),
+        )
     }
 }

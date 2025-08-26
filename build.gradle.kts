@@ -25,12 +25,12 @@ val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.15.1"
 
-//DB
+// DB
 val hikaricpVersion = "6.3.0"
 val flywayVersion = "11.9.1"
 val postgresqlVersion = "42.7.7"
 
-//Logging
+// Logging
 val logbackVersion = "1.5.18"
 val logstashVersion = "8.1"
 val kotlinLoggingVersion = "3.0.5"
@@ -42,6 +42,7 @@ val kotestVersion = "5.9.1"
 val mockkVersion = "1.14.2"
 val commonsVersion = "3.11.1"
 val testContainerVersion = "1.21.1"
+val activemqVersion = "2.40.0"
 val kotestTestContainerExtensionVersion = "2.0.2"
 val janinoVersion = "3.1.12"
 val ibmMqVersion = "9.4.2.1"
@@ -94,7 +95,7 @@ dependencies {
     implementation("com.ibm.mq:com.ibm.mq.jakarta.client:$ibmMqVersion")
 
     //
-    implementation("com.google.code.gson:gson:$gsonVersion" )
+    implementation("com.google.code.gson:gson:$gsonVersion")
 
     // Test
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
@@ -104,7 +105,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("commons-net:commons-net:$commonsVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-
+    testImplementation("org.apache.activemq:artemis-jakarta-server:$activemqVersion")
 }
 
 kotlin {

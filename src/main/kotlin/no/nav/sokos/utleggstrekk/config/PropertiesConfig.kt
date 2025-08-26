@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.config
 
-import java.io.File
-
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.EnvironmentVariables
@@ -15,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import no.nav.sokos.utleggstrekk.client.httpClient
+import java.io.File
 
 object PropertiesConfig {
     private val defaultProperties =
@@ -45,8 +44,12 @@ object PropertiesConfig {
 
     private val config =
         when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
-            "dev-fss" -> ConfigurationProperties.systemProperties() overriding EnvironmentVariables() overriding devProperties overriding defaultProperties
-            "prod-fss" -> ConfigurationProperties.systemProperties() overriding EnvironmentVariables() overriding prodProperties overriding defaultProperties
+            "dev-fss" ->
+                ConfigurationProperties.systemProperties() overriding EnvironmentVariables() overriding devProperties overriding
+                    defaultProperties
+            "prod-fss" ->
+                ConfigurationProperties.systemProperties() overriding EnvironmentVariables() overriding prodProperties overriding
+                    defaultProperties
             else ->
                 ConfigurationProperties.systemProperties() overriding EnvironmentVariables() overriding
                     ConfigurationProperties.fromOptionalFile(
@@ -66,9 +69,9 @@ object PropertiesConfig {
 
     fun getOrEmpty(key: String): String = config.getOrElse(Key(key, stringType), "")
 
-    data class Configuration (
+    data class Configuration(
         val naisAppName: String = get("NAIS_APP_NAME"),
-        val profile: Profile = Profile.valueOf(get("APPLICATION_PROFILE"))
+        val profile: Profile = Profile.valueOf(get("APPLICATION_PROFILE")),
     )
 
     data class MaskinportenClientConfig(

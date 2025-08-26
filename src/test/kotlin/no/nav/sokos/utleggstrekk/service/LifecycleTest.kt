@@ -4,25 +4,40 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
-
-import no.nav.sokos.utleggstrekk.config.http.jsonConfig
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import no.nav.sokos.utleggstrekk.database.Repository.fetchPerioderForTrekkVersion
 import no.nav.sokos.utleggstrekk.database.Repository.fetchTrekkNotSendt
 import no.nav.sokos.utleggstrekk.database.Repository.saveAllNewUtleggstrekk
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.util.TestContainer
-import no.nav.sokos.utleggstrekk.util.TestUtils.fileAsString
+import no.nav.sokos.utleggstrekk.util.resourceToString
+import no.nav.sokos.utleggstrekk.utils.JavaLocaldateTimeSerializer
+import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
+import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
+import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 internal class LifecycleTest :
     BehaviorSpec({
-        val testContainer = TestContainer()
-        Given("Vi har mottatt utleggstrekk...  ") {
+        val json = Json {
+            prettyPrint = true
+            isLenient = true
+            explicitNulls = false
+            serializersModule = SerializersModule {
+                contextual(JavaLocaldateTimeSerializer)
+                contextual(LocalDateTimeSerializer)
+                contextual(LocalDateSerializer)
+                contextual(ZonedDateTimeSerializer)
+            }
+        }
 
-            val bodyFraSkatt = fileAsString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
-            val paleggstrekkFraSkatt = jsonConfig.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
+        val testContainer = TestContainer()
+
+        Given("Vi har mottatt utleggstrekk...  ") {
+            val bodyFraSkatt = resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
+            val paleggstrekkFraSkatt = json.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
 
             then("lagres disse i database") {
                 testContainer.dataSource.connection.use {
@@ -37,93 +52,63 @@ internal class LifecycleTest :
                     rs2.getInt(1) shouldBe 4
                 }
             }
-
             then("sjekker at dataene er lagret riktig") {
-                val firstTrekk = paleggstrekkFraSkatt.first()
-
-                val firstTrekkNotSendt =
-                    testContainer.dataSource.connection
-                        .fetchTrekkNotSendt()
-                        .first()
-                with(firstTrekkNotSendt) {
-                    trekkidSke shouldBe firstTrekk.trekkid
-                    trekkversjon shouldBe firstTrekk.trekkversjon
-                    skyldner shouldBe firstTrekk.skyldner
-                    sekvensnummer shouldBe firstTrekk.sekvensnummer
-                }
-
-                testContainer.dataSource.connection.fetchPerioderForTrekkVersion(firstTrekkNotSendt).forEachIndexed { i, periode ->
-                    val firstTrekkStoerrelse = firstTrekk.trekkstoerrelseForPeriode[i]
-
-                    when (periode.trekkAlternativ) {
-                        TrekkAlternativ.LOPM.value -> {
-                            // TODO: Kan trekkbeloep og trekkprosent hete "sats"?
-                            periode.sats shouldBe firstTrekkStoerrelse.trekkbeloep?.trekkbeloep
-                        }
-
-                        TrekkAlternativ.LOPP.value -> {
-                            periode.sats shouldBe firstTrekkStoerrelse.trekkprosent?.trekkprosent
-                        }
+                val dbdataTrekk = testContainer.dataSource.connection.fetchTrekkNotSendt()
+                val dbdataPerioder = testContainer.dataSource.connection.fetchPerioderForTrekkVersion(dbdataTrekk.first())
+                dbdataTrekk.first().trekkidSke shouldBe paleggstrekkFraSkatt.first().trekkid
+                dbdataTrekk.first().trekkversjon shouldBe paleggstrekkFraSkatt.first().trekkversjon
+                dbdataTrekk.first().skyldner shouldBe paleggstrekkFraSkatt.first().skyldner
+                dbdataTrekk.first().sekvensnummer shouldBe paleggstrekkFraSkatt.first().sekvensnummer
+                dbdataPerioder.mapIndexed { i, periode ->
+                    if (periode.trekkAlternativ == "LOPP") {
+                        periode.sats shouldBe paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).trekkprosent?.trekkprosent
                     }
-
-                    // TODO: Disse burde hete det samme
-                    periode.datoStart shouldBe firstTrekkStoerrelse.startdato
-                    periode.datoSlutt.shouldBeIn(firstTrekkStoerrelse.sluttdato, "9999-12-31")
+                    if (periode.trekkAlternativ == "LOPM") {
+                        periode.sats shouldBe paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).trekkbeloep?.trekkbeloep
+                    }
+                    periode.datoStart shouldBe paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).startdato
+                    periode.datoSlutt shouldBeIn arrayOf("9999-12-31", paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).sluttdato)
                 }
             }
+            then("Henter data fra database og sjekker perioder"){
+                val dbService =  DatabaseService(testContainer.dataSource)
+                val behandleTrekkService = BehandleTrekkService(dbService)
+                val trekkSomSkalSendesMap = behandleTrekkService.lagTrekkSomSkalSendes()
 
-            then("Henter data fra database og sjekker perioder") {
-                val trekkSomSkalSendesMap = BehandleTrekkService(DatabaseService(testContainer.dataSource)).lagTrekkSomSkalSendes()
-
-                with(trekkSomSkalSendesMap.entries) {
-                    val firstTrekkSomSkalSendes = first().value
-                    val lastTrekkSomSkalSendes = last().value
-
-                    lastTrekkSomSkalSendes.size shouldBe 1
-
-                    firstTrekkSomSkalSendes.size shouldBe 2
-                    firstTrekkSomSkalSendes
-                        .first()
-                        .dokument.innrapporteringTrekk.perioder.periode.size shouldBe
-                        firstTrekkSomSkalSendes
-                            .last()
-                            .dokument.innrapporteringTrekk.perioder.periode.size
-                }
+                trekkSomSkalSendesMap.size shouldBe 2
+                trekkSomSkalSendesMap.entries.first().value.size shouldBe 2
+                trekkSomSkalSendesMap.entries.last().value.size shouldBe 1
+                trekkSomSkalSendesMap.entries.first().value.first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe
+                        trekkSomSkalSendesMap.entries.first().value.last().dokument.innrapporteringTrekk.perioder.periode.size
             }
             then("hent fra databse og konverter til OS format") {
-                val trekkNotSendt = testContainer.dataSource.connection.fetchTrekkNotSendt()
-                val firstTrekkNotSendt = trekkNotSendt.first()
-                val dbperiode = testContainer.dataSource.connection.fetchPerioderForTrekkVersion(firstTrekkNotSendt)
-                val trekkAlternativMap = dbperiode.groupBy { it.trekkAlternativ }
+                val dbdataTrekk = testContainer.dataSource.connection.fetchTrekkNotSendt()
+                val dbperiode = testContainer.dataSource.connection.fetchPerioderForTrekkVersion(dbdataTrekk[0])
 
                 withClue("Det skal være 2 trekk i db") {
-                    trekkNotSendt.size shouldBe 2
+                    dbdataTrekk.size shouldBe 2
                 }
                 withClue("Det skal være 6 perioder for trekk 1") {
                     dbperiode.size shouldBe 6
                 }
-
+                withClue("Det skal være 2 trekkalternativer for trekk 1") {
+                    dbperiode.groupBy { it.trekkAlternativ }.size shouldBe 2
+                }
                 withClue("Det skal være 3 perioder med LOPM, 1 med 0.0") {
-                    val lopmPerioder: List<TrekkPeriodeTable> = trekkAlternativMap[TrekkAlternativ.LOPM.value]!!
-
-                    lopmPerioder.size shouldBe 3
-                    lopmPerioder.count { it.sats == 0.0 } shouldBe 1
+                    dbperiode.groupBy { it.trekkAlternativ }.get("LOPM")?.size shouldBe 3
                 }
                 withClue("Det skal være 3 periode med LOPP, 2 med 0.0") {
-                    val loppPerioder: List<TrekkPeriodeTable> = trekkAlternativMap[TrekkAlternativ.LOPP.value]!!
-
-                    loppPerioder.size shouldBe 3
-                    loppPerioder.count { it.sats == 0.0 } shouldBe 2
+                    dbperiode.groupBy { it.trekkAlternativ }.get("LOPP")?.size shouldBe 3
                 }
-
-                val osdok = firstTrekkNotSendt.toTrekkDokument(dbperiode)
+                val osdok = dbdataTrekk[0].toTrekkDokument(dbperiode)
                 withClue("osDokumentet skal ha samme info som i trekk og perioder") {
                     with(osdok.dokument.innrapporteringTrekk) {
-                        kreditorTrekkId shouldBe firstTrekkNotSendt.trekkidSke + dbperiode[0].trekkAlternativ[3]
-                        kid shouldBe firstTrekkNotSendt.kid
+                        kreditorTrekkId shouldBe dbdataTrekk[0].trekkidSke + dbperiode[0].trekkAlternativ.get(3)
+                        kid shouldBe dbdataTrekk[0].kid
                         kodeTrekkAlternativ shouldBe dbperiode[0].trekkAlternativ
                     }
                 }
+
             }
         }
     })
