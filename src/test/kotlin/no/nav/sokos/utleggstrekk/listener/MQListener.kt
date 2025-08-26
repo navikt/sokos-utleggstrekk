@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.listener
 
 import io.kotest.core.listeners.TestListener
-import io.kotest.core.spec.Spec
 import jakarta.jms.ConnectionFactory
 import org.apache.activemq.artemis.api.core.TransportConfiguration
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl
@@ -18,9 +17,9 @@ object MQListener : TestListener {
                     .setSecurityEnabled(false)
                     .addAcceptorConfiguration(TransportConfiguration(InVMAcceptorFactory::class.java.name)),
             )
-    lateinit var connectionFactory: ConnectionFactory
+    var connectionFactory: ConnectionFactory
 
-    override suspend fun beforeSpec(spec: Spec) {
+    init {
         server.start()
         connectionFactory = ActiveMQConnectionFactory("vm:localhost?create=false")
     }

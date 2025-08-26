@@ -19,7 +19,7 @@ class UtleggsTrekkService(
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: JmsProducerService =
         JmsProducerService(
-            senderQueue =
+            targetQueue =
                 MQQueue(PropertiesConfig.MQProperties().queueName).apply {
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 },

@@ -10,7 +10,7 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.MQConfig
 
 class JmsProducerService(
-    private val senderQueue: Queue,
+    private val targetQueue: Queue,
     private val replyQueue: Queue,
     connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),
 ) {
@@ -25,7 +25,7 @@ class JmsProducerService(
     fun send(payload: String) {
         val message = jmsContext.createTextMessage(payload)
         try {
-            producer.send(senderQueue, message)
+            producer.send(targetQueue, message)
             jmsContext.commit()
         } catch (exception: Exception) {
             logger.error(exception) { "MQ-transaksjon feilet. ${message.jmsMessageID}" }

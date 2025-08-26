@@ -52,4 +52,12 @@ data class UtleggstrekkTable(
     )
 }
 
+enum class UtleggstrekkStatus(
+    val status: String,
+) {
+    MOTTATT("MOTTATT"),
+    SENDT("SENDT"),
 
+    KVITTERING_OK("KVITTERING_OK"),
+    KVITTERING_FEILET("KVITTERING_FEILET"),
+}
