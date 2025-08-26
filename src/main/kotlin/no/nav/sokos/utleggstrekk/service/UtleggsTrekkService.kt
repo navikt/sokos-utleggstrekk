@@ -1,11 +1,9 @@
 package no.nav.sokos.utleggstrekk.service
 
-import kotlinx.serialization.json.Json
-
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
+import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -15,7 +13,7 @@ import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 
 const val SENDT = "SENDT"
 
-class UtleggstrekkService(
+class UtleggsTrekkService(
     private val databaseService: DatabaseService = DatabaseService(),
     private val behandleTrekkService: BehandleTrekkService = BehandleTrekkService(databaseService),
     private val skeClient: SkeClient = SkeClient(),
@@ -31,10 +29,10 @@ class UtleggstrekkService(
 ) {
     private val logger = KotlinLogging.logger { }
 
-    suspend fun hentOgSendUtleggstrekk() {
+    suspend fun hentOgSendUtleggstrekk(): Int {
         hentOgLagreNyeUtleggstrekk()
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
-        sendTrekkTilOS(trekktilSending)
+        return sendTrekkTilOS(trekktilSending)
     }
 
     suspend fun hentOgLagreNyeUtleggstrekk() {
@@ -61,6 +59,7 @@ class UtleggstrekkService(
                 databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
             }.size
 
+    // Ikke fjern :)
     suspend fun hentAlleNyeUtleggstrekk() {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
         logger.info("Henter fra siste sekvensnr: $sisteSekvensnr")

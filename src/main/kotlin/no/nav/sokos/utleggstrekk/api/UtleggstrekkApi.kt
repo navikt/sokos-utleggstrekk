@@ -5,18 +5,19 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
+import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 
-import no.nav.sokos.utleggstrekk.service.UtleggstrekkService
-
-fun Routing.utleggstrekkApi(utleggstrekkService: UtleggstrekkService = UtleggstrekkService()) {
+fun Routing.utleggstrekkApi(
+    utleggsTrekkService: UtleggsTrekkService = UtleggsTrekkService()
+) {
     route("utleggstrekk") {
         get("hentAlleFullPakke") {
-            utleggstrekkService.hentOgSendUtleggstrekk()
-            call.respond(HttpStatusCode.OK, "Trekk sendt")
+            val resultat = utleggsTrekkService.hentOgSendUtleggstrekk()
+            call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
         }
 
         get("hentnye") {
-            utleggstrekkService.hentOgLagreNyeUtleggstrekk()
+            utleggsTrekkService.hentOgLagreNyeUtleggstrekk()
             call.respond(HttpStatusCode.OK)
         }
 
@@ -25,7 +26,7 @@ fun Routing.utleggstrekkApi(utleggstrekkService: UtleggstrekkService = Utleggstr
             if (sekvensnr.isNullOrBlank() || sekvensnr.toInt() < 0) {
                 call.respond(HttpStatusCode.BadRequest, "Ugyldig sekvensnr")
             } else {
-                utleggstrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
+                utleggsTrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
                 call.respond(HttpStatusCode.OK)
             }
         }

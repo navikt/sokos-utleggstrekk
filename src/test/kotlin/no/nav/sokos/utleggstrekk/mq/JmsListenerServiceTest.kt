@@ -1,11 +1,10 @@
 package no.nav.sokos.utleggstrekk.mq
 
 import io.kotest.core.spec.style.BehaviorSpec
-import org.apache.activemq.artemis.jms.client.ActiveMQQueue
-
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.listener.MQListener
-import no.nav.sokos.utleggstrekk.util.TestUtils.fileAsString
+import no.nav.sokos.utleggstrekk.util.resourceToString
+import org.apache.activemq.artemis.jms.client.ActiveMQQueue
 
 class JmsListenerServiceTest :
     BehaviorSpec({
@@ -30,7 +29,7 @@ class JmsListenerServiceTest :
 
         Given("Oppdrag sender kvittering på et trekk") {
 
-            val reply = fileAsString("mq/trekk_ok_kvittering.json")
+            val reply = resourceToString("mq/trekk_ok_kvittering.json")
             jmsProducerService.send(reply)
 
             When("kvittering er mottatt") {

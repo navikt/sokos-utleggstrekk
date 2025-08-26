@@ -17,7 +17,7 @@ object MQConfig {
             queueManager = properties.mqQueueManagerName
             targetClientMatching = true
             clientReconnectOptions = WMQConstants.WMQ_CLIENT_RECONNECT_Q_MGR
-            setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, PropertiesConfig.Configuration.naisAppName)
+            setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, PropertiesConfig.Configuration().naisAppName)
             setIntProperty(WMQConstants.JMS_IBM_ENCODING, MQConstants.MQENC_NATIVE)
             setIntProperty(WMQConstants.JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA)
 

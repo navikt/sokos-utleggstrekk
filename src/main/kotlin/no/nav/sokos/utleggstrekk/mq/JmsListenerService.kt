@@ -1,15 +1,13 @@
 package no.nav.sokos.utleggstrekk.mq
 
-import kotlinx.serialization.json.Json
-
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import jakarta.jms.ConnectionFactory
 import jakarta.jms.JMSContext
 import jakarta.jms.Message
 import jakarta.jms.Queue
+import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-
 import no.nav.sokos.utleggstrekk.config.MQConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
@@ -36,7 +34,6 @@ class JmsListenerService(
 
     private fun onReceipt(message: Message) {
         val jmsMessage = message.getBody(String::class.java)
-        "RECEIVED MESSAGE: $jmsMessage".also { logger.info(it) }
         runCatching {
             logger.info { "Mottatt kvitteringmelding fra OppdragZ: $jmsMessage" }
             val receipt = json.decodeFromString<TrekkTilOppdrag>(jmsMessage)

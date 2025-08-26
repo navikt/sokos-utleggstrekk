@@ -43,6 +43,7 @@ val kotestVersion = "6.0.1"
 val mockkVersion = "1.14.5"
 val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.3"
+val activemqVersion = "2.40.0"
 val kotestTestContainerExtensionVersion = "2.0.2"
 val janinoVersion = "3.1.12"
 val ibmMqVersion = "9.4.3.0"
@@ -106,7 +107,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("commons-net:commons-net:$commonsVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-
+    testImplementation("org.apache.activemq:artemis-jakarta-server:$activemqVersion")
 }
 
 kotlin {
