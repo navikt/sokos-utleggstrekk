@@ -3,8 +3,6 @@ package no.nav.sokos.utleggstrekk.database
 import io.ktor.utils.io.InternalAPI
 import kotlinx.datetime.toKotlinLocalDateTime
 import mu.KotlinLogging
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import java.math.BigDecimal
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -80,45 +78,4 @@ object RepositoryExtensions {
 
         return transform(columnValue as T)
     }
-
-    fun ResultSet.toUtleggstrekkTable() =
-        toList {
-            UtleggstrekkTable(
-                utleggstrekkTableId = getColumn("id"),
-                sekvensnummer = getColumn("sekvensnummer"),
-                saksnummer = getColumn("saksnummer"),
-                trekkidSke = getColumn("trekkid_ske"),
-                trekkversjon = getColumn("trekkversjon"),
-                opprettetSke = getColumn("opprettet_ske"),
-                trekkpliktig = getColumn("trekkpliktig"),
-                skyldner = getColumn("skyldner"),
-                trekkstatus = getColumn("trekkstatus"),
-                kid = getColumn("kid"),
-                kontonummer = getColumn("kontonummer"),
-                betalingsmottaker = getColumn("betalingsmottaker"),
-                corrid = getColumn("corr_id"),
-                status = getColumn("status"),
-                kvitteringLOPM = getColumn("kvitteringLOPM"),
-                kvitteringLOPP = getColumn("kvitteringLOPP"),
-                tidspunktSendtOs = getColumn("tidspunkt_sendt_os"),
-                tidspunktSisteStatus = getColumn("tidspunkt_siste_status"),
-                tidspunktOpprettet = getColumn("tidspunkt_opprettet"),
-            )
-        }
-
-    fun ResultSet.toTrekkPeriodeTable() =
-        toList {
-            TrekkPeriodeTable(
-                trekkPeriodeTableId = getColumn("id"),
-                sekvensnummer = getColumn("sekvensnummer"),
-                trekkidSke = getColumn("trekkid_ske"),
-                trekkversjon = getColumn("trekkversjon"),
-                datoStart = getColumn("dato_start"),
-                datoSlutt = getColumn("dato_slutt"),
-                sats = getColumn("sats"),
-                trekkAlternativ = getColumn("trekkalternativ"),
-                kilde = getColumn("kilde"),
-            )
-        }
-
 }

@@ -10,7 +10,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import no.nav.sokos.utleggstrekk.TestContainer
-import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toUtleggstrekkTable
+import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.fetchAllUtleggstrekk
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.mq.MqConsumer
 import no.nav.sokos.utleggstrekk.util.resourceToString
@@ -18,6 +19,7 @@ import no.nav.sokos.utleggstrekk.util.resourceToStringList
 import no.nav.sokos.utleggstrekk.utils.JavaLocaldateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
+import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
 
 class KvitteringServiceTest :
@@ -25,6 +27,7 @@ class KvitteringServiceTest :
         val testContainer = TestContainer()
         testContainer.migrate()
         val databaseService = DatabaseService(testContainer.dataSource)
+        val repository = Repository(testContainer.dataSource)
         val mqConsumerMock = mockk<MqConsumer>(relaxed = true)
         val kvitteringservice =
             KvitteringService(
@@ -74,7 +77,8 @@ class KvitteringServiceTest :
             coVerify(exactly = 31) { mqConsumerMock.receive() }
 
             val mqListe = kvittFraMq.map { json.decodeFromString<TrekkTilOppdrag>(it) }
-            val dbliste = testContainer.dataSource.connection.prepareStatement("select * from utleggstrekk").executeQuery().toUtleggstrekkTable()
+
+            val dbliste = testContainer.dataSource.withTransaction { session-> repository.fetchAllUtleggstrekk(session) }
 
             mqListe.forEach { mqDoc ->
                 when (mqDoc.dokument.innrapporteringTrekk.kodeTrekkAlternativ) {
@@ -83,8 +87,6 @@ class KvitteringServiceTest :
                 }
 
             }
-
-
         }
     })
 
