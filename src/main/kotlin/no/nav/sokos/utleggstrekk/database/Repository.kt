@@ -1,11 +1,11 @@
 package no.nav.sokos.utleggstrekk.database
 
-import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.param
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toTrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.toUtleggstrekkTable
 import no.nav.sokos.utleggstrekk.database.RepositoryExtensions.withParameters
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
@@ -15,8 +15,6 @@ import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
 
-private val logger = KotlinLogging.logger { }
-private const val MOTTATT = "MOTTATT"
 private const val SKATTEETATEN = "SKATTEETATEN"
 private const val MAX_SLUTTDATO = "9999-12-31"
 
@@ -174,7 +172,7 @@ object Repository {
             prepStmt1.setString(10, trekk.betalingsinformasjon.kidnummer)
             prepStmt1.setString(11, trekk.betalingsinformasjon.kontonummer)
             prepStmt1.setString(12, UUID.randomUUID().toString())
-            prepStmt1.setString(13, MOTTATT)
+            prepStmt1.setString(13, UtleggstrekkStatus.MOTTATT.status)
             prepStmt1.addBatch()
             trekk.trekkstoerrelseForPeriode.forEach { periode ->
                 val trekkalternativ = TrekkAlternativ.getTrekkAlternativ(periode).value
@@ -199,11 +197,10 @@ object Repository {
         prepareStatement(
             """
             select * from utleggstrekk where status = ?
-            """.trimIndent())
-            .withParameters(
-                param(MOTTATT)
-            )
-            .executeQuery()
+            """.trimIndent(),
+        ).withParameters(
+            param(UtleggstrekkStatus.MOTTATT.status),
+        ).executeQuery()
             .toUtleggstrekkTable()
 
     fun Connection.fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
@@ -261,6 +258,6 @@ object Repository {
             param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
             param(kvittering.mmel?.kodeMelding ?: "INGEN KODE MOTTATT FRA OS"),
             param(kvittering.mmel?.beskrMelding ?: "INGEN BESKRIVELSE MOTTATT FRA OS"),
-        )
+        ).execute()
     }
 }

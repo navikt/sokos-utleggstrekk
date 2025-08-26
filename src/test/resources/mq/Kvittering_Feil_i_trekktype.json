@@ -1,0 +1,40 @@
+{
+  "mmel": {
+    "systemId": "231-OPPD",
+    "kodeMelding": "B7XX001F",
+    "alvorlighetsgrad": "08",
+    "beskrMelding": "Ugyldig verdi i felt: Trekktype",
+    "programId": "K231B720",
+    "sectionNavn": "CA15-FEIL-I-FELTER"
+  },
+  "dokument": {
+    "transaksjonsId": "4eb1f3f4-0c8a-46ec-965e-86576e8744c2",
+    "innrapporteringTrekk": {
+      "aksjonskode": "ENDR",
+      "kreditorIdTss": "971648198",
+      "kreditorTrekkId": "1M",
+      "debitorId": "19628198007",
+      "kodeTrekkAlternativ": "LOPM",
+      "kid": "17654202404",
+      "kreditorsRef": "sak-2023-899",
+      "prioritetFomDato": "2024-06-16",
+      "perioder": {
+        "periode": [
+          {
+            "periodeFomDato": "2023-06-13",
+            "periodeTomDato": "2024-11-30",
+            "sats": 5000.00
+          },
+          {
+            "periodeFomDato": "2024-12-01",
+            "periodeTomDato": "2024-12-31"
+          },
+          {
+            "periodeFomDato": "2025-01-01",
+            "sats": 5000.00
+          }
+        ]
+      }
+    }
+  }
+}

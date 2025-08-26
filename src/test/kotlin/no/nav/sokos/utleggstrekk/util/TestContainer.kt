@@ -18,7 +18,7 @@ class TestContainer {
             start()
         }
 
-    private val ds =
+     val dataSource =
         container.toDataSource {
             maximumPoolSize = 100
             minimumIdle = 1
@@ -28,7 +28,7 @@ class TestContainer {
     init {
         Flyway
             .configure()
-            .dataSource(ds)
+            .dataSource(dataSource)
             .initSql("""SET ROLE "${PropertiesConfig.PostgresConfig.adminUser}"""")
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
@@ -37,7 +37,7 @@ class TestContainer {
             .migrationsExecuted
     }
 
-    val dataSource = ds
+
 
     fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
 }

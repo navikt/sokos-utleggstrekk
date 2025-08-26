@@ -31,10 +31,7 @@ internal class UtleggsTrekkServiceTest :
                     databaseService = databaseService,
                     skeClient =
                         mockk<SkeClient> {
-                            coEvery { hentAlleUtleggstrekk() } returns
-                                jsonConfig.decodeFromString<List<Trekkpaalegg>>(
-                                    resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"),
-                                )
+                            coEvery { hentAlleUtleggstrekk() } returns jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
                         },
                     mqProducer = mockk<JmsProducerService>(relaxed = true),
                 )
@@ -48,10 +45,7 @@ internal class UtleggsTrekkServiceTest :
 
             then("Deretter skal trekk som er laget i behandleTrekkservice sendes og status skal oppdateres") {
                 val trekkIdatabase = databaseService.hentAlleTrekkSomIkkeErSendt()
-                val trekkPairs =
-                    jsonConfig.decodeFromString<List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>>(
-                        resourceToString("TrekkTilSendingPairMedRiktigCorrid.json"),
-                    )
+                val trekkPairs = jsonConfig.decodeFromString<List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>>(resourceToString("TrekkTilSendingPairMedRiktigCorrid.json"))
 
                 trekkPairs.size shouldBe trekkIdatabase.size
                 val trekkSomSkalSendesMap =

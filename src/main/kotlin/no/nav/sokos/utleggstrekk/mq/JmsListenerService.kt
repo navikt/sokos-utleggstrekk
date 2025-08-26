@@ -34,12 +34,11 @@ class JmsListenerService(
 
     private fun onReceipt(message: Message) {
         val jmsMessage = message.getBody(String::class.java)
-        runCatching {
-            logger.info { "Mottatt kvitteringmelding fra OppdragZ: $jmsMessage" }
+        try {
             val receipt = json.decodeFromString<TrekkTilOppdrag>(jmsMessage)
             processReceipt(receipt)
             message.acknowledge()
-        }.onFailure { exception ->
+        } catch (exception: Exception) {
             logger.error(exception) { "Prosessering av kvitteringmelding feilet. ${message.jmsMessageID}" }
         }
     }
