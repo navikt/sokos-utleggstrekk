@@ -29,6 +29,7 @@ val prometheusVersion = "1.15.1"
 val hikaricpVersion = "6.3.0"
 val flywayVersion = "11.9.1"
 val postgresqlVersion = "42.7.7"
+val kotliqueryVersion = "1.9.1"
 
 //Logging
 val logbackVersion = "1.5.18"
@@ -85,6 +86,7 @@ dependencies {
     // Database
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
     implementation("no.nav:vault-jdbc:$vaultVersion")
 
     runtimeOnly("org.flywaydb:flyway-database-postgresql:$flywayVersion")

@@ -1,0 +1,32 @@
+[
+  {
+    "trekkid": "1",
+    "trekkversjon": 1,
+    "sekvensnummer": 1,
+    "opprettet": "2024-06-16T13:33:05.672Z",
+    "saksnummer": "Test_Beløp1",
+    "trekkpliktig": "889640782",
+    "skyldner": "12345678901",
+    "trekkstatus": "aktiv",
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2023-06-13",
+        "sluttdato": "2024-11-30",
+        "trekkbeloep": {
+          "trekkbeloep": 5000.0
+        }
+      },
+      {
+        "startdato": "2025-01-01",
+        "trekkprosent": {
+          "trekkprosent": 15.0
+        }
+      }
+    ],
+    "betalingsinformasjon": {
+      "betalingsmottaker": "971648198",
+      "kidnummer": "17654202404",
+      "kontonummer": "76940512057"
+    }
+  }
+]

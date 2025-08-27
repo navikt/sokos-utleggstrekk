@@ -71,8 +71,14 @@ object Repository {
     }
 
 
-    fun Connection.updateKvitteringStatus(corrId: String, status: String, kvittering: String, navTrekkId: String, trekkalternativ: String) {
-        val kvitteringAlternativ = when (trekkalternativ){
+    fun Connection.updateKvitteringStatus(
+        corrId: String,
+        status: String,
+        kvittering: String,
+        navTrekkId: String,
+        trekkalternativ: String
+    ) {
+        val kvitteringAlternativ = when (trekkalternativ) {
             "LOPM" -> "kvitteringLOPM"
             else -> "kvitteringLOPP"
         }
@@ -92,7 +98,7 @@ object Repository {
 
     fun Connection.savePerioder(
         perioder: List<TrekkPeriodeTable>
-    ){
+    ) {
         val prepStmt =
             prepareStatement(
                 """
@@ -123,6 +129,7 @@ object Repository {
         prepStmt.executeBatch()
         commit()
     }
+
     fun Connection.saveAllNewUtleggstrekk(
         trekkListe: List<Trekkpaalegg>,
     ) {
@@ -184,7 +191,11 @@ object Repository {
                 prepStmt2.setInt(3, trekk.trekkversjon)
                 prepStmt2.setString(4, periode.startdato)
                 prepStmt2.setString(5, sluttdato)
-                prepStmt2.setObject(6, periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent, java.sql.Types.DOUBLE)
+                prepStmt2.setObject(
+                    6,
+                    periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent,
+                    java.sql.Types.DOUBLE
+                )
                 prepStmt2.setString(7, trekkalternativ)
                 prepStmt2.setString(8, SKATTEETATEN)
                 prepStmt2.addBatch()
@@ -199,7 +210,8 @@ object Repository {
         prepareStatement(
             """
             select * from utleggstrekk where status = ?
-            """.trimIndent())
+            """.trimIndent()
+        )
             .withParameters(
                 param(MOTTATT)
             )
@@ -246,9 +258,8 @@ object Repository {
 
 
     fun Connection.saveFeilkoder(kvitteringer: List<TrekkTilOppdrag>) {
-        kvitteringer.forEach { kvittering ->
-            prepareStatement(
-                """
+        val prepStatement = prepareStatement(
+            """
                 insert into feilkoder (
                 kreditor_trekk_id ,
                 corr_id,
@@ -257,14 +268,18 @@ object Repository {
                 beskrivelse
                 ) values (?,?,?,?,?)        
             """.trimIndent()
-            )
-                .withParameters(
+        )
+        kvitteringer.forEach { kvittering ->
+            prepStatement.withParameters(
                     param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
                     param(kvittering.dokument.transaksjonsId),
                     param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
                     param(kvittering.mmel?.kodeMelding ?: "INGEN KODE MOTTATT FRA OS"),
                     param(kvittering.mmel?.beskrMelding ?: "INGEN BESKRIVELSE MOTTATT FRA OS")
                 )
+            prepStatement.addBatch()
         }
+        prepStatement.executeBatch()
+        commit() // TODO: Temp. Remove this when we have transactionality
     }
 }
