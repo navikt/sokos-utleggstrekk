@@ -3,12 +3,9 @@ package no.nav.sokos.utleggstrekk.database
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
 import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
@@ -18,10 +15,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.util.resourceToString
-import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
-import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
-import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
-import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
+import java.lang.Thread.sleep
 
 class RepositoryTest :
     FunSpec({
@@ -29,7 +23,6 @@ class RepositoryTest :
         val dataSource = testContainer.dataSource
         val repository = Repository(testContainer.dataSource)
 
-        testContainer.migrate()
         beforeTest {
             dataSource.withTransaction { session ->
                 repository.clearDb(session)
@@ -52,9 +45,8 @@ class RepositoryTest :
             val trekkPerioder = trekkpaalegg.trekkstoerrelseForPeriode.sortedBy(TrekkstorrelseForPeriode::startdato)
 
             trekkpaalegg.trekkstoerrelseForPeriode.size shouldBe dbPerioder.size
-            for (index in 0..dbPerioder.size - 1) {
+            dbPerioder.forEachIndexed { index, dbPeriode ->
                 val periode = trekkPerioder[index]
-                val dbPeriode = dbPerioder[index]
                 dbPeriode.datoStart shouldBe periode.startdato
                 dbPeriode.datoSlutt shouldBe (periode.sluttdato
                     ?: "9999-12-31")  // TODO: We should probably just keep the nulls.
@@ -98,11 +90,6 @@ class RepositoryTest :
             prettyPrint = true
             isLenient = true
             explicitNulls = false
-            serializersModule = SerializersModule {
-                contextual(ZonedDateTimeSerializer)
-                contextual(LocalDateTimeSerializer)
-                contextual(LocalDateSerializer)
-            }
         }
 
         test("Hent sekvensnummer") {
@@ -150,7 +137,7 @@ class RepositoryTest :
             val trekkpalegg =
                 json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             saveUtleggsrekk(trekkpalegg)
-            delay(1)
+            sleep(1)
 
             val trekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }
                 .find { it.sekvensnummer == 1 }!!
