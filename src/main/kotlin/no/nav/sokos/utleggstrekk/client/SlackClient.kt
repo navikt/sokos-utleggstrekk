@@ -9,18 +9,22 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.slack.createSlackMessage
+import no.nav.sokos.utleggstrekk.domene.nav.createSlackMessage
 
 class SlackClient(
     private val slackEndpoint: String = PropertiesConfig.SlackConfig.url,
     private val client: HttpClient = httpClient,
 ) {
-    suspend fun sendMessage(header: String, messages: List<String>) {
+    suspend fun sendMessage(
+        header: String,
+        filnavn: String,
+        messages: Map<String, List<String>>,
+    ) {
         client.post(
             HttpRequestBuilder().apply {
                 url(slackEndpoint)
                 contentType(ContentType.Application.Json)
-                setBody(createSlackMessage(header, messages))
+                setBody(createSlackMessage(header, filnavn, messages))
             },
         )
     }
