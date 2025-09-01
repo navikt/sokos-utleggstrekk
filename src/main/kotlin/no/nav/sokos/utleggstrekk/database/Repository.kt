@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package no.nav.sokos.utleggstrekk.database
 
 import mu.KotlinLogging
@@ -14,6 +16,7 @@ import no.nav.sokos.utleggstrekk.service.SENDT
 import java.sql.Connection
 import java.sql.Timestamp
 import java.util.UUID
+import kotlin.time.ExperimentalTime
 
 private val logger = KotlinLogging.logger { }
 private const val MOTTATT = "MOTTATT"
@@ -30,7 +33,11 @@ object Repository {
         }
     }
 
-    fun Connection.doesTrekkExist(trekkid_ske: String, sekvensnummer: Int, trekkversjon: Int): Boolean =
+    fun Connection.doesTrekkExist(
+        trekkid_ske: String,
+        sekvensnummer: Int,
+        trekkversjon: Int,
+    ): Boolean =
         prepareStatement(
             """
             select 1 from utleggstrekk where sekvensnummer = ? and trekkid_ske = ? and trekkversjon = ?
@@ -42,12 +49,15 @@ object Repository {
         ).executeQuery()
             .next()
 
-    fun Connection.updateNavTrekkStatus(corrId: String, status: String) {
+    fun Connection.updateNavTrekkStatus(
+        corrId: String,
+        status: String,
+    ) {
         prepareStatement(
             """
-                update utleggstrekk set status = ?, tidspunkt_siste_status = now() 
-                where corr_id = ?;
-                """.trimIndent(),
+            update utleggstrekk set status = ?, tidspunkt_siste_status = now() 
+            where corr_id = ?;
+            """.trimIndent(),
         ).withParameters(
             param(status),
             param(corrId),
@@ -58,47 +68,45 @@ object Repository {
     fun Connection.updateTrekkStatusSentAndDateTimeSentOS(corrId: String) {
         prepareStatement(
             """
-                update utleggstrekk set status = ?, 
-                                        tidspunkt_siste_status = now(),
-                                        tidspunkt_sendt_os = now()
-                where corr_id = ?
-            """.trimIndent()
+            update utleggstrekk set status = ?, 
+                                    tidspunkt_siste_status = now(),
+                                    tidspunkt_sendt_os = now()
+            where corr_id = ?
+            """.trimIndent(),
         ).withParameters(
             param(SENDT),
-            param(corrId)
+            param(corrId),
         ).executeUpdate()
         commit()
     }
-
 
     fun Connection.updateKvitteringStatus(
         corrId: String,
         status: String,
         kvittering: String,
         navTrekkId: String,
-        trekkalternativ: String
+        trekkalternativ: String,
     ) {
-        val kvitteringAlternativ = when (trekkalternativ) {
-            "LOPM" -> "kvitteringLOPM"
-            else -> "kvitteringLOPP"
-        }
+        val kvitteringAlternativ =
+            when (trekkalternativ) {
+                "LOPM" -> "kvitteringLOPM"
+                else -> "kvitteringLOPP"
+            }
         prepareStatement(
             """
-                update utleggstrekk set status = ?, $kvitteringAlternativ = ?, trekkid_nav = ?, tidspunkt_siste_status = NOW()  
-                where corr_id = ?;
-            """.trimIndent()
+            update utleggstrekk set status = ?, $kvitteringAlternativ = ?, trekkid_nav = ?, tidspunkt_siste_status = NOW()  
+            where corr_id = ?;
+            """.trimIndent(),
         ).withParameters(
             param(status),
             param(kvittering),
             param(navTrekkId),
-            param(corrId)
+            param(corrId),
         ).executeUpdate()
         commit()
     }
 
-    fun Connection.savePerioder(
-        perioder: List<TrekkPeriodeTable>
-    ) {
+    fun Connection.savePerioder(perioder: List<TrekkPeriodeTable>) {
         val prepStmt =
             prepareStatement(
                 """
@@ -130,9 +138,7 @@ object Repository {
         commit()
     }
 
-    fun Connection.saveAllNewUtleggstrekk(
-        trekkListe: List<Trekkpaalegg>,
-    ) {
+    fun Connection.saveAllNewUtleggstrekk(trekkListe: List<Trekkpaalegg>) {
         val prepStmt1 =
             prepareStatement(
                 """
@@ -194,7 +200,7 @@ object Repository {
                 prepStmt2.setObject(
                     6,
                     periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent,
-                    java.sql.Types.DOUBLE
+                    java.sql.Types.DOUBLE,
                 )
                 prepStmt2.setString(7, trekkalternativ)
                 prepStmt2.setString(8, SKATTEETATEN)
@@ -210,12 +216,10 @@ object Repository {
         prepareStatement(
             """
             select * from utleggstrekk where status = ?
-            """.trimIndent()
-        )
-            .withParameters(
-                param(MOTTATT)
-            )
-            .executeQuery()
+            """.trimIndent(),
+        ).withParameters(
+            param(MOTTATT),
+        ).executeQuery()
             .toUtleggstrekkTable()
 
     fun Connection.fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
@@ -226,40 +230,34 @@ object Repository {
                 and trekkid_ske = ?
                 and trekkversjon= ?
 
-        """.trimIndent()
-        )
-            .withParameters(
-                param(trekk.sekvensnummer),
-                param(trekk.trekkidSke),
-                param(trekk.trekkversjon)
-            )
-            .executeQuery()
+            """.trimIndent(),
+        ).withParameters(
+            param(trekk.sekvensnummer),
+            param(trekk.trekkidSke),
+            param(trekk.trekkversjon),
+        ).executeQuery()
             .toTrekkPeriodeTable()
 
-    fun Connection.fetchAllPerioderForTrekk(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> {
-
-        return prepareStatement(
+    fun Connection.fetchAllPerioderForTrekk(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
+        prepareStatement(
             """
             select * from trekkperiode 
             where sekvensnummer = ?
                 and trekkid_ske = ?
                 and trekkversjon = ?
 
-        """.trimIndent()
-        )
-            .withParameters(
-                param(trekk.sekvensnummer),
-                param(trekk.trekkidSke),
-                param(trekk.trekkversjon),
-            )
-            .executeQuery()
+            """.trimIndent(),
+        ).withParameters(
+            param(trekk.sekvensnummer),
+            param(trekk.trekkidSke),
+            param(trekk.trekkversjon),
+        ).executeQuery()
             .toTrekkPeriodeTable()
-    }
-
 
     fun Connection.saveFeilkoder(kvitteringer: List<TrekkTilOppdrag>) {
-        val prepStatement = prepareStatement(
-            """
+        val prepStatement =
+            prepareStatement(
+                """
                 insert into feilkoder (
                 kreditor_trekk_id ,
                 corr_id,
@@ -267,16 +265,16 @@ object Repository {
                 feilkode,
                 beskrivelse
                 ) values (?,?,?,?,?)        
-            """.trimIndent()
-        )
+                """.trimIndent(),
+            )
         kvitteringer.forEach { kvittering ->
             prepStatement.withParameters(
-                    param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
-                    param(kvittering.dokument.transaksjonsId),
-                    param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
-                    param(kvittering.mmel?.kodeMelding ?: "INGEN KODE MOTTATT FRA OS"),
-                    param(kvittering.mmel?.beskrMelding ?: "INGEN BESKRIVELSE MOTTATT FRA OS")
-                )
+                param(kvittering.dokument.innrapporteringTrekk.kreditorTrekkId),
+                param(kvittering.dokument.transaksjonsId),
+                param(kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ),
+                param(kvittering.mmel?.kodeMelding ?: "INGEN KODE MOTTATT FRA OS"),
+                param(kvittering.mmel?.beskrMelding ?: "INGEN BESKRIVELSE MOTTATT FRA OS"),
+            )
             prepStatement.addBatch()
         }
         prepStatement.executeBatch()

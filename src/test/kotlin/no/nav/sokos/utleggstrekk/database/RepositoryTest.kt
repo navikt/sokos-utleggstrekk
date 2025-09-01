@@ -24,7 +24,9 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import java.lang.Thread.sleep
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class RepositoryTest :
     FunSpec({
         val testContainer = TestContainer()
@@ -46,8 +48,10 @@ class RepositoryTest :
             dbPerioder.forEachIndexed { index, dbPeriode ->
                 val periode = trekkPerioder[index]
                 dbPeriode.datoStart shouldBe periode.startdato
-                dbPeriode.datoSlutt shouldBe (periode.sluttdato
-                    ?: "9999-12-31")  // TODO: We should probably just keep the nulls.
+                dbPeriode.datoSlutt shouldBe (
+                    periode.sluttdato
+                        ?: "9999-12-31"
+                ) // TODO: We should probably just keep the nulls.
                 dbPeriode.trekkversjon shouldBe trekkpaalegg.trekkversjon
                 dbPeriode.sekvensnummer shouldBe trekkpaalegg.sekvensnummer
                 dbPeriode.trekkidSke shouldBe trekkpaalegg.trekkid
@@ -64,7 +68,7 @@ class RepositoryTest :
 
         fun compareTrekk(
             trekkpaalegg: Trekkpaalegg,
-            table: UtleggstrekkTable
+            table: UtleggstrekkTable,
         ) {
             table.trekkstatus shouldBe trekkpaalegg.trekkstatus
             table.trekkidSke shouldBe trekkpaalegg.trekkid
@@ -84,11 +88,12 @@ class RepositoryTest :
             comparePerioder(trekkpaalegg, dbPerioder)
         }
 
-        val json = Json {
-            prettyPrint = true
-            isLenient = true
-            explicitNulls = false
-        }
+        val json =
+            Json {
+                prettyPrint = true
+                isLenient = true
+                explicitNulls = false
+            }
 
         test("Hent sekvensnummer") {
             val sek = connection.fetchLastSekvensnr()
@@ -147,7 +152,7 @@ class RepositoryTest :
                 "KVITTERING_OK",
                 "kvitteringLOPM",
                 "navID",
-                TrekkAlternativ.LOPM.value
+                TrekkAlternativ.LOPM.value,
             )
             val updatedTrekk = repository.findTrekkByCorrId(trekk.corrid)!!
 
@@ -162,15 +167,15 @@ class RepositoryTest :
             connection.saveAllNewUtleggstrekk(trekkpalegg)
             val dbTrekk = connection.fetchTrekkNotSendt()
             trekkpalegg.size shouldBe dbTrekk.size
-            for ( trekk in trekkpalegg ) {
-                compareTrekk(trekk, dbTrekk.find { it.sekvensnummer == trekk.sekvensnummer }!! )
+            for (trekk in trekkpalegg) {
+                compareTrekk(trekk, dbTrekk.find { it.sekvensnummer == trekk.sekvensnummer }!!)
             }
         }
 
         test("Lagre feilkoder") {
             val kvittering = json.decodeFromString<TrekkTilOppdrag>(resourceToString("kvittering-feil.json"))
             connection.saveFeilkoder(listOf(kvittering))
-            val feilkode = repository.findFeilkode( kvittering.dokument.transaksjonsId )!!
+            val feilkode = repository.findFeilkode(kvittering.dokument.transaksjonsId)!!
 
             feilkode.feilkodeTableId shouldBe 1L
             feilkode.trekkIdNav shouldBe kvittering.dokument.innrapporteringTrekk.kreditorTrekkId

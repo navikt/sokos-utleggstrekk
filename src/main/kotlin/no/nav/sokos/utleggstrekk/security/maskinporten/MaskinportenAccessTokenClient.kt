@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package no.nav.sokos.utleggstrekk.security.maskinporten
 
 import com.auth0.jwt.JWT
@@ -14,12 +16,13 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.plus
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import java.util.Date
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class MaskinportenAccessTokenClient(
     private val maskinportenConfig: PropertiesConfig.MaskinportenClientConfig,
