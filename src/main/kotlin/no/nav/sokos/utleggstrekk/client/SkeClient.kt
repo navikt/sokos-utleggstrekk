@@ -18,7 +18,7 @@ private const val KLIENT_ID = "NAV/0.1"
 
 class SkeClient(
     private val client: HttpClient = httpClient,
-    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), httpClient),
+    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), client),
 ) {
     val basePath = PropertiesConfig.SKEConfig().skeRestUrl
 
@@ -45,6 +45,4 @@ class SkeClient(
             append(HttpHeaders.Authorization, "Bearer $token")
         }
     }
-
-
 }
