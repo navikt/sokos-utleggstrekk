@@ -1,5 +1,9 @@
 package no.nav.sokos.utleggstrekk.client
 
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlinx.serialization.json.Json
+
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -25,9 +29,9 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
-import kotlinx.serialization.json.Json
 import mu.KLogger
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkbeloep
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -35,8 +39,6 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.util.resourceToString
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
 class SkeClientTest :

@@ -1,14 +1,16 @@
 package no.nav.sokos.utleggstrekk.mq
 
+import javax.jms.Connection
+import javax.jms.MessageProducer
+import javax.jms.Session
+
 import com.ibm.mq.jms.MQConnectionFactory
 import com.ibm.mq.jms.MQQueue
 import com.ibm.msg.client.jms.JmsConstants
 import com.ibm.msg.client.wmq.WMQConstants
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import javax.jms.Connection
-import javax.jms.MessageProducer
-import javax.jms.Session
 
 private val logger = KotlinLogging.logger {}
 
@@ -70,5 +72,4 @@ class MqProducer(
                 it.targetClientMatching = true
                 it.setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
             }.createConnection(username, password)
-
 }

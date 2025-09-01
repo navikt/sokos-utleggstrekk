@@ -1,7 +1,9 @@
 package no.nav.sokos.utleggstrekk.service
 
 import kotlinx.serialization.json.Json
+
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.mq.MqConsumer
 
@@ -9,7 +11,6 @@ class KvitteringService(
     private val databaseService: DatabaseService,
     private val mqConsumer: MqConsumer = MqConsumer(),
 ) {
-
     private val logger = KotlinLogging.logger { }
 
     fun behandleKvitteringer() {
@@ -17,9 +18,10 @@ class KvitteringService(
         lagreKvitteringerOgLoggFeil(kvitteringer)
     }
 
-    fun hentAlleKvitteringer(): List<TrekkTilOppdrag> = hentAlleKvitteringerFraMq().map {
-        Json.decodeFromString<TrekkTilOppdrag>(it)
-    }
+    fun hentAlleKvitteringer(): List<TrekkTilOppdrag> =
+        hentAlleKvitteringerFraMq().map {
+            Json.decodeFromString<TrekkTilOppdrag>(it)
+        }
 
     private fun hentAlleKvitteringerFraMq(): List<String> {
         val kvitteringer = mutableListOf<String>()
@@ -44,10 +46,9 @@ class KvitteringService(
         kvitteringerMedFeil.forEach {
             logger.info(
                 "Trekk med kreditorstrekkID: ${it.dokument.innrapporteringTrekk.kreditorTrekkId}," +
-                " corrid: ${it.dokument.transaksjonsId} har feilkode: ${it.mmel?.kodeMelding} og beskrivelse: ${it.mmel?.beskrMelding}"
+                    " corrid: ${it.dokument.transaksjonsId} har feilkode: ${it.mmel?.kodeMelding} og beskrivelse: ${it.mmel?.beskrMelding}",
             )
         }
-        //TODO sjekke/vurdere om det skal sendes melding til slack og evt utføre det.
+        // TODO sjekke/vurdere om det skal sendes melding til slack og evt utføre det.
     }
-
 }

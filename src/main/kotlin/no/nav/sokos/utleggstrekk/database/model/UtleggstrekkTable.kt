@@ -3,6 +3,7 @@ package no.nav.sokos.utleggstrekk.database.model
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.serialization.Serializable
+
 import kotliquery.Row
 
 @Serializable
@@ -51,5 +52,3 @@ data class UtleggstrekkTable(
         tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(),
     )
 }
-
-

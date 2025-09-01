@@ -1,14 +1,16 @@
 package no.nav.sokos.utleggstrekk.service
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
+
 import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.fetchAllUtleggstrekk
@@ -32,20 +34,22 @@ class KvitteringServiceTest :
         val kvitteringservice =
             KvitteringService(
                 databaseService,
-                mqConsumerMock
+                mqConsumerMock,
             )
 
-        val json = Json {
-            prettyPrint = true
-            isLenient = true
-            explicitNulls = false
-            serializersModule = SerializersModule {
-                contextual(JavaLocaldateTimeSerializer)
-                contextual(LocalDateTimeSerializer)
-                contextual(LocalDateSerializer)
-                contextual(ZonedDateTimeSerializer)
+        val json =
+            Json {
+                prettyPrint = true
+                isLenient = true
+                explicitNulls = false
+                serializersModule =
+                    SerializersModule {
+                        contextual(JavaLocaldateTimeSerializer)
+                        contextual(LocalDateTimeSerializer)
+                        contextual(LocalDateSerializer)
+                        contextual(ZonedDateTimeSerializer)
+                    }
             }
-        }
 
         test("Det er ingen meldinger på kø") {
             clearMocks(mqConsumerMock)
@@ -55,7 +59,7 @@ class KvitteringServiceTest :
         }
         test("det er 1 melding på kø så det leses 2 ganger fra kø") {
             clearMocks(mqConsumerMock)
-            val kvittFraMq: String? = resourceToString("Kvitering-ok.json")
+            val kvittFraMq: String = resourceToString("Kvitering-ok.json")
             coEvery { mqConsumerMock.receive() } returns kvittFraMq andThen null
             println(kvitteringservice.hentAlleKvitteringer())
             coVerify(exactly = 2) { mqConsumerMock.receive() }
@@ -78,15 +82,13 @@ class KvitteringServiceTest :
 
             val mqListe = kvittFraMq.map { json.decodeFromString<TrekkTilOppdrag>(it) }
 
-            val dbliste = testContainer.dataSource.withTransaction { session-> repository.fetchAllUtleggstrekk(session) }
+            val dbliste = testContainer.dataSource.withTransaction { session -> repository.fetchAllUtleggstrekk(session) }
 
             mqListe.forEach { mqDoc ->
                 when (mqDoc.dokument.innrapporteringTrekk.kodeTrekkAlternativ) {
                     "LOPM" -> dbliste.first { it.corrid == mqDoc.dokument.transaksjonsId }.kvitteringLOPM shouldBe mqDoc.mmel!!.kodeMelding
                     else -> dbliste.first { it.corrid == mqDoc.dokument.transaksjonsId }.kvitteringLOPP shouldBe mqDoc.mmel!!.kodeMelding
                 }
-
             }
         }
     })
-

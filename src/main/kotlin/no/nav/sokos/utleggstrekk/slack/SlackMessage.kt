@@ -1,7 +1,8 @@
 package no.nav.sokos.utleggstrekk.slack
 
-import kotlinx.serialization.Serializable
 import java.time.LocalDate
+
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class Data(
@@ -68,14 +69,14 @@ private fun buildSections(
 
     val feilmeldinger =
         content.map { utlegg ->
-                Block(
-                    type = "section",
-                    fields =
-                        listOf(
-                            Field(text = "*Feilmelding*\n${utlegg}"),
-                            Field(text = "*Info* error"),
-                        ),
-                )
+            Block(
+                type = "section",
+                fields =
+                    listOf(
+                        Field(text = "*Feilmelding*\n$utlegg"),
+                        Field(text = "*Info* error"),
+                    ),
+            )
         }
 
     val blocks = mutableListOf<Block>()

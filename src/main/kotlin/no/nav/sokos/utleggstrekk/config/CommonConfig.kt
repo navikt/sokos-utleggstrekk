@@ -1,5 +1,10 @@
 package no.nav.sokos.utleggstrekk.config
 
+import java.util.UUID
+
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -12,18 +17,13 @@ import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import org.slf4j.event.Level
-import java.util.UUID
 
 private val logger = KotlinLogging.logger { }
 
 @OptIn(ExperimentalSerializationApi::class)
-fun Application.commonConfig(
-    azureConfiguration: AzureConfiguration,
-) {
+fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
     install(CallId) {
         header(HttpHeaders.XCorrelationId)
         generate { UUID.randomUUID().toString() }
@@ -36,12 +36,14 @@ fun Application.commonConfig(
         disableDefaultColors()
     }
     install(ContentNegotiation) {
-        json(Json {
-            prettyPrint = true
-            isLenient = true
-            decodeEnumsCaseInsensitive = true
-            explicitNulls = true
-        })
+        json(
+            Json {
+                prettyPrint = true
+                isLenient = true
+                decodeEnumsCaseInsensitive = true
+                explicitNulls = true
+            },
+        )
     }
 
     install(Authentication) {

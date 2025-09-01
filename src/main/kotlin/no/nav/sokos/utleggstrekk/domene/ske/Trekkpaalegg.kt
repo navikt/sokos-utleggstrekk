@@ -2,9 +2,9 @@
 
 package no.nav.sokos.utleggstrekk.domene.ske
 
-import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class Trekkpaalegg(

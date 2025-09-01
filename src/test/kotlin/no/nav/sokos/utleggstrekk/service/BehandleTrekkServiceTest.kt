@@ -2,6 +2,12 @@
 
 package no.nav.sokos.utleggstrekk.service
 
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
@@ -9,13 +15,9 @@ import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 class BehandleTrekkServiceTest :
     FunSpec(

@@ -7,12 +7,15 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 object Metrics {
     val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
-    val appStateRunningFalse: Counter = Counter.builder("app_state_running_false")
+    val appStateRunningFalse: Counter =
+        Counter
+            .builder("app_state_running_false")
             .description("app state running changed to false")
             .register(registry)
 
     val appStateReadyFalse: Counter =
-        Counter.builder("app_state_ready_false")
+        Counter
+            .builder("app_state_ready_false")
             .description("app state ready changed to false")
             .register(registry)
 }

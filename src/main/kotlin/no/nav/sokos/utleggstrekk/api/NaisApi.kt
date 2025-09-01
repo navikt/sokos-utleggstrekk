@@ -1,11 +1,11 @@
 package no.nav.sokos.utleggstrekk.api
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
+
 import no.nav.sokos.utleggstrekk.ApplicationState
 import no.nav.sokos.utleggstrekk.metrics.Metrics
 

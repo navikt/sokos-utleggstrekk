@@ -1,20 +1,21 @@
 package no.nav.sokos.utleggstrekk.database
 
+import java.time.Duration
+
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration
 import org.flywaydb.core.Flyway
 import org.postgresql.ds.PGSimpleDataSource
-import java.time.Duration
+
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration
 
 object PostgresDataSource {
     private val logger = KotlinLogging.logger {}
     val dataSource: HikariDataSource by lazy {
         dataSource()
     }
-
 
     fun migrate(dataSource: HikariDataSource = dataSource(role = PropertiesConfig.PostgresConfig.adminUser)) {
         logger.info { "Flyway migration" }

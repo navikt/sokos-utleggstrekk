@@ -2,6 +2,7 @@ package no.nav.sokos.utleggstrekk.service
 
 import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
@@ -17,12 +18,18 @@ class DatabaseService(
 ) {
     private val repository = Repository(dataSource)
 
-    fun trekkFinnes(trekkid_ske: String, sekvensnr: Int, trekkversjon: Int) =
-        dataSource.withTransaction { session ->
-            repository.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon, session)
-        }
+    fun trekkFinnes(
+        trekkid_ske: String,
+        sekvensnr: Int,
+        trekkversjon: Int,
+    ) = dataSource.withTransaction { session ->
+        repository.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon, session)
+    }
 
-    fun oppdaterTrekkStatus(corrId: String, status: String) {
+    fun oppdaterTrekkStatus(
+        corrId: String,
+        status: String,
+    ) {
         dataSource.withTransaction { session ->
             if (status == SENDT) {
                 repository.updateTrekkStatusSentAndDateTimeSentOS(corrId, session)
@@ -35,16 +42,18 @@ class DatabaseService(
     fun oppdaterTrekkMedKvitteringsinfo(kvitteringer: List<TrekkTilOppdrag>) {
         kvitteringer.map { kvittering ->
             dataSource.withTransaction { session ->
-                val status = when (kvittering.mmel?.alvorlighetsgrad) {
-                    "00" -> "KVITTERING_OK"
-                    else -> "KVITTERING_FEILET"
-                }
+                val status =
+                    when (kvittering.mmel?.alvorlighetsgrad) {
+                        "00" -> "KVITTERING_OK"
+                        else -> "KVITTERING_FEILET"
+                    }
                 repository.updateKvitteringStatus(
                     kvittering.dokument.transaksjonsId,
-                    status, kvittering.mmel?.kodeMelding ?: "Ingen kode i mmel",
+                    status,
+                    kvittering.mmel?.kodeMelding ?: "Ingen kode i mmel",
                     kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen Trekkid i kvittering",
                     kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
-                    session
+                    session,
                 )
             }
             kvittering
@@ -61,7 +70,7 @@ class DatabaseService(
             repository.fetchAllPerioderForTrekk(trekk, session)
         }
 
-    fun hentAllePerioderForTrekkVersjon(trekk:UtleggstrekkTable):List<TrekkPeriodeTable> =
+    fun hentAllePerioderForTrekkVersjon(trekk: UtleggstrekkTable): List<TrekkPeriodeTable> =
         dataSource.withTransaction { session ->
             repository.fetchPerioderForTrekkVersion(trekk, session)
         }
@@ -73,7 +82,8 @@ class DatabaseService(
 
     fun lagreUtleggstrekk(trekkListe: List<Trekkpaalegg>) {
         dataSource.withTransaction { session ->
-            trekkListe.filterNot { repository.doesTrekkExist(it.trekkid, it.sekvensnummer, it.trekkversjon, session) }
+            trekkListe
+                .filterNot { repository.doesTrekkExist(it.trekkid, it.sekvensnummer, it.trekkversjon, session) }
                 .let { nyeTrekk ->
                     logger.info("Det er ${nyeTrekk.size} som skal lagres")
                     repository.saveAllNewUtleggstrekk(nyeTrekk, session)
@@ -81,16 +91,17 @@ class DatabaseService(
         }
     }
 
-    fun lagreGenerertePerioder(perioder: List<TrekkPeriodeTable>){
+    fun lagreGenerertePerioder(perioder: List<TrekkPeriodeTable>) {
         dataSource.withTransaction { session ->
             repository.savePerioder(perioder, session)
         }
     }
 
-    fun lagreFeilkoderFraOS(kvitteringerMedFeilkoder: List<TrekkTilOppdrag>){
+    fun lagreFeilkoderFraOS(kvitteringerMedFeilkoder: List<TrekkTilOppdrag>) {
         if (kvitteringerMedFeilkoder.isNotEmpty()) {
             dataSource.withTransaction { session ->
-                repository.saveFeilkoder(kvitteringerMedFeilkoder, session )
+                repository.saveFeilkoder(kvitteringerMedFeilkoder, session)
             }
         }
-}}
+    }
+}

@@ -1,11 +1,16 @@
 package no.nav.sokos.utleggstrekk.database
 
-import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
+import java.lang.Thread.sleep
+
+import kotlin.time.ExperimentalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.serialization.json.Json
+
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+
 import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
@@ -16,8 +21,6 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
-import java.lang.Thread.sleep
-import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class RepositoryTest :
@@ -32,9 +35,7 @@ class RepositoryTest :
             }
         }
 
-        fun saveUtleggsrekk(
-            trekkpalegg: List<Trekkpaalegg>
-        ) {
+        fun saveUtleggsrekk(trekkpalegg: List<Trekkpaalegg>) {
             dataSource.withTransaction { session ->
                 repository.saveAllNewUtleggstrekk(trekkpalegg, session)
             }
@@ -51,8 +52,10 @@ class RepositoryTest :
             dbPerioder.forEachIndexed { index, dbPeriode ->
                 val periode = trekkPerioder[index]
                 dbPeriode.datoStart shouldBe periode.startdato
-                dbPeriode.datoSlutt shouldBe (periode.sluttdato
-                    ?: "9999-12-31")  // TODO: We should probably just keep the nulls.
+                dbPeriode.datoSlutt shouldBe (
+                    periode.sluttdato
+                        ?: "9999-12-31"
+                ) // TODO: We should probably just keep the nulls.
                 dbPeriode.trekkversjon shouldBe trekkpaalegg.trekkversjon
                 dbPeriode.sekvensnummer shouldBe trekkpaalegg.sekvensnummer
                 dbPeriode.trekkidSke shouldBe trekkpaalegg.trekkid
@@ -69,7 +72,7 @@ class RepositoryTest :
 
         fun compareTrekk(
             trekkpaalegg: Trekkpaalegg,
-            table: UtleggstrekkTable
+            table: UtleggstrekkTable,
         ) {
             table.trekkstatus shouldBe trekkpaalegg.trekkstatus
             table.trekkidSke shouldBe trekkpaalegg.trekkid
@@ -89,23 +92,24 @@ class RepositoryTest :
             comparePerioder(trekkpaalegg, dbPerioder)
         }
 
-        val json = Json {
-            prettyPrint = true
-            isLenient = true
-            explicitNulls = false
-        }
+        val json =
+            Json {
+                prettyPrint = true
+                isLenient = true
+                explicitNulls = false
+            }
 
         test("Hent sekvensnummer") {
-            val sek = dataSource.withTransaction { session-> repository.fetchLastSekvensnr(session) }
+            val sek = dataSource.withTransaction { session -> repository.fetchLastSekvensnr(session) }
             sek shouldBe 0
             val trekkpalegg =
                 json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             saveUtleggsrekk(trekkpalegg)
-            dataSource.withTransaction { session-> repository.fetchLastSekvensnr(session) } shouldBe trekkpalegg.maxOf { it.sekvensnummer }
+            dataSource.withTransaction { session -> repository.fetchLastSekvensnr(session) } shouldBe trekkpalegg.maxOf { it.sekvensnummer }
         }
 
         test("Eksisterer trekk") {
-            dataSource.withTransaction { session -> repository.doesTrekkExist("1", 1, 1, session)} shouldBe false
+            dataSource.withTransaction { session -> repository.doesTrekkExist("1", 1, 1, session) } shouldBe false
             val trekkpalegg =
                 json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             saveUtleggsrekk(trekkpalegg)
@@ -122,9 +126,11 @@ class RepositoryTest :
                 json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             saveUtleggsrekk(trekkpalegg)
 
-            val trekk = dataSource.withTransaction { session ->
-                repository.fetchTrekkNotSendt(session)
-            }.find { it.sekvensnummer == 1 }!!
+            val trekk =
+                dataSource
+                    .withTransaction { session ->
+                        repository.fetchTrekkNotSendt(session)
+                    }.find { it.sekvensnummer == 1 }!!
 
             dataSource.withTransaction { session ->
                 repository.updateNavTrekkStatus(trekk.corrid, "SOMESTATE", session)
@@ -142,8 +148,10 @@ class RepositoryTest :
             saveUtleggsrekk(trekkpalegg)
             sleep(1)
 
-            val trekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }
-                .find { it.sekvensnummer == 1 }!!
+            val trekk =
+                dataSource
+                    .withTransaction { session -> repository.fetchTrekkNotSendt(session) }
+                    .find { it.sekvensnummer == 1 }!!
             trekk.status shouldBe "MOTTATT"
 
             dataSource.withTransaction { session ->
@@ -162,7 +170,7 @@ class RepositoryTest :
                 json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             saveUtleggsrekk(trekkpalegg)
 
-            val trekk = dataSource.withTransaction { session-> repository.fetchTrekkNotSendt(session)}.find { it.sekvensnummer == 1 }!!
+            val trekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }.find { it.sekvensnummer == 1 }!!
             dataSource.withTransaction { session ->
                 repository.updateKvitteringStatus(
                     trekk.corrid,
@@ -170,13 +178,14 @@ class RepositoryTest :
                     "kvitteringLOPM",
                     "navID",
                     TrekkAlternativ.LOPM.value,
-                    session
+                    session,
                 )
             }
 
-            val updatedTrekk = dataSource.withTransaction { session->
-                repository.findTrekkByCorrId(trekk.corrid, session)!!
-            }
+            val updatedTrekk =
+                dataSource.withTransaction { session ->
+                    repository.findTrekkByCorrId(trekk.corrid, session)!!
+                }
             trekk.kvitteringLOPM shouldNotBe updatedTrekk.kvitteringLOPM
             trekk.tidspunktSisteStatus shouldNotBe updatedTrekk.tidspunktSisteStatus
             updatedTrekk.status shouldBe "KVITTERING_OK"
@@ -187,23 +196,24 @@ class RepositoryTest :
             val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("Trekk_med_to_trekkalternativ.json"))
             saveUtleggsrekk(trekkpalegg)
 
-            val dbTrekk = dataSource.withTransaction { session-> repository.fetchTrekkNotSendt(session) }
+            val dbTrekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }
             trekkpalegg.size shouldBe dbTrekk.size
-            for ( trekk in trekkpalegg ) {
-                compareTrekk(trekk, dbTrekk.find { it.sekvensnummer == trekk.sekvensnummer }!! )
+            for (trekk in trekkpalegg) {
+                compareTrekk(trekk, dbTrekk.find { it.sekvensnummer == trekk.sekvensnummer }!!)
             }
         }
 
         test("Lagre feilkoder") {
             val kvittering = json.decodeFromString<TrekkTilOppdrag>(resourceToString("kvittering-feil.json"))
-            dataSource.withTransaction { session-> repository.saveFeilkoder(listOf(kvittering), session) }
+            dataSource.withTransaction { session -> repository.saveFeilkoder(listOf(kvittering), session) }
 
-            val feilkode = dataSource.withTransaction { session ->
-                repository.findFeilkode(
-                    kvittering.dokument.transaksjonsId,
-                    session
-                )!!
-            }
+            val feilkode =
+                dataSource.withTransaction { session ->
+                    repository.findFeilkode(
+                        kvittering.dokument.transaksjonsId,
+                        session,
+                    )!!
+                }
             feilkode.feilkodeTableId shouldBe 1L
             feilkode.trekkIdNav shouldBe kvittering.dokument.innrapporteringTrekk.kreditorTrekkId
             feilkode.trekkAlternativ shouldBe kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
@@ -219,8 +229,8 @@ class RepositoryTest :
 
             val trekkFraSkatt = trekkpalegg.find { it.sekvensnummer == 1 }!!
 
-            val trekk = dataSource.withTransaction { session-> repository.fetchTrekkNotSendt(session)}.find { it.sekvensnummer == 1 }!!
-            val perioder = dataSource.withTransaction { session-> repository.fetchAllPerioderForTrekk(trekk, session )}
+            val trekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }.find { it.sekvensnummer == 1 }!!
+            val perioder = dataSource.withTransaction { session -> repository.fetchAllPerioderForTrekk(trekk, session) }
             comparePerioder(trekkFraSkatt, perioder)
         }
     })

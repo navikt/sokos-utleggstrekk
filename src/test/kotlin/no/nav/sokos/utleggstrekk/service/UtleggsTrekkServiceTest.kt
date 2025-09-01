@@ -1,13 +1,15 @@
 package no.nav.sokos.utleggstrekk.service
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
+
 import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -28,26 +30,28 @@ internal class UtleggsTrekkServiceTest :
             val testContainer = TestContainer()
             testContainer.migrate()
             val skeClientMock = mockk<SkeClient>()
-            val mqMock = mockk<MqProducer>(relaxed=true)
+            val mqMock = mockk<MqProducer>(relaxed = true)
             val databaseService = DatabaseService(testContainer.dataSource)
-            val json = Json {
-                prettyPrint = true
-                isLenient = true
-                explicitNulls = false
-                serializersModule = SerializersModule {
-                    contextual(JavaLocaldateTimeSerializer)
-                    contextual(LocalDateTimeSerializer)
-                    contextual(LocalDateSerializer)
-                    contextual(ZonedDateTimeSerializer)
+            val json =
+                Json {
+                    prettyPrint = true
+                    isLenient = true
+                    explicitNulls = false
+                    serializersModule =
+                        SerializersModule {
+                            contextual(JavaLocaldateTimeSerializer)
+                            contextual(LocalDateTimeSerializer)
+                            contextual(LocalDateSerializer)
+                            contextual(ZonedDateTimeSerializer)
+                        }
                 }
-            }
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     databaseService,
                     BehandleTrekkService(databaseService),
                     skeClientMock,
-                    mqMock
+                    mqMock,
                 )
             then("Først skal hentOgLagreNyeUtleggstrekk lagre alle i databasen") {
                 coEvery { skeClientMock.hentAlleUtleggstrekk() } returns json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
@@ -57,14 +61,13 @@ internal class UtleggsTrekkServiceTest :
                 databaseService.hentAllePerioderForTrekkId(trekkIdatabase.first()).size shouldBe 3
                 databaseService.hentAllePerioderForTrekkId(trekkIdatabase.last()).size shouldBe 1
             }
-            then("Deretter skal trekk som er laget i behandleTrekkservice sendes og status skal oppdateres"){
-                every {  mqMock.send(any()) } returns true
+            then("Deretter skal trekk som er laget i behandleTrekkservice sendes og status skal oppdateres") {
+                every { mqMock.send(any()) } returns true
                 val trekkIdatabase = databaseService.hentAlleTrekkSomIkkeErSendt()
                 val trekkPairs = json.decodeFromString<List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>>(resourceToString("TrekkTilSendingPairMedRiktigCorrid.json"))
-                val trekkSomSkalSendesMap = trekkPairs.mapIndexed { i, p -> p.first.copy(corrid = trekkIdatabase[i].corrid)  to p.second }.toMap()
+                val trekkSomSkalSendesMap = trekkPairs.mapIndexed { i, p -> p.first.copy(corrid = trekkIdatabase[i].corrid) to p.second }.toMap()
                 utleggsTrekkService.sendTrekkTilOS(trekkSomSkalSendesMap)
                 databaseService.hentAlleTrekkSomIkkeErSendt().size shouldBe 0
             }
         }
-
     })

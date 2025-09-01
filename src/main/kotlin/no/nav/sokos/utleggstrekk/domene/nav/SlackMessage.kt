@@ -1,7 +1,8 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
-import kotlinx.serialization.Serializable
 import java.time.LocalDate
+
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class Data(

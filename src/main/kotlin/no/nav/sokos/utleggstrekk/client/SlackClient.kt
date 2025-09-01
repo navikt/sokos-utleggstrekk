@@ -7,6 +7,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.slack.createSlackMessage
 
@@ -16,7 +17,7 @@ class SlackClient(
 ) {
     suspend fun sendMessage(
         header: String,
-        messages:List<String>,
+        messages: List<String>,
     ) {
         client.post(
             HttpRequestBuilder().apply {
