@@ -1,11 +1,14 @@
+@file:OptIn(ExperimentalTime::class)
+
 package no.nav.sokos.utleggstrekk.security.maskinporten
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
 import kotlinx.datetime.plus
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @Serializable
 data class Token(

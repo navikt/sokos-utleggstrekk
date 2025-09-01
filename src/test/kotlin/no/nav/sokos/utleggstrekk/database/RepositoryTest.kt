@@ -17,7 +17,9 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 import java.lang.Thread.sleep
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class RepositoryTest :
     FunSpec({
         val testContainer = TestContainer()

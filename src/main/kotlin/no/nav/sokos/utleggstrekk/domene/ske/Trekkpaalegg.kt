@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalTime::class)
+
 package no.nav.sokos.utleggstrekk.domene.ske
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @Serializable
 data class Trekkpaalegg(
@@ -28,9 +31,11 @@ data class Trekkbeloep(
 )
 
 @Serializable
-enum class Trekkstatus(val value: String) {
+enum class Trekkstatus(
+    val value: String,
+) {
     AKTIV("aktive"),
-    AVSLUTTET("avsluttet")
+    AVSLUTTET("avsluttet"),
 }
 
 @Serializable
@@ -38,14 +43,12 @@ data class TrekkstorrelseForPeriode(
     val startdato: String,
     val sluttdato: String? = null,
     val trekkbeloep: Trekkbeloep? = null,
-    val trekkprosent: Trekkprosent? = null
+    val trekkprosent: Trekkprosent? = null,
 )
 
 @Serializable
 data class Betalingsinformasjon(
     val betalingsmottaker: String,
     val kidnummer: String,
-    val kontonummer: String
+    val kontonummer: String,
 )
-
-

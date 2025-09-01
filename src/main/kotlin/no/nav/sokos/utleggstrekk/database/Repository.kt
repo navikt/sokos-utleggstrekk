@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package no.nav.sokos.utleggstrekk.database
 
 import com.zaxxer.hikari.HikariDataSource
@@ -15,6 +17,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.service.SENDT
 import java.sql.Timestamp
 import java.util.UUID
+import kotlin.time.ExperimentalTime
 
 private val logger = KotlinLogging.logger { }
 private const val MOTTATT = "MOTTATT"

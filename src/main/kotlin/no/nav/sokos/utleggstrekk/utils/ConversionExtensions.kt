@@ -14,43 +14,49 @@ import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
-private val logger =KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 fun TrekkPeriodeTable.toTrekkDokumentPeriode() =
     Periode(
-            periodeFomDato = this.datoStart,
-            periodeTomDato = this.datoSlutt,
-            sats = this.sats
+        periodeFomDato = this.datoStart,
+        periodeTomDato = this.datoSlutt,
+        sats = this.sats,
     )
 
 fun UtleggstrekkTable.toTrekkDokument(
     periodeTableList: List<TrekkPeriodeTable>,
     aksjonskode: Aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),
-    trekkAlternativ: String = periodeTableList[0].trekkAlternativ
-): TrekkTilOppdrag {
-    return TrekkTilOppdrag(
-        dokument = Document(
-            transaksjonsId = corrid,
-            innrapporteringTrekk = InnrapporteringTrekk(
-                aksjonskode = aksjonskode,
-                kreditorIdTss = betalingsmottaker,
-                kreditorTrekkId = "${trekkidSke}${trekkAlternativ[3]}",
-                debitorId = skyldner,
-                kodeTrekkAlternativ = trekkAlternativ,
-                kid = kid,
-                kreditorsRef = saksnummer,
-                kilde = "SOKOSUTLEGG",
-                saldo = 0.0,
-                prioritetFomDato = "${opprettetSke.year}-${opprettetSke.month.value.toString().padStart(2,'0')}-${opprettetSke.dayOfMonth.toString().padStart(2,'0')}",
-                perioder = Perioder(
-                    periode = periodeTableList.map {
-                        it.toTrekkDokumentPeriode()
-                    })
-            )
-        )
+    trekkAlternativ: String = periodeTableList[0].trekkAlternativ,
+): TrekkTilOppdrag =
+    TrekkTilOppdrag(
+        dokument =
+            Document(
+                transaksjonsId = corrid,
+                innrapporteringTrekk =
+                    InnrapporteringTrekk(
+                        aksjonskode = aksjonskode,
+                        kreditorIdTss = betalingsmottaker,
+                        kreditorTrekkId = "${trekkidSke}${trekkAlternativ[3]}",
+                        debitorId = skyldner,
+                        kodeTrekkAlternativ = trekkAlternativ,
+                        kid = kid,
+                        kreditorsRef = saksnummer,
+                        kilde = "SOKOSUTLEGG",
+                        saldo = 0.0,
+                        prioritetFomDato = "${opprettetSke.year}-${opprettetSke.month.toString().padStart(
+                            2,
+                            '0',
+                        )}-${opprettetSke.day.toString().padStart(2,'0')}",
+                        perioder =
+                            Perioder(
+                                periode =
+                                    periodeTableList.map {
+                                        it.toTrekkDokumentPeriode()
+                                    },
+                            ),
+                    ),
+            ),
     )
-
-}
 
 suspend fun HttpResponse.toTrekkpaalegg() =
     try {
@@ -59,5 +65,3 @@ suspend fun HttpResponse.toTrekkpaalegg() =
         logger.error { "Feil i konvertering av response: ${e.message}" }
         emptyList()
     }
-
-
