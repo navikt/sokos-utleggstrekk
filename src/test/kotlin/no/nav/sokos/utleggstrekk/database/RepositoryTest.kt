@@ -223,4 +223,14 @@ class RepositoryTest :
             val perioder = dataSource.withTransaction { session-> repository.fetchAllPerioderForTrekk(trekk, session )}
             comparePerioder(trekkFraSkatt, perioder)
         }
+
+        test("Sjekk rekkefølge på utleggstrekk") {
+            val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("diverse_trekk_ut_av_sekvens.json"))
+            saveUtleggsrekk(trekkpalegg)
+            val trekkNotSent = dataSource.withTransaction { session->
+                repository.fetchTrekkNotSendt(session)
+            }
+            // Alle trekk skal være i rekkefølge
+            trekkNotSent.map(UtleggstrekkTable::sekvensnummer).zipWithNext().all { (a,b) -> a < b } shouldBe true
+        }
     })

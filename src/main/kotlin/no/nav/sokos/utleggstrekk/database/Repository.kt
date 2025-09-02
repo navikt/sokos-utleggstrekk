@@ -5,8 +5,6 @@ package no.nav.sokos.utleggstrekk.database
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Session
 import kotliquery.queryOf
-import kotliquery.sessionOf
-import kotliquery.using
 import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.model.FeilkodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
@@ -205,7 +203,7 @@ class Repository(
 
     fun fetchTrekkNotSendt(session: Session): List<UtleggstrekkTable> =
         session.list(
-            queryOf("SELECT * FROM utleggstrekk WHERE status=:status", mapOf("status" to MOTTATT))
+            queryOf("SELECT * FROM utleggstrekk WHERE status=:status ORDER BY sekvensnummer ASC", mapOf("status" to MOTTATT))
         ) { row -> UtleggstrekkTable(row) }
 
     fun fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable, session: Session): List<TrekkPeriodeTable> =
