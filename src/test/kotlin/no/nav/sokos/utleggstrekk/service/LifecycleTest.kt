@@ -1,16 +1,18 @@
 package no.nav.sokos.utleggstrekk.service
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
+
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
 import kotliquery.queryOf
-import no.nav.sokos.utleggstrekk.TestContainer
+
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.JavaLocaldateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
@@ -21,20 +23,21 @@ import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 internal class LifecycleTest :
     BehaviorSpec({
-        val json = Json {
-            prettyPrint = true
-            isLenient = true
-            explicitNulls = false
-            serializersModule = SerializersModule {
-                contextual(JavaLocaldateTimeSerializer)
-                contextual(LocalDateTimeSerializer)
-                contextual(LocalDateSerializer)
-                contextual(ZonedDateTimeSerializer)
+        val json =
+            Json {
+                prettyPrint = true
+                isLenient = true
+                explicitNulls = false
+                serializersModule =
+                    SerializersModule {
+                        contextual(JavaLocaldateTimeSerializer)
+                        contextual(LocalDateTimeSerializer)
+                        contextual(LocalDateSerializer)
+                        contextual(ZonedDateTimeSerializer)
+                    }
             }
-        }
 
         val testContainer = TestContainer()
-        testContainer.migrate()
         val dataSource = testContainer.dataSource
         val repository = Repository(dataSource)
 
@@ -68,16 +71,38 @@ internal class LifecycleTest :
                     dbdataTrekk.first().sekvensnummer shouldBe paleggstrekkFraSkatt.first().sekvensnummer
                     dbdataPerioder.mapIndexed { i, periode ->
                         if (periode.trekkAlternativ == "LOPP") {
-                            periode.sats shouldBe paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).trekkprosent?.trekkprosent
+                            periode.sats shouldBe
+                                paleggstrekkFraSkatt
+                                    .first()
+                                    .trekkstoerrelseForPeriode
+                                    .get(i)
+                                    .trekkprosent
+                                    ?.trekkprosent
                         }
                         if (periode.trekkAlternativ == "LOPM") {
-                            periode.sats shouldBe paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).trekkbeloep?.trekkbeloep
+                            periode.sats shouldBe
+                                paleggstrekkFraSkatt
+                                    .first()
+                                    .trekkstoerrelseForPeriode
+                                    .get(i)
+                                    .trekkbeloep
+                                    ?.trekkbeloep
                         }
-                        periode.datoStart shouldBe paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).startdato
-                        periode.datoSlutt shouldBeIn arrayOf(
-                            "9999-12-31",
-                            paleggstrekkFraSkatt.first().trekkstoerrelseForPeriode.get(i).sluttdato
-                        )
+                        periode.datoStart shouldBe
+                            paleggstrekkFraSkatt
+                                .first()
+                                .trekkstoerrelseForPeriode
+                                .get(i)
+                                .startdato
+                        periode.datoSlutt shouldBeIn
+                            arrayOf(
+                                "9999-12-31",
+                                paleggstrekkFraSkatt
+                                    .first()
+                                    .trekkstoerrelseForPeriode
+                                    .get(i)
+                                    .sluttdato,
+                            )
                     }
                 }
             }
@@ -87,10 +112,22 @@ internal class LifecycleTest :
                 val trekkSomSkalSendesMap = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 trekkSomSkalSendesMap.size shouldBe 2
-                trekkSomSkalSendesMap.entries.first().value.size shouldBe 2
-                trekkSomSkalSendesMap.entries.last().value.size shouldBe 1
-                trekkSomSkalSendesMap.entries.first().value.first().dokument.innrapporteringTrekk.perioder.periode.size shouldBe
-                        trekkSomSkalSendesMap.entries.first().value.last().dokument.innrapporteringTrekk.perioder.periode.size
+                trekkSomSkalSendesMap.entries
+                    .first()
+                    .value.size shouldBe 2
+                trekkSomSkalSendesMap.entries
+                    .last()
+                    .value.size shouldBe 1
+                trekkSomSkalSendesMap.entries
+                    .first()
+                    .value
+                    .first()
+                    .dokument.innrapporteringTrekk.perioder.periode.size shouldBe
+                    trekkSomSkalSendesMap.entries
+                        .first()
+                        .value
+                        .last()
+                        .dokument.innrapporteringTrekk.perioder.periode.size
             }
             then("hent fra databse og konverter til OS format") {
                 dataSource.withTransaction { session ->
