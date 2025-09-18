@@ -10,6 +10,11 @@ import kotlinx.serialization.json.Json
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 import java.net.ProxySelector
 
+/*
+TODO: Legge inn error handling for HTTP spesifikke feil
+Laodice har allerede påbegynt dette
+*/
+
 val httpClient =
     HttpClient(Apache) {
         expectSuccess = false

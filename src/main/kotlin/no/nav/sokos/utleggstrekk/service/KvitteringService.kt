@@ -9,7 +9,6 @@ class KvitteringService(
     private val databaseService: DatabaseService,
     private val mqConsumer: MqConsumer = MqConsumer(),
 ) {
-
     private val logger = KotlinLogging.logger { }
 
     fun behandleKvitteringer() {
@@ -17,9 +16,10 @@ class KvitteringService(
         lagreKvitteringerOgLoggFeil(kvitteringer)
     }
 
-    fun hentAlleKvitteringer(): List<TrekkTilOppdrag> = hentAlleKvitteringerFraMq().map {
-        Json.decodeFromString<TrekkTilOppdrag>(it)
-    }
+    fun hentAlleKvitteringer(): List<TrekkTilOppdrag> =
+        hentAlleKvitteringerFraMq().map {
+            Json.decodeFromString<TrekkTilOppdrag>(it)
+        }
 
     private fun hentAlleKvitteringerFraMq(): List<String> {
         val kvitteringer = mutableListOf<String>()
@@ -31,7 +31,9 @@ class KvitteringService(
         } while (svar != null)
         return kvitteringer
     }
+    // TODO: Hvis vi får ny versjon av trekk men trekk1 fikk valideringsfeil: hva gjør vi da?
 
+    // TODO: Lagre feilkoder etc fra OS som enum, pluss beskrivelse som mennesker kan forstå + sende til slack + lagre i DB
     private fun lagreKvitteringerOgLoggFeil(kvitteringer: List<TrekkTilOppdrag>) {
         databaseService.oppdaterTrekkMedKvitteringsinfo(kvitteringer)
         kvitteringer.filter { it.mmel!!.alvorlighetsgrad != "00" }.let {
@@ -44,10 +46,9 @@ class KvitteringService(
         kvitteringerMedFeil.forEach {
             logger.info(
                 "Trekk med kreditorstrekkID: ${it.dokument.innrapporteringTrekk.kreditorTrekkId}," +
-                " corrid: ${it.dokument.transaksjonsId} har feilkode: ${it.mmel?.kodeMelding} og beskrivelse: ${it.mmel?.beskrMelding}"
+                    " corrid: ${it.dokument.transaksjonsId} har feilkode: ${it.mmel?.kodeMelding} og beskrivelse: ${it.mmel?.beskrMelding}",
             )
         }
-        //TODO sjekke/vurdere om det skal sendes melding til slack og evt utføre det.
+        // TODO sjekke/vurdere om det skal sendes melding til slack og evt utføre det.
     }
-
 }

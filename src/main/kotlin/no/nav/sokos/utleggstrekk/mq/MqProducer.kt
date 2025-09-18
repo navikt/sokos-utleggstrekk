@@ -38,6 +38,7 @@ class MqProducer(
         connected = true
     }
 
+    // TODO: Når MQ transaction blir rollbacked så bør også database transaction rollback
     fun send(message: String): Boolean =
         try {
             logger.info("Sender utleggstrekk til oppdrag \n$message")
@@ -70,5 +71,4 @@ class MqProducer(
                 it.targetClientMatching = true
                 it.setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true)
             }.createConnection(username, password)
-
 }

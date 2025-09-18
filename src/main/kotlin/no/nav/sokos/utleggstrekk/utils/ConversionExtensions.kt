@@ -58,6 +58,7 @@ fun UtleggstrekkTable.toTrekkDokument(
             ),
     )
 
+// TODO: Kan være mer som kan gå feil?
 suspend fun HttpResponse.toTrekkpaalegg() =
     try {
         body<List<Trekkpaalegg>>()
