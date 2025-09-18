@@ -96,9 +96,7 @@ object PropertiesConfig {
         val url: String = get("TEAM_BEST_SLACK_WEBHOOK_URL").trim()
     }
 
-    data class SKEConfig(
-        val skeRestUrl: String = getOrEmpty("SKE_REST_URL"),
-    )
+    data class SKEConfig(val skeRestUrl: String = getOrEmpty("SKE_REST_URL"))
 
     data object PostgresConfig {
         val host: String = getOrEmpty("POSTGRES_HOST")
@@ -111,9 +109,7 @@ object PropertiesConfig {
         val user = "$name-user"
     }
 
-    open class JwtConfig(
-        private val wellKnownUrl: String,
-    ) {
+    open class JwtConfig(private val wellKnownUrl: String) {
         val openIdConfiguration: OpenIdConfiguration by lazy {
             runBlocking {
                 httpClient.get(wellKnownUrl).body()

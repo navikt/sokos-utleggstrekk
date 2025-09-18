@@ -15,9 +15,7 @@ private const val LOPENDE_BELOP = "LOPM"
 
 private const val LOPENDE_PROSENT = "LOPP"
 
-class BehandleTrekkService(
-    private val databaseService: DatabaseService,
-) {
+class BehandleTrekkService(private val databaseService: DatabaseService) {
     val logger = KotlinLogging.logger { }
 
     fun lagTrekkSomSkalSendes(): Map<UtleggstrekkTable, List<TrekkTilOppdrag>> {

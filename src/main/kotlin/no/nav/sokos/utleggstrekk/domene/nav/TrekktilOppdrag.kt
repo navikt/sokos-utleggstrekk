@@ -55,9 +55,7 @@ data class InnrapporteringTrekk(
 )
 
 @Serializable
-data class Perioder(
-    val periode: List<Periode>,
-)
+data class Perioder(val periode: List<Periode>)
 
 @Serializable
 data class Periode(
@@ -67,9 +65,7 @@ data class Periode(
 )
 
 @Serializable
-enum class Aksjonskode(
-    val value: String,
-) {
+enum class Aksjonskode(val value: String) {
     NY("NY"),
     ENDR("ENDR"),
     OPPH("OPPH"),
@@ -98,9 +94,7 @@ enum class Aksjonskode(
 
 // Aksjonskoder er NY, ENDR (endring), KANS (kanseller), OPPH (opphør), ENRS (endring restsaldo).
 @Serializable
-enum class TrekkAlternativ(
-    val value: String,
-) {
+enum class TrekkAlternativ(val value: String) {
     LOPM("LOPM"), //   Løpende trekk månedssats
     LOPP("LOPP"), //   Løpende trekk prosentsats
     ;

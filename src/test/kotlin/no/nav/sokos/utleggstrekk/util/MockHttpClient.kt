@@ -23,20 +23,18 @@ class MockHttpClient {
         }
     private val baseUrl: String = "/api/utleggstrekk/v1/$orgNr"
 
-    fun getClient(
-        response: String,
-        statusCode: HttpStatusCode,
-    ) = HttpClient(MockEngine) {
-        install(ContentNegotiation) { json(jsonConfig) }
-        engine {
-            addHandler { request ->
-                when (request.url.encodedPath) {
-                    baseUrl -> respond(response, statusCode, responseHeaders)
-                    else -> {
-                        error("Ikke implementert: ${request.url.encodedPath}")
+    fun getClient(response: String, statusCode: HttpStatusCode) =
+        HttpClient(MockEngine) {
+            install(ContentNegotiation) { json(jsonConfig) }
+            engine {
+                addHandler { request ->
+                    when (request.url.encodedPath) {
+                        baseUrl -> respond(response, statusCode, responseHeaders)
+                        else -> {
+                            error("Ikke implementert: ${request.url.encodedPath}")
+                        }
                     }
                 }
             }
         }
-    }
 }

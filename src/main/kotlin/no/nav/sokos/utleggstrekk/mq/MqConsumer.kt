@@ -13,9 +13,7 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 
-class MqConsumer(
-    private val config: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties(),
-) {
+class MqConsumer(private val config: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties()) {
     private lateinit var session: Session
     private lateinit var mqConsumer: MessageConsumer
     private var connected: Boolean = false

@@ -30,18 +30,13 @@ data class Field(
     val text: String,
 )
 
-fun createSlackMessage(
-    feilHeader: String,
-    content: List<String>,
-) = Data(
-    text = ":package: $feilHeader",
-    blocks = buildSections(feilHeader, content),
-)
+fun createSlackMessage(feilHeader: String, content: List<String>) =
+    Data(
+        text = ":package: $feilHeader",
+        blocks = buildSections(feilHeader, content),
+    )
 
-private fun buildSections(
-    feilHeader: String,
-    content: List<String>,
-): MutableList<Block> {
+private fun buildSections(feilHeader: String, content: List<String>): MutableList<Block> {
     val dividerBlock = Block(type = "divider")
     val headerBlock =
         Block(

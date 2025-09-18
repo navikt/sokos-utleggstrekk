@@ -14,9 +14,7 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 
 private val logger = KotlinLogging.logger {}
 
-class MqProducer(
-    private val config: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties(),
-) {
+class MqProducer(private val config: PropertiesConfig.MqProperties = PropertiesConfig.MqProperties()) {
     private lateinit var session: Session
     private lateinit var mqProducer: MessageProducer
     private var connected: Boolean = false

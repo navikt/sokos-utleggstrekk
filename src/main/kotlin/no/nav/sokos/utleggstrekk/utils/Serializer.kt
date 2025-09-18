@@ -15,10 +15,7 @@ import kotlinx.serialization.encoding.Encoder
 object LocalDateSerializer : KSerializer<LocalDate> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
 
-    override fun serialize(
-        encoder: Encoder,
-        value: LocalDate,
-    ) {
+    override fun serialize(encoder: Encoder, value: LocalDate) {
         encoder.encodeString(value.toString())
     }
 
@@ -28,10 +25,7 @@ object LocalDateSerializer : KSerializer<LocalDate> {
 object JavaLocaldateTimeSerializer : KSerializer<java.time.LocalDateTime> {
     private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-    override fun serialize(
-        encoder: Encoder,
-        value: java.time.LocalDateTime,
-    ) {
+    override fun serialize(encoder: Encoder, value: java.time.LocalDateTime) {
         encoder.encodeString(value.format(formatter))
     }
 
@@ -44,10 +38,7 @@ object JavaLocaldateTimeSerializer : KSerializer<java.time.LocalDateTime> {
 object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
 
-    override fun serialize(
-        encoder: Encoder,
-        value: LocalDateTime,
-    ) {
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
         encoder.encodeString(value.toString())
     }
 
@@ -57,10 +48,7 @@ object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
 object ZonedDateTimeSerializer : KSerializer<ZonedDateTime> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ZonedDateTime", PrimitiveKind.STRING)
 
-    override fun serialize(
-        encoder: Encoder,
-        value: ZonedDateTime,
-    ) {
+    override fun serialize(encoder: Encoder, value: ZonedDateTime) {
         encoder.encodeString(value.toString())
     }
 

@@ -9,11 +9,7 @@ import io.ktor.server.routing.route
 import no.nav.sokos.utleggstrekk.ApplicationState
 import no.nav.sokos.utleggstrekk.metrics.Metrics
 
-fun Routing.internalNaisRoutes(
-    applicationState: ApplicationState,
-    readynessCheck: () -> Boolean = { applicationState.ready },
-    alivenessCheck: () -> Boolean = { applicationState.alive },
-) {
+fun Routing.internalNaisRoutes(applicationState: ApplicationState, readynessCheck: () -> Boolean = { applicationState.ready }, alivenessCheck: () -> Boolean = { applicationState.alive }) {
     route("internal") {
         get("isAlive") {
             when (alivenessCheck()) {

@@ -41,10 +41,7 @@ class RepositoryTest :
             }
         }
 
-        fun comparePerioder(
-            trekkpaalegg: Trekkpaalegg,
-            perioder: List<TrekkPeriodeTable>,
-        ) {
+        fun comparePerioder(trekkpaalegg: Trekkpaalegg, perioder: List<TrekkPeriodeTable>) {
             val dbPerioder = perioder.sortedBy { it.datoStart }
             val trekkPerioder = trekkpaalegg.trekkstoerrelseForPeriode.sortedBy(TrekkstorrelseForPeriode::startdato)
 
@@ -70,10 +67,7 @@ class RepositoryTest :
             }
         }
 
-        fun compareTrekk(
-            trekkpaalegg: Trekkpaalegg,
-            table: UtleggstrekkTable,
-        ) {
+        fun compareTrekk(trekkpaalegg: Trekkpaalegg, table: UtleggstrekkTable) {
             table.trekkstatus shouldBe trekkpaalegg.trekkstatus
             table.trekkidSke shouldBe trekkpaalegg.trekkid
             table.saksnummer shouldBe trekkpaalegg.saksnummer
