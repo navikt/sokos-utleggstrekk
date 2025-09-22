@@ -69,17 +69,6 @@ class Repository(private val dataSource: HikariDataSource) {
             ),
         )
 
-    fun updateTrekkStatusSentAndDateTimeSentOS(corrId: String, session: Session) =
-        session.update(
-            queryOf(
-                """
-                UPDATE utleggstrekk SET status=:status, tidspunkt_siste_status=NOW(), tidspunkt_sendt_os=NOW()
-                WHERE corr_id=:corrId
-                """.trimIndent(),
-                mapOf("status" to SENDT, "corrId" to corrId),
-            ),
-        )
-
     fun updateKvitteringStatus(
         corrId: String,
         status: String,
