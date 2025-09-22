@@ -2,6 +2,7 @@ package no.nav.sokos.utleggstrekk.database
 
 import kotliquery.Session
 import kotliquery.queryOf
+
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 
 object TestRepositoryExtensions {
@@ -14,6 +15,5 @@ object TestRepositoryExtensions {
         session.update(queryOf("ALTER SEQUENCE trekkperiode_id_seq RESTART WITH 1"))
     }
 
-    fun Repository.fetchAllUtleggstrekk(session: Session) =
-        session.list(queryOf("SELECT * FROM utleggstrekk")) { row-> UtleggstrekkTable(row) }
+    fun Repository.fetchAllUtleggstrekk(session: Session) = session.list(queryOf("SELECT * FROM utleggstrekk")) { row -> UtleggstrekkTable(row) }
 }

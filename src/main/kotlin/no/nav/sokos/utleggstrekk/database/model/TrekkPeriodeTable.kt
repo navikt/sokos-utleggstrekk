@@ -2,6 +2,7 @@ package no.nav.sokos.utleggstrekk.database.model
 
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
+
 import kotliquery.Row
 
 data class TrekkPeriodeTable(
@@ -13,8 +14,11 @@ data class TrekkPeriodeTable(
     val datoSlutt: String,
     val sats: Double,
     val trekkAlternativ: String,
-    val tidspunktOpprettet: LocalDateTime = java.time.LocalDateTime.now().toKotlinLocalDateTime(),
-    val kilde: String = "SKATTEETATEN"
+    val tidspunktOpprettet: LocalDateTime =
+        java.time.LocalDateTime
+            .now()
+            .toKotlinLocalDateTime(),
+    val kilde: String = "SKATTEETATEN",
 ) {
     constructor(row: Row) : this(
         trekkPeriodeTableId = row.int("id"),

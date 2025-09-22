@@ -2,6 +2,7 @@ package no.nav.sokos.utleggstrekk.database.model
 
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
+
 import kotliquery.Row
 
 data class FeilkodeTable(

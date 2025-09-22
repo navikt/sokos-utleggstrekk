@@ -1,5 +1,11 @@
 package no.nav.sokos.utleggstrekk.config
 
+import java.io.File
+
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.EnvironmentVariables
@@ -9,11 +15,8 @@ import com.natpryce.konfig.stringType
 import com.nimbusds.jose.jwk.RSAKey
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+
 import no.nav.sokos.utleggstrekk.client.httpClient
-import java.io.File
 
 object PropertiesConfig {
     private val defaultProperties =
@@ -93,9 +96,7 @@ object PropertiesConfig {
         val url: String = get("TEAM_BEST_SLACK_WEBHOOK_URL").trim()
     }
 
-    data class SKEConfig(
-        val skeRestUrl: String = getOrEmpty("SKE_REST_URL"),
-    )
+    data class SKEConfig(val skeRestUrl: String = getOrEmpty("SKE_REST_URL"))
 
     data object PostgresConfig {
         val host: String = getOrEmpty("POSTGRES_HOST")
@@ -108,9 +109,7 @@ object PropertiesConfig {
         val user = "$name-user"
     }
 
-    open class JwtConfig(
-        private val wellKnownUrl: String,
-    ) {
+    open class JwtConfig(private val wellKnownUrl: String) {
         val openIdConfiguration: OpenIdConfiguration by lazy {
             runBlocking {
                 httpClient.get(wellKnownUrl).body()
