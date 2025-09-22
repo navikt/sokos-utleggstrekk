@@ -231,10 +231,11 @@ class RepositoryTest :
         test("Sjekk rekkefølge på utleggstrekk") {
             val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("diverse_trekk_ut_av_sekvens.json"))
             saveUtleggsrekk(trekkpalegg)
-            val trekkNotSent = dataSource.withTransaction { session->
-                repository.fetchTrekkNotSendt(session)
-            }
+            val trekkNotSent =
+                dataSource.withTransaction { session ->
+                    repository.fetchTrekkNotSendt(session)
+                }
             // Alle trekk skal være i rekkefølge
-            trekkNotSent.map(UtleggstrekkTable::sekvensnummer).zipWithNext().all { (a,b) -> a < b } shouldBe true
+            trekkNotSent.map(UtleggstrekkTable::sekvensnummer).zipWithNext().all { (a, b) -> a < b } shouldBe true
         }
     })
