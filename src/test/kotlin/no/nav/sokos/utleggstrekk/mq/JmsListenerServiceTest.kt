@@ -94,10 +94,7 @@ class KvitteringTest :
         }
     })
 
-fun fetchTrekkWithCorrId(
-    session: Session,
-    corrid: String,
-): List<UtleggstrekkTable> =
+fun fetchTrekkWithCorrId(session: Session, corrid: String): List<UtleggstrekkTable> =
     session.list(
         queryOf(
             """select * from utleggstrekk where corr_id = :corrId""",
