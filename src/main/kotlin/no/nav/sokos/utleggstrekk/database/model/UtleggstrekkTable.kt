@@ -3,6 +3,7 @@ package no.nav.sokos.utleggstrekk.database.model
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.serialization.Serializable
+
 import kotliquery.Row
 
 @Serializable
@@ -52,9 +53,7 @@ data class UtleggstrekkTable(
     )
 }
 
-enum class UtleggstrekkStatus(
-    val status: String,
-) {
+enum class UtleggstrekkStatus(val status: String) {
     MOTTATT("MOTTATT"),
     SENDT("SENDT"),
 

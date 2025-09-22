@@ -1,9 +1,11 @@
 package no.nav.sokos.utleggstrekk.service
 
+import kotlinx.serialization.json.Json
+
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
-import kotlinx.serialization.json.Json
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -30,6 +32,7 @@ class UtleggsTrekkService(
     private val logger = KotlinLogging.logger { }
 
     suspend fun hentOgSendUtleggstrekk(): Int {
+        logger.info("Henter utleggstrekkfra skatt ")
         hentOgLagreNyeUtleggstrekk()
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
         return sendTrekkTilOS(trekktilSending)
@@ -38,9 +41,8 @@ class UtleggsTrekkService(
     suspend fun hentOgLagreNyeUtleggstrekk() {
         // TODO Denne henter alle hver gang, Den bør bare hente nye når den skal brukes mot skatt regelmessig
         val nyeTrekkListe = skeClient.hentAlleUtleggstrekk() // TODO endre til å kalle hentAlleNyeUtleggstrekk()
-        // val nyeTrekkListe =hentAlleNyeUtleggstrekk() // TODO  bruke dette
-        logger.info("Hentet ${nyeTrekkListe.size} utleggstrekk fra Skatt")
         nyeTrekkListe
+            .also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
             .filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
             .let {
                 logger.info("Det er ${it.size} som skal lagres")
@@ -67,8 +69,9 @@ class UtleggsTrekkService(
     }
 
     suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int) {
-        val trekk = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
-        logger.info { "Hentet ${trekk.size} utleggstrekk fra Skatt" }
-        databaseService.lagreUtleggstrekk(trekk)
+        skeClient
+            .hentUtleggstrekkFraSekvensnr(sekvensnr)
+            .also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
+            .let { databaseService.lagreUtleggstrekk(it) }
     }
 }

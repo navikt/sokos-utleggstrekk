@@ -11,6 +11,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -18,7 +19,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
-import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 
@@ -41,10 +41,7 @@ class RepositoryTest :
             }
         }
 
-        fun comparePerioder(
-            trekkpaalegg: Trekkpaalegg,
-            perioder: List<TrekkPeriodeTable>,
-        ) {
+        fun comparePerioder(trekkpaalegg: Trekkpaalegg, perioder: List<TrekkPeriodeTable>) {
             val dbPerioder = perioder.sortedBy { it.datoStart }
             val trekkPerioder = trekkpaalegg.trekkstoerrelseForPeriode.sortedBy(TrekkstorrelseForPeriode::startdato)
 
@@ -70,10 +67,7 @@ class RepositoryTest :
             }
         }
 
-        fun compareTrekk(
-            trekkpaalegg: Trekkpaalegg,
-            table: UtleggstrekkTable,
-        ) {
+        fun compareTrekk(trekkpaalegg: Trekkpaalegg, table: UtleggstrekkTable) {
             table.trekkstatus shouldBe trekkpaalegg.trekkstatus
             table.trekkidSke shouldBe trekkpaalegg.trekkid
             table.saksnummer shouldBe trekkpaalegg.saksnummer

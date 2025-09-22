@@ -2,9 +2,9 @@
 
 package no.nav.sokos.utleggstrekk.domene.ske
 
-import kotlinx.serialization.Serializable
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class Trekkpaalegg(
@@ -21,19 +21,13 @@ data class Trekkpaalegg(
 )
 
 @Serializable
-data class Trekkprosent(
-    val trekkprosent: Double? = null,
-)
+data class Trekkprosent(val trekkprosent: Double? = null)
 
 @Serializable
-data class Trekkbeloep(
-    val trekkbeloep: Double? = null,
-)
+data class Trekkbeloep(val trekkbeloep: Double? = null)
 
 @Serializable
-enum class Trekkstatus(
-    val value: String,
-) {
+enum class Trekkstatus(val value: String) {
     AKTIV("aktive"),
     AVSLUTTET("avsluttet"),
 }

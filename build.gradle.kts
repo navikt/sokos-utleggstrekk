@@ -1,12 +1,15 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
     kotlin("jvm") version "2.2.10"
     kotlin("plugin.serialization") version "2.2.10"
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
 group = "no.nav.sokos"
@@ -25,13 +28,13 @@ val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.15.3"
 
-//DB
+// DB
 val hikaricpVersion = "7.0.2"
 val flywayVersion = "11.11.2"
 val postgresqlVersion = "42.7.7"
 val kotliqueryVersion = "1.9.1"
 
-//Logging
+// Logging
 val logbackVersion = "1.5.18"
 val logstashVersion = "8.1"
 val kotlinLoggingVersion = "3.0.5"
@@ -97,7 +100,7 @@ dependencies {
     implementation("com.ibm.mq:com.ibm.mq.jakarta.client:$ibmMqVersion")
 
     //
-    implementation("com.google.code.gson:gson:$gsonVersion" )
+    implementation("com.google.code.gson:gson:$gsonVersion")
 
     // Test
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
@@ -115,6 +118,10 @@ kotlin {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
+configurations.ktlint {
+    resolutionStrategy.force("ch.qos.logback:logback-classic:$logbackVersion")
+}
+
 sourceSets {
     main {
         java {
@@ -124,6 +131,10 @@ sourceSets {
 }
 
 tasks {
+
+    withType<KotlinCompile>().configureEach {
+        dependsOn("ktlintFormat")
+    }
     withType<ShadowJar>().configureEach {
         enabled = true
         archiveFileName.set("sokos-utleggstrekk.jar")
@@ -131,16 +142,13 @@ tasks {
             attributes["Main-Class"] = "no.nav.sokos.utleggstrekk.ApplicationKt"
         }
 
-        mergeServiceFiles {
-            setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
-        }
-    }
-
-    ("jar") {
-        enabled = false
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        mergeServiceFiles()
+        finalizedBy(koverHtmlReport)
     }
 
     withType<Test>().configureEach {
+        jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
         systemProperty("isTest", "true")
         useJUnitPlatform()
         testLogging {
@@ -154,5 +162,32 @@ tasks {
 
     withType<Wrapper> {
         gradleVersion = "8.9"
+    }
+
+    ("jar") {
+        enabled = false
+    }
+
+    ("build") {
+        dependsOn("copyPreCommitHook")
+    }
+
+    register<Copy>("copyPreCommitHook") {
+        from(".scripts/pre-commit")
+        into(".git/hooks")
+        filePermissions {
+            user {
+                execute = true
+            }
+        }
+        doFirst {
+            println("Installing git hooks...")
+        }
+        doLast {
+            println("Git hooks installed successfully.")
+        }
+        description = "Copy pre-commit hook to .git/hooks"
+        group = "git hooks"
+        outputs.upToDateWhen { false }
     }
 }

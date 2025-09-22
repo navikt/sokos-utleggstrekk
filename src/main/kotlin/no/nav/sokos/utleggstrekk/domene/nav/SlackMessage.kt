@@ -1,7 +1,8 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
-import kotlinx.serialization.Serializable
 import java.time.LocalDate
+
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class Data(
@@ -29,20 +30,13 @@ data class Field(
     val text: String,
 )
 
-fun createSlackMessage(
-    feilHeader: String,
-    filnavn: String,
-    content: Map<String, List<String>>,
-) = Data(
-    text = ":package: $feilHeader",
-    blocks = buildSections(feilHeader, filnavn, content),
-)
+fun createSlackMessage(feilHeader: String, filnavn: String, content: Map<String, List<String>>) =
+    Data(
+        text = ":package: $feilHeader",
+        blocks = buildSections(feilHeader, filnavn, content),
+    )
 
-private fun buildSections(
-    feilHeader: String,
-    filnavn: String,
-    content: Map<String, List<String>>,
-): MutableList<Block> {
+private fun buildSections(feilHeader: String, filnavn: String, content: Map<String, List<String>>): MutableList<Block> {
     val dividerBlock = Block(type = "divider")
     val headerBlock =
         Block(

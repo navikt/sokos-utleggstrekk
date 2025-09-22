@@ -13,23 +13,15 @@ import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 
 private val logger = KotlinLogging.logger { }
 
-class DatabaseService(
-    private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
-) {
+class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSource.dataSource) {
     private val repository = Repository(dataSource)
 
-    fun trekkFinnes(
-        trekkid_ske: String,
-        sekvensnr: Int,
-        trekkversjon: Int,
-    ) = dataSource.withTransaction { session ->
-        repository.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon, session)
-    }
+    fun trekkFinnes(trekkid_ske: String, sekvensnr: Int, trekkversjon: Int) =
+        dataSource.withTransaction { session ->
+            repository.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon, session)
+        }
 
-    fun oppdaterTrekkStatus(
-        corrId: String,
-        status: String,
-    ) {
+    fun oppdaterTrekkStatus(corrId: String, status: String) {
         dataSource.withTransaction { session ->
             if (status == SENDT) {
                 repository.updateTrekkStatusSentAndDateTimeSentOS(corrId, session)
