@@ -1,12 +1,13 @@
 package no.nav.sokos.utleggstrekk
 
 import io.kotest.extensions.testcontainers.toDataSource
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
+
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 
 class TestContainer {
     private val properties = PropertiesConfig.PostgresConfig

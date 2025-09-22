@@ -2,6 +2,15 @@
 
 package no.nav.sokos.utleggstrekk.security.maskinporten
 
+import java.util.Date
+
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.plus
+
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.client.HttpClient
@@ -14,15 +23,9 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.plus
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import java.util.Date
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 class MaskinportenAccessTokenClient(
     private val maskinportenConfig: PropertiesConfig.MaskinportenClientConfig,

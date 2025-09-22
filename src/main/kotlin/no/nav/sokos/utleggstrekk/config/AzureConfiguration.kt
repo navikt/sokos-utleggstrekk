@@ -1,17 +1,20 @@
 package no.nav.sokos.utleggstrekk.config
 
+import java.net.URI
+import java.util.concurrent.TimeUnit
+
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.client.httpClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.get
-import java.net.URI
-import java.util.concurrent.TimeUnit
 
 private val logger = KotlinLogging.logger { }
 

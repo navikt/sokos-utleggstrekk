@@ -2,12 +2,16 @@
 
 package no.nav.sokos.utleggstrekk.database
 
+import java.sql.Timestamp
+import java.util.UUID
+
+import kotlin.time.ExperimentalTime
+
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Session
 import kotliquery.queryOf
-import kotliquery.sessionOf
-import kotliquery.using
 import mu.KotlinLogging
+
 import no.nav.sokos.utleggstrekk.database.model.FeilkodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -15,50 +19,55 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.service.SENDT
-import java.sql.Timestamp
-import java.util.UUID
-import kotlin.time.ExperimentalTime
 
 private val logger = KotlinLogging.logger { }
 private const val MOTTATT = "MOTTATT"
 private const val SKATTEETATEN = "SKATTEETATEN"
 private const val MAX_SLUTTDATO = "9999-12-31"
 
-class Repository(
-    private val dataSource: HikariDataSource
-) {
-    fun fetchLastSekvensnr(session: Session): Int =
-        session.single(queryOf("SELECT MAX(sekvensnummer) FROM utleggstrekk")) { it.intOrNull(1) } ?: 0
-    fun doesTrekkExist(trekkid_ske: String, sekvensnummer: Int, trekkversjon: Int, session: Session): Boolean =
+class Repository(private val dataSource: HikariDataSource) {
+    fun fetchLastSekvensnr(session: Session): Int = session.single(queryOf("SELECT MAX(sekvensnummer) FROM utleggstrekk")) { it.intOrNull(1) } ?: 0
+
+    fun doesTrekkExist(
+        trekkid_ske: String,
+        sekvensnummer: Int,
+        trekkversjon: Int,
+        session: Session,
+    ): Boolean =
         session.single(
             queryOf(
-                """SELECT 1 FROM utleggstrekk 
-                   WHERE sekvensnummer=:sekvensnummer 
-                     AND trekkid_ske=:trekkid_ske 
-                     AND trekkversjon=:trekkversjon""".trimIndent(),
+                """
+                SELECT 1 FROM utleggstrekk 
+                WHERE sekvensnummer=:sekvensnummer 
+                  AND trekkid_ske=:trekkid_ske 
+                  AND trekkversjon=:trekkversjon
+                """.trimIndent(),
                 mapOf(
                     "sekvensnummer" to sekvensnummer,
                     "trekkid_ske" to trekkid_ske,
-                    "trekkversjon" to trekkversjon
-                )
-            )
+                    "trekkversjon" to trekkversjon,
+                ),
+            ),
         ) { 1 } != null
 
     fun updateNavTrekkStatus(corrId: String, status: String, session: Session) =
         session.update(
             queryOf(
                 "UPDATE utleggstrekk SET status=:status, tidspunkt_siste_status=NOW() WHERE corr_id=:corrId",
-                mapOf("status" to status, "corrId" to corrId)
-            )
+                mapOf("status" to status, "corrId" to corrId),
+            ),
         )
 
-    fun updateTrekkStatusSentAndDateTimeSentOS(corrId: String, session: Session) = session.update(
-        queryOf(
-            """UPDATE utleggstrekk SET status=:status, tidspunkt_siste_status=NOW(), tidspunkt_sendt_os=NOW()
-                    WHERE corr_id=:corrId""".trimIndent(),
-            mapOf("status" to SENDT, "corrId" to corrId),
+    fun updateTrekkStatusSentAndDateTimeSentOS(corrId: String, session: Session) =
+        session.update(
+            queryOf(
+                """
+                UPDATE utleggstrekk SET status=:status, tidspunkt_siste_status=NOW(), tidspunkt_sendt_os=NOW()
+                WHERE corr_id=:corrId
+                """.trimIndent(),
+                mapOf("status" to SENDT, "corrId" to corrId),
+            ),
         )
-    )
 
     fun updateKvitteringStatus(
         corrId: String,
@@ -66,49 +75,48 @@ class Repository(
         kvittering: String,
         navTrekkId: String,
         trekkalternativ: String,
-        session: Session
+        session: Session,
     ) {
-        val kvitteringAlternativ = when (trekkalternativ) {
-            "LOPM" -> "kvitteringLOPM"
-            else -> "kvitteringLOPP"
-        }
+        val kvitteringAlternativ =
+            when (trekkalternativ) {
+                "LOPM" -> "kvitteringLOPM"
+                else -> "kvitteringLOPP"
+            }
 
         session.update(
             queryOf(
                 """
                 update utleggstrekk set status=:status, $kvitteringAlternativ=:kvittering, trekkid_nav=:navTrekkId, tidspunkt_siste_status=NOW()  
                 where corr_id=:corrId;
-            """.trimIndent(),
+                """.trimIndent(),
                 mapOf(
                     "status" to status,
                     "kvittering" to kvittering,
                     "navTrekkId" to navTrekkId,
                     "corrId" to corrId,
-                )
-            )
+                ),
+            ),
         )
     }
 
-    fun savePerioder(
-        perioder: List<TrekkPeriodeTable>,
-        session: Session
-    ) {
-        val prepStmt = session.createPreparedStatement(
-            queryOf(
-                """
-                insert into trekkperiode (
-                sekvensnummer,
-                trekkid_ske,
-                trekkversjon,
-                dato_start, 
-                dato_slutt,
-                sats,
-                trekkalternativ,
-                kilde
-                ) values (?,?,?,?,?,?,?,?)        
-                """.trimIndent()
-            ),
-        )
+    fun savePerioder(perioder: List<TrekkPeriodeTable>, session: Session) {
+        val prepStmt =
+            session.createPreparedStatement(
+                queryOf(
+                    """
+                    insert into trekkperiode (
+                    sekvensnummer,
+                    trekkid_ske,
+                    trekkversjon,
+                    dato_start, 
+                    dato_slutt,
+                    sats,
+                    trekkalternativ,
+                    kilde
+                    ) values (?,?,?,?,?,?,?,?)        
+                    """.trimIndent(),
+                ),
+            )
         perioder.forEach { periode ->
             prepStmt.setInt(1, periode.sekvensnummer)
             prepStmt.setString(2, periode.trekkidSke)
@@ -123,48 +131,45 @@ class Repository(
         prepStmt.executeBatch()
     }
 
-    fun saveAllNewUtleggstrekk(
-        trekkListe: List<Trekkpaalegg>,
-        session: Session
-    ) {
+    fun saveAllNewUtleggstrekk(trekkListe: List<Trekkpaalegg>, session: Session) {
         val prepStmt1 =
             session.createPreparedStatement(
                 queryOf(
                     """
-                insert into utleggstrekk (
-                sekvensnummer,
-                trekkid_ske, 
-                trekkversjon, 
-                saksnummer,
-                opprettet_ske, 
-                trekkpliktig, 
-                skyldner, 
-                trekkstatus, 
-                betalingsmottaker,
-                kid, 
-                kontonummer, 
-                corr_id,
-                status
-                ) values (?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """.trimIndent()
-                )
+                    insert into utleggstrekk (
+                    sekvensnummer,
+                    trekkid_ske, 
+                    trekkversjon, 
+                    saksnummer,
+                    opprettet_ske, 
+                    trekkpliktig, 
+                    skyldner, 
+                    trekkstatus, 
+                    betalingsmottaker,
+                    kid, 
+                    kontonummer, 
+                    corr_id,
+                    status
+                    ) values (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """.trimIndent(),
+                ),
             )
         val prepStmt2 =
             session.createPreparedStatement(
                 queryOf(
                     """
-                insert into trekkperiode (
-                sekvensnummer,
-                trekkid_ske,
-                trekkversjon,
-                dato_start, 
-                dato_slutt,
-                sats,
-                trekkalternativ,
-                kilde
-                ) values (?,?,?,?,?,?,?,?)        
-                """.trimIndent()
-                )
+                    insert into trekkperiode (
+                    sekvensnummer,
+                    trekkid_ske,
+                    trekkversjon,
+                    dato_start, 
+                    dato_slutt,
+                    sats,
+                    trekkalternativ,
+                    kilde
+                    ) values (?,?,?,?,?,?,?,?)        
+                    """.trimIndent(),
+                ),
             )
         trekkListe.forEach { trekk ->
             prepStmt1.setInt(1, trekk.sekvensnummer)
@@ -192,7 +197,7 @@ class Repository(
                 prepStmt2.setObject(
                     6,
                     periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent,
-                    java.sql.Types.DOUBLE
+                    java.sql.Types.DOUBLE,
                 )
                 prepStmt2.setString(7, trekkalternativ)
                 prepStmt2.setString(8, SKATTEETATEN)
@@ -205,7 +210,7 @@ class Repository(
 
     fun fetchTrekkNotSendt(session: Session): List<UtleggstrekkTable> =
         session.list(
-            queryOf("SELECT * FROM utleggstrekk WHERE status=:status", mapOf("status" to MOTTATT))
+            queryOf("SELECT * FROM utleggstrekk WHERE status=:status", mapOf("status" to MOTTATT)),
         ) { row -> UtleggstrekkTable(row) }
 
     fun fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable, session: Session): List<TrekkPeriodeTable> =
@@ -215,9 +220,9 @@ class Repository(
                 mapOf(
                     "sekvensnummer" to trekk.sekvensnummer,
                     "trekkid_ske" to trekk.trekkidSke,
-                    "trekkversjon" to trekk.trekkversjon
-                )
-            )
+                    "trekkversjon" to trekk.trekkversjon,
+                ),
+            ),
         ) { row -> TrekkPeriodeTable(row) }
 
     // TODO: YES THESE TWO METHODS ARE IDENTICAL (TBD IF CODE EXISTS THAT ASSUME DIFFERENTLY)
@@ -228,26 +233,26 @@ class Repository(
                 mapOf(
                     "sekvensnummer" to trekk.sekvensnummer,
                     "trekkid_ske" to trekk.trekkidSke,
-                    "trekkversjon" to trekk.trekkversjon
-                )
-            )
+                    "trekkversjon" to trekk.trekkversjon,
+                ),
+            ),
         ) { row -> TrekkPeriodeTable(row) }
 
-
     fun saveFeilkoder(kvitteringer: List<TrekkTilOppdrag>, session: Session) {
-        val prepStatement = session.createPreparedStatement(
-            queryOf(
-                """
-                insert into feilkoder (
-                kreditor_trekk_id ,
-                corr_id,
-                trekkalternativ,
-                feilkode,
-                beskrivelse
-                ) values (?,?,?,?,?)        
-            """.trimIndent()
+        val prepStatement =
+            session.createPreparedStatement(
+                queryOf(
+                    """
+                    insert into feilkoder (
+                    kreditor_trekk_id ,
+                    corr_id,
+                    trekkalternativ,
+                    feilkode,
+                    beskrivelse
+                    ) values (?,?,?,?,?)        
+                    """.trimIndent(),
+                ),
             )
-        )
         kvitteringer.forEach { kvittering ->
             prepStatement.setString(1, kvittering.dokument.innrapporteringTrekk.kreditorTrekkId)
             prepStatement.setString(2, kvittering.dokument.transaksjonsId)
@@ -260,12 +265,12 @@ class Repository(
     }
 
     fun findFeilkode(corrId: String, session: Session): FeilkodeTable? =
-            session.single(
-                queryOf("SELECT * FROM feilkoder WHERE corr_id=:corrId", mapOf("corrId" to corrId))
-            ) { row -> FeilkodeTable(row) }
+        session.single(
+            queryOf("SELECT * FROM feilkoder WHERE corr_id=:corrId", mapOf("corrId" to corrId)),
+        ) { row -> FeilkodeTable(row) }
 
     fun findTrekkByCorrId(corrId: String, session: Session): UtleggstrekkTable? =
-            session.single(
-                queryOf("SELECT * FROM utleggstrekk WHERE corr_id=:corrId", mapOf("corrId" to corrId))
-            ) { row -> UtleggstrekkTable(row) }
+        session.single(
+            queryOf("SELECT * FROM utleggstrekk WHERE corr_id=:corrId", mapOf("corrId" to corrId)),
+        ) { row -> UtleggstrekkTable(row) }
 }

@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.util
 
+import kotlinx.serialization.json.Json
+
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -8,7 +10,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.serialization.json.Json
 
 class MockHttpClient {
     private val orgNr = "889640782"
@@ -22,21 +23,18 @@ class MockHttpClient {
         }
     private val baseUrl: String = "/api/utleggstrekk/v1/$orgNr"
 
-    fun getClient(
-        response: String,
-        statusCode: HttpStatusCode,
-    ) = HttpClient(MockEngine) {
-        install(ContentNegotiation) { json(jsonConfig) }
-        engine {
-            addHandler { request ->
-                when (request.url.encodedPath) {
-                    baseUrl -> respond(response, statusCode, responseHeaders)
-                    else -> {
-                        error("Ikke implementert: ${request.url.encodedPath}")
+    fun getClient(response: String, statusCode: HttpStatusCode) =
+        HttpClient(MockEngine) {
+            install(ContentNegotiation) { json(jsonConfig) }
+            engine {
+                addHandler { request ->
+                    when (request.url.encodedPath) {
+                        baseUrl -> respond(response, statusCode, responseHeaders)
+                        else -> {
+                            error("Ikke implementert: ${request.url.encodedPath}")
+                        }
                     }
                 }
             }
         }
-    }
 }
-

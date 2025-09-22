@@ -7,17 +7,14 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
+
 import no.nav.sokos.utleggstrekk.service.KvitteringService
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 
-fun Routing.utleggstrekkApi(
-    utleggsTrekkService: UtleggsTrekkService,
-    kvitteringService: KvitteringService
-) {
-
+fun Routing.utleggstrekkApi(utleggsTrekkService: UtleggsTrekkService, kvitteringService: KvitteringService) {
     route("utleggstrekk") {
         get("hentAlleFullPakke") {
-            val resultat = utleggsTrekkService.HentOgSendUtleggstrekk()
+            val resultat = utleggsTrekkService.hentOgSendUtleggstrekk()
             call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
         }
 
@@ -51,11 +48,7 @@ fun Routing.utleggstrekkApi(
     }
 }
 
-
-private fun Route.authenticate(
-    useAuthentication: Boolean,
-    block: Route.() -> Unit,
-) {
+private fun Route.authenticate(useAuthentication: Boolean, block: Route.() -> Unit) {
     if (useAuthentication) {
         authenticate { block() }
     } else {
