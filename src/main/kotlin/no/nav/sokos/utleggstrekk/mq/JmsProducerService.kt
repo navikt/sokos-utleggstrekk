@@ -22,6 +22,7 @@ class JmsProducerService(
         jmsContext.setExceptionListener { logger.error("Feil på MQ-kommunikasjon", it) }
     }
 
+    // TODO: Må legge inn feilhåndtering + manuell håndtering
     fun send(payload: String) {
         val message = jmsContext.createTextMessage(payload)
         try {
