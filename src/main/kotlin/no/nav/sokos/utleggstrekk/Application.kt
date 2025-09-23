@@ -13,9 +13,6 @@ import no.nav.sokos.utleggstrekk.config.AzureConfiguration
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
-import no.nav.sokos.utleggstrekk.service.DatabaseService
-import no.nav.sokos.utleggstrekk.service.KvitteringService
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 
 fun main() {
@@ -25,16 +22,12 @@ fun main() {
 private fun Application.module() {
     val applicationState = ApplicationState()
     val azureConfiguration = AzureConfiguration()
-    val databaseService = DatabaseService()
-    val behandleTrekkService = BehandleTrekkService(databaseService)
-    val utleggsTrekkService = UtleggsTrekkService(databaseService, behandleTrekkService)
-    val kvitteringService = KvitteringService(databaseService)
 
     commonConfig(azureConfiguration)
     applicationLifecycleConfig(applicationState)
     routing {
         internalNaisRoutes(applicationState)
-        utleggstrekkApi(utleggsTrekkService, kvitteringService)
+        utleggstrekkApi(UtleggsTrekkService())
     }
 
     if (!PropertiesConfig.isLocal) {

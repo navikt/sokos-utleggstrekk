@@ -1,13 +1,13 @@
-package no.nav.sokos.utleggstrekk
+package no.nav.sokos.utleggstrekk.util
 
 import io.kotest.extensions.testcontainers.toDataSource
+import org.flywaydb.core.Flyway
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 
 class TestContainer {
     private val properties = PropertiesConfig.PostgresConfig
@@ -19,7 +19,7 @@ class TestContainer {
             start()
         }
 
-    private val ds =
+    val dataSource =
         container.toDataSource {
             maximumPoolSize = 100
             minimumIdle = 1
@@ -27,14 +27,16 @@ class TestContainer {
         }
 
     init {
-        PostgresDataSource.migrate(ds)
+        Flyway
+            .configure()
+            .dataSource(dataSource)
+            .initSql("""SET ROLE "${PropertiesConfig.PostgresConfig.adminUser}"""")
+            .lockRetryCount(-1)
+            .validateMigrationNaming(true)
+            .load()
+            .migrate()
+            .migrationsExecuted
     }
 
-    val dataSource = ds
-
-    fun migrate(script: String = "") {
-        if (script.isNotEmpty()) loadInitScript(script)
-    }
-
-    private fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
+    fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
 }

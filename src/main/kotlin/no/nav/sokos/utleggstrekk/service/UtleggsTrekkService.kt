@@ -2,20 +2,32 @@ package no.nav.sokos.utleggstrekk.service
 
 import kotlinx.serialization.json.Json
 
+import com.ibm.mq.jakarta.jms.MQQueue
+import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
-import no.nav.sokos.utleggstrekk.mq.MqProducer
+import no.nav.sokos.utleggstrekk.mq.JmsListenerService
+import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 
 const val SENDT = "SENDT"
 
 class UtleggsTrekkService(
-    private val databaseService: DatabaseService,
-    private val behandleTrekkService: BehandleTrekkService,
+    private val databaseService: DatabaseService = DatabaseService(),
+    private val behandleTrekkService: BehandleTrekkService = BehandleTrekkService(databaseService),
     private val skeClient: SkeClient = SkeClient(),
-    private val mqProducer: MqProducer = MqProducer(),
+    private val mqProducer: JmsProducerService =
+        JmsProducerService(
+            targetQueue =
+                MQQueue(PropertiesConfig.MQProperties().queueName).apply {
+                    targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
+                },
+            replyQueue =
+                JmsListenerService().osKvitteringQueue,
+        ),
 ) {
     private val logger = KotlinLogging.logger { }
 
@@ -49,6 +61,7 @@ class UtleggsTrekkService(
                 databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
             }.size
 
+    // Ikke fjern :)
     suspend fun hentAlleNyeUtleggstrekk() {
         val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
         logger.info("Henter fra siste sekvensnr: $sisteSekvensnr")

@@ -10,9 +10,9 @@ import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 
-import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.JavaLocaldateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
@@ -38,7 +38,6 @@ internal class LifecycleTest :
             }
 
         val testContainer = TestContainer()
-        testContainer.migrate()
         val dataSource = testContainer.dataSource
         val repository = Repository(dataSource)
 

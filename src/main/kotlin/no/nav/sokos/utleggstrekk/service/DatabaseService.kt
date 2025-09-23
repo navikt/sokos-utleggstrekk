@@ -31,24 +31,21 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
         }
     }
 
-    fun oppdaterTrekkMedKvitteringsinfo(kvitteringer: List<TrekkTilOppdrag>) {
-        kvitteringer.map { kvittering ->
-            dataSource.withTransaction { session ->
-                val status =
-                    when (kvittering.mmel?.alvorlighetsgrad) {
-                        "00" -> "KVITTERING_OK"
-                        else -> "KVITTERING_FEILET"
-                    }
-                repository.updateKvitteringStatus(
-                    kvittering.dokument.transaksjonsId,
-                    status,
-                    kvittering.mmel?.kodeMelding ?: "Ingen kode i mmel",
-                    kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen Trekkid i kvittering",
-                    kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
-                    session,
-                )
-            }
-            kvittering
+    fun oppdaterTrekkMedKvitteringsinfo(kvittering: TrekkTilOppdrag) {
+        dataSource.withTransaction { session ->
+            val status =
+                when (kvittering.mmel?.alvorlighetsgrad) {
+                    "00" -> "KVITTERING_OK"
+                    else -> "KVITTERING_FEILET"
+                }
+            repository.updateKvitteringStatus(
+                kvittering.dokument.transaksjonsId,
+                status,
+                kvittering.mmel?.kodeMelding ?: "Ingen kode i mmel",
+                kvittering.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen Trekkid i kvittering",
+                kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
+                session,
+            )
         }
     }
 
@@ -89,11 +86,9 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
         }
     }
 
-    fun lagreFeilkoderFraOS(kvitteringerMedFeilkoder: List<TrekkTilOppdrag>) {
-        if (kvitteringerMedFeilkoder.isNotEmpty()) {
-            dataSource.withTransaction { session ->
-                repository.saveFeilkoder(kvitteringerMedFeilkoder, session)
-            }
+    fun lagreFeilkoderFraOS(kvitteringMedFeilkoder: TrekkTilOppdrag) {
+        dataSource.withTransaction { session ->
+            repository.saveFeilkoder(kvitteringMedFeilkoder, session)
         }
     }
 }

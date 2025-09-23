@@ -238,7 +238,7 @@ class Repository(private val dataSource: HikariDataSource) {
             ),
         ) { row -> TrekkPeriodeTable(row) }
 
-    fun saveFeilkoder(kvitteringer: List<TrekkTilOppdrag>, session: Session) {
+    fun saveFeilkoder(kvittering: TrekkTilOppdrag, session: Session) {
         val prepStatement =
             session.createPreparedStatement(
                 queryOf(
@@ -253,14 +253,13 @@ class Repository(private val dataSource: HikariDataSource) {
                     """.trimIndent(),
                 ),
             )
-        kvitteringer.forEach { kvittering ->
-            prepStatement.setString(1, kvittering.dokument.innrapporteringTrekk.kreditorTrekkId)
-            prepStatement.setString(2, kvittering.dokument.transaksjonsId)
-            prepStatement.setString(3, kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ)
-            prepStatement.setString(4, kvittering.mmel?.kodeMelding)
-            prepStatement.setString(5, kvittering.mmel?.beskrMelding)
-            prepStatement.addBatch()
-        }
+        prepStatement.setString(1, kvittering.dokument.innrapporteringTrekk.kreditorTrekkId)
+        prepStatement.setString(2, kvittering.dokument.transaksjonsId)
+        prepStatement.setString(3, kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ)
+        prepStatement.setString(4, kvittering.mmel?.kodeMelding)
+        prepStatement.setString(5, kvittering.mmel?.beskrMelding)
+        prepStatement.addBatch()
+
         prepStatement.executeBatch()
     }
 
