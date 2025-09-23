@@ -7,14 +7,8 @@ data class ErrorMessages(
     val info: List<String>,
 )
 
-class SlackService(
-    private val slackClient: SlackClient = SlackClient(),
-) {
-    suspend fun sendError(
-        header: String,
-        filename: String,
-        vararg errorMessages: ErrorMessages,
-    ) {
+class SlackService(private val slackClient: SlackClient = SlackClient()) {
+    suspend fun sendError(header: String, filename: String, vararg errorMessages: ErrorMessages) {
         slackClient.sendMessage(
             header,
             filename,
