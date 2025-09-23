@@ -210,7 +210,7 @@ class Repository(private val dataSource: HikariDataSource) {
 
     fun fetchTrekkNotSendt(session: Session): List<UtleggstrekkTable> =
         session.list(
-            queryOf("SELECT * FROM utleggstrekk WHERE status=:status", mapOf("status" to MOTTATT)),
+            queryOf("SELECT * FROM utleggstrekk WHERE status=:status ORDER BY sekvensnummer ASC", mapOf("status" to MOTTATT)),
         ) { row -> UtleggstrekkTable(row) }
 
     fun fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable, session: Session): List<TrekkPeriodeTable> =

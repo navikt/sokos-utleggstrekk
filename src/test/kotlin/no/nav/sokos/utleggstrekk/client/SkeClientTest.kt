@@ -150,6 +150,19 @@ class SkeClientTest :
                 verify(exactly = 1) { logger.error(any<() -> Unit>()) }
                 errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av response"
             }
+
+            test("hentAlleUtleggstrekk skal takle data med felter den ikke kjenner") {
+                val mockedResponse = resourceToString("Trekk_med_ukjente_felter.json")
+                val mockEngine =
+                    MockEngine {
+                        respond(content = mockedResponse, headers = headers)
+                    }
+                val skeClient = SkeClient(mockClient(mockEngine), mockTokenProvider)
+
+                val trekkListe = skeClient.hentAlleUtleggstrekk()
+                trekkListe shouldHaveSize 1
+                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+            }
         }
 
         context("hentUtleggstrekkFraSekvensnr") {

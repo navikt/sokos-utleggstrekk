@@ -1,0 +1,519 @@
+[
+  {
+    "trekkid": "10007",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-26T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/7",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 351,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-28",
+        "trekkprosent": {
+          "trekkprosent": 17.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10007",
+    "skyldner": "10108412345",
+    "opprettet": "2025-10-09T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/7",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 2,
+    "sekvensnummer": 380,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-28",
+        "sluttdato": "2025-10-10",
+        "trekkprosent": {
+          "trekkprosent": 17.0
+        }
+      },
+      {
+        "startdato": "2025-10-11",
+        "sluttdato": "2025-12-10",
+        "trekkprosent": {
+          "trekkprosent": 0.0
+        }
+      },
+      {
+        "startdato": "2025-12-11",
+        "trekkprosent": {
+          "trekkprosent": 17.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10004",
+    "skyldner": "10108412345",
+    "opprettet": "2025-07-05T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/4",
+    "trekkstatus": "avsluttet",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 2,
+    "sekvensnummer": 159,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-06-10",
+        "sluttdato": "2025-09-12",
+        "trekkprosent": {
+          "trekkprosent": 17.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10002",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-09T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/2",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 51,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-10",
+        "trekkbeloep": {
+          "trekkbeloep": 5000
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10001",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-09T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/1",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 38,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-10",
+        "trekkprosent": {
+          "trekkprosent": 17.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10003",
+    "skyldner": "10108412345",
+    "opprettet": "2025-05-05T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/3",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 80,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-05-10",
+        "trekkprosent": {
+          "trekkprosent": 23.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10003",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-08T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/3",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 2,
+    "sekvensnummer": 101,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-05-10",
+        "sluttdato": "2025-08-09",
+        "trekkprosent": {
+          "trekkprosent": 23.0
+        }
+      },
+      {
+        "startdato": "2025-08-10",
+        "trekkprosent": {
+          "trekkprosent": 17.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10004",
+    "skyldner": "10108412345",
+    "opprettet": "2025-06-01T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/4",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 142,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-06-10",
+        "trekkprosent": {
+          "trekkprosent": 17.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10005",
+    "skyldner": "10108412345",
+    "opprettet": "2025-06-05T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/5",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 205,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-06-10",
+        "trekkprosent": {
+          "trekkprosent": 23.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10005",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-09T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/5",
+    "trekkstatus": "avsluttet",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 2,
+    "sekvensnummer": 228,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-06-10",
+        "sluttdato": "2025-08-09",
+        "trekkprosent": {
+          "trekkprosent": 23.0
+        }
+      },
+      {
+        "startdato": "2025-08-10",
+        "sluttdato": "2025-08-31",
+        "trekkbeloep": {
+          "trekkbeloep": 4400
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10006",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-26T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/6",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 271,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-28",
+        "trekkbeloep": {
+          "trekkbeloep": 8000
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10006",
+    "skyldner": "10108412345",
+    "opprettet": "2025-09-12T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/6",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 2,
+    "sekvensnummer": 290,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-28",
+        "sluttdato": "2025-09-14",
+        "trekkbeloep": {
+          "trekkbeloep": 8000
+        }
+      },
+      {
+        "startdato": "2025-09-15",
+        "trekkbeloep": {
+          "trekkbeloep": 6000
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10006",
+    "skyldner": "10108412345",
+    "opprettet": "2025-10-12T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/6",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 3,
+    "sekvensnummer": 301,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-28",
+        "sluttdato": "2025-09-14",
+        "trekkbeloep": {
+          "trekkbeloep": 8000
+        }
+      },
+      {
+        "startdato": "2025-09-15",
+        "sluttdato": "2025-10-13",
+        "trekkbeloep": {
+          "trekkbeloep": 6000
+        }
+      },
+      {
+        "startdato": "2025-10-14",
+        "trekkbeloep": {
+          "trekkbeloep": 5000
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10006",
+    "skyldner": "10108412345",
+    "opprettet": "2026-02-09T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/6",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 4,
+    "sekvensnummer": 350,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-28",
+        "sluttdato": "2025-09-14",
+        "trekkbeloep": {
+          "trekkbeloep": 8000
+        }
+      },
+      {
+        "startdato": "2025-09-15",
+        "sluttdato": "2025-10-13",
+        "trekkbeloep": {
+          "trekkbeloep": 6000
+        }
+      },
+      {
+        "startdato": "2025-10-14",
+        "sluttdato": "2026-02-09",
+        "trekkbeloep": {
+          "trekkbeloep": 5000
+        }
+      },
+      {
+        "startdato": "2026-02-10",
+        "trekkbeloep": {
+          "trekkbeloep": 7000
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10008",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-26T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/8",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 391,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-28",
+        "trekkprosent": {
+          "trekkprosent": 32.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10008",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-16T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/8",
+    "trekkstatus": "avsluttet",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 2,
+    "sekvensnummer": 410,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-08-28",
+        "sluttdato": "2025-09-17",
+        "trekkprosent": {
+          "trekkprosent": 32.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10009",
+    "skyldner": "10108412345",
+    "opprettet": "2025-09-30T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/9",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 430,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-10-01",
+        "trekkprosent": {
+          "trekkprosent": 33.0
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10010",
+    "skyldner": "10108412345",
+    "opprettet": "2025-08-26T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/10",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 1,
+    "sekvensnummer": 551,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-10-01",
+        "trekkbeloep": {
+          "trekkbeloep": 3000
+        }
+      }
+    ]
+  },
+  {
+    "trekkid": "10010",
+    "skyldner": "10108412345",
+    "opprettet": "2025-10-05T15:00:00.00Z",
+    "saksnummer": "TREKK/2025/10",
+    "trekkstatus": "aktiv",
+    "trekkpliktig": "123456789",
+    "trekkversjon": 2,
+    "sekvensnummer": 555,
+    "betalingsinformasjon": {
+      "kidnummer": "6487719756",
+      "kontonummer": "70213997155",
+      "betalingsmottaker": "971648199"
+    },
+    "trekkstoerrelseForPeriode": [
+      {
+        "startdato": "2025-10-01",
+        "sluttdato": "2025-10-06",
+        "trekkbeloep": {
+          "trekkbeloep": 3000
+        }
+      },
+      {
+        "startdato": "2025-10-07",
+        "trekkbeloep": {
+          "trekkbeloep": 2000
+        }
+      }
+    ]
+  }
+]

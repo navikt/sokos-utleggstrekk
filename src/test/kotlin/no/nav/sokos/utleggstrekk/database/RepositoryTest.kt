@@ -11,6 +11,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
+import no.nav.sokos.utleggstrekk.TestContainer
 import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -18,7 +19,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
-import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 
@@ -199,7 +199,7 @@ class RepositoryTest :
 
         test("Lagre feilkoder") {
             val kvittering = json.decodeFromString<TrekkTilOppdrag>(resourceToString("kvittering-feil.json"))
-            dataSource.withTransaction { session -> repository.saveFeilkoder(kvittering, session) }
+            dataSource.withTransaction { session -> repository.saveFeilkoder(listOf(kvittering), session) }
 
             val feilkode =
                 dataSource.withTransaction { session ->
@@ -226,5 +226,16 @@ class RepositoryTest :
             val trekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }.find { it.sekvensnummer == 1 }!!
             val perioder = dataSource.withTransaction { session -> repository.fetchAllPerioderForTrekk(trekk, session) }
             comparePerioder(trekkFraSkatt, perioder)
+        }
+
+        test("Sjekk rekkefølge på utleggstrekk") {
+            val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("diverse_trekk_ut_av_sekvens.json"))
+            saveUtleggsrekk(trekkpalegg)
+            val trekkNotSent =
+                dataSource.withTransaction { session ->
+                    repository.fetchTrekkNotSendt(session)
+                }
+            // Alle trekk skal være i rekkefølge
+            trekkNotSent.map(UtleggstrekkTable::sekvensnummer).zipWithNext().all { (a, b) -> a < b } shouldBe true
         }
     })
