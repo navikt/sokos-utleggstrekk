@@ -1,4 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -7,9 +6,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "2.2.10"
     kotlin("plugin.serialization") version "2.2.10"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
+    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
+
+    application
 }
 
 group = "no.nav.sokos"
@@ -113,13 +113,13 @@ dependencies {
     testImplementation("org.apache.activemq:artemis-jakarta-server:$activemqVersion")
 }
 
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
+// Vulnerability fix because of id("org.jlleitschuh.gradle.ktlint") uses ch.qos.logback:logback-classic:1.3.5
 configurations.ktlint {
     resolutionStrategy.force("ch.qos.logback:logback-classic:$logbackVersion")
+}
+
+application {
+    mainClass.set("no.nav.sokos.utleggstrekk.ApplicationKt")
 }
 
 sourceSets {
@@ -130,21 +130,16 @@ sourceSets {
     }
 }
 
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 tasks {
 
     withType<KotlinCompile>().configureEach {
         dependsOn("ktlintFormat")
-    }
-    withType<ShadowJar>().configureEach {
-        enabled = true
-        archiveFileName.set("sokos-utleggstrekk.jar")
-        manifest {
-            attributes["Main-Class"] = "no.nav.sokos.utleggstrekk.ApplicationKt"
-        }
-
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        mergeServiceFiles()
-        finalizedBy(koverHtmlReport)
     }
 
     withType<Test>().configureEach {
@@ -158,14 +153,12 @@ tasks {
             events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
         }
         reports.forEach { report -> report.required.value(false) }
+
+        finalizedBy(koverHtmlReport)
     }
 
     withType<Wrapper> {
-        gradleVersion = "8.9"
-    }
-
-    ("jar") {
-        enabled = false
+        gradleVersion = "9.1.0"
     }
 
     ("build") {

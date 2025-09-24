@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy application
 
 on:
   push:
@@ -9,9 +9,13 @@ on:
       - 'LICENCE'
       - 'CODEOWNERS'
       - '.gitignore'
+      - '.editorconfig'
       - 'setupLocalEnvironment.sh'
-      - '.github/workflows/codeql.yaml'
-  workflow_dispatch:
+      - 'dokumentasjon/**'
+      - '.github/workflows/build-pr.yaml'
+      - '.github/workflows/manual-deploy.yaml'
+      - '.github/workflows/security.yaml'
+      - '.github/dependabot.yaml'
 
 env:
   TZ: Europe/Oslo
@@ -21,16 +25,41 @@ permissions:
   id-token: "write"
 
 jobs:
-  build:
-    name: Build/test & push image
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-push-image.yaml@main
+  run-application-tests:
+    name: Run application tests
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@new_workflow_release
+
+  assemble-build-push-image-dev:
+    needs: [ run-application-tests ]
+    name: Assemble application & build/push dev image
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@new_workflow_release
     secrets: inherit
-    
+    with:
+      image-tag: 'dev'
+      dockerfile: './.nais/dev/Dockerfile'
+
+#  assemble-build-push-image-prod:
+#    needs: [ run-application-tests ]
+#    name: Assemble application & build/push prod image
+#    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@new_workflow_release
+#    secrets: inherit
+#    with:
+#      dockerfile: './.nais/prod/Dockerfile'
+
   deploy-dev:
-    needs: build
+    needs: [ assemble-build-push-image-dev ]
     name: Deploy to dev-fss
     uses: navikt/mob-gha-workflows/.github/workflows/nais-app-deploy.yaml@main
     with:
       cluster: dev-fss
-      resource: .nais/naiserator-dev.yaml
-      image: ${{ needs.build.outputs.image }}
+      resource: .nais/dev/naiserator-dev.yaml
+      image: ${{ needs.assemble-build-push-image-dev.outputs.image }}
+
+#  deploy-prod:
+#    needs: [ assemble-build-push-image-prod, deploy-dev ]
+#    name: Deploy to prod-fss
+#    uses: navikt/mob-gha-workflows/.github/workflows/nais-app-deploy.yaml@main
+#    with:
+#      cluster: prod-fss
+#      resource: .nais/prod/naiserator-prod.yaml
+#      image: ${{ needs.assemble-build-push-image-prod.outputs.image }}
