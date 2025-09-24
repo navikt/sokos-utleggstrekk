@@ -8,13 +8,13 @@ jobs:
     name: Build and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
-      - uses: gradle/gradle-build-action@v2.11.0
+      - uses: gradle/gradle-build-action@v3.5.0
         with:
           arguments: --configuration-cache build shadowJar
