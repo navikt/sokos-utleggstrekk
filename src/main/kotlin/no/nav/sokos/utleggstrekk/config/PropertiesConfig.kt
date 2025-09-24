@@ -32,7 +32,7 @@ object PropertiesConfig {
             "POSTGRES_HOST" to "dev-pg.intern.nav.no",
             "POSTGRES_PORT" to "5432",
             "POSTGRES_NAME" to "sokos-utleggstrekk",
-            "SKE_REST_URL" to "https://api-test.sits.no/api/utleggstrekk/v1/",
+            "SKE_REST_URL" to "https://api-test.sits.no/api/trekkpaalegg/v1",
             "USE_AUTHENTICATION" to "false",
             "MQ_HOSTNAME" to "10.53.17.118",
             "MQ_PORT" to "1413",
