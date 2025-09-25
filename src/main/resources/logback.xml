@@ -12,6 +12,7 @@
             </pattern>
         </encoder>
     </appender>
+<!-- TODO: Fikse logging se på sokos-ske-krav -->
 
 <!--    <appender name="secureLog" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
 <!--        <file>/secure-logs/secure.log</file>-->

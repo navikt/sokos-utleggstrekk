@@ -47,9 +47,9 @@ data class UtleggstrekkTable(
         status = row.string("status"),
         kvitteringLOPM = row.stringOrNull("kvitteringLOPM"),
         kvitteringLOPP = row.stringOrNull("kvitteringLOPP"),
-        tidspunktSendtOs = row.localDateTimeOrNull("tidspunkt_sendt_os")?.toKotlinLocalDateTime(),
-        tidspunktSisteStatus = row.localDateTime("tidspunkt_siste_status").toKotlinLocalDateTime(),
-        tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(),
+        tidspunktSendtOs = row.localDateTimeOrNull("tidspunkt_sendt_os")?.toKotlinLocalDateTime(), // TODO: java localdatetime
+        tidspunktSisteStatus = row.localDateTime("tidspunkt_siste_status").toKotlinLocalDateTime(), // TODO: er dette tidspunkt for kvittering?
+        tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(), // TODO:
     )
 }
 

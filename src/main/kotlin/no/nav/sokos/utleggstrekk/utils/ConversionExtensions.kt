@@ -24,6 +24,7 @@ fun TrekkPeriodeTable.toTrekkDokumentPeriode() =
         sats = this.sats,
     )
 
+// TODO: skal dette være her?
 fun UtleggstrekkTable.toTrekkDokument(
     periodeTableList: List<TrekkPeriodeTable>,
     aksjonskode: Aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),

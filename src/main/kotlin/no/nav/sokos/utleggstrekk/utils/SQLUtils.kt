@@ -8,6 +8,7 @@ import kotliquery.TransactionalSession
 import kotliquery.sessionOf
 import kotliquery.using
 
+// TODO: Flytt withTransaction og kast resten
 object SQLUtils {
     inline fun <reified T : Any> Row.optionalOrNull(columnLabel: String): T? =
         runCatching {

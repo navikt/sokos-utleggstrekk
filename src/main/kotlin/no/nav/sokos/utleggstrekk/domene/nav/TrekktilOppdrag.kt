@@ -29,12 +29,15 @@ data class Mmel(
     val sectionNavn: String? = null,
 )
 
+// TODO: Se på spk-mottak
 @Serializable
 data class Document(
     val transaksjonsId: String,
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
+// TODO: Fjerne optin set encode default in json config
+// TODO: Vi må persistere json fra SKE som den er.
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class InnrapporteringTrekk(
@@ -60,7 +63,7 @@ data class Perioder(val periode: List<Periode>)
 @Serializable
 data class Periode(
     val periodeFomDato: String,
-    val periodeTomDato: String = "9999-12-31",
+    val periodeTomDato: String = "9999-12-31", // TODO: slett default value
     val sats: Double = 0.0,
 )
 
@@ -71,6 +74,7 @@ enum class Aksjonskode(val value: String) {
     OPPH("OPPH"),
     ;
 
+    // TODO: kotlin ==/equals & se om denne skal være her.
     companion object {
         fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode {
             if (utleggstrekkTable.trekkstatus.equals(Trekkstatus.AKTIV.value) && utleggstrekkTable.trekkversjon == 1) {

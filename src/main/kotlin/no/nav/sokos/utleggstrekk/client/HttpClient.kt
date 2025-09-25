@@ -12,6 +12,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner
 
+// TODO: Sett json config her
 val httpClient =
     HttpClient(Apache) {
         expectSuccess = false

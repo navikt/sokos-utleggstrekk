@@ -13,6 +13,7 @@ import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 
 private val logger = KotlinLogging.logger { }
 
+// TODO: Denne trengs ikke
 class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSource.dataSource) {
     private val repository = Repository(dataSource)
 

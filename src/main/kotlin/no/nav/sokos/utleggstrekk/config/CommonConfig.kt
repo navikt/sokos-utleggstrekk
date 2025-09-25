@@ -20,9 +20,11 @@ import io.ktor.server.request.path
 import mu.KotlinLogging
 import org.slf4j.event.Level
 
+// TODO: Bytte navn. Dette er ikke "common".
+// TODO: Vi trenger bare én global logger.
 private val logger = KotlinLogging.logger { }
 
-@OptIn(ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class) // TODO: Sjekk om denne kan fjernes
 fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
     install(CallId) {
         header(HttpHeaders.XCorrelationId)
@@ -35,6 +37,7 @@ fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
         filter { call -> call.request.path().startsWith("/utleggstrekk") }
         disableDefaultColors()
     }
+    // TODO: flytt til et object
     install(ContentNegotiation) {
         json(
             Json {
@@ -42,7 +45,7 @@ fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
                 isLenient = true
                 decodeEnumsCaseInsensitive = true
                 explicitNulls = true
-            },
+            }, // TODO: Encode default
         )
     }
 

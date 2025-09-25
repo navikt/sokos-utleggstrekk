@@ -17,8 +17,8 @@ data class TrekkPeriodeTable(
     val tidspunktOpprettet: LocalDateTime =
         java.time.LocalDateTime
             .now()
-            .toKotlinLocalDateTime(),
-    val kilde: String = "SKATTEETATEN",
+            .toKotlinLocalDateTime(), // TODO: kotlinx har med parsing å gjøre. Bytt til java LocalDateTime
+    val kilde: String = "SKATTEETATEN", // TODO: Hører til modellen av hva vi sender til Oppdrag.
 ) {
     constructor(row: Row) : this(
         trekkPeriodeTableId = row.int("id"),

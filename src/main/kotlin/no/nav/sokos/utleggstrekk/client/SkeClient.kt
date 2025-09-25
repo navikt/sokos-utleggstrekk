@@ -24,6 +24,7 @@ class SkeClient(
 ) {
     val basePath = PropertiesConfig.SKEConfig().skeRestUrl
 
+    // TODO: skal ikke brukes
     suspend fun hentAlleUtleggstrekk(): List<Trekkpaalegg> =
         client
             .get {
@@ -37,7 +38,7 @@ class SkeClient(
                 .get {
                     url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
                     headers(commonHeaders())
-                }.also { response -> println(response.status.toString() + response.body()) }
+                }.also { response -> println(response.status.toString() + response.body()) } // TODO: Fjerne println
         return body.toTrekkpaalegg()
     }
 
@@ -45,7 +46,7 @@ class SkeClient(
         val token = tokenProvider.hentAccessToken()
         return {
             append("Klientid", KLIENT_ID)
-            append("Korrelasjonsid", UUID.randomUUID().toString())
+            append("Korrelasjonsid", UUID.randomUUID().toString()) // TODO: Hvis dette skal være noe poeng må den tas vare på et sted!
             append(HttpHeaders.Authorization, "Bearer $token")
         }
     }
