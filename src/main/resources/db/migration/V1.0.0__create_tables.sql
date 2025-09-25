@@ -50,8 +50,6 @@ create table "feilkoder"
     tidspunkt_opprettet timestamp NOT NULL DEFAULT NOW()
 );
 
-create index if not exists sekvensnummer_idx on utleggstrekk (sekvensnummer);
-create index if not exists status_idx on utleggstrekk (status);
 create unique index if not exists idxu_trekk on utleggstrekk (trekkid_ske, sekvensnummer, trekkversjon);
 create index if not exists idx_periode on trekkperiode (trekkid_ske, sekvensnummer, trekkversjon)
 
