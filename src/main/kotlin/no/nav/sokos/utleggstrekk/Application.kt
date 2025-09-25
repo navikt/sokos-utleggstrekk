@@ -37,6 +37,7 @@ private fun Application.module() {
 
 fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
     monitor.subscribe(ApplicationStarted) {
+        // TODO: vent til server er ready
         applicationState.ready = true
     }
 
@@ -46,6 +47,6 @@ fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
 }
 
 class ApplicationState(
-    var ready: Boolean = true,
+    var ready: Boolean = true, // TODO: False?
     var alive: Boolean = true,
 )

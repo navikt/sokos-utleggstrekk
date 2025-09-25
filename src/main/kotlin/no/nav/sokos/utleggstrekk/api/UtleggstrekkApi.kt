@@ -10,6 +10,8 @@ import io.ktor.server.routing.route
 
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 
+// TODO: Se på hva som er gjort i spk-mottak
+// TODO: Se på sokos-krav mhp. autentisering
 fun Routing.utleggstrekkApi(utleggsTrekkService: UtleggsTrekkService) {
     route("utleggstrekk") {
         get("hentAlleFullPakke") {

@@ -1,4 +1,6 @@
 drop table if exists utleggstrekk;
+
+-- TODO: Ikke blande SKE modell og Oppdrag modell
 create table "utleggstrekk"
 (
     id                     bigserial primary key,

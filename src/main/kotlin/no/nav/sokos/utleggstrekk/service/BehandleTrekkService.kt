@@ -18,6 +18,8 @@ private const val LOPENDE_PROSENT = "LOPP"
 class BehandleTrekkService(private val databaseService: DatabaseService) {
     val logger = KotlinLogging.logger { }
 
+    // TODO: Er map nødvendig?  Navn?  TrekkTilOppdrag er alltid bare 1 eller 2 lang?
+    // TODO: TrekkToOppdrag er en json konvolutt for sending til Oppdrag.  Dette burde ha domeneobjekt fokus. Dette er forretningslogikk!
     fun lagTrekkSomSkalSendes(): Map<UtleggstrekkTable, List<TrekkTilOppdrag>> {
         val trekkIkkeSendt = databaseService.hentAlleTrekkSomIkkeErSendt()
         return trekkIkkeSendt.associateWith { trekk ->
@@ -46,6 +48,7 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
         }
     }
 
+    // TODO: NAVN
     private fun utledAlleDuplikateTrekkPerioder(
         perioderForTrekkversjonMap: Map<String, List<TrekkPeriodeTable>>,
         allePerioderForTrekkMap: Map<String, List<TrekkPeriodeTable>>,

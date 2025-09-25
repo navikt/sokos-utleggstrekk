@@ -131,6 +131,7 @@ class Repository(private val dataSource: HikariDataSource) {
         prepStmt.executeBatch()
     }
 
+    // TODO: Kan kotliquery gjøre det mulig å bruke named parameters i batch?
     fun saveAllNewUtleggstrekk(trekkListe: List<Trekkpaalegg>, session: Session) {
         val prepStmt1 =
             session.createPreparedStatement(

@@ -50,6 +50,7 @@ class UtleggsTrekkService(
             }
     }
 
+    // TODO: refaktorere
     fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>): Int =
         trekkTilOppdragMap
             .map {
