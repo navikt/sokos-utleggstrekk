@@ -1,20 +1,17 @@
-name: "CodeQL Advanced"
+name: Security scan CodeQL/Trivy
+
 on:
-  push:
-    branches: [ "main", "dev" ]
-  pull_request:
-    branches: [ "main" ]
   schedule:
     - cron: '0 6 * * 1'
   workflow_dispatch:
 
 permissions:
-  actions: read
   contents: "read"
   id-token: "write"
   security-events: write
+
 jobs:
-  security-analyze:
+  security-analyze-code:
     name: Security analyze
     if: success() || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     uses: navikt/mob-gha-workflows/.github/workflows/security.yaml@main

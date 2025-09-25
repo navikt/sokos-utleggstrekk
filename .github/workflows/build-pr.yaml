@@ -1,20 +1,24 @@
-name: Build/test PR
+name: Build & test PR
 
 on:
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'LICENCE'
+      - 'CODEOWNERS'
+      - '.gitignore'
+      - '.editorconfig'
+      - 'setupLocalEnvironment.sh'
+      - 'dokumentasjon/**'
+      - '.github/workflows/deploy.yaml'
+      - '.github/workflows/manual-deploy.yaml'
+      - '.github/workflows/security.yaml'
+      - '.github/dependabot.yaml'
 
 jobs:
-  build-pr:
-    name: Build and test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - uses: gradle/gradle-build-action@v3.5.0
-        with:
-          arguments: --configuration-cache build shadowJar
+  build-test-pr:
+    name: Build & test application
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@new_workflow_release
+    with:
+      gradle-task: './gradlew build installDist --configuration-cache'
+

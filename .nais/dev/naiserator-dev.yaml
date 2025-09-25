@@ -14,10 +14,9 @@ spec:
   webproxy: true
   resources:
     limits:
-      cpu: 2000m
-      memory: 12Gi
+      memory: 4096Mi
     requests:
-      cpu: 500m
+      cpu: 100m
       memory: 512Mi
   liveness:
     path: /internal/isAlive
