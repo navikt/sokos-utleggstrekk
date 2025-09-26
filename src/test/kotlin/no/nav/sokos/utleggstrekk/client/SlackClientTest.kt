@@ -27,7 +27,7 @@ class SlackClientTest :
 
         test("sendMessage skal POST en melding til slack") {
             mockkStatic(::createSlackMessage)
-            every { createSlackMessage(any(), any(), any()) } returns Data("", emptyList())
+            every { createSlackMessage(any(), any()) } returns Data("", emptyList())
 
             val engine =
                 MockEngine {
@@ -36,13 +36,12 @@ class SlackClientTest :
             val slackClient = SlackClient(endpoint, mockClient(engine))
 
             val header = "Message header"
-            val filnavn = "Filnavn.txt"
             val messages =
                 mapOf(
                     "Feil 1" to listOf("Info 1"),
                     "Feil 2" to listOf("Info 2"),
                 )
-            slackClient.sendMessage(header, filnavn, messages)
+            slackClient.sendMessage(header, messages)
 
             engine.requestHistory shouldHaveSize 1
             val request = engine.requestHistory.first()
@@ -52,7 +51,7 @@ class SlackClientTest :
             val body = request.body
             body.contentType shouldBe ContentType.Application.Json
 
-            verify(exactly = 1) { createSlackMessage(header, filnavn, messages) }
+            verify(exactly = 1) { createSlackMessage(header, messages) }
 
             unmockkStatic(::createSlackMessage)
         }

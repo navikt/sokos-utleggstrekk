@@ -9,14 +9,13 @@ class SlackMessageTest :
     FunSpec({
         test("Skal returnere en ") {
             val header = "Feil header"
-            val filnavn = "Filnavn.txt"
             val messages =
                 mapOf(
                     "Feil 1" to listOf("Feil info 1"),
                     "Feil 2" to listOf("Feil info 2"),
                 )
 
-            val slackMessage = createSlackMessage(header, filnavn, messages)
+            val slackMessage = createSlackMessage(header, messages)
 
             slackMessage.text shouldBe ":package: $header"
             slackMessage.blocks shouldHaveSize 8
@@ -25,11 +24,10 @@ class SlackMessageTest :
             headerBlock.type shouldBe "header"
             headerBlock.text?.text shouldBe ":error:  $header  "
 
-            val filnavnBlock = slackMessage.blocks[2]
-            filnavnBlock.type shouldBe "section"
-            filnavnBlock.fields?.shouldHaveSize(2)
-            filnavnBlock.fields?.first()?.text shouldBe "*Filnavn* \n$filnavn"
-            filnavnBlock.fields?.last()?.text shouldMatch "\\*Dato\\* \n\\d{4}-\\d{2}-\\d{2}".toRegex()
+            val datoBlock = slackMessage.blocks[2]
+            datoBlock.type shouldBe "section"
+            datoBlock.fields?.shouldHaveSize(1)
+            datoBlock.fields?.last()?.text shouldMatch "\\*Dato\\* \n\\d{4}-\\d{2}-\\d{2}".toRegex()
 
             val feilmeldingBlock1 = slackMessage.blocks[4]
             feilmeldingBlock1.type shouldBe "section"

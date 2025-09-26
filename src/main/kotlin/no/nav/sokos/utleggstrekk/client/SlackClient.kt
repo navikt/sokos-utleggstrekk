@@ -15,12 +15,12 @@ class SlackClient(
     private val slackEndpoint: String = PropertiesConfig.SlackConfig.url,
     private val client: HttpClient = httpClient,
 ) {
-    suspend fun sendMessage(header: String, filnavn: String, messages: Map<String, List<String>>) {
+    suspend fun sendMessage(header: String, messages: Map<String, List<String>>) {
         client.post(
             HttpRequestBuilder().apply {
                 url(slackEndpoint)
                 contentType(ContentType.Application.Json)
-                setBody(createSlackMessage(header, filnavn, messages))
+                setBody(createSlackMessage(header, messages))
             },
         )
     }

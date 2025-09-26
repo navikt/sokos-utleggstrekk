@@ -30,13 +30,13 @@ data class Field(
     val text: String,
 )
 
-fun createSlackMessage(feilHeader: String, filnavn: String, content: Map<String, List<String>>) =
+fun createSlackMessage(feilHeader: String, content: Map<String, List<String>>) =
     Data(
         text = ":package: $feilHeader",
-        blocks = buildSections(feilHeader, filnavn, content),
+        blocks = buildSections(feilHeader, content),
     )
 
-private fun buildSections(feilHeader: String, filnavn: String, content: Map<String, List<String>>): MutableList<Block> {
+private fun buildSections(feilHeader: String, content: Map<String, List<String>>): MutableList<Block> {
     val dividerBlock = Block(type = "divider")
     val headerBlock =
         Block(
@@ -48,14 +48,11 @@ private fun buildSections(feilHeader: String, filnavn: String, content: Map<Stri
                     emoji = true,
                 ),
         )
-    val filnavnBlock =
+    val datoBlock =
         Block(
             type = "section",
             fields =
                 listOf(
-                    Field(
-                        text = "*Filnavn* \n$filnavn",
-                    ),
                     Field(
                         text = "*Dato* \n${LocalDate.now()}",
                     ),
@@ -79,7 +76,7 @@ private fun buildSections(feilHeader: String, filnavn: String, content: Map<Stri
     val blocks = mutableListOf<Block>()
     blocks.add(headerBlock)
     blocks.add(dividerBlock)
-    blocks.add(filnavnBlock)
+    blocks.add(datoBlock)
     blocks.add(dividerBlock)
     feilmeldinger.forEach { blocks.addAll(it) }
     blocks.add(dividerBlock)
