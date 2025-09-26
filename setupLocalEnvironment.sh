@@ -37,6 +37,7 @@ AZURE_APP_WELL_KNOWN_URL=$(get_secret "$(get_secretName azure-sokos-utleggstrekk
 MQ_USERNAME=$(get_secret sokos-utleggstrekk-mq MQ_USERNAME)
 MQ_PASSWORD=$(get_secret sokos-utleggstrekk-mq MQ_PASSWORD)
 
+SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL=$(get_secret team-mob-slackbot SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL)
 
 # Get database username and password secret from Vault
 POSTGRES_USER=$(vault kv get -field=data postgresql/preprod-fss/creds/sokos-utleggstrekk-user)
@@ -57,6 +58,7 @@ rm -f defaults.properties
     echo "MQ_PASSWORD=$MQ_PASSWORD"
     echo "POSTGRES_USERNAME=$username"
     echo "POSTGRES_PASSWORD=$password"
+    echo "SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL=$SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL"
 } > defaults.properties
 
 echo "defaults.properties created successfully."
