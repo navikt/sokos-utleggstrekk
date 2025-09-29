@@ -30,6 +30,7 @@ val httpClient =
                     isLenient = true
                     explicitNulls = false
                     ignoreUnknownKeys = true
+                    encodeDefaults = true
                 },
             )
         }
