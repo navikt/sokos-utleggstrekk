@@ -13,8 +13,8 @@ on:
       - 'setupLocalEnvironment.sh'
       - 'dokumentasjon/**'
       - '.github/workflows/build-pr.yaml'
+      - '.github/workflows/codeql-trivy-scan.yaml'
       - '.github/workflows/manual-deploy.yaml'
-      - '.github/workflows/security.yaml'
       - '.github/dependabot.yaml'
 
 env:
@@ -27,21 +27,21 @@ permissions:
 jobs:
   run-application-tests:
     name: Run application tests
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@new_workflow_release
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@main
 
   assemble-build-push-image-dev:
     needs: [ run-application-tests ]
     name: Assemble application & build/push dev image
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@new_workflow_release
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@main
     secrets: inherit
     with:
-      image-tag: 'dev'
+      image-suffix: 'dev'
       dockerfile: './.nais/dev/Dockerfile'
 
 #  assemble-build-push-image-prod:
 #    needs: [ run-application-tests ]
 #    name: Assemble application & build/push prod image
-#    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@new_workflow_release
+#    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@main
 #    secrets: inherit
 #    with:
 #      dockerfile: './.nais/prod/Dockerfile'
@@ -49,7 +49,7 @@ jobs:
   deploy-dev:
     needs: [ assemble-build-push-image-dev ]
     name: Deploy to dev-fss
-    uses: navikt/mob-gha-workflows/.github/workflows/nais-app-deploy.yaml@main
+    uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
     with:
       cluster: dev-fss
       resource: .nais/dev/naiserator-dev.yaml
@@ -58,7 +58,7 @@ jobs:
 #  deploy-prod:
 #    needs: [ assemble-build-push-image-prod, deploy-dev ]
 #    name: Deploy to prod-fss
-#    uses: navikt/mob-gha-workflows/.github/workflows/nais-app-deploy.yaml@main
+#    uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
 #    with:
 #      cluster: prod-fss
 #      resource: .nais/prod/naiserator-prod.yaml

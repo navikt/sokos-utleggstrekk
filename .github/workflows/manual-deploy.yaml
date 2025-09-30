@@ -20,21 +20,22 @@ permissions:
 jobs:
   run-application-tests:
     name: Run tests
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@new_workflow_release
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@main
 
   assemble-build-push-image-dev:
     needs: [ run-application-tests ]
     name: Assemble application & build/push image dev
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@new_workflow_release
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@man
     secrets: inherit
     with:
-      dockerfile: './.nais/dev/Dockerfile'
+      image-suffix: 'dev'
       image-tag: 'snapshot'
+      dockerfile: './.nais/dev/Dockerfile'
 
   deploy-dev:
     needs: [ assemble-build-push-image-dev ]
     name: Deploy to dev-fss
-    uses: navikt/mob-gha-workflows/.github/workflows/nais-app-deploy.yaml@main
+    uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
     with:
       cluster: dev-fss
       resource: .nais/dev/naiserator-dev.yaml
