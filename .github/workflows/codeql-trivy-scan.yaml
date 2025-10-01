@@ -1,4 +1,4 @@
-name: Security scan CodeQL/Trivy
+name: CodeQL/Trivy Scan
 
 on:
   schedule:
@@ -11,10 +11,10 @@ permissions:
   security-events: write
 
 jobs:
-  security-analyze-code:
-    name: Security analyze
+  codeql-trivy-scan:
+    name: CodeQL/Trivy Scan
     if: success() || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    uses: navikt/mob-gha-workflows/.github/workflows/security.yaml@main
+    uses: navikt/mob-gha-workflows/.github/workflows/codeql-trivy-scan.yaml@main
     secrets: inherit
     with:
       language: 'kotlin'
