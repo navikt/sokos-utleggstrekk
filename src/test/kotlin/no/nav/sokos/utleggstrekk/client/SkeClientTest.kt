@@ -22,10 +22,8 @@ import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
@@ -43,10 +41,7 @@ import no.nav.sokos.utleggstrekk.util.resourceToString
 @OptIn(ExperimentalTime::class)
 class SkeClientTest :
     FunSpec({
-        val logger =
-            mockk<KLogger> {
-                every { error(any<() -> Unit>()) } just runs
-            }
+        val logger = mockk<KLogger>(relaxUnitFun = true)
 
         val mockToken = "mock-token"
         val mockTokenProvider =
@@ -115,7 +110,7 @@ class SkeClientTest :
                 request.headers[HttpHeaders.Authorization] shouldBe "Bearer mock-token"
 
                 trekkListe shouldBe emptyList()
-                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 0) { logger.error(any<() -> Any?>()) }
             }
 
             test("hentAlleUtleggstrekk skal konvertere en body til en list av Trekkpaalegg") {
@@ -130,7 +125,7 @@ class SkeClientTest :
 
                 trekkListe shouldHaveSize 2
                 trekkListe.first() shouldBe mockTrekk
-                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 0) { logger.error(any<() -> Any?>()) }
             }
 
             test("hentAlleUtleggstrekk skal return en emptyList når den kan ikke parse body") {
@@ -142,12 +137,12 @@ class SkeClientTest :
                 val skeClient = SkeClient(mockClient(mockEngine), mockTokenProvider)
 
                 val errorMsg = slot<() -> Any?>()
-                every { logger.error(capture(errorMsg)) } just runs
+                every { logger.error(capture(errorMsg)) } returns Unit
 
                 val trekkListe = skeClient.hentAlleUtleggstrekk()
 
                 trekkListe shouldBe emptyList()
-                verify(exactly = 1) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 1) { logger.error(any<() -> Any?>()) }
                 errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av response"
             }
 
@@ -161,7 +156,7 @@ class SkeClientTest :
 
                 val trekkListe = skeClient.hentAlleUtleggstrekk()
                 trekkListe shouldHaveSize 1
-                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 0) { logger.error(any<() -> Any?>()) }
             }
         }
 
@@ -186,7 +181,7 @@ class SkeClientTest :
                 request.headers[HttpHeaders.Authorization] shouldBe "Bearer mock-token"
 
                 trekkListe shouldBe emptyList()
-                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 0) { logger.error(any<() -> Any?>()) }
             }
         }
 

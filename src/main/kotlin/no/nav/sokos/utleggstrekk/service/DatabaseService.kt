@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
 import com.zaxxer.hikari.HikariDataSource
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
@@ -10,8 +9,7 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
-
-private val logger = KotlinLogging.logger { }
+import no.nav.sokos.utleggstrekk.utils.logger
 
 // TODO: Denne trengs ikke
 class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSource.dataSource) {

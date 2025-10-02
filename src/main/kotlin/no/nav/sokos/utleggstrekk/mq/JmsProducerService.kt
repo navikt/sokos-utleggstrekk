@@ -5,16 +5,15 @@ import jakarta.jms.ConnectionFactory
 import jakarta.jms.JMSContext
 import jakarta.jms.JMSProducer
 import jakarta.jms.Queue
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.MQConfig
+import no.nav.sokos.utleggstrekk.utils.logger
 
 class JmsProducerService(
     private val targetQueue: Queue,
     private val replyQueue: Queue,
     connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),
 ) {
-    private val logger = KotlinLogging.logger {}
     private val jmsContext: JMSContext = connectionFactory.createContext(SESSION_TRANSACTED)
     private val producer: JMSProducer = jmsContext.createProducer().apply { jmsReplyTo = replyQueue }
 

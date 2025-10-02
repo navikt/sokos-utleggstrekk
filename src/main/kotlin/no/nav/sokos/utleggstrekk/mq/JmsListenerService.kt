@@ -8,12 +8,12 @@ import jakarta.jms.ConnectionFactory
 import jakarta.jms.JMSContext
 import jakarta.jms.Message
 import jakarta.jms.Queue
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.MQConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.service.DatabaseService
+import no.nav.sokos.utleggstrekk.utils.logger
 
 class JmsListenerService(
     private val databaseService: DatabaseService = DatabaseService(),
@@ -23,8 +23,6 @@ class JmsListenerService(
         },
     connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),
 ) {
-    private val logger = KotlinLogging.logger {}
-
     private val jmsContext: JMSContext = connectionFactory.createContext(JMSContext.CLIENT_ACKNOWLEDGE)
     private val json = Json { ignoreUnknownKeys = true }
 

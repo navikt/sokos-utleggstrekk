@@ -10,7 +10,6 @@ import kotlin.time.ExperimentalTime
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Session
 import kotliquery.queryOf
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.model.FeilkodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
@@ -20,7 +19,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.service.SENDT
 
-private val logger = KotlinLogging.logger { }
 private const val MOTTATT = "MOTTATT"
 private const val SKATTEETATEN = "SKATTEETATEN"
 private const val MAX_SLUTTDATO = "9999-12-31"

@@ -11,12 +11,9 @@ import com.auth0.jwk.JwkProvider
 import com.auth0.jwk.JwkProviderBuilder
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.httpClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.get
-
-private val logger = KotlinLogging.logger { }
 
 data class AzureConfiguration(
     val appName: String = get("NAIS_APP_NAME"),

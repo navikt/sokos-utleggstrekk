@@ -3,7 +3,6 @@ package no.nav.sokos.utleggstrekk.utils
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -14,8 +13,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-
-private val logger = KotlinLogging.logger { }
 
 fun TrekkPeriodeTable.toTrekkDokumentPeriode() =
     Periode(

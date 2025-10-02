@@ -4,7 +4,6 @@ import kotlinx.serialization.json.Json
 
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
@@ -12,6 +11,7 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
+import no.nav.sokos.utleggstrekk.utils.logger
 
 const val SENDT = "SENDT"
 
@@ -29,8 +29,6 @@ class UtleggsTrekkService(
                 JmsListenerService().osKvitteringQueue,
         ),
 ) {
-    private val logger = KotlinLogging.logger { }
-
     suspend fun hentOgSendUtleggstrekk(): Int {
         logger.info("Henter utleggstrekkfra skatt ")
         hentOgLagreNyeUtleggstrekk()

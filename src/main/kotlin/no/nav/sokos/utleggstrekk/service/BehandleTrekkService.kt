@@ -1,12 +1,12 @@
 package no.nav.sokos.utleggstrekk.service
 
-import mu.KotlinLogging
 import org.slf4j.MDC
 
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.utils.logger
 import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 private const val EGEN_KILDE = "SOKOS-UTLEGGSTREKK"
@@ -16,8 +16,6 @@ private const val LOPENDE_BELOP = "LOPM"
 private const val LOPENDE_PROSENT = "LOPP"
 
 class BehandleTrekkService(private val databaseService: DatabaseService) {
-    val logger = KotlinLogging.logger { }
-
     // TODO: Er map nødvendig?  Navn?  TrekkTilOppdrag er alltid bare 1 eller 2 lang?
     // TODO: TrekkToOppdrag er en json konvolutt for sending til Oppdrag.  Dette burde ha domeneobjekt fokus. Dette er forretningslogikk!
     fun lagTrekkSomSkalSendes(): Map<UtleggstrekkTable, List<TrekkTilOppdrag>> {

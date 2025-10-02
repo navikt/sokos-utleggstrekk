@@ -5,7 +5,12 @@ import kotlinx.serialization.json.Json
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import mu.KLogger
+import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -17,13 +22,18 @@ import no.nav.sokos.utleggstrekk.util.resourceToString
 
 internal class UtleggsTrekkServiceTest :
     BehaviorSpec({
-
+        val logger = mockk<KLogger>(relaxUnitFun = true)
         val jsonConfig =
             Json {
                 isLenient = true
                 explicitNulls = false
                 encodeDefaults = true
             }
+
+        beforeSpec {
+            mockkObject(KotlinLogging)
+            every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
+        }
 
         Given("hentOgSendUtleggstrekk initieres") {
             val databaseService = DatabaseService(TestContainer().dataSource)
@@ -60,5 +70,9 @@ internal class UtleggsTrekkServiceTest :
                 utleggsTrekkService.sendTrekkTilOS(trekkSomSkalSendesMap)
                 databaseService.hentAlleTrekkSomIkkeErSendt().size shouldBe 0
             }
+        }
+
+        afterSpec {
+            unmockkObject(KotlinLogging)
         }
     })

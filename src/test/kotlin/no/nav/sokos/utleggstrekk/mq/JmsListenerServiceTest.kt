@@ -4,10 +4,16 @@ import kotlinx.serialization.json.Json
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.spyk
+import io.mockk.unmockkObject
 import io.mockk.verify
 import kotliquery.Session
 import kotliquery.queryOf
+import mu.KLogger
+import mu.KotlinLogging
 import org.apache.activemq.artemis.jms.client.ActiveMQQueue
 
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
@@ -20,10 +26,11 @@ import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 
-class KvitteringTest :
+class JmsListenerServiceTest :
     BehaviorSpec({
         extensions(listOf(MQListener))
 
+        val logger = mockk<KLogger>(relaxUnitFun = true)
         val testContainer = TestContainer()
         val dbService = DatabaseService(testContainer.dataSource)
         val replyQueue = ActiveMQQueue("replyQueue")
@@ -49,6 +56,11 @@ class KvitteringTest :
                 explicitNulls = false
                 encodeDefaults = true
             }
+
+        beforeSpec {
+            mockkObject(KotlinLogging)
+            every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
+        }
 
         Given("Vi mottar en OK kvittering") {
             testContainer.loadInitScript("mq/trekk_med_kvittering_ok/init_db.sql")
@@ -91,6 +103,10 @@ class KvitteringTest :
                     trekkAfter.kvitteringLOPP shouldBe null
                 }
             }
+        }
+
+        afterSpec {
+            unmockkObject(KotlinLogging)
         }
     })
 

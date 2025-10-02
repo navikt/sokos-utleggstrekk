@@ -13,8 +13,13 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import mu.KLogger
+import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -22,8 +27,14 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 class BehandleTrekkServiceTest :
     FunSpec(
         {
+            val logger = mockk<KLogger>(relaxUnitFun = true)
             val databaseServiceMock = mockk<DatabaseService>()
             val behandleTrekkService = BehandleTrekkService(databaseServiceMock)
+
+            beforeSpec {
+                mockkObject(KotlinLogging)
+                every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
+            }
 
             test("Trekk med perioder kun med 1 trekkalternativ i trekkversjon 1 skal bli 1 NYTT trekk med 3 perioder") {
                 val testNr = 1
@@ -242,6 +253,10 @@ class BehandleTrekkServiceTest :
                     .first()
                     .last()
                     .dokument.innrapporteringTrekk.aksjonskode.value shouldBe "OPPH"
+            }
+
+            afterSpec {
+                unmockkObject(KotlinLogging)
             }
         },
     )

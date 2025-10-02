@@ -8,7 +8,13 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotliquery.queryOf
+import mu.KLogger
+import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -23,6 +29,7 @@ import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 internal class LifecycleTest :
     BehaviorSpec({
+        val logger = mockk<KLogger>(relaxUnitFun = true)
         val json =
             Json {
                 prettyPrint = true
@@ -40,6 +47,11 @@ internal class LifecycleTest :
         val testContainer = TestContainer()
         val dataSource = testContainer.dataSource
         val repository = Repository(dataSource)
+
+        beforeSpec {
+            mockkObject(KotlinLogging)
+            every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
+        }
 
         Given("Vi har mottatt utleggstrekk...  ") {
             val bodyFraSkatt = resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
@@ -160,5 +172,9 @@ internal class LifecycleTest :
                     }
                 }
             }
+        }
+
+        afterSpec {
+            unmockkObject(KotlinLogging)
         }
     })

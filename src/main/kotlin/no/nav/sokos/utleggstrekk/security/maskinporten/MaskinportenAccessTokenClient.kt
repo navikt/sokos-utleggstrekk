@@ -23,16 +23,15 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.utils.logger
+import no.nav.sokos.utleggstrekk.utils.secureLogger
 
 class MaskinportenAccessTokenClient(
     private val maskinportenConfig: PropertiesConfig.MaskinportenClientConfig,
     private val client: HttpClient,
 ) {
-    private val logger = KotlinLogging.logger {}
-    private val secureLogger = KotlinLogging.logger { }
     private val mutex = Mutex()
 
     @Volatile

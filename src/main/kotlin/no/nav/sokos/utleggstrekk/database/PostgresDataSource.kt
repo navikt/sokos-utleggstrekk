@@ -4,15 +4,14 @@ import java.time.Duration
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import mu.KotlinLogging
 import org.flywaydb.core.Flyway
 import org.postgresql.ds.PGSimpleDataSource
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.utils.logger
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration
 
 object PostgresDataSource {
-    private val logger = KotlinLogging.logger {}
     val dataSource: HikariDataSource by lazy {
         dataSource()
     }

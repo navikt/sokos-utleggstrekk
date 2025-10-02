@@ -17,12 +17,11 @@ import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
-import mu.KotlinLogging
 import org.slf4j.event.Level
 
+import no.nav.sokos.utleggstrekk.utils.logger
+
 // TODO: Bytte navn. Dette er ikke "common".
-// TODO: Vi trenger bare én global logger.
-private val logger = KotlinLogging.logger { }
 
 @OptIn(ExperimentalSerializationApi::class) // TODO: Sjekk om denne kan fjernes
 fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
