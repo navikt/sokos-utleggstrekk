@@ -14,7 +14,8 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
@@ -56,11 +57,11 @@ class RepositoryTest :
                 dbPeriode.trekkversjon shouldBe trekkpaalegg.trekkversjon
                 dbPeriode.sekvensnummer shouldBe trekkpaalegg.sekvensnummer
                 dbPeriode.trekkidSke shouldBe trekkpaalegg.trekkid
-                if (dbPeriode.trekkAlternativ == "LOPM") {
+                if (dbPeriode.trekkAlternativ == LOPM) {
                     periode.trekkprosent shouldBe null
                     dbPeriode.sats shouldBe periode.trekkbeloep!!.trekkbeloep
                 }
-                if (dbPeriode.trekkAlternativ == "LOPP") {
+                if (dbPeriode.trekkAlternativ == LOPP) {
                     periode.trekkbeloep shouldBe null
                     dbPeriode.sats shouldBe periode.trekkprosent!!.trekkprosent
                 }
@@ -171,7 +172,7 @@ class RepositoryTest :
                     "KVITTERING_OK",
                     "kvitteringLOPM",
                     "navID",
-                    TrekkAlternativ.LOPM.value,
+                    LOPM,
                     session,
                 )
             }

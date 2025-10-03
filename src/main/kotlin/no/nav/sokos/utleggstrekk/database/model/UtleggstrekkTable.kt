@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 
 import kotliquery.Row
 
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
+
 @Serializable
 data class UtleggstrekkTable(
     val utleggstrekkTableId: Long,
@@ -17,12 +19,12 @@ data class UtleggstrekkTable(
     val opprettetSke: LocalDateTime,
     val trekkpliktig: String,
     val skyldner: String,
-    val trekkstatus: String,
+    val trekkstatus: Trekkstatus,
     val kid: String,
     val kontonummer: String,
     val betalingsmottaker: String,
     val corrid: String,
-    val status: String,
+    val status: UtleggstrekkStatus,
     val kvitteringLOPM: String? = null,
     val kvitteringLOPP: String? = null,
     val tidspunktSendtOs: LocalDateTime? = null,
@@ -39,12 +41,12 @@ data class UtleggstrekkTable(
         opprettetSke = row.localDateTime("opprettet_ske").toKotlinLocalDateTime(),
         trekkpliktig = row.string("trekkpliktig"),
         skyldner = row.string("skyldner"),
-        trekkstatus = row.string("trekkstatus"),
+        trekkstatus = Trekkstatus.valueOf(row.string("trekkstatus")),
         kid = row.string("kid"),
         kontonummer = row.string("kontonummer"),
         betalingsmottaker = row.string("betalingsmottaker"),
         corrid = row.string("corr_id"),
-        status = row.string("status"),
+        status = UtleggstrekkStatus.valueOf(row.string("status")),
         kvitteringLOPM = row.stringOrNull("kvitteringLOPM"),
         kvitteringLOPP = row.stringOrNull("kvitteringLOPP"),
         tidspunktSendtOs = row.localDateTimeOrNull("tidspunkt_sendt_os")?.toKotlinLocalDateTime(), // TODO: java localdatetime

@@ -16,6 +16,7 @@ import no.nav.sokos.utleggstrekk.database.model.FeilkodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.service.SENDT
@@ -74,12 +75,12 @@ class Repository(private val dataSource: HikariDataSource) {
         status: String,
         kvittering: String,
         navTrekkId: String,
-        trekkalternativ: String,
+        trekkalternativ: TrekkAlternativ,
         session: Session,
     ) {
         val kvitteringAlternativ =
             when (trekkalternativ) {
-                "LOPM" -> "kvitteringLOPM"
+                LOPM -> "kvitteringLOPM"
                 else -> "kvitteringLOPP"
             }
 
@@ -124,7 +125,7 @@ class Repository(private val dataSource: HikariDataSource) {
             prepStmt.setString(4, periode.datoStart)
             prepStmt.setString(5, periode.datoSlutt)
             prepStmt.setObject(6, periode.sats, java.sql.Types.DOUBLE)
-            prepStmt.setString(7, periode.trekkAlternativ)
+            prepStmt.setString(7, periode.trekkAlternativ.name)
             prepStmt.setString(8, periode.kilde)
             prepStmt.addBatch()
         }
@@ -180,7 +181,7 @@ class Repository(private val dataSource: HikariDataSource) {
             prepStmt1.setTimestamp(5, Timestamp(trekk.opprettet.toEpochMilliseconds()))
             prepStmt1.setString(6, trekk.trekkpliktig)
             prepStmt1.setString(7, trekk.skyldner)
-            prepStmt1.setString(8, trekk.trekkstatus)
+            prepStmt1.setString(8, trekk.trekkstatus.toString())
             prepStmt1.setString(9, trekk.betalingsinformasjon.betalingsmottaker)
             prepStmt1.setString(10, trekk.betalingsinformasjon.kidnummer)
             prepStmt1.setString(11, trekk.betalingsinformasjon.kontonummer)
@@ -188,7 +189,7 @@ class Repository(private val dataSource: HikariDataSource) {
             prepStmt1.setString(13, MOTTATT)
             prepStmt1.addBatch()
             trekk.trekkstoerrelseForPeriode.forEach { periode ->
-                val trekkalternativ = TrekkAlternativ.getTrekkAlternativ(periode).value
+                val trekkalternativ = TrekkAlternativ.getTrekkAlternativ(periode)
                 val sluttdato = periode.sluttdato ?: MAX_SLUTTDATO
                 prepStmt2.setInt(1, trekk.sekvensnummer)
                 prepStmt2.setString(2, trekk.trekkid)
@@ -200,7 +201,7 @@ class Repository(private val dataSource: HikariDataSource) {
                     periode.trekkbeloep?.trekkbeloep ?: periode.trekkprosent?.trekkprosent,
                     java.sql.Types.DOUBLE,
                 )
-                prepStmt2.setString(7, trekkalternativ)
+                prepStmt2.setString(7, trekkalternativ.name)
                 prepStmt2.setString(8, SKATTEETATEN)
                 prepStmt2.addBatch()
             }
@@ -256,7 +257,7 @@ class Repository(private val dataSource: HikariDataSource) {
             )
         prepStatement.setString(1, kvittering.dokument.innrapporteringTrekk.kreditorTrekkId)
         prepStatement.setString(2, kvittering.dokument.transaksjonsId)
-        prepStatement.setString(3, kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ)
+        prepStatement.setString(3, kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ.name)
         prepStatement.setString(4, kvittering.mmel?.kodeMelding)
         prepStatement.setString(5, kvittering.mmel?.beskrMelding)
         prepStatement.addBatch()

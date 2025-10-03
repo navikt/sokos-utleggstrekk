@@ -5,7 +5,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIVE
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 @Serializable
@@ -47,7 +48,7 @@ data class InnrapporteringTrekk(
     val kreditorTrekkId: String,
     val debitorId: String,
     @EncodeDefault val kodeTrekktype: String = "TRK1",
-    val kodeTrekkAlternativ: String,
+    val kodeTrekkAlternativ: TrekkAlternativ,
     val kid: String,
     val kreditorsRef: String,
     @EncodeDefault val kilde: String = "SOKOSUTLEGG",
@@ -77,9 +78,9 @@ enum class Aksjonskode(val value: String) {
     // TODO: kotlin ==/equals & se om denne skal være her.
     companion object {
         fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode {
-            if (utleggstrekkTable.trekkstatus.equals(Trekkstatus.AKTIV.value) && utleggstrekkTable.trekkversjon == 1) {
+            if (utleggstrekkTable.trekkstatus == AKTIVE && utleggstrekkTable.trekkversjon == 1) {
                 return NY
-            } else if (utleggstrekkTable.trekkstatus.equals(Trekkstatus.AVSLUTTET.value)) {
+            } else if (utleggstrekkTable.trekkstatus == AVSLUTTET) {
                 return OPPH
             } else {
                 return ENDR
@@ -98,9 +99,9 @@ enum class Aksjonskode(val value: String) {
 
 // Aksjonskoder er NY, ENDR (endring), KANS (kanseller), OPPH (opphør), ENRS (endring restsaldo).
 @Serializable
-enum class TrekkAlternativ(val value: String) {
-    LOPM("LOPM"), //   Løpende trekk månedssats
-    LOPP("LOPP"), //   Løpende trekk prosentsats
+enum class TrekkAlternativ {
+    LOPM, //   Løpende trekk månedssats
+    LOPP, //   Løpende trekk prosentsats
     ;
 
     companion object {
