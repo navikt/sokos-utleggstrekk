@@ -13,18 +13,17 @@ on:
 env:
   TZ: Europe/Oslo
 
-permissions:
-  contents: "write"
-  id-token: "write"
-  deployments: "write"
-  pull-requests: "write"
-
 jobs:
   run-application-tests:
+    permissions:
+      contents: read
     name: Run tests
     uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@main
 
   assemble-build-push-image-dev:
+    permissions:
+      contents: read
+      id-token: write
     needs: [ run-application-tests ]
     name: Assemble application & build/push image dev
     uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@man
@@ -35,6 +34,11 @@ jobs:
       dockerfile: './.nais/dev/Dockerfile'
 
   deploy-dev:
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+      deployments: write
     needs: [ assemble-build-push-image-dev ]
     name: Deploy to dev-fss
     uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
