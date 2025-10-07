@@ -5,7 +5,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIVE
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
@@ -78,7 +78,7 @@ enum class Aksjonskode(val value: String) {
     // TODO: kotlin ==/equals & se om denne skal være her.
     companion object {
         fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode {
-            if (utleggstrekkTable.trekkstatus == AKTIVE && utleggstrekkTable.trekkversjon == 1) {
+            if (utleggstrekkTable.trekkstatus == AKTIV && utleggstrekkTable.trekkversjon == 1) {
                 return NY
             } else if (utleggstrekkTable.trekkstatus == AVSLUTTET) {
                 return OPPH

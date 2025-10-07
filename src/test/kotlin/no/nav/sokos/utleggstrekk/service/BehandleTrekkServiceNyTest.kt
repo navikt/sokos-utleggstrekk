@@ -1,3 +1,5 @@
+package no.nav.sokos.utleggstrekk.service
+
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.Runs
@@ -11,9 +13,7 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIVE
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
-import no.nav.sokos.utleggstrekk.service.DatabaseService
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.util.TestData
 import no.nav.sokos.utleggstrekk.util.TestData.trekkPeriode
 
@@ -25,7 +25,7 @@ class BehandleTrekkServiceNyTest :
         val behandleTrekkService = BehandleTrekkService(databaseServiceMock)
 
         Given("Det finnes ett trekk i databasen med trekkstatus AKTIVE, status MOTTATT som har én periode prosenttrekk") {
-            val trekk = TestData.UtleggstrekkTable(1, "ske1", 1, AKTIVE, MOTTATT)
+            val trekk = TestData.UtleggstrekkTable(1, "ske1", 1, AKTIV, MOTTATT)
             val periode = trekk.trekkPeriode(100.0, TrekkAlternativ.LOPP, "2026-02-02", "2026-04-02")
 
             coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekk)

@@ -22,7 +22,7 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIVE
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
 
 class BehandleTrekkServiceTest :
@@ -266,7 +266,7 @@ private fun trekkTable1(testNr: Int) =
         opprettetSke = Instant.parse("2024-06-16T13:33:05.672Z").toLocalDateTime(TimeZone.currentSystemDefault()),
         trekkpliktig = "987654321",
         skyldner = "12345678901",
-        trekkstatus = AKTIVE,
+        trekkstatus = AKTIV,
         status = MOTTATT,
         kid = "12345654321",
         kontonummer = "12341212345",

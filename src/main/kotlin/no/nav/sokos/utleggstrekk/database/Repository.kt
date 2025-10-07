@@ -14,15 +14,16 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.model.FeilkodeTable
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.service.SENDT
 
 private val logger = KotlinLogging.logger { }
-private const val MOTTATT = "MOTTATT"
 private const val SKATTEETATEN = "SKATTEETATEN"
 private const val MAX_SLUTTDATO = "9999-12-31"
 
@@ -51,11 +52,11 @@ class Repository(private val dataSource: HikariDataSource) {
             ),
         ) { 1 } != null
 
-    fun updateNavTrekkStatus(corrId: String, status: String, session: Session) =
+    fun updateNavTrekkStatus(corrId: String, status: UtleggstrekkStatus, session: Session) =
         session.update(
             queryOf(
                 "UPDATE utleggstrekk SET status=:status, tidspunkt_siste_status=NOW() WHERE corr_id=:corrId",
-                mapOf("status" to status, "corrId" to corrId),
+                mapOf("status" to status.name, "corrId" to corrId),
             ),
         )
 
@@ -66,7 +67,7 @@ class Repository(private val dataSource: HikariDataSource) {
                 UPDATE utleggstrekk SET status=:status, tidspunkt_siste_status=NOW(), tidspunkt_sendt_os=NOW()
                 WHERE corr_id=:corrId
                 """.trimIndent(),
-                mapOf("status" to SENDT, "corrId" to corrId),
+                mapOf("status" to SENDT.name, "corrId" to corrId),
             ),
         )
 
@@ -181,12 +182,12 @@ class Repository(private val dataSource: HikariDataSource) {
             prepStmt1.setTimestamp(5, Timestamp(trekk.opprettet.toEpochMilliseconds()))
             prepStmt1.setString(6, trekk.trekkpliktig)
             prepStmt1.setString(7, trekk.skyldner)
-            prepStmt1.setString(8, trekk.trekkstatus.toString())
+            prepStmt1.setString(8, trekk.trekkstatus.name)
             prepStmt1.setString(9, trekk.betalingsinformasjon.betalingsmottaker)
             prepStmt1.setString(10, trekk.betalingsinformasjon.kidnummer)
             prepStmt1.setString(11, trekk.betalingsinformasjon.kontonummer)
             prepStmt1.setString(12, UUID.randomUUID().toString())
-            prepStmt1.setString(13, MOTTATT)
+            prepStmt1.setString(13, MOTTATT.name)
             prepStmt1.addBatch()
             trekk.trekkstoerrelseForPeriode.forEach { periode ->
                 val trekkalternativ = TrekkAlternativ.getTrekkAlternativ(periode)
@@ -212,7 +213,7 @@ class Repository(private val dataSource: HikariDataSource) {
 
     fun fetchTrekkNotSendt(session: Session): List<UtleggstrekkTable> =
         session.list(
-            queryOf("SELECT * FROM utleggstrekk WHERE status=:status ORDER BY sekvensnummer ASC", mapOf("status" to MOTTATT)),
+            queryOf("SELECT * FROM utleggstrekk WHERE status=:status ORDER BY sekvensnummer ASC", mapOf("status" to MOTTATT.name)),
         ) { row -> UtleggstrekkTable(row) }
 
     fun fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable, session: Session): List<TrekkPeriodeTable> =

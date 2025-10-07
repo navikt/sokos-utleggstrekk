@@ -30,8 +30,8 @@ data class Trekkbeloep(val trekkbeloep: Double? = null)
 
 @Serializable
 enum class Trekkstatus {
-    @SerialName("aktive")
-    AKTIVE,
+    @SerialName("aktiv")
+    AKTIV,
 
     @SerialName("avsluttet")
     AVSLUTTET,

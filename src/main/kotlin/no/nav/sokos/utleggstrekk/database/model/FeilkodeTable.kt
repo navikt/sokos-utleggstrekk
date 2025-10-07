@@ -5,11 +5,13 @@ import kotlinx.datetime.toKotlinLocalDateTime
 
 import kotliquery.Row
 
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+
 data class FeilkodeTable(
     val feilkodeTableId: Long,
     val trekkIdNav: String,
     val corrId: String,
-    val trekkAlternativ: String,
+    val trekkAlternativ: TrekkAlternativ,
     val feilkode: String,
     val beskrivelse: String?,
     val tidspunktOpprettet: LocalDateTime,
@@ -17,7 +19,7 @@ data class FeilkodeTable(
     constructor(row: Row) : this(
         feilkodeTableId = row.long("id"),
         trekkIdNav = row.string("kreditor_trekk_id"),
-        trekkAlternativ = row.string("trekkalternativ"),
+        trekkAlternativ = TrekkAlternativ.valueOf(row.string("trekkalternativ").uppercase()),
         corrId = row.string("corr_id"),
         feilkode = row.string("feilkode"),
         beskrivelse = row.string("beskrivelse"),

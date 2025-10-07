@@ -11,7 +11,7 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIVE
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 
 // https://skatteetaten.github.io/api-dokumentasjon/api/trekkpaalegg?tab=Eksempler
 object TestData {
@@ -19,7 +19,7 @@ object TestData {
         sekvensnummer: Int,
         trekkIdSke: String,
         trekkversjon: Int,
-        trekkstatus: Trekkstatus = AKTIVE,
+        trekkstatus: Trekkstatus = AKTIV,
         status: UtleggstrekkStatus = MOTTATT,
     ) = UtleggstrekkTable(
         0L,

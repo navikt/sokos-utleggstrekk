@@ -36,7 +36,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkbeloep
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIVE
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.util.resourceToString
@@ -66,7 +66,7 @@ class SkeClientTest :
                 saksnummer = "sak-2023-899",
                 trekkpliktig = "889640782",
                 skyldner = "19628198007",
-                trekkstatus = AKTIVE,
+                trekkstatus = AKTIV,
                 trekkstoerrelseForPeriode =
                     listOf(
                         TrekkstorrelseForPeriode(
@@ -145,7 +145,11 @@ class SkeClientTest :
                 val errorMsg = slot<() -> Any?>()
                 every { logger.error(capture(errorMsg)) } just runs
 
+                println("************************!!!!!! ")
+
                 val trekkListe = skeClient.hentAlleUtleggstrekk()
+
+                println("************************!!!!!! " + trekkListe)
 
                 trekkListe shouldBe emptyList()
                 verify(exactly = 1) { logger.error(any<() -> Unit>()) }
