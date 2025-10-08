@@ -36,9 +36,9 @@ class BehandleTrekkServiceTest :
                 val trekkITest = trekkTable1(testNr)
                 val perioderiTest = periodetable1(testNr)
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.size shouldBe 1
@@ -59,9 +59,9 @@ class BehandleTrekkServiceTest :
                 val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
                 val perioderiTest = periodetable1(testNr).map { periode -> periode.copy(trekkversjon = 2) }
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns periodetable1(testNr) + perioderiTest
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.size shouldBe 1
@@ -83,9 +83,9 @@ class BehandleTrekkServiceTest :
                 val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
                 val perioderiTest = periodetable1(testNr).map { periode -> periode.copy(trekkversjon = 2) }
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.size shouldBe 1
@@ -105,9 +105,9 @@ class BehandleTrekkServiceTest :
                 val trekkITest = trekkTable1(testNr)
                 val perioderiTest = periodetable1(testNr) + periodetable2(testNr)
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.values.first().size shouldBe 2
@@ -141,9 +141,9 @@ class BehandleTrekkServiceTest :
                 val perioderiTest =
                     periodetable1(testNr).map { it.copy(trekkversjon = 2) } + periodetable2(testNr).map { it.copy(trekkversjon = 2) }
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns periodetable1(testNr) + perioderiTest
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.values.first().size shouldBe 2
@@ -169,9 +169,9 @@ class BehandleTrekkServiceTest :
                 val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2)
                 val perioderiTest = periodetable2(testNr).map { it.copy(trekkversjon = 2) }
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns perioderiTest
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr) + perioderiTest
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns periodetable1(testNr) + perioderiTest
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.values.first().size shouldBe 2
@@ -196,9 +196,9 @@ class BehandleTrekkServiceTest :
                 val testNr = 6
                 val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2, trekkstatus = AVSLUTTET)
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns emptyList()
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr)
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns emptyList()
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns periodetable1(testNr)
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.values.size shouldBe 1
@@ -217,9 +217,9 @@ class BehandleTrekkServiceTest :
                 val testNr = 7
                 val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2, trekkstatus = AVSLUTTET)
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns periodetable1(testNr)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns periodetable1(testNr)
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns periodetable1(testNr)
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns periodetable1(testNr)
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.values.size shouldBe 1
@@ -235,10 +235,10 @@ class BehandleTrekkServiceTest :
                 val testNr = 8
                 val trekkITest = trekkTable1(testNr).copy(trekkversjon = 2, trekkstatus = AVSLUTTET)
                 coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any() as UtleggstrekkTable) } returns emptyList()
-                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any() as UtleggstrekkTable) } returns
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns emptyList()
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns
                     periodetable1(testNr) + periodetable2(testNr)
-                coEvery { databaseServiceMock.lagreGenerertePerioder(any() as List<TrekkPeriodeTable>) } just Runs
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                 val result = behandleTrekkService.lagTrekkSomSkalSendes()
 
                 result.size shouldBe 1

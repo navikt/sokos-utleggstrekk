@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 
 import kotliquery.Row
 
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 @Serializable
@@ -54,6 +55,8 @@ data class UtleggstrekkTable(
         tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(), // TODO:
     )
 }
+
+fun UtleggstrekkTable.trekkIdWithSuffix(trekkAlternativ: TrekkAlternativ) = "${trekkidSke}${trekkAlternativ.suffix}"
 
 enum class UtleggstrekkStatus(val status: String) {
     MOTTATT("MOTTATT"),

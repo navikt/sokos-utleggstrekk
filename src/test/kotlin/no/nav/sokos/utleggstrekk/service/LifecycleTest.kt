@@ -11,6 +11,7 @@ import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.model.trekkIdWithSuffix
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -155,7 +156,7 @@ internal class LifecycleTest :
                     val osdok = dbdataTrekk[0].toTrekkDokument(dbperiode)
                     withClue("osDokumentet skal ha samme info som i trekk og perioder") {
                         with(osdok.dokument.innrapporteringTrekk) {
-                            kreditorTrekkId shouldBe dbdataTrekk[0].trekkidSke + dbperiode[0].trekkAlternativ.name.get(3)
+                            kreditorTrekkId shouldBe dbdataTrekk[0].trekkIdWithSuffix(dbperiode[0].trekkAlternativ)
                             kid shouldBe dbdataTrekk[0].kid
                             kodeTrekkAlternativ shouldBe dbperiode[0].trekkAlternativ
                         }

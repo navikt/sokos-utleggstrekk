@@ -29,8 +29,8 @@ object TestData {
         trekkstatus: Trekkstatus = AKTIV,
         status: UtleggstrekkStatus = MOTTATT,
     ) = UtleggstrekkTable(
-        0L,
-        null,
+        utleggstrekkTableId = 0L,
+        trekkidNav = null,
         sekvensnummer,
         saksnummer = "",
         trekkIdSke,
@@ -57,7 +57,7 @@ object TestData {
         datoStart: String,
         datoSlutt: String,
     ) = TrekkPeriodeTable(
-        0,
+        trekkPeriodeTableId = 0,
         sekvensnummer,
         trekkidSke,
         trekkversjon,
@@ -93,7 +93,7 @@ object TestData {
             saksnummer,
             trekkpliktig,
             skyldner,
-            Trekkstatus.AKTIV,
+            AKTIV,
             perioder,
             Betalingsinformasjon("mr.mottaker", "13812738912427", "6123101233424"),
         )

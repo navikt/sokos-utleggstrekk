@@ -104,6 +104,8 @@ enum class TrekkAlternativ {
     LOPP, //   Løpende trekk prosentsats
     ;
 
+    val suffix = name[3]
+
     companion object {
         fun getTrekkAlternativ(periode: TrekkstorrelseForPeriode): TrekkAlternativ {
             if (periode.trekkbeloep != null && periode.trekkprosent == null) {

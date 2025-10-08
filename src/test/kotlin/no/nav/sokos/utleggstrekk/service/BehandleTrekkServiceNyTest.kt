@@ -31,9 +31,8 @@ class BehandleTrekkServiceNyTest :
 
         beforeSpec { dataSource.withTransaction { session -> repository.clearDb(session) } }
 
-        fun storedInDb(trekk: Trekkpaalegg): Trekkpaalegg {
+        fun storedInDb(trekk: Trekkpaalegg) {
             dataSource.withTransaction { session -> repository.saveAllNewUtleggstrekk(listOf(trekk), session) }
-            return trekk
         }
 
         fun storedInDbAndSent(trekk: Trekkpaalegg): UtleggstrekkTable {

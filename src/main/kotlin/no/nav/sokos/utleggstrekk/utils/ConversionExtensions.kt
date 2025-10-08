@@ -7,6 +7,7 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
+import no.nav.sokos.utleggstrekk.database.model.trekkIdWithSuffix
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
@@ -39,7 +40,7 @@ fun UtleggstrekkTable.toTrekkDokument(
                     InnrapporteringTrekk(
                         aksjonskode = aksjonskode,
                         kreditorIdTss = betalingsmottaker,
-                        kreditorTrekkId = "${trekkidSke}${trekkAlternativ.name[3]}",
+                        kreditorTrekkId = trekkIdWithSuffix(trekkAlternativ),
                         debitorId = skyldner,
                         kodeTrekkAlternativ = trekkAlternativ,
                         kid = kid,
