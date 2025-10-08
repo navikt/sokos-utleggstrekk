@@ -20,6 +20,7 @@ import io.mockk.verify
 
 import no.nav.sokos.utleggstrekk.domene.nav.Data
 import no.nav.sokos.utleggstrekk.domene.nav.createSlackMessage
+import no.nav.sokos.utleggstrekk.service.ErrorMessage
 
 class SlackClientTest :
     FunSpec({
@@ -37,9 +38,9 @@ class SlackClientTest :
 
             val header = "Message header"
             val messages =
-                mapOf(
-                    "Feil 1" to listOf("Info 1"),
-                    "Feil 2" to listOf("Info 2"),
+                listOf(
+                    ErrorMessage("Feil 1", mutableListOf("Info 1")),
+                    ErrorMessage("Feil 2", mutableListOf("Info 2")),
                 )
             slackClient.sendMessage(header, messages)
 
