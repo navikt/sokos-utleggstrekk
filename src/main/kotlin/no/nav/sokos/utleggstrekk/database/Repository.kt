@@ -73,7 +73,7 @@ class Repository(private val dataSource: HikariDataSource) {
 
     fun updateKvitteringStatus(
         corrId: String,
-        status: String,
+        status: UtleggstrekkStatus,
         kvittering: String,
         navTrekkId: String,
         trekkalternativ: TrekkAlternativ,
@@ -92,7 +92,7 @@ class Repository(private val dataSource: HikariDataSource) {
                 where corr_id=:corrId;
                 """.trimIndent(),
                 mapOf(
-                    "status" to status,
+                    "status" to status.name,
                     "kvittering" to kvittering,
                     "navTrekkId" to navTrekkId,
                     "corrId" to corrId,
@@ -228,15 +228,12 @@ class Repository(private val dataSource: HikariDataSource) {
             ),
         ) { row -> TrekkPeriodeTable(row) }
 
-    // TODO: YES THESE TWO METHODS ARE IDENTICAL (TBD IF CODE EXISTS THAT ASSUME DIFFERENTLY)
     fun fetchAllPerioderForTrekk(trekk: UtleggstrekkTable, session: Session): List<TrekkPeriodeTable> =
         session.list(
             queryOf(
-                "SELECT * FROM trekkperiode WHERE sekvensnummer=:sekvensnummer AND trekkid_ske=:trekkid_ske AND trekkversjon=:trekkversjon",
+                "SELECT * FROM trekkperiode WHERE trekkid_ske=:trekkid_ske",
                 mapOf(
-                    "sekvensnummer" to trekk.sekvensnummer,
                     "trekkid_ske" to trekk.trekkidSke,
-                    "trekkversjon" to trekk.trekkversjon,
                 ),
             ),
         ) { row -> TrekkPeriodeTable(row) }

@@ -172,8 +172,8 @@ class RepositoryTest :
             dataSource.withTransaction { session ->
                 repository.updateKvitteringStatus(
                     trekk.corrid,
-                    "KVITTERING_OK",
-                    "kvitteringLOPM",
+                    KVITTERING_OK,
+                    "kvitteringLOPM", // This is the column name in the Utleggstrekk table.
                     "navID",
                     LOPM,
                     session,

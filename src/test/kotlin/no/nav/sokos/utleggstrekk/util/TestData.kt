@@ -1,8 +1,13 @@
+@file:OptIn(ExperimentalTime::class)
+
 package no.nav.sokos.utleggstrekk.util
 
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.UUID
 
+import kotlin.time.ExperimentalTime
+import kotlin.time.toKotlinInstant
 import kotlinx.datetime.toKotlinLocalDateTime
 
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
@@ -10,10 +15,12 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
+import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
-// https://skatteetaten.github.io/api-dokumentasjon/api/trekkpaalegg?tab=Eksempler
 object TestData {
     fun UtleggstrekkTable(
         sekvensnummer: Int,
@@ -60,4 +67,34 @@ object TestData {
         trekkAlternativ,
         LocalDateTime.now().toKotlinLocalDateTime(), // TODO: ikke bruke KotlinLocalDateTime her.
     )
+
+    fun Trekkpaalegg(
+        trekkId: String,
+        sekvensnummer: Int,
+        trekkversjon: Int,
+        opprettet: LocalDateTime = LocalDateTime.now(),
+        saksnummer: String = "saksnr1",
+        trekkpliktig: String = "889640782",
+        skyldner: String = "19628198007",
+        trekkstatus: Trekkstatus = AKTIV,
+        perioder: List<TrekkstorrelseForPeriode>,
+        mottaker: Betalingsinformasjon =
+            Betalingsinformasjon(
+                betalingsmottaker = "971648198",
+                kidnummer = "17654202404",
+                kontonummer = "76940512057",
+            ),
+    ): Trekkpaalegg =
+        Trekkpaalegg(
+            trekkId,
+            sekvensnummer,
+            trekkversjon,
+            opprettet.toInstant(ZoneOffset.UTC).toKotlinInstant(),
+            saksnummer,
+            trekkpliktig,
+            skyldner,
+            Trekkstatus.AKTIV,
+            perioder,
+            Betalingsinformasjon("mr.mottaker", "13812738912427", "6123101233424"),
+        )
 }
