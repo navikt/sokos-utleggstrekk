@@ -71,7 +71,6 @@ enum class Aksjonskode(val value: String) {
     OPPH("OPPH"),
     ;
 
-    // TODO: kotlin ==/equals & se om denne skal være her.
     companion object {
         fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode {
             if (utleggstrekkTable.trekkstatus == AKTIV && utleggstrekkTable.trekkversjon == 1) {
