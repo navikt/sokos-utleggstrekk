@@ -9,8 +9,8 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 @Serializable
 data class TrekkTilOppdrag(
-    val mmel: Mmel? = null,
     val dokument: Document,
+    val mmel: Mmel? = null,
 )
 
 @Serializable
