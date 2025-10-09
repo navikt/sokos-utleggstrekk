@@ -3,7 +3,6 @@ package no.nav.sokos.utleggstrekk.client
 import java.util.UUID
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
@@ -32,15 +31,12 @@ class SkeClient(
                 headers(commonHeaders())
             }.toTrekkpaalegg()
 
-    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> {
-        val body =
-            client
-                .get {
-                    url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
-                    headers(commonHeaders())
-                }.also { response -> println(response.status.toString() + response.body()) } // TODO: Fjerne println
-        return body.toTrekkpaalegg()
-    }
+    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> =
+        client
+            .get {
+                url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
+                headers(commonHeaders())
+            }.toTrekkpaalegg()
 
     private suspend fun commonHeaders(): HeadersBuilder.() -> Unit {
         val token = tokenProvider.hentAccessToken()
