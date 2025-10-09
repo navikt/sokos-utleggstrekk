@@ -4,6 +4,8 @@ import java.time.LocalDate
 
 import kotlinx.serialization.Serializable
 
+import no.nav.sokos.utleggstrekk.service.ErrorMessage
+
 @Serializable
 data class Data(
     val text: String,
@@ -30,13 +32,13 @@ data class Field(
     val text: String,
 )
 
-fun createSlackMessage(feilHeader: String, filnavn: String, content: Map<String, List<String>>) =
+fun createSlackMessage(messageTitle: String, content: List<ErrorMessage>) =
     Data(
-        text = ":package: $feilHeader",
-        blocks = buildSections(feilHeader, filnavn, content),
+        text = ":package: $messageTitle",
+        blocks = buildSections(messageTitle, content),
     )
 
-private fun buildSections(feilHeader: String, filnavn: String, content: Map<String, List<String>>): MutableList<Block> {
+private fun buildSections(messageTitle: String, content: List<ErrorMessage>): MutableList<Block> {
     val dividerBlock = Block(type = "divider")
     val headerBlock =
         Block(
@@ -44,44 +46,42 @@ private fun buildSections(feilHeader: String, filnavn: String, content: Map<Stri
             text =
                 Text(
                     type = "plain_text",
-                    text = ":error:  $feilHeader  ",
+                    text = ":error:  $messageTitle  ",
                     emoji = true,
                 ),
         )
-    val filnavnBlock =
+    val datoBlock =
         Block(
             type = "section",
             fields =
                 listOf(
-                    Field(
-                        text = "*Filnavn* \n$filnavn",
-                    ),
                     Field(
                         text = "*Dato* \n${LocalDate.now()}",
                     ),
                 ),
         )
 
-    val feilmeldinger =
-        content.map { entry ->
-            entry.value.map { error ->
-                Block(
-                    type = "section",
-                    fields =
-                        listOf(
-                            Field(text = "*Feilmelding*\n${entry.key}"),
-                            Field(text = "*Info*\n$error"),
-                        ),
-                )
-            }
-        }
+    val errorMessages =
+        content
+            .map { (errorType, info) ->
+                info.map { text ->
+                    Block(
+                        type = "section",
+                        fields =
+                            listOf(
+                                Field(text = "*Feilmelding*\n$errorType"),
+                                Field(text = "*Info*\n$text"),
+                            ),
+                    )
+                }
+            }.flatten()
 
     val blocks = mutableListOf<Block>()
     blocks.add(headerBlock)
     blocks.add(dividerBlock)
-    blocks.add(filnavnBlock)
+    blocks.add(datoBlock)
     blocks.add(dividerBlock)
-    feilmeldinger.forEach { blocks.addAll(it) }
+    blocks.addAll(errorMessages)
     blocks.add(dividerBlock)
     blocks.add(dividerBlock)
     return blocks

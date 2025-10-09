@@ -96,7 +96,7 @@ object PropertiesConfig {
     )
 
     data object SlackConfig {
-        val url: String = get("TEAM_BEST_SLACK_WEBHOOK_URL").trim()
+        val url: String = get("SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL").trim()
     }
 
     data class SKEConfig(val skeRestUrl: String = getOrEmpty("SKE_REST_URL"))
