@@ -22,9 +22,9 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
+import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
-import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 
 @OptIn(ExperimentalTime::class)
 class RepositoryTest :

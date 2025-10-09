@@ -15,7 +15,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
-import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 internal class LifecycleTest :

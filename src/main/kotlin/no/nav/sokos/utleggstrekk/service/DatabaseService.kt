@@ -1,6 +1,9 @@
 package no.nav.sokos.utleggstrekk.service
 
 import com.zaxxer.hikari.HikariDataSource
+import kotliquery.TransactionalSession
+import kotliquery.sessionOf
+import kotliquery.using
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
@@ -13,7 +16,6 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 
 private val logger = KotlinLogging.logger { }
 
@@ -97,3 +99,10 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
         }
     }
 }
+
+fun <A> HikariDataSource.withTransaction(operation: (TransactionalSession) -> A): A =
+    using(sessionOf(this, returnGeneratedKey = true)) { session ->
+        session.transaction { tx ->
+            operation(tx)
+        }
+    }
