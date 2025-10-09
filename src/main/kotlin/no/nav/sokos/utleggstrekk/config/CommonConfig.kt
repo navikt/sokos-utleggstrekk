@@ -45,7 +45,8 @@ fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
                 isLenient = true
                 decodeEnumsCaseInsensitive = true
                 explicitNulls = true
-            }, // TODO: Encode default
+                encodeDefaults = true
+            },
         )
     }
 
