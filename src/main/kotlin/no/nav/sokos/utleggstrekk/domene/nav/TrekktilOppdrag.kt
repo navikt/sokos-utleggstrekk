@@ -60,7 +60,7 @@ data class Perioder(val periode: List<Periode>)
 @Serializable
 data class Periode(
     val periodeFomDato: String,
-    val periodeTomDato: String = "9999-12-31", // TODO: slett default value
+    val periodeTomDato: String,
     val sats: Double = 0.0,
 )
 
