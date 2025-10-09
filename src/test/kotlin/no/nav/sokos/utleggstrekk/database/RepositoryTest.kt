@@ -13,8 +13,12 @@ import io.kotest.matchers.shouldNotBe
 
 import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.KVITTERING_OK
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
@@ -56,11 +60,11 @@ class RepositoryTest :
                 dbPeriode.trekkversjon shouldBe trekkpaalegg.trekkversjon
                 dbPeriode.sekvensnummer shouldBe trekkpaalegg.sekvensnummer
                 dbPeriode.trekkidSke shouldBe trekkpaalegg.trekkid
-                if (dbPeriode.trekkAlternativ == "LOPM") {
+                if (dbPeriode.trekkAlternativ == LOPM) {
                     periode.trekkprosent shouldBe null
                     dbPeriode.sats shouldBe periode.trekkbeloep!!.trekkbeloep
                 }
-                if (dbPeriode.trekkAlternativ == "LOPP") {
+                if (dbPeriode.trekkAlternativ == LOPP) {
                     periode.trekkbeloep shouldBe null
                     dbPeriode.sats shouldBe periode.trekkprosent!!.trekkprosent
                 }
@@ -127,11 +131,11 @@ class RepositoryTest :
                     }.find { it.sekvensnummer == 1 }!!
 
             dataSource.withTransaction { session ->
-                repository.updateNavTrekkStatus(trekk.corrid, "SOMESTATE", session)
+                repository.updateNavTrekkStatus(trekk.corrid, SENDT, session)
             }
             dataSource.withTransaction { session ->
                 val updatedTrekk = repository.findTrekkByCorrId(trekk.corrid, session)!!
-                updatedTrekk.status shouldBe "SOMESTATE"
+                updatedTrekk.status shouldBe SENDT
                 updatedTrekk.tidspunktSisteStatus shouldNotBe trekk.tidspunktSisteStatus
             }
         }
@@ -146,7 +150,7 @@ class RepositoryTest :
                 dataSource
                     .withTransaction { session -> repository.fetchTrekkNotSendt(session) }
                     .find { it.sekvensnummer == 1 }!!
-            trekk.status shouldBe "MOTTATT"
+            trekk.status shouldBe MOTTATT
 
             dataSource.withTransaction { session ->
                 repository.updateTrekkStatusSentAndDateTimeSentOS(trekk.corrid, session)
@@ -154,7 +158,7 @@ class RepositoryTest :
             dataSource.withTransaction { session ->
                 repository.fetchTrekkNotSendt(session).find { it.sekvensnummer == 1 } shouldBe null
                 val updatedTrekk = repository.findTrekkByCorrId(trekk.corrid, session)!!
-                updatedTrekk.status shouldBe "SENDT"
+                updatedTrekk.status shouldBe SENDT
                 updatedTrekk.tidspunktSisteStatus shouldNotBe trekk.tidspunktSisteStatus
             }
         }
@@ -168,10 +172,10 @@ class RepositoryTest :
             dataSource.withTransaction { session ->
                 repository.updateKvitteringStatus(
                     trekk.corrid,
-                    "KVITTERING_OK",
-                    "kvitteringLOPM",
+                    KVITTERING_OK,
+                    "kvitteringLOPM", // This is the column name in the Utleggstrekk table.
                     "navID",
-                    TrekkAlternativ.LOPM.value,
+                    LOPM,
                     session,
                 )
             }
@@ -182,7 +186,7 @@ class RepositoryTest :
                 }
             trekk.kvitteringLOPM shouldNotBe updatedTrekk.kvitteringLOPM
             trekk.tidspunktSisteStatus shouldNotBe updatedTrekk.tidspunktSisteStatus
-            updatedTrekk.status shouldBe "KVITTERING_OK"
+            updatedTrekk.status shouldBe KVITTERING_OK
             updatedTrekk.trekkidNav shouldBe "navID"
         }
 

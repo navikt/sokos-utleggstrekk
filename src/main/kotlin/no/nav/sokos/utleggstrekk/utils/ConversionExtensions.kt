@@ -7,11 +7,13 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
+import no.nav.sokos.utleggstrekk.database.model.trekkIdWithSuffix
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.Perioder
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
@@ -28,7 +30,7 @@ fun TrekkPeriodeTable.toTrekkDokumentPeriode() =
 fun UtleggstrekkTable.toTrekkDokument(
     periodeTableList: List<TrekkPeriodeTable>,
     aksjonskode: Aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),
-    trekkAlternativ: String = periodeTableList[0].trekkAlternativ,
+    trekkAlternativ: TrekkAlternativ = periodeTableList[0].trekkAlternativ,
 ): TrekkTilOppdrag =
     TrekkTilOppdrag(
         dokument =
@@ -38,7 +40,7 @@ fun UtleggstrekkTable.toTrekkDokument(
                     InnrapporteringTrekk(
                         aksjonskode = aksjonskode,
                         kreditorIdTss = betalingsmottaker,
-                        kreditorTrekkId = "${trekkidSke}${trekkAlternativ[3]}",
+                        kreditorTrekkId = trekkIdWithSuffix(trekkAlternativ),
                         debitorId = skyldner,
                         kodeTrekkAlternativ = trekkAlternativ,
                         kid = kid,

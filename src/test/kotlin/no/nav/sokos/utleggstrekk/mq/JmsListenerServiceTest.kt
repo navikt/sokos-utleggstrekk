@@ -53,7 +53,7 @@ class KvitteringTest :
         Given("Vi mottar en OK kvittering") {
             testContainer.loadInitScript("mq/trekk_med_kvittering_ok/init_db.sql")
             val trekkBefore = testContainer.dataSource.withTransaction { session -> fetchTrekkWithCorrId(session, "CorrId01") }.first()
-            trekkBefore.status shouldBe UtleggstrekkStatus.MOTTATT.status
+            trekkBefore.status shouldBe UtleggstrekkStatus.MOTTATT
             trekkBefore.kvitteringLOPM shouldBe null
             trekkBefore.kvitteringLOPP shouldBe null
 
@@ -64,7 +64,7 @@ class KvitteringTest :
                 verify(timeout = 1000) { dbServiceSpy.oppdaterTrekkMedKvitteringsinfo(jsonConfig.decodeFromString<TrekkTilOppdrag>(kvittering)) }
                 Then("Skal trekk oppdateres med status ${UtleggstrekkStatus.KVITTERING_OK}") {
                     val trekkAfter = testContainer.dataSource.withTransaction { session -> fetchTrekkWithCorrId(session, "CorrId01") }.first()
-                    trekkAfter.status shouldBe UtleggstrekkStatus.KVITTERING_OK.status
+                    trekkAfter.status shouldBe UtleggstrekkStatus.KVITTERING_OK
                     trekkAfter.kvitteringLOPM shouldBe "B782008I"
                     trekkAfter.kvitteringLOPP shouldBe null
                 }
@@ -75,7 +75,7 @@ class KvitteringTest :
             testContainer.loadInitScript("mq/trekk_med_kvittering_ikke_ok/init_db.sql")
             val trekkBefore = testContainer.dataSource.withTransaction { session -> fetchTrekkWithCorrId(session, "CorrId02") }.first()
 
-            trekkBefore.status shouldBe UtleggstrekkStatus.MOTTATT.status
+            trekkBefore.status shouldBe UtleggstrekkStatus.MOTTATT
             trekkBefore.kvitteringLOPM shouldBe null
             trekkBefore.kvitteringLOPP shouldBe null
 
@@ -86,7 +86,7 @@ class KvitteringTest :
 
                 Then("Skal trekk oppdateres med status ${UtleggstrekkStatus.KVITTERING_FEILET}") {
                     val trekkAfter = testContainer.dataSource.withTransaction { session -> fetchTrekkWithCorrId(session, "CorrId01") }.first()
-                    trekkAfter.status shouldBe UtleggstrekkStatus.KVITTERING_FEILET.status
+                    trekkAfter.status shouldBe UtleggstrekkStatus.KVITTERING_FEILET
                     trekkAfter.kvitteringLOPM shouldBe "B7XX001F"
                     trekkAfter.kvitteringLOPP shouldBe null
                 }

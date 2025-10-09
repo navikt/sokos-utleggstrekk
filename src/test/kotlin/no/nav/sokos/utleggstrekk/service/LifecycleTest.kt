@@ -11,6 +11,9 @@ import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.model.trekkIdWithSuffix
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
@@ -70,7 +73,7 @@ internal class LifecycleTest :
                     dbdataTrekk.first().skyldner shouldBe paleggstrekkFraSkatt.first().skyldner
                     dbdataTrekk.first().sekvensnummer shouldBe paleggstrekkFraSkatt.first().sekvensnummer
                     dbdataPerioder.mapIndexed { i, periode ->
-                        if (periode.trekkAlternativ == "LOPP") {
+                        if (periode.trekkAlternativ == LOPP) {
                             periode.sats shouldBe
                                 paleggstrekkFraSkatt
                                     .first()
@@ -79,7 +82,7 @@ internal class LifecycleTest :
                                     .trekkprosent
                                     ?.trekkprosent
                         }
-                        if (periode.trekkAlternativ == "LOPM") {
+                        if (periode.trekkAlternativ == LOPM) {
                             periode.sats shouldBe
                                 paleggstrekkFraSkatt
                                     .first()
@@ -145,15 +148,15 @@ internal class LifecycleTest :
                         dbperiode.groupBy { it.trekkAlternativ }.size shouldBe 2
                     }
                     withClue("Det skal være 3 perioder med LOPM, 1 med 0.0") {
-                        dbperiode.groupBy { it.trekkAlternativ }.get("LOPM")?.size shouldBe 3
+                        dbperiode.groupBy { it.trekkAlternativ }.get(LOPM)?.size shouldBe 3
                     }
                     withClue("Det skal være 3 periode med LOPP, 2 med 0.0") {
-                        dbperiode.groupBy { it.trekkAlternativ }.get("LOPP")?.size shouldBe 3
+                        dbperiode.groupBy { it.trekkAlternativ }.get(LOPP)?.size shouldBe 3
                     }
                     val osdok = dbdataTrekk[0].toTrekkDokument(dbperiode)
                     withClue("osDokumentet skal ha samme info som i trekk og perioder") {
                         with(osdok.dokument.innrapporteringTrekk) {
-                            kreditorTrekkId shouldBe dbdataTrekk[0].trekkidSke + dbperiode[0].trekkAlternativ.get(3)
+                            kreditorTrekkId shouldBe dbdataTrekk[0].trekkIdWithSuffix(dbperiode[0].trekkAlternativ)
                             kid shouldBe dbdataTrekk[0].kid
                             kodeTrekkAlternativ shouldBe dbperiode[0].trekkAlternativ
                         }

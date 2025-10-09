@@ -6,6 +6,10 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.KVITTERING_FEILET
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.KVITTERING_OK
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -22,7 +26,7 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
             repository.doesTrekkExist(trekkid_ske, sekvensnr, trekkversjon, session)
         }
 
-    fun oppdaterTrekkStatus(corrId: String, status: String) {
+    fun oppdaterTrekkStatus(corrId: String, status: UtleggstrekkStatus) {
         dataSource.withTransaction { session ->
             if (status == SENDT) {
                 repository.updateTrekkStatusSentAndDateTimeSentOS(corrId, session)
@@ -36,8 +40,8 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
         dataSource.withTransaction { session ->
             val status =
                 when (kvittering.mmel?.alvorlighetsgrad) {
-                    "00" -> "KVITTERING_OK"
-                    else -> "KVITTERING_FEILET"
+                    "00" -> KVITTERING_OK
+                    else -> KVITTERING_FEILET
                 }
             repository.updateKvitteringStatus(
                 kvittering.dokument.transaksjonsId,

@@ -6,14 +6,14 @@ import org.slf4j.MDC
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 private const val EGEN_KILDE = "SOKOS-UTLEGGSTREKK"
 
-private const val LOPENDE_BELOP = "LOPM"
-
-private const val LOPENDE_PROSENT = "LOPP"
+private val LOPENDE_BELOP = TrekkAlternativ.LOPM
+private val LOPENDE_PROSENT = TrekkAlternativ.LOPP
 
 class BehandleTrekkService(private val databaseService: DatabaseService) {
     val logger = KotlinLogging.logger { }
@@ -50,8 +50,8 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
 
     // TODO: NAVN
     private fun utledAlleDuplikateTrekkPerioder(
-        perioderForTrekkversjonMap: Map<String, List<TrekkPeriodeTable>>,
-        allePerioderForTrekkMap: Map<String, List<TrekkPeriodeTable>>,
+        perioderForTrekkversjonMap: Map<TrekkAlternativ, List<TrekkPeriodeTable>>,
+        allePerioderForTrekkMap: Map<TrekkAlternativ, List<TrekkPeriodeTable>>,
     ): List<List<TrekkPeriodeTable>> {
         if (perioderForTrekkversjonMap.isEmpty()) return emptyList()
 
@@ -88,5 +88,5 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
         }
     }
 
-    private fun Map<String, List<TrekkPeriodeTable>>.utledFraTilTrekkalternativ() = if (this[LOPENDE_PROSENT] == null) LOPENDE_BELOP to LOPENDE_PROSENT else LOPENDE_PROSENT to LOPENDE_BELOP
+    private fun Map<TrekkAlternativ, List<TrekkPeriodeTable>>.utledFraTilTrekkalternativ() = if (this[LOPENDE_PROSENT] == null) LOPENDE_BELOP to LOPENDE_PROSENT else LOPENDE_PROSENT to LOPENDE_BELOP
 }
