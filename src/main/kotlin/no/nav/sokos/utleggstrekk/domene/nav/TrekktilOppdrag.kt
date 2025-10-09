@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -37,9 +35,7 @@ data class Document(
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
-// TODO: Fjerne optin set encode default in json config
 // TODO: Vi må persistere json fra SKE som den er.
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class InnrapporteringTrekk(
     val aksjonskode: Aksjonskode,
@@ -47,11 +43,11 @@ data class InnrapporteringTrekk(
     val kreditorIdTss: String,
     val kreditorTrekkId: String,
     val debitorId: String,
-    @EncodeDefault val kodeTrekktype: String = "TRK1",
+    val kodeTrekktype: String = "TRK1",
     val kodeTrekkAlternativ: TrekkAlternativ,
     val kid: String,
     val kreditorsRef: String,
-    @EncodeDefault val kilde: String = "SOKOSUTLEGG",
+    val kilde: String = "SOKOSUTLEGG",
     val saldo: Double = 0.0,
     val prioritetFomDato: String,
     val gyldigTomDato: String? = null,
