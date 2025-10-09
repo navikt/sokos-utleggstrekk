@@ -4,8 +4,6 @@ package no.nav.sokos.utleggstrekk.service
 
 import kotlin.time.ExperimentalTime
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
 
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.FunSpec
@@ -13,10 +11,7 @@ import io.kotest.matchers.shouldBe
 
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.util.resourceToString
-import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
-import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
 import no.nav.sokos.utleggstrekk.utils.TSSId
-import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
 
 class TSSIdTest :
     FunSpec({
@@ -25,12 +20,6 @@ class TSSIdTest :
                 prettyPrint = true
                 isLenient = true
                 explicitNulls = false
-                serializersModule =
-                    SerializersModule {
-                        contextual(ZonedDateTimeSerializer)
-                        contextual(LocalDateTimeSerializer)
-                        contextual(LocalDateSerializer)
-                    }
             }
 
         test("hvis vi spør med korrekt ornr og konto skal vi få TSS id") {
