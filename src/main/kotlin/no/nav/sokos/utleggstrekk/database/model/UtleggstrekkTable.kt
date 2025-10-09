@@ -13,7 +13,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
-import no.nav.sokos.utleggstrekk.utils.toTrekkDokumentPeriode
 
 @Serializable
 data class UtleggstrekkTable(

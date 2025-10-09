@@ -5,18 +5,9 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
-import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 private val logger = KotlinLogging.logger { }
-
-fun TrekkPeriodeTable.toTrekkDokumentPeriode() =
-    Periode(
-        periodeFomDato = this.datoStart,
-        periodeTomDato = this.datoSlutt,
-        sats = this.sats,
-    )
 
 suspend fun HttpResponse.toTrekkpaalegg() =
     try {
