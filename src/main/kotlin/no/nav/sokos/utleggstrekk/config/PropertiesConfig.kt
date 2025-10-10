@@ -84,7 +84,14 @@ object PropertiesConfig {
         val scopes: String = getOrEmpty("MASKINPORTEN_SCOPES"),
     ) : JwtConfig(authorityEndpoint)
 
-    // TODO: flytt til der dette brukes
+    open class JwtConfig(private val wellKnownUrl: String) {
+        val openIdConfiguration: OpenIdConfiguration by lazy {
+            runBlocking {
+                httpClient.get(wellKnownUrl).body()
+            }
+        }
+    }
+
     @Serializable
     data class OpenIdConfiguration(
         @SerialName("jwks_uri")
@@ -110,15 +117,6 @@ object PropertiesConfig {
         val vaultMountPath: String = getOrEmpty("VAULT_MOUNTPATH")
         val adminUser = "$name-admin"
         val user = "$name-user"
-    }
-
-    // TODO: Flytt denne til dit den brukes.
-    open class JwtConfig(private val wellKnownUrl: String) {
-        val openIdConfiguration: OpenIdConfiguration by lazy {
-            runBlocking {
-                httpClient.get(wellKnownUrl).body()
-            }
-        }
     }
 
     data class MQProperties(

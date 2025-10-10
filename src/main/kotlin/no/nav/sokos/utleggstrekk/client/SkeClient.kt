@@ -7,16 +7,20 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
+import io.ktor.serialization.JsonConvertException
+import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
-import no.nav.sokos.utleggstrekk.utils.toTrekkpaalegg
 
 private const val MAX_ANTALL = 2500
 private const val KLIENT_ID = "NAV/0.1"
+
+private val logger = KotlinLogging.logger { }
 
 class SkeClient(
     private val client: HttpClient = httpClient,
@@ -32,15 +36,12 @@ class SkeClient(
                 headers(commonHeaders())
             }.toTrekkpaalegg()
 
-    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> {
-        val body =
-            client
-                .get {
-                    url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
-                    headers(commonHeaders())
-                }.also { response -> println(response.status.toString() + response.body()) } // TODO: Fjerne println
-        return body.toTrekkpaalegg()
-    }
+    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> =
+        client
+            .get {
+                url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
+                headers(commonHeaders())
+            }.toTrekkpaalegg()
 
     private suspend fun commonHeaders(): HeadersBuilder.() -> Unit {
         val token = tokenProvider.hentAccessToken()
@@ -50,4 +51,12 @@ class SkeClient(
             append(HttpHeaders.Authorization, "Bearer $token")
         }
     }
+
+    private suspend fun HttpResponse.toTrekkpaalegg() =
+        try {
+            body<List<Trekkpaalegg>>()
+        } catch (e: JsonConvertException) {
+            logger.error { "Feil i konvertering av response: ${e.message}" }
+            emptyList()
+        }
 }

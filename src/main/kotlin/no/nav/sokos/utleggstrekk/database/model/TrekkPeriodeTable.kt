@@ -5,6 +5,7 @@ import kotlinx.datetime.toKotlinLocalDateTime
 
 import kotliquery.Row
 
+import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 
 data class TrekkPeriodeTable(
@@ -34,4 +35,11 @@ data class TrekkPeriodeTable(
         kilde = row.string("kilde"),
         tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(),
     )
+
+    fun toTrekkDokumentPeriode() =
+        Periode(
+            periodeFomDato = this.datoStart,
+            periodeTomDato = this.datoSlutt,
+            sats = this.sats,
+        )
 }

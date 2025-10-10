@@ -1,8 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.contextual
 
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
@@ -17,12 +15,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
-import no.nav.sokos.utleggstrekk.utils.JavaLocaldateTimeSerializer
-import no.nav.sokos.utleggstrekk.utils.LocalDateSerializer
-import no.nav.sokos.utleggstrekk.utils.LocalDateTimeSerializer
-import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
-import no.nav.sokos.utleggstrekk.utils.ZonedDateTimeSerializer
-import no.nav.sokos.utleggstrekk.utils.toTrekkDokument
 
 internal class LifecycleTest :
     BehaviorSpec({
@@ -31,13 +23,6 @@ internal class LifecycleTest :
                 prettyPrint = true
                 isLenient = true
                 explicitNulls = false
-                serializersModule =
-                    SerializersModule {
-                        contextual(JavaLocaldateTimeSerializer)
-                        contextual(LocalDateTimeSerializer)
-                        contextual(LocalDateSerializer)
-                        contextual(ZonedDateTimeSerializer)
-                    }
             }
 
         val testContainer = TestContainer()

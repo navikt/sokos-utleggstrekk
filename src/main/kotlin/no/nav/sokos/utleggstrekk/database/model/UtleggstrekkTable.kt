@@ -6,7 +6,12 @@ import kotlinx.serialization.Serializable
 
 import kotliquery.Row
 
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
+import no.nav.sokos.utleggstrekk.domene.nav.Document
+import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
+import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 @Serializable
@@ -54,6 +59,38 @@ data class UtleggstrekkTable(
         tidspunktSisteStatus = row.localDateTime("tidspunkt_siste_status").toKotlinLocalDateTime(), // TODO: er dette tidspunkt for kvittering?
         tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(), // TODO:
     )
+
+    fun toTrekkDokument(
+        periodeTableList: List<TrekkPeriodeTable>,
+        aksjonskode: Aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),
+        trekkAlternativ: TrekkAlternativ = periodeTableList[0].trekkAlternativ,
+    ): TrekkTilOppdrag =
+        TrekkTilOppdrag(
+            Document(
+                transaksjonsId = corrid,
+                InnrapporteringTrekk(
+                    aksjonskode = aksjonskode,
+                    kreditorIdTss = betalingsmottaker,
+                    kreditorTrekkId = trekkIdWithSuffix(trekkAlternativ),
+                    debitorId = skyldner,
+                    kodeTrekkAlternativ = trekkAlternativ,
+                    kid = kid,
+                    kreditorsRef = saksnummer,
+                    kilde = "SOKOSUTLEGG",
+                    saldo = 0.0,
+                    prioritetFomDato = "${opprettetSke.year}-${opprettetSke.month.toString().padStart(
+                        2,
+                        '0',
+                    )}-${opprettetSke.day.toString().padStart(2,'0')}",
+                    perioder =
+                        Perioder(
+                            periodeTableList.map {
+                                it.toTrekkDokumentPeriode()
+                            },
+                        ),
+                ),
+            ),
+        )
 }
 
 fun UtleggstrekkTable.trekkIdWithSuffix(trekkAlternativ: TrekkAlternativ) = "${trekkidSke}${trekkAlternativ.suffix}"

@@ -17,7 +17,6 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.TestData
-import no.nav.sokos.utleggstrekk.utils.SQLUtils.withTransaction
 
 // TODO: Spør Endre om det er viktig å slette trekk dersom ett trekk ikke lenger har to trekktyper.
 

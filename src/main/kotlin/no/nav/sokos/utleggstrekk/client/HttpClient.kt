@@ -2,7 +2,6 @@ package no.nav.sokos.utleggstrekk.client
 
 import java.net.ProxySelector
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 import io.ktor.client.HttpClient
@@ -22,7 +21,6 @@ val httpClient =
             delayMillis { retry -> retry * 3000L }
         }
 
-        @OptIn(ExperimentalSerializationApi::class)
         install(ContentNegotiation) {
             json(
                 Json {

@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -11,8 +9,8 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 @Serializable
 data class TrekkTilOppdrag(
-    val mmel: Mmel? = null,
     val dokument: Document,
+    val mmel: Mmel? = null,
 )
 
 @Serializable
@@ -37,9 +35,7 @@ data class Document(
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
-// TODO: Fjerne optin set encode default in json config
 // TODO: Vi må persistere json fra SKE som den er.
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class InnrapporteringTrekk(
     val aksjonskode: Aksjonskode,
@@ -47,11 +43,11 @@ data class InnrapporteringTrekk(
     val kreditorIdTss: String,
     val kreditorTrekkId: String,
     val debitorId: String,
-    @EncodeDefault val kodeTrekktype: String = "TRK1",
+    val kodeTrekktype: String = "TRK1",
     val kodeTrekkAlternativ: TrekkAlternativ,
     val kid: String,
     val kreditorsRef: String,
-    @EncodeDefault val kilde: String = "SOKOSUTLEGG",
+    val kilde: String = "SOKOSUTLEGG",
     val saldo: Double = 0.0,
     val prioritetFomDato: String,
     val gyldigTomDato: String? = null,
@@ -64,7 +60,7 @@ data class Perioder(val periode: List<Periode>)
 @Serializable
 data class Periode(
     val periodeFomDato: String,
-    val periodeTomDato: String = "9999-12-31", // TODO: slett default value
+    val periodeTomDato: String,
     val sats: Double = 0.0,
 )
 
@@ -75,7 +71,6 @@ enum class Aksjonskode(val value: String) {
     OPPH("OPPH"),
     ;
 
-    // TODO: kotlin ==/equals & se om denne skal være her.
     companion object {
         fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode {
             if (utleggstrekkTable.trekkstatus == AKTIV && utleggstrekkTable.trekkversjon == 1) {
