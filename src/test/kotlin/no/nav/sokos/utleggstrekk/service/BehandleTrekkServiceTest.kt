@@ -258,7 +258,8 @@ class BehandleTrekkServiceTest :
 private fun trekkTable1(testNr: Int) =
     UtleggstrekkTable(
         utleggstrekkTableId = 1,
-        trekkidNav = null,
+        trekkidNavLOPP = null,
+        trekkidNavLOPM = null,
         trekkidSke = "SKEID$testNr",
         trekkversjon = 1,
         sekvensnummer = 1,

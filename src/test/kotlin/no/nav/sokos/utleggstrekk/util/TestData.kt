@@ -30,7 +30,8 @@ object TestData {
         status: UtleggstrekkStatus = MOTTATT,
     ) = UtleggstrekkTable(
         utleggstrekkTableId = 0L,
-        trekkidNav = null,
+        trekkidNavLOPP = null,
+        trekkidNavLOPM = null,
         sekvensnummer,
         saksnummer = "",
         trekkIdSke,

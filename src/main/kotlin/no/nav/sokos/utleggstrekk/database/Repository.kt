@@ -19,7 +19,6 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
@@ -79,16 +78,11 @@ class Repository(private val dataSource: HikariDataSource) {
         trekkalternativ: TrekkAlternativ,
         session: Session,
     ) {
-        val kvitteringAlternativ =
-            when (trekkalternativ) {
-                LOPM -> "kvitteringLOPM"
-                else -> "kvitteringLOPP"
-            }
-
+        val suffix = trekkalternativ.name
         session.update(
             queryOf(
                 """
-                update utleggstrekk set status=:status, $kvitteringAlternativ=:kvittering, trekkid_nav=:navTrekkId, tidspunkt_siste_status=NOW()  
+                update utleggstrekk set status=:status, kvittering$suffix=:kvittering, trekkid_nav_$suffix=:navTrekkId, tidspunkt_siste_status=NOW()  
                 where corr_id=:corrId;
                 """.trimIndent(),
                 mapOf(
