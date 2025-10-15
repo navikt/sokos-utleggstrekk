@@ -187,7 +187,7 @@ class RepositoryTest :
             trekk.kvitteringLOPM shouldNotBe updatedTrekk.kvitteringLOPM
             trekk.tidspunktSisteStatus shouldNotBe updatedTrekk.tidspunktSisteStatus
             updatedTrekk.status shouldBe KVITTERING_OK
-            updatedTrekk.trekkidNav shouldBe "navID"
+            updatedTrekk.trekkidNavLOPM shouldBe "navID"
         }
 
         test("Lagre trekk") {

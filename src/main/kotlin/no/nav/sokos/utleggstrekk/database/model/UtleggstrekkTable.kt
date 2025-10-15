@@ -17,7 +17,8 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 @Serializable
 data class UtleggstrekkTable(
     val utleggstrekkTableId: Long,
-    val trekkidNav: String? = null,
+    val trekkidNavLOPP: String? = null,
+    val trekkidNavLOPM: String? = null,
     val sekvensnummer: Int,
     val saksnummer: String,
     val trekkidSke: String,
@@ -39,7 +40,8 @@ data class UtleggstrekkTable(
 ) {
     constructor(row: Row) : this(
         utleggstrekkTableId = row.long("id"),
-        trekkidNav = row.stringOrNull("trekkid_nav"),
+        trekkidNavLOPP = row.stringOrNull("trekkid_nav_lopp"),
+        trekkidNavLOPM = row.stringOrNull("trekkid_nav_lopm"),
         sekvensnummer = row.int("sekvensnummer"),
         saksnummer = row.string("saksnummer"),
         trekkidSke = row.string("trekkid_ske"),

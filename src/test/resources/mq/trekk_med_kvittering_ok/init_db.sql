@@ -1,8 +1,7 @@
-INSERT INTO utleggstrekk (sekvensnummer, trekkid_ske, trekkid_nav, trekkversjon, saksnummer, opprettet_ske, trekkpliktig, skyldner, trekkstatus,
+INSERT INTO utleggstrekk (sekvensnummer, trekkid_ske, trekkversjon, saksnummer, opprettet_ske, trekkpliktig, skyldner, trekkstatus,
                           betalingsmottaker, kid, kontonummer, corr_id, status, kvitteringlopm, kvitteringlopp, tidspunkt_sendt_os, tidspunkt_siste_status)
 VALUES ( 101,
         '10342395',
-        '12345',
         1,
         'SAK1',
         '2025-06-16',
