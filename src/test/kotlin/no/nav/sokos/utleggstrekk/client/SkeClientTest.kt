@@ -52,7 +52,7 @@ class SkeClientTest :
         val mockToken = "mock-token"
         val mockTokenProvider =
             mockk<MaskinportenAccessTokenClient> {
-                coEvery { hentAccessToken() } returns mockToken
+                coEvery { getAccessToken() } returns mockToken
             }
 
         val headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
