@@ -49,7 +49,7 @@ class MaskinportenAccessTokenClient(
         }
 
     private suspend fun getMaskinportenToken(): AccessToken {
-        val openIdConfiguration = fetchOpenIdConfiguration()
+        val openIdConfiguration = getOpenIdConfiguration()
         val jwtAssertion = createJwtAssertion(openIdConfiguration.issuer)
         val response =
             client
@@ -70,7 +70,7 @@ class MaskinportenAccessTokenClient(
         }
     }
 
-    private suspend fun fetchOpenIdConfiguration(): OpenIdConfiguration =
+    private suspend fun getOpenIdConfiguration(): OpenIdConfiguration =
         runCatching {
             client.get(maskinportenConfig.wellKnownUrl).body<OpenIdConfiguration>()
         }.getOrElse { exception ->
@@ -101,8 +101,7 @@ class MaskinportenAccessTokenClient(
     @Serializable
     private data class MaskinportenTokenResponse(
         @SerialName("access_token") val accessToken: String,
-        @SerialName("expires_in")
-        val expiresIn: Long,
+        @SerialName("expires_in") val expiresIn: Long,
         @SerialName("token_type") val tokenType: String,
     )
 
