@@ -49,6 +49,8 @@ spec:
   env:
     - name: USE_AUTHENTICATION
       value: "false"
+    - name: JDK_JAVA_OPTIONS
+      value: -XX:MaxRAMPercentage=75 $(JAVA_PROXY_OPTIONS)
     - name: SKE_REST_URL
       value: https://api-test.sits.no/api/trekkpaalegg/v1
     - name: POSTGRES_HOST
