@@ -26,7 +26,7 @@ jobs:
       id-token: write
     needs: [ run-application-tests ]
     name: Assemble application & build/push image dev
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@man
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@main
     secrets: inherit
     with:
       image-suffix: 'dev'
