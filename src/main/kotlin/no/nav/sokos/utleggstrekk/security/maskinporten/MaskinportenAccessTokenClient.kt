@@ -6,7 +6,7 @@ import java.time.Instant
 import java.util.Date
 import java.util.UUID
 
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -32,16 +32,16 @@ class MaskinportenAccessTokenClient(
     private val logger = KotlinLogging.logger {}
     private val mutex = Mutex()
 
-    private val timeLimit = 60.seconds
+    private val timeLimit = 1.minutes
 
     @Volatile private var cachedToken: AccessToken? = null
 
     suspend fun getAccessToken(): String =
         mutex.withLock {
-            val inTwoMinutes = Instant.now().plusSeconds(timeLimit.inWholeSeconds)
+            val inOneMinute = Instant.now().plusSeconds(timeLimit.inWholeSeconds)
             val current = cachedToken
 
-            if (current == null || current.expiresAt.isBefore(inTwoMinutes)) {
+            if (current == null || current.expiresAt.isBefore(inOneMinute)) {
                 cachedToken = getMaskinportenToken()
             }
 
