@@ -2,10 +2,6 @@ package no.nav.sokos.utleggstrekk.config
 
 import java.io.File
 
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-
 import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties
 import com.natpryce.konfig.EnvironmentVariables
@@ -13,10 +9,6 @@ import com.natpryce.konfig.Key
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import com.nimbusds.jose.jwk.RSAKey
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-
-import no.nav.sokos.utleggstrekk.client.httpClient
 
 object PropertiesConfig {
     private val defaultProperties =
@@ -79,27 +71,9 @@ object PropertiesConfig {
 
     data class MaskinportenClientConfig(
         val clientId: String = getOrEmpty("MASKINPORTEN_CLIENT_ID"),
-        val authorityEndpoint: String = getOrEmpty("MASKINPORTEN_WELL_KNOWN_URL"),
+        val wellKnownUrl: String = getOrEmpty("MASKINPORTEN_WELL_KNOWN_URL"),
         val rsaKey: RSAKey? = RSAKey.parse(getOrEmpty("MASKINPORTEN_CLIENT_JWK")),
         val scopes: String = getOrEmpty("MASKINPORTEN_SCOPES"),
-    ) : JwtConfig(authorityEndpoint)
-
-    open class JwtConfig(private val wellKnownUrl: String) {
-        val openIdConfiguration: OpenIdConfiguration by lazy {
-            runBlocking {
-                httpClient.get(wellKnownUrl).body()
-            }
-        }
-    }
-
-    @Serializable
-    data class OpenIdConfiguration(
-        @SerialName("jwks_uri")
-        val jwksUri: String,
-        @SerialName("issuer")
-        val issuer: String,
-        @SerialName("token_endpoint")
-        val tokenEndpoint: String,
     )
 
     data object SlackConfig {
