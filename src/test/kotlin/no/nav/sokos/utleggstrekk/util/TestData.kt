@@ -17,6 +17,7 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
@@ -78,7 +79,7 @@ object TestData {
         trekkpliktig: String = "889640782",
         skyldner: String = "19628198007",
         trekkstatus: Trekkstatus = AKTIV,
-        perioder: List<TrekkstorrelseForPeriode>,
+        perioder: List<TrekkstorrelseForPeriode> = trekkPeriode,
         mottaker: Betalingsinformasjon =
             Betalingsinformasjon(
                 betalingsmottaker = "971648198",
@@ -98,4 +99,6 @@ object TestData {
             perioder,
             Betalingsinformasjon("mr.mottaker", "13812738912427", "6123101233424"),
         )
+
+    private val trekkPeriode = listOf(TrekkstorrelseForPeriode("2026-02-02", "2026-04-02", trekkprosent = Trekkprosent(20.0)))
 }

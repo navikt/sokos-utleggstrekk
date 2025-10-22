@@ -14,24 +14,9 @@ import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 // TODO: Se på sokos-krav mhp. autentisering
 fun Routing.utleggstrekkApi(utleggsTrekkService: UtleggsTrekkService) {
     route("utleggstrekk") {
-        get("hentAlleFullPakke") {
-            val resultat = utleggsTrekkService.hentOgSendUtleggstrekk()
-            call.respond(HttpStatusCode.OK, "Antall meldinger sendt: $resultat")
-        }
-
-        get("hentnye") {
-            utleggsTrekkService.hentAlleNyeUtleggstrekk()
-            call.respond(HttpStatusCode.OK)
-        }
-
-        get("hent/{sekvensnr}") {
-            val sekvensnr = call.parameters["sekvensnr"]
-            if (sekvensnr.isNullOrBlank() || sekvensnr.toInt() < 0) {
-                call.respond(HttpStatusCode.BadRequest, "Ugyldig sekvensnr")
-            } else {
-                utleggsTrekkService.hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr.toInt())
-                call.respond(HttpStatusCode.OK)
-            }
+        get("hentNyeTrekk") {
+            utleggsTrekkService.run()
+            call.respond(HttpStatusCode.OK, "Sender trekk til OS")
         }
     }
 }

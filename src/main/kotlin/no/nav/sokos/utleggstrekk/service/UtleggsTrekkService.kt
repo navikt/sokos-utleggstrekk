@@ -11,6 +11,7 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 
@@ -30,54 +31,35 @@ class UtleggsTrekkService(
 ) {
     private val logger = KotlinLogging.logger { }
 
-    suspend fun hentOgSendUtleggstrekk(): Int {
-        logger.info("Henter utleggstrekkfra skatt ")
-        hentOgLagreNyeUtleggstrekk()
-        val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
-        return sendTrekkTilOS(trekktilSending)
-    }
-
-    suspend fun hentOgLagreNyeUtleggstrekk() {
-        // TODO Denne henter alle hver gang, Den bør bare hente nye når den skal brukes mot skatt regelmessig
-        val nyeTrekkListe = skeClient.hentAlleUtleggstrekk() // TODO endre til å kalle hentAlleNyeUtleggstrekk()
-        nyeTrekkListe
-            .also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
-            .filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
-            .let {
-                logger.info("Det er ${it.size} som skal lagres")
-                databaseService.lagreUtleggstrekk(it)
-            }
-    }
-
     val jsonConfig =
         Json {
             explicitNulls = false
             encodeDefaults = true
         }
 
+    // Eksempel funksjon som kalles i schedulering
+    suspend fun run() {
+        val nyeUtleggsTrekk = hentUtleggsTrekk()
+        databaseService.lagreUtleggstrekk(nyeUtleggsTrekk)
+        val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
+        logger.info { "Det er ${trekktilSending.size} trekk som skal sendes" }
+        sendTrekkTilOS(trekktilSending)
+    }
+
+    private suspend fun hentUtleggsTrekk(): List<Trekkpaalegg> {
+        val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
+        return skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
+    }
+
     // TODO: refaktorere
     // TODO: Felles Jsonobjekt MEN skriv tester først
-    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>): Int =
+    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>) =
         trekkTilOppdragMap
-            .map {
+            .forEach {
                 val dokumentListe = it.value.map { dokument -> jsonConfig.encodeToString(dokument) }
                 dokumentListe.forEach { dokument ->
                     mqProducer.send(dokument)
                 }
                 databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
-            }.size
-
-    // Ikke fjern :)
-    suspend fun hentAlleNyeUtleggstrekk() {
-        val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
-        logger.info("Henter fra siste sekvensnr: $sisteSekvensnr")
-        hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
-    }
-
-    suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int) {
-        skeClient
-            .hentUtleggstrekkFraSekvensnr(sekvensnr)
-            .also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
-            .let { databaseService.lagreUtleggstrekk(it) }
-    }
+            }
 }
