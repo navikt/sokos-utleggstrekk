@@ -1,6 +1,9 @@
 package no.nav.sokos.utleggstrekk.database.model
 
+import java.time.format.DateTimeFormatter
+
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.serialization.Serializable
 
@@ -80,10 +83,7 @@ data class UtleggstrekkTable(
                     kreditorsRef = saksnummer,
                     kilde = "SOKOSUTLEGG",
                     saldo = 0.0,
-                    prioritetFomDato = "${opprettetSke.year}-${opprettetSke.month.toString().padStart(
-                        2,
-                        '0',
-                    )}-${opprettetSke.day.toString().padStart(2,'0')}",
+                    prioritetFomDato = opprettetSke.toJavaLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
                     perioder =
                         Perioder(
                             periodeTableList.map {

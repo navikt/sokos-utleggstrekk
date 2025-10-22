@@ -31,6 +31,25 @@ class BehandleTrekkServiceTest :
             val databaseServiceMock = mockk<DatabaseService>()
             val behandleTrekkService = BehandleTrekkService(databaseServiceMock)
 
+            test("Når trekkdokument dannes skal datoer formatteres på yyyy-mm-dd format") {
+                val testNr = 1
+                val trekkITest = trekkTable1(testNr)
+                val perioderiTest = periodetable1(testNr)
+                coEvery { databaseServiceMock.hentAlleTrekkSomIkkeErSendt() } returns listOf(trekkITest)
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns perioderiTest
+                coEvery { databaseServiceMock.lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
+                val result = behandleTrekkService.lagTrekkSomSkalSendes()
+
+                val prioritetFomDato =
+                    result.values
+                        .first()
+                        .first()
+                        .dokument.innrapporteringTrekk.prioritetFomDato
+
+                prioritetFomDato shouldBe "2024-06-16"
+            }
+
             test("Trekk med perioder kun med 1 trekkalternativ i trekkversjon 1 skal bli 1 NYTT trekk med 3 perioder") {
                 val testNr = 1
                 val trekkITest = trekkTable1(testNr)
@@ -273,7 +292,6 @@ private fun trekkTable1(testNr: Int) =
         kontonummer = "12341212345",
         betalingsmottaker = "987654322",
         corrid = "dette_er_corrid_1",
-        //  tidspunktSisteStatus = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
         tidspunktSisteStatus = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
         tidspunktSendtOs = null,
         tidspunktOpprettet = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),

@@ -20,7 +20,7 @@ import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
-class KvitteringTest :
+class JmsListenerServiceTest :
     BehaviorSpec({
         extensions(listOf(MQListener))
 

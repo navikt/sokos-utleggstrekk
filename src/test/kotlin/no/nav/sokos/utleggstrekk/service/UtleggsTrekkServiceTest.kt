@@ -4,7 +4,11 @@ import kotlinx.serialization.json.Json
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
@@ -17,7 +21,7 @@ import no.nav.sokos.utleggstrekk.util.resourceToString
 
 internal class UtleggsTrekkServiceTest :
     BehaviorSpec({
-
+        // TODO: Bytte til global json config
         val jsonConfig =
             Json {
                 isLenient = true
@@ -25,8 +29,15 @@ internal class UtleggsTrekkServiceTest :
                 encodeDefaults = true
             }
 
+        // TODO: refaktorer
         Given("hentOgSendUtleggstrekk initieres") {
             val databaseService = DatabaseService(TestContainer().dataSource)
+            val capturedPayloads = mutableListOf<String>()
+
+            val mqProducerMock =
+                mockk<JmsProducerService>(relaxed = true) {
+                    every { send(capture(capturedPayloads)) } just Runs
+                }
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
@@ -35,7 +46,7 @@ internal class UtleggsTrekkServiceTest :
                         mockk<SkeClient> {
                             coEvery { hentAlleUtleggstrekk() } returns jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
                         },
-                    mqProducer = mockk<JmsProducerService>(relaxed = true),
+                    mqProducer = mqProducerMock,
                 )
             then("Først skal hentOgLagreNyeUtleggstrekk lagre alle i databasen") {
                 utleggsTrekkService.hentOgLagreNyeUtleggstrekk()
@@ -45,7 +56,7 @@ internal class UtleggsTrekkServiceTest :
                 databaseService.hentAllePerioderForTrekkId(trekkIdatabase.last()).size shouldBe 1
             }
 
-            then("Deretter skal trekk som er laget i behandleTrekkservice sendes og status skal oppdateres") {
+            then("Deretter skal trekk som er laget i behandleTrekkservice sendes") {
                 val trekkIdatabase = databaseService.hentAlleTrekkSomIkkeErSendt()
                 val trekkPairs = jsonConfig.decodeFromString<List<Pair<UtleggstrekkTable, List<TrekkTilOppdrag>>>>(resourceToString("TrekkTilSendingPairMedRiktigCorrid.json"))
 
@@ -58,6 +69,14 @@ internal class UtleggsTrekkServiceTest :
                         }
 
                 utleggsTrekkService.sendTrekkTilOS(trekkSomSkalSendesMap)
+
+                capturedPayloads.forEach {
+                    it shouldContain "SOKOSUTLEGG"
+                    it shouldContain "TRK1"
+                }
+            }
+
+            then("skal status oppdateres til SENDT") {
                 databaseService.hentAlleTrekkSomIkkeErSendt().size shouldBe 0
             }
         }
