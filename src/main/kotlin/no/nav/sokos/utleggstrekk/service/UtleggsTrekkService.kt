@@ -49,12 +49,18 @@ class UtleggsTrekkService(
             }
     }
 
+    val jsonConfig =
+        Json {
+            explicitNulls = false
+            encodeDefaults = true
+        }
+
     // TODO: refaktorere
+    // TODO: Felles Jsonobjekt MEN skriv tester først
     fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>): Int =
         trekkTilOppdragMap
             .map {
-                val dokumentListe = it.value.map { Json.encodeToString(it) }
-                logger.info("sender trekkid: ${it.key.trekkidSke} versjon: ${it.key.trekkversjon} sekvensnummer: ${it.key.sekvensnummer}")
+                val dokumentListe = it.value.map { dokument -> jsonConfig.encodeToString(dokument) }
                 dokumentListe.forEach { dokument ->
                     mqProducer.send(dokument)
                 }
