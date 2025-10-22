@@ -15,15 +15,12 @@ import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.listener.MQListener
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 internal class UtleggsTrekkServiceTest :
     BehaviorSpec({
-        extensions(listOf(MQListener))
-
         // TODO: Bytte til global json config
         val jsonConfig =
             Json {
