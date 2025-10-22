@@ -44,7 +44,7 @@ class SkeClient(
             }.toTrekkpaalegg()
 
     private suspend fun commonHeaders(): HeadersBuilder.() -> Unit {
-        val token = tokenProvider.hentAccessToken()
+        val token = tokenProvider.getAccessToken()
         return {
             append("Klientid", KLIENT_ID)
             append("Korrelasjonsid", UUID.randomUUID().toString()) // TODO: Hvis dette skal være noe poeng må den tas vare på et sted!
