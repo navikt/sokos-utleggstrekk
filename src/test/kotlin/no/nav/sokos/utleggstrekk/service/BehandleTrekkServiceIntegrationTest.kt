@@ -20,7 +20,7 @@ import no.nav.sokos.utleggstrekk.util.TestData
 
 // TODO: Spør Endre om det er viktig å slette trekk dersom ett trekk ikke lenger har to trekktyper.
 
-class BehandleTrekkServiceNyTest :
+class BehandleTrekkServiceIntegrationTest :
     BehaviorSpec({
         val testContainer = TestContainer()
         val dataSource = testContainer.dataSource
