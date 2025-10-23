@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.client
 
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 import kotlinx.serialization.json.Json
 
 import io.kotest.core.spec.style.FunSpec
@@ -62,7 +61,7 @@ class SkeClientTest :
                 trekkid = "1",
                 sekvensnummer = 1,
                 trekkversjon = 1,
-                opprettet = Instant.parse("2024-06-16T13:33:05.672Z"),
+                opprettet = "2024-06-16T13:33:05.672Z",
                 saksnummer = "sak-2023-899",
                 trekkpliktig = "889640782",
                 skyldner = "19628198007",

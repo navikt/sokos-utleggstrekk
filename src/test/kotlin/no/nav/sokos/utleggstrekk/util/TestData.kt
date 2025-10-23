@@ -3,11 +3,9 @@
 package no.nav.sokos.utleggstrekk.util
 
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.UUID
 
 import kotlin.time.ExperimentalTime
-import kotlin.time.toKotlinInstant
 import kotlinx.datetime.toKotlinLocalDateTime
 
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
@@ -91,7 +89,7 @@ object TestData {
             trekkId,
             sekvensnummer,
             trekkversjon,
-            opprettet.toInstant(ZoneOffset.UTC).toKotlinInstant(),
+            opprettet.toString(),
             saksnummer,
             trekkpliktig,
             skyldner,

@@ -35,7 +35,6 @@ data class Document(
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
-// TODO: Vi må persistere json fra SKE som den er.
 @Serializable
 data class InnrapporteringTrekk(
     val aksjonskode: Aksjonskode,

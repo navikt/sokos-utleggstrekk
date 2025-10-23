@@ -3,17 +3,15 @@
 package no.nav.sokos.utleggstrekk.domene.ske
 
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-// Trekk slik de kommer inn fra SKE
 @Serializable
 data class Trekkpaalegg(
     val trekkid: String,
     val sekvensnummer: Int,
     val trekkversjon: Int,
-    val opprettet: Instant,
+    val opprettet: String,
     val saksnummer: String,
     val trekkpliktig: String,
     val skyldner: String,

@@ -173,7 +173,7 @@ class Repository(private val dataSource: HikariDataSource) {
             prepStmt1.setString(2, trekk.trekkid)
             prepStmt1.setInt(3, trekk.trekkversjon)
             prepStmt1.setString(4, trekk.saksnummer)
-            prepStmt1.setTimestamp(5, Timestamp(trekk.opprettet.toEpochMilliseconds()))
+            prepStmt1.setTimestamp(5, Timestamp.valueOf(trekk.opprettet))
             prepStmt1.setString(6, trekk.trekkpliktig)
             prepStmt1.setString(7, trekk.skyldner)
             prepStmt1.setString(8, trekk.trekkstatus.name)
@@ -210,6 +210,7 @@ class Repository(private val dataSource: HikariDataSource) {
             queryOf("SELECT * FROM utleggstrekk WHERE status=:status ORDER BY sekvensnummer ASC", mapOf("status" to MOTTATT.name)),
         ) { row -> UtleggstrekkTable(row) }
 
+    // TODO: Burde bare hente trekk som er sendt til OS (kvittering ok eller ikke)
     fun fetchPerioderForTrekkVersion(trekk: UtleggstrekkTable, session: Session): List<TrekkPeriodeTable> =
         session.list(
             queryOf(

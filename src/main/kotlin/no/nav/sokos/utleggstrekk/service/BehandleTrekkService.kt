@@ -20,7 +20,8 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
     // TODO: Er map nødvendig?  Navn?  TrekkTilOppdrag er alltid bare 1 eller 2 lang?
     // TODO: TrekkToOppdrag er en json konvolutt for sending til Oppdrag.  Dette burde ha domeneobjekt fokus. Dette er forretningslogikk!
     fun lagTrekkSomSkalSendes(): Map<UtleggstrekkTable, List<TrekkTilOppdrag>> {
-        val trekkIkkeSendt = databaseService.hentAlleTrekkSomIkkeErSendt()
+        // Vi må først lagre status knyttet til id i FraSkatt tabell
+        val trekkIkkeSendt = databaseService.hentAlleTrekkSomIkkeErSendt() // rename hentAlleTrekkSomIkkeErBehandlet
         return trekkIkkeSendt.associateWith { trekk ->
             MDC.put("x-correlation-id", trekk.corrid)
 
@@ -31,14 +32,18 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
 
             val trekkDokumenter =
                 if (perioderSendesOS.isEmpty()) {
-                    allePerioderForTrekkMap.keys.map { key -> trekk.toTrekkDokument(emptyList(), trekkAlternativ = key) }
+                    allePerioderForTrekkMap.keys.map { key ->
+                        trekk.toTrekkDokument(emptyList(), trekkAlternativ = key)
+                    }
                 } else {
                     perioderSendesOS.map { perioder ->
                         databaseService.lagreGenerertePerioder(perioder.filter { it.kilde == EGEN_KILDE })
+
                         if (trekk.trekkversjon > 1 && allePerioderForTrekkMap[perioder.first().trekkAlternativ]!!.minBy { it.trekkversjon }.trekkversjon == trekk.trekkversjon) {
                             logger.info("Oppretter nytt trekk for ${trekk.trekkidSke}/${trekk.trekkversjon}/${perioder[0].trekkAlternativ}")
                             trekk.toTrekkDokument(perioder, Aksjonskode.NY)
                         } else {
+                            // if trekkversjon==1
                             trekk.toTrekkDokument(perioder)
                         }
                     }
@@ -52,6 +57,10 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
         perioderForTrekkversjonMap: Map<TrekkAlternativ, List<TrekkPeriodeTable>>,
         allePerioderForTrekkMap: Map<TrekkAlternativ, List<TrekkPeriodeTable>>,
     ): List<List<TrekkPeriodeTable>> {
+        /*
+         *  TODO: Dette er nok ikke riktig
+         *
+         * */
         if (perioderForTrekkversjonMap.isEmpty()) return emptyList()
 
         if (allePerioderForTrekkMap.size < 2) {

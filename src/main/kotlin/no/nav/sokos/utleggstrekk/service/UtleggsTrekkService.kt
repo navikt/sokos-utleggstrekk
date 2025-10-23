@@ -40,7 +40,10 @@ class UtleggsTrekkService(
     // Eksempel funksjon som kalles i schedulering
     suspend fun run() {
         val nyeUtleggsTrekk = hentUtleggsTrekk()
-        databaseService.lagreUtleggstrekk(nyeUtleggsTrekk)
+        // Lagrer i FraSkatt, Periode, Betalingsinformasjon
+        // Vi må lagre "noe" (varkuleklasse) som har status MOTTATT eller noe sånt
+        databaseService.lagreUtleggstrekkNy(nyeUtleggsTrekk)
+
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
         logger.info { "Det er ${trekktilSending.size} trekk som skal sendes" }
         sendTrekkTilOS(trekktilSending)
@@ -53,7 +56,10 @@ class UtleggsTrekkService(
 
     // TODO: refaktorere
     // TODO: Felles Jsonobjekt MEN skriv tester først
-    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>) =
+    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>) {
+    /*    mqProducer.send(jsonConfig.encodeToString(trekkTilOppdragMap.trekkSomSkalSendes))
+        databaseService.oppdaterTrekkStatus(trekkTilOppdragMap.transaksjonsID, SENDT)*/
+
         trekkTilOppdragMap
             .forEach {
                 val dokumentListe = it.value.map { dokument -> jsonConfig.encodeToString(dokument) }
@@ -62,4 +68,5 @@ class UtleggsTrekkService(
                 }
                 databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
             }
+    }
 }

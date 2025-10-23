@@ -8,6 +8,7 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.KVITTERING_FEILET
@@ -71,6 +72,16 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
             repository.fetchLastSekvensnr(session)
         }
 
+    fun lagreUtleggstrekkNy(trekkListe: List<Trekkpaalegg>) {
+        val repositoryNy = RepositoryNy()
+        dataSource.withTransaction { session ->
+            trekkListe.forEach { trekk ->
+                // Skal det lagres i vår kule klasse her?
+                repositoryNy.insertTrekkFraSkatt(trekk, session)
+            }
+        }
+    }
+
     fun lagreUtleggstrekk(trekkListe: List<Trekkpaalegg>) {
         dataSource.withTransaction { session ->
             trekkListe
@@ -92,6 +103,11 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
         dataSource.withTransaction { session ->
             repository.saveFeilkoder(kvitteringMedFeilkoder, session)
         }
+    }
+
+    fun hentAlleTrekkSomIkkeErBehandlet() {
+        // select * FraSkatt where id in (select * fraskatt_id from varkuleklasse where status = MOTTATT)
+        // eller join
     }
 }
 
