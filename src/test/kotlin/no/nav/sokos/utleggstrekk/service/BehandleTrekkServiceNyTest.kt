@@ -12,6 +12,7 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkbeloep
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
@@ -68,6 +69,50 @@ class BehandleTrekkServiceNyTest :
                 Then("Skal det produseres ett nytt trekk til OS med status NY til OS med trekkalternativ LOPP") {
                     val behandlet = behandleTrekkService.lagTrekkSomSkalSendes()
 
+                    behandlet.keys.size shouldBe 1
+                    behandlet.values.size shouldBe 1
+                    val melding: TrekkTilOppdrag = behandlet.values.first().first()
+                    melding.dokument.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
+                    melding.dokument.innrapporteringTrekk.kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
+                }
+            }
+        }
+
+        Given("Det finnes to trekk i databasen, et med status OK med to prosenttrekkperioder og ett med status MOTTATT som er versjon 2 med to nye perioder beløptrekk") {
+            beforeContainer {
+                storedInDbAndSentOk(
+                    TestData.Trekkpaalegg(
+                        "trekkid1",
+                        1,
+                        1,
+                        perioder =
+                            listOf(
+                                TrekkstorrelseForPeriode("2026-02-02", "2026-02-12", trekkprosent = Trekkprosent(20.0)),
+                                TrekkstorrelseForPeriode("2026-02-14", "2026-02-19", trekkprosent = Trekkprosent(20.0)),
+                            ),
+                    ),
+                    TrekkAlternativ.LOPP,
+                )
+                storedInDb(
+                    TestData.Trekkpaalegg(
+                        "trekkid1",
+                        2,
+                        2,
+                        perioder =
+                            listOf(
+                                TrekkstorrelseForPeriode("2026-02-02", "2026-02-12", trekkprosent = Trekkprosent(20.0)),
+                                TrekkstorrelseForPeriode("2026-02-14", "2026-02-19", trekkprosent = Trekkprosent(20.0)),
+                                TrekkstorrelseForPeriode("2026-03-02", "2026-03-12", trekkbeloep = Trekkbeloep(1000.0)),
+                                TrekkstorrelseForPeriode("2026-03-14", "2026-03-19", trekkbeloep = Trekkbeloep(2000.0)),
+                            ),
+                    ),
+                )
+            }
+            When("Trekk skal behandles") {
+                Then("Skal det produseres to trekk til OS, ett med status ENDR av typen LOPP med to nye perioder med 0 prosent, ett med status NY av typen LOPM med fire perioder") {
+                    val behandlet = behandleTrekkService.lagTrekkSomSkalSendes()
+
+                    println("  BEHANDLET " + behandlet)
                     behandlet.keys.size shouldBe 1
                     behandlet.values.size shouldBe 1
                     val melding: TrekkTilOppdrag = behandlet.values.first().first()
@@ -171,15 +216,5 @@ class BehandleTrekkServiceNyTest :
                 }
             }
         }
-
-
-        // Hoppe over feilet trekk fordi det har kommet ny versjon
-        Given("Det finnes to trekk i databasen, et med status KVITTERING_FEILET og ett med MOTTATT som er versjon 2 med endrede periodetider men fremdeles prosenttrekk") {
-            When("Trekk skal behandles") {
-                Then("Skal det produseres et trekk til OS med status NY av typen LOPEP med opprettelse av ny periode, KVITTERING_FEILET skal få status HOPPET_OVER") {
-                }
-            }
-        }
-
          */
     })
