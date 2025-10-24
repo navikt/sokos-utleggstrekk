@@ -5,11 +5,14 @@ import kotlin.time.ExperimentalTime
 import kotliquery.Session
 import kotliquery.queryOf
 
+import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.Periode
+import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 class RepositoryNy {
     @OptIn(ExperimentalTime::class)
-    fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg, session: Session) {
+    fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg, session: Session): Long? {
         val fraSkattId =
             session.updateAndReturnGeneratedKey(
                 queryOf(
@@ -80,5 +83,31 @@ class RepositoryNy {
                 ),
             ),
         )
+
+        return fraSkattId
     }
+
+    fun getTrekkFraSkatt(id: Long, session: Session): TrekkFraSkatt? =
+        session.single(
+            queryOf(
+                """SELECT * FROM fraskatt WHERE id=:id""".trimIndent(),
+                mapOf("id" to id),
+            ),
+        ) { row -> TrekkFraSkatt(row) }
+
+    fun getPerioderForTrekk(id: Long, session: Session): List<Periode> =
+        session.list(
+            queryOf(
+                """SELECT * FROM periode WHERE fraskatt_id=:id""".trimIndent(),
+                mapOf("id" to id),
+            ),
+        ) { row -> Periode(row) }
+
+    fun getBetalingsinformasjonForTrekk(id: Long, session: Session): BetalingsinformasjonFraSkatt? =
+        session.single(
+            queryOf(
+                """SELECT * FROM betalingsinformasjonfraskatt WHERE fraskatt_id=:id""".trimIndent(),
+                mapOf("id" to id),
+            ),
+        ) { row -> BetalingsinformasjonFraSkatt(row) }
 }

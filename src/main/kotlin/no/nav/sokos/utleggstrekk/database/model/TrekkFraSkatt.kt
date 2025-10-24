@@ -16,7 +16,7 @@ data class Varkuleklasse(
     val belop: Double,
 )
 
-data class FraSkatt(
+data class TrekkFraSkatt(
     val id: Long,
     val trekkid: String,
     val sekvensnummer: Int,
@@ -47,7 +47,16 @@ data class Periode(
     val sluttdato: String?,
     val trekkbeloep: Double?,
     val trekkprosent: Double?,
-)
+) {
+    constructor(row: Row) : this(
+        id = row.long("id"),
+        fraSkattID = row.long("fraskatt_id"),
+        startdato = row.string("dato_start"),
+        sluttdato = row.stringOrNull("dato_slutt"),
+        trekkbeloep = row.doubleOrNull("trekkbelop"),
+        trekkprosent = row.doubleOrNull("trekkprosent"),
+    )
+}
 
 data class BetalingsinformasjonFraSkatt(
     val id: Long,
@@ -55,4 +64,12 @@ data class BetalingsinformasjonFraSkatt(
     val betalingsmottaker: String,
     val kidnummer: String,
     val kontonummer: String,
-)
+) {
+    constructor(row: Row) : this(
+        id = row.long("id"),
+        fraSkattID = row.long("fraskatt_id"),
+        betalingsmottaker = row.string("betalingsmottaker"),
+        kidnummer = row.string("kidnummer"),
+        kontonummer = row.string("kontonummer"),
+    )
+}
