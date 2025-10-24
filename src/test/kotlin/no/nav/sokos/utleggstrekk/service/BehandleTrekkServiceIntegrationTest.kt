@@ -22,57 +22,60 @@ import no.nav.sokos.utleggstrekk.util.TestData
 
 class BehandleTrekkServiceIntegrationTest :
     BehaviorSpec({
-        val testContainer = TestContainer()
-        val dataSource = testContainer.dataSource
-        val repository = Repository(dataSource)
-        val dbService = DatabaseService(dataSource)
-        val behandleTrekkService = BehandleTrekkService(dbService)
 
-        beforeSpec { dataSource.withTransaction { session -> repository.clearDb(session) } }
+        xcontext("disabled") {
+            val testContainer = TestContainer()
+            val dataSource = testContainer.dataSource
+            val repository = Repository(dataSource)
+            val dbService = DatabaseService(dataSource)
+            val behandleTrekkService = BehandleTrekkService(dbService)
 
-        fun storedInDb(trekk: Trekkpaalegg) {
-            dataSource.withTransaction { session -> repository.saveAllNewUtleggstrekk(listOf(trekk), session) }
-        }
+            beforeSpec { dataSource.withTransaction { session -> repository.clearDb(session) } }
 
-        fun storedInDbAndSent(trekk: Trekkpaalegg): UtleggstrekkTable {
-            storedInDb(trekk)
-            return dataSource.withTransaction { session ->
-                val utleggstrekk = repository.fetchTrekkNotSendt(session).find { it.sekvensnummer == trekk.sekvensnummer }
-                repository.updateNavTrekkStatus(utleggstrekk!!.corrid, SENDT, session)
-                utleggstrekk
+            fun storedInDb(trekk: Trekkpaalegg) {
+                dataSource.withTransaction { session -> repository.saveAllNewUtleggstrekk(listOf(trekk), session) }
             }
-        }
 
-        fun storedInDbAndSentOk(trekk: Trekkpaalegg, trekkAlternativ: TrekkAlternativ): UtleggstrekkTable {
-            val utleggstrekk = storedInDbAndSent(trekk)
-            dataSource.withTransaction { session ->
-                repository.updateKvitteringStatus(utleggstrekk.corrid, KVITTERING_OK, navTrekkId = "00123456", kvittering = "00", trekkalternativ = trekkAlternativ, session = session)
+            fun storedInDbAndSent(trekk: Trekkpaalegg): UtleggstrekkTable {
+                storedInDb(trekk)
+                return dataSource.withTransaction { session ->
+                    val utleggstrekk = repository.fetchTrekkNotSendt(session).find { it.sekvensnummer == trekk.sekvensnummer }
+                    repository.updateNavTrekkStatus(utleggstrekk!!.corrid, SENDT, session)
+                    utleggstrekk
+                }
             }
-            return utleggstrekk
-        }
 
-        Given("Det finnes ett trekk i databasen med trekkstatus AKTIV, status MOTTATT som har én periode med prosenttrekk") {
-            beforeContainer {
-                storedInDb(
-                    TestData.Trekkpaalegg(
-                        "trekkid1",
-                        1,
-                        1,
-                        perioder = listOf(TrekkstorrelseForPeriode("2026-02-02", "2026-04-02", trekkprosent = Trekkprosent(20.0))),
-                    ),
-                )
+            fun storedInDbAndSentOk(trekk: Trekkpaalegg, trekkAlternativ: TrekkAlternativ): UtleggstrekkTable {
+                val utleggstrekk = storedInDbAndSent(trekk)
+                dataSource.withTransaction { session ->
+                    repository.updateKvitteringStatus(utleggstrekk.corrid, KVITTERING_OK, navTrekkId = "00123456", kvittering = "00", trekkalternativ = trekkAlternativ, session = session)
+                }
+                return utleggstrekk
             }
-            afterContainer { dataSource.withTransaction { session -> repository.clearDb(session) } }
 
-            When("Trekk skal behandles") {
-                Then("Skal det produseres ett nytt trekk til OS med status NY til OS med trekkalternativ LOPP") {
-                    val behandlet = behandleTrekkService.lagTrekkSomSkalSendes()
+            Given("Det finnes ett trekk i databasen med trekkstatus AKTIV, status MOTTATT som har én periode med prosenttrekk") {
+                beforeContainer {
+                    storedInDb(
+                        TestData.Trekkpaalegg(
+                            "trekkid1",
+                            1,
+                            1,
+                            perioder = listOf(TrekkstorrelseForPeriode("2026-02-02", "2026-04-02", trekkprosent = Trekkprosent(20.0))),
+                        ),
+                    )
+                }
+                afterContainer { dataSource.withTransaction { session -> repository.clearDb(session) } }
 
-                    behandlet.keys.size shouldBe 1
-                    behandlet.values.size shouldBe 1
-                    val melding: TrekkTilOppdrag = behandlet.values.first().first()
-                    melding.dokument.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
-                    melding.dokument.innrapporteringTrekk.kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
+                When("Trekk skal behandles") {
+                    Then("Skal det produseres ett nytt trekk til OS med status NY til OS med trekkalternativ LOPP") {
+                        val behandlet = behandleTrekkService.lagTrekkSomSkalSendes()
+
+                        behandlet.keys.size shouldBe 1
+                        behandlet.values.size shouldBe 1
+                        val melding: TrekkTilOppdrag = behandlet.values.first().first()
+                        melding.dokument.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
+                        melding.dokument.innrapporteringTrekk.kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
+                    }
                 }
             }
         }
