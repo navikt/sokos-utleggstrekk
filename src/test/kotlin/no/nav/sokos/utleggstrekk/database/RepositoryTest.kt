@@ -8,9 +8,10 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.Periode
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
@@ -74,6 +75,15 @@ class RepositoryTest :
                 comparePeriode(periode, lagretPeriode)
             }
         }
+
+        fun compareFeilmelding(kvittering: KvitteringFraOppdrag, feilmelding: Feilmelding) {
+            feilmelding.id shouldBe 1L
+            feilmelding.kreditorTrekkId shouldBe kvittering.dokument.innrapporteringTrekk.kreditorTrekkId
+            feilmelding.trekkAlternativ shouldBe kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
+            feilmelding.transaksjonsId shouldBe kvittering.dokument.transaksjonsId
+            feilmelding.feilkode shouldBe kvittering.mmel!!.kodeMelding
+            feilmelding.beskrivelse shouldBe kvittering.mmel.beskrMelding
+        }
         Given("Data fra skatt skal lagres") {
             val trekkpaalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("Trekk_med_to_trekkalternativ.json")).first()
 
@@ -99,24 +109,20 @@ class RepositoryTest :
         }
         Given("En kvittering har feil") {
 
-            val kvittering = json.decodeFromString<TrekkTilOppdrag>(resourceToString("kvittering-feil.json"))
+            val kvittering = json.decodeFromString<KvitteringFraOppdrag>(resourceToString("kvittering-feil.json"))
             When("Feil lagres") {
-                //     DBListener.dataSource.withTransaction { session -> repository.saveFeilkoder(kvittering, session) }
+                DBListener.dataSource.withTransaction { session -> repositoryNy.insertFeilmeldingFraOS(kvittering, session) }
 
                 Then("Skal trekkid, trekkalternativ, corrid, feilkode og beskrivelse lagres") {
-                 /*   val feilkode =
-                        dataSource.withTransaction { session ->
-                            repository.findFeilkode(
+                    val feilmelding =
+                        DBListener.dataSource.withTransaction { session ->
+                            repositoryNy.getFeilmeldingerFraOS(
                                 kvittering.dokument.transaksjonsId,
                                 session,
-                            )!!
+                            )
                         }
-                    feilkode.feilkodeTableId shouldBe 1L
-                    feilkode.trekkIdNav shouldBe kvittering.dokument.innrapporteringTrekk.kreditorTrekkId
-                    feilkode.trekkAlternativ shouldBe kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
-                    feilkode.corrId shouldBe kvittering.dokument.transaksjonsId
-                    feilkode.feilkode shouldBe kvittering.mmel!!.kodeMelding
-                    feilkode.beskrivelse shouldBe kvittering.mmel.beskrMelding*/
+                    feilmelding.shouldNotBeNull()
+                    compareFeilmelding(kvittering, feilmelding)
                 }
             }
         }

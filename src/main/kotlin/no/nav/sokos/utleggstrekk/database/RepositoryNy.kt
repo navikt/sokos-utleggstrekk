@@ -6,8 +6,10 @@ import kotliquery.Session
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.Periode
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 class RepositoryNy {
@@ -86,6 +88,43 @@ class RepositoryNy {
 
         return fraSkattId
     }
+
+    fun insertFeilmeldingFraOS(kvittering: KvitteringFraOppdrag, session: Session) {
+        session.update(
+            queryOf(
+                """
+                insert into feilmelding (
+                    kreditor_trekk_id,
+                    transaksjons_id,
+                    trekkalternativ,
+                    feilkode,
+                    beskrivelse
+                ) values (
+                    :kreditorTrekkId,
+                    :transaksjonsId,
+                    :kodeTrekkAlternativ,
+                    :kodeMelding,
+                    :beskrivelse
+                )
+                """.trimIndent(),
+                mapOf(
+                    "kreditorTrekkId" to kvittering.dokument.innrapporteringTrekk.kreditorTrekkId,
+                    "transaksjonsId" to kvittering.dokument.transaksjonsId,
+                    "kodeTrekkAlternativ" to kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ.name,
+                    "kodeMelding" to kvittering.mmel?.kodeMelding,
+                    "beskrivelse" to kvittering.mmel?.beskrMelding,
+                ),
+            ),
+        )
+    }
+
+    fun getFeilmeldingerFraOS(transaksjonsId: String, session: Session): Feilmelding? =
+        session.single(
+            queryOf(
+                "SELECT * FROM feilmelding WHERE transaksjons_id=:transaksjonsId",
+                mapOf("transaksjonsId" to transaksjonsId),
+            ),
+        ) { row -> Feilmelding(row) }
 
     fun getTrekkFraSkatt(id: Long, session: Session): TrekkFraSkatt? =
         session.single(

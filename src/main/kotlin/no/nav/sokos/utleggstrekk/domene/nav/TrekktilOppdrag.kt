@@ -7,6 +7,9 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
+// De er på samme format
+typealias KvitteringFraOppdrag = TrekkTilOppdrag
+
 @Serializable
 data class TrekkTilOppdrag(
     val dokument: Document,

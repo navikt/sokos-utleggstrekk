@@ -25,6 +25,7 @@ create table "periode"
     trekkprosent        text      NULL
 );
 
+
 drop table if exists betalingsinformasjonfraskatt;
 create table "betalingsinformasjonfraskatt"
 (
@@ -35,6 +36,15 @@ create table "betalingsinformasjonfraskatt"
     kontonummer         text      NOT NULL
 );
 
-
-
+drop table if exists feilmelding;
+create table "feilmelding"
+(
+    id                  bigserial primary key,
+    kreditor_trekk_id   text NOT NULL,
+    transaksjons_id      text NOT NULL,
+    trekkalternativ     text NOT NULL,
+    feilkode            text NULL,
+    beskrivelse         text NULL,
+    tidspunkt_opprettet timestamp NOT NULL DEFAULT NOW()
+);
 create unique index if not exists idxu_trekk on utleggstrekk (trekkid_ske, sekvensnummer, trekkversjon);
