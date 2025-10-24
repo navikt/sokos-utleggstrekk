@@ -28,7 +28,7 @@ class RepositoryTest :
         extensions(DBListener)
         //   val dataSource = testContainer.dataSource
         //   val repository = Repository(testContainer.dataSource)
-        val repositoryNy = RepositoryNy()
+
         val json =
             Json {
                 prettyPrint = true
@@ -36,71 +36,6 @@ class RepositoryTest :
                 explicitNulls = false
             }
 
-        fun doesTrekkExist(trekkId: String, sekvensnummer: Int, trekkversjon: Int): Boolean =
-            DBListener.dataSource.withTransaction { session ->
-                repositoryNy.doesTrekkExist(trekkId, sekvensnummer, trekkversjon, session)
-            }
-
-        fun saveTrekkpaalegg(trekkpalegg: Trekkpaalegg): Long? =
-            DBListener.dataSource.withTransaction { session ->
-                repositoryNy.insertTrekkFraSkatt(trekkpalegg, session)
-            }
-
-        fun getMaxSekvensnummer(): Int =
-            DBListener.dataSource.withTransaction { session ->
-                repositoryNy.getLastSekvensnummer(session)
-            }
-
-        fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
-            DBListener.dataSource.withTransaction { session ->
-                repositoryNy.getTrekkFraSkatt(id, session)
-            }
-
-        fun getAllTrekkFraSkatt(): List<TrekkFraSkatt> =
-            DBListener.dataSource.withTransaction { session ->
-                repositoryNy.getAllTrekkFraSkatt(session)
-            }
-
-        fun getPerioderForTrekk(trekkId: Long): List<Periode> =
-            DBListener.dataSource.withTransaction { session ->
-                repositoryNy.getPerioderForTrekk(trekkId, session)
-            }
-
-        fun getBetalingsinformasjonForTrekk(trekkId: Long): BetalingsinformasjonFraSkatt? =
-            DBListener.dataSource.withTransaction { session ->
-                repositoryNy.getBetalingsinformasjonForTrekk(trekkId, session)
-            }
-
-        fun compareBetalingsinformasjon(betalingsinformasjon: Betalingsinformasjon, lagret: BetalingsinformasjonFraSkatt) {
-            lagret.betalingsmottaker shouldBe betalingsinformasjon.betalingsmottaker
-            lagret.kidnummer shouldBe betalingsinformasjon.kidnummer
-            lagret.kontonummer shouldBe betalingsinformasjon.kontonummer
-        }
-
-        fun comparePeriode(trekkstorrelseForPeriode: TrekkstorrelseForPeriode, lagret: Periode) {
-            lagret.startdato shouldBe trekkstorrelseForPeriode.startdato
-            lagret.sluttdato shouldBe trekkstorrelseForPeriode.sluttdato
-            lagret.trekkbeloep shouldBe trekkstorrelseForPeriode.trekkbeloep?.trekkbeloep
-            lagret.trekkprosent shouldBe trekkstorrelseForPeriode.trekkprosent?.trekkprosent
-        }
-
-        fun comparePerioder(trekkstorrelseForPeriode: List<TrekkstorrelseForPeriode>, lagret: List<Periode>) {
-            lagret.size shouldBe trekkstorrelseForPeriode.size
-            trekkstorrelseForPeriode.forEach { periode ->
-                val lagretPeriode = lagret.find { it.startdato == periode.startdato }
-                lagretPeriode.shouldNotBeNull()
-                comparePeriode(periode, lagretPeriode)
-            }
-        }
-
-        fun compareFeilmelding(kvittering: KvitteringFraOppdrag, feilmelding: Feilmelding) {
-            feilmelding.id shouldBe 1L
-            feilmelding.kreditorTrekkId shouldBe kvittering.dokument.innrapporteringTrekk.kreditorTrekkId
-            feilmelding.trekkAlternativ shouldBe kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
-            feilmelding.transaksjonsId shouldBe kvittering.dokument.transaksjonsId
-            feilmelding.feilkode shouldBe kvittering.mmel!!.kodeMelding
-            feilmelding.beskrivelse shouldBe kvittering.mmel.beskrMelding
-        }
         Given("Data fra skatt skal lagres") {
             val trekkpaalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("Trekk_med_to_trekkalternativ.json")).first()
 
@@ -128,12 +63,12 @@ class RepositoryTest :
 
             val kvittering = json.decodeFromString<KvitteringFraOppdrag>(resourceToString("kvittering-feil.json"))
             When("Feil lagres") {
-                DBListener.dataSource.withTransaction { session -> repositoryNy.insertFeilmeldingFraOS(kvittering, session) }
+                DBListener.dataSource.withTransaction { session -> RepositoryNy.insertFeilmeldingFraOS(kvittering, session) }
 
                 Then("Skal trekkid, trekkalternativ, corrid, feilkode og beskrivelse lagres") {
                     val feilmelding =
                         DBListener.dataSource.withTransaction { session ->
-                            repositoryNy.getFeilmeldingerFraOS(
+                            RepositoryNy.getFeilmeldingerFraOS(
                                 kvittering.dokument.transaksjonsId,
                                 session,
                             )
@@ -145,6 +80,7 @@ class RepositoryTest :
         }
 
         Given("To trekk lagres") {
+            DBListener.clearDB()
             val sekvensNummer = getMaxSekvensnummer()
             sekvensNummer shouldBe 0
             val trekkpaalegg =
@@ -159,7 +95,7 @@ class RepositoryTest :
         }
 
         Given("Det finnes eksisterende trekk") {
-
+            DBListener.clearDB()
             doesTrekkExist("1", 1, 1) shouldBe false
             val trekkpalegg =
                 json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
@@ -352,4 +288,70 @@ private fun compareTrekk(trekkpaalegg: Trekkpaalegg, lagret: TrekkFraSkatt) {
 
     // val dbPerioder = dataSource.withTransaction { session -> repository.fetchAllPerioderForTrekk(table, session) }
     // comparePerioder(trekkpaalegg, dbPerioder)
+}
+
+private fun doesTrekkExist(trekkId: String, sekvensnummer: Int, trekkversjon: Int): Boolean =
+    DBListener.dataSource.withTransaction { session ->
+        RepositoryNy.doesTrekkExist(trekkId, sekvensnummer, trekkversjon, session)
+    }
+
+private fun saveTrekkpaalegg(trekkpalegg: Trekkpaalegg): Long? =
+    DBListener.dataSource.withTransaction { session ->
+        RepositoryNy.insertTrekkFraSkatt(trekkpalegg, session)
+    }
+
+private fun getMaxSekvensnummer(): Int =
+    DBListener.dataSource.withTransaction { session ->
+        RepositoryNy.getLastSekvensnummer(session)
+    }
+
+private fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
+    DBListener.dataSource.withTransaction { session ->
+        RepositoryNy.getTrekkFraSkatt(id, session)
+    }
+
+private fun getAllTrekkFraSkatt(): List<TrekkFraSkatt> =
+    DBListener.dataSource.withTransaction { session ->
+        RepositoryNy.getAllTrekkFraSkatt(session)
+    }
+
+private fun getPerioderForTrekk(trekkId: Long): List<Periode> =
+    DBListener.dataSource.withTransaction { session ->
+        RepositoryNy.getPerioderForTrekk(trekkId, session)
+    }
+
+private fun getBetalingsinformasjonForTrekk(trekkId: Long): BetalingsinformasjonFraSkatt? =
+    DBListener.dataSource.withTransaction { session ->
+        RepositoryNy.getBetalingsinformasjonForTrekk(trekkId, session)
+    }
+
+private fun compareBetalingsinformasjon(betalingsinformasjon: Betalingsinformasjon, lagret: BetalingsinformasjonFraSkatt) {
+    lagret.betalingsmottaker shouldBe betalingsinformasjon.betalingsmottaker
+    lagret.kidnummer shouldBe betalingsinformasjon.kidnummer
+    lagret.kontonummer shouldBe betalingsinformasjon.kontonummer
+}
+
+private fun comparePeriode(trekkstorrelseForPeriode: TrekkstorrelseForPeriode, lagret: Periode) {
+    lagret.startdato shouldBe trekkstorrelseForPeriode.startdato
+    lagret.sluttdato shouldBe trekkstorrelseForPeriode.sluttdato
+    lagret.trekkbeloep shouldBe trekkstorrelseForPeriode.trekkbeloep?.trekkbeloep
+    lagret.trekkprosent shouldBe trekkstorrelseForPeriode.trekkprosent?.trekkprosent
+}
+
+private fun comparePerioder(trekkstorrelseForPeriode: List<TrekkstorrelseForPeriode>, lagret: List<Periode>) {
+    lagret.size shouldBe trekkstorrelseForPeriode.size
+    trekkstorrelseForPeriode.forEach { periode ->
+        val lagretPeriode = lagret.find { it.startdato == periode.startdato }
+        lagretPeriode.shouldNotBeNull()
+        comparePeriode(periode, lagretPeriode)
+    }
+}
+
+private fun compareFeilmelding(kvittering: KvitteringFraOppdrag, feilmelding: Feilmelding) {
+    feilmelding.id shouldBe 1L
+    feilmelding.kreditorTrekkId shouldBe kvittering.dokument.innrapporteringTrekk.kreditorTrekkId
+    feilmelding.trekkAlternativ shouldBe kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
+    feilmelding.transaksjonsId shouldBe kvittering.dokument.transaksjonsId
+    feilmelding.feilkode shouldBe kvittering.mmel!!.kodeMelding
+    feilmelding.beskrivelse shouldBe kvittering.mmel.beskrMelding
 }

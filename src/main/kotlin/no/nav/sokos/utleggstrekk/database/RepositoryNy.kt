@@ -10,7 +10,7 @@ import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
-class RepositoryNy {
+object RepositoryNy {
     fun doesTrekkExist(
         trekkId: String,
         sekvensnummer: Int,

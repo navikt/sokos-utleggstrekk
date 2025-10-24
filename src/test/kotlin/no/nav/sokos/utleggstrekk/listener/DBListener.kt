@@ -38,7 +38,7 @@ object DBListener : TestListener {
 
     fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
 
-    override suspend fun afterSpec(spec: Spec) {
+    fun clearDB() {
         dataSource.withTransaction { session ->
             val tables = mutableListOf<String>()
             // Collect all public tables except Flyway history
@@ -50,5 +50,9 @@ object DBListener : TestListener {
                 session.execute(queryOf("TRUNCATE TABLE ${tables.joinToString(", ")} RESTART IDENTITY CASCADE"))
             }
         }
+    }
+
+    override suspend fun afterSpec(spec: Spec) {
+        clearDB()
     }
 }

@@ -73,11 +73,10 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
         }
 
     fun lagreUtleggstrekkNy(trekkListe: List<Trekkpaalegg>) {
-        val repositoryNy = RepositoryNy()
         dataSource.withTransaction { session ->
             trekkListe.forEach { trekk ->
                 // Skal det lagres i vår kule klasse her?
-                repositoryNy.insertTrekkFraSkatt(trekk, session)
+                RepositoryNy.insertTrekkFraSkatt(trekk, session)
             }
         }
     }
