@@ -4,8 +4,10 @@ import kotlin.time.ExperimentalTime
 import kotlinx.serialization.json.Json
 
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
@@ -34,14 +36,29 @@ class RepositoryTest :
                 explicitNulls = false
             }
 
+        fun doesTrekkExist(trekkId: String, sekvensnummer: Int, trekkversjon: Int): Boolean =
+            DBListener.dataSource.withTransaction { session ->
+                repositoryNy.doesTrekkExist(trekkId, sekvensnummer, trekkversjon, session)
+            }
+
         fun saveTrekkpaalegg(trekkpalegg: Trekkpaalegg): Long? =
             DBListener.dataSource.withTransaction { session ->
                 repositoryNy.insertTrekkFraSkatt(trekkpalegg, session)
             }
 
-        fun getUtleggsTrekk(id: Long): TrekkFraSkatt? =
+        fun getMaxSekvensnummer(): Int =
+            DBListener.dataSource.withTransaction { session ->
+                repositoryNy.getLastSekvensnummer(session)
+            }
+
+        fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
             DBListener.dataSource.withTransaction { session ->
                 repositoryNy.getTrekkFraSkatt(id, session)
+            }
+
+        fun getAllTrekkFraSkatt(): List<TrekkFraSkatt> =
+            DBListener.dataSource.withTransaction { session ->
+                repositoryNy.getAllTrekkFraSkatt(session)
             }
 
         fun getPerioderForTrekk(trekkId: Long): List<Periode> =
@@ -92,7 +109,7 @@ class RepositoryTest :
                 id.shouldNotBeNull()
 
                 Then("Skal Trekkpålegg lagres i tabellen 'fraskatt'") {
-                    val lagretTrekk = getUtleggsTrekk(id)
+                    val lagretTrekk = getTrekkFraSkatt(id)
                     lagretTrekk.shouldNotBeNull()
                     compareTrekk(trekkpaalegg, lagretTrekk)
                 }
@@ -125,6 +142,37 @@ class RepositoryTest :
                     compareFeilmelding(kvittering, feilmelding)
                 }
             }
+        }
+
+        Given("To trekk lagres") {
+            val sekvensNummer = getMaxSekvensnummer()
+            sekvensNummer shouldBe 0
+            val trekkpaalegg =
+                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
+            trekkpaalegg.forEach { saveTrekkpaalegg(it) }
+            Then("Skal høyeste sekvensnummer være lik høyeste sekvensnummer i data fra skatt") {
+                val newMaxSekvensNummer = getMaxSekvensnummer()
+
+                newMaxSekvensNummer shouldNotBe 0
+                newMaxSekvensNummer shouldBe trekkpaalegg.maxOf { it.sekvensnummer }
+            }
+        }
+
+        Given("Det finnes eksisterende trekk") {
+
+            doesTrekkExist("1", 1, 1) shouldBe false
+            val trekkpalegg =
+                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
+            trekkpalegg.forEach { saveTrekkpaalegg(it) }
+
+            getMaxSekvensnummer() shouldBe trekkpalegg.maxOf { it.sekvensnummer }
+
+            val allTrekkFraSkatt = getAllTrekkFraSkatt()
+            allTrekkFraSkatt.shouldNotBeEmpty()
+            println(allTrekkFraSkatt)
+            doesTrekkExist("1", 1, 1) shouldBe true
+            doesTrekkExist("2_xx", 2, 1) shouldBe true
+            doesTrekkExist("1", 2, 2) shouldBe false
         }
 
     /*    xcontext("disabled") {

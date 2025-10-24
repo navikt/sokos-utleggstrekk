@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.database
 
-import kotlin.time.ExperimentalTime
-
 import kotliquery.Session
 import kotliquery.queryOf
 
@@ -13,7 +11,30 @@ import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 class RepositoryNy {
-    @OptIn(ExperimentalTime::class)
+    fun doesTrekkExist(
+        trekkId: String,
+        sekvensnummer: Int,
+        trekkversjon: Int,
+        session: Session,
+    ): Boolean =
+        session.single(
+            queryOf(
+                """
+                SELECT 1
+                FROM fraskatt
+                WHERE sekvensnummer = :sekvensnummer
+                  AND trekkid = :trekkId
+                  AND trekkversjon = :trekkversjon
+                
+                """.trimIndent(),
+                mapOf(
+                    "sekvensnummer" to sekvensnummer,
+                    "trekkid" to trekkId,
+                    "trekkversjon" to trekkversjon,
+                ),
+            ),
+        ) { 1 } != null
+
     fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg, session: Session): Long? {
         val fraSkattId =
             session.updateAndReturnGeneratedKey(
@@ -126,6 +147,13 @@ class RepositoryNy {
             ),
         ) { row -> Feilmelding(row) }
 
+    fun getAllTrekkFraSkatt(session: Session): List<TrekkFraSkatt> =
+        session.list(
+            queryOf(
+                """SELECT * FROM fraskatt""".trimIndent(),
+            ),
+        ) { row -> TrekkFraSkatt(row) }
+
     fun getTrekkFraSkatt(id: Long, session: Session): TrekkFraSkatt? =
         session.single(
             queryOf(
@@ -149,4 +177,9 @@ class RepositoryNy {
                 mapOf("id" to id),
             ),
         ) { row -> BetalingsinformasjonFraSkatt(row) }
+
+    fun getLastSekvensnummer(session: Session): Int =
+        session.single(
+            queryOf("""SELECT MAX(sekvensnummer) FROM fraskatt"""),
+        ) { row -> row.intOrNull(1) } ?: 0
 }
