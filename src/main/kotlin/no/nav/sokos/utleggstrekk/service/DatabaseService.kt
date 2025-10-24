@@ -81,17 +81,6 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
         }
     }
 
-    fun lagreUtleggstrekk(trekkListe: List<Trekkpaalegg>) {
-        dataSource.withTransaction { session ->
-            trekkListe
-                .filterNot { repository.doesTrekkExist(it.trekkid, it.sekvensnummer, it.trekkversjon, session) }
-                .let { nyeTrekk ->
-                    logger.info("Det er ${nyeTrekk.size} som skal lagres")
-                    repository.saveAllNewUtleggstrekk(nyeTrekk, session)
-                }
-        }
-    }
-
     fun lagreGenerertePerioder(perioder: List<TrekkPeriodeTable>) {
         dataSource.withTransaction { session ->
             repository.savePerioder(perioder, session)

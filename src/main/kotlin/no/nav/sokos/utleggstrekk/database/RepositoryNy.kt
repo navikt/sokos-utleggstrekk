@@ -6,6 +6,8 @@ import kotliquery.queryOf
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.Periode
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -25,11 +27,10 @@ object RepositoryNy {
                 WHERE sekvensnummer = :sekvensnummer
                   AND trekkid = :trekkId
                   AND trekkversjon = :trekkversjon
-                
                 """.trimIndent(),
                 mapOf(
                     "sekvensnummer" to sekvensnummer,
-                    "trekkid" to trekkId,
+                    "trekkId" to trekkId,
                     "trekkversjon" to trekkversjon,
                 ),
             ),
@@ -40,7 +41,7 @@ object RepositoryNy {
             session.updateAndReturnGeneratedKey(
                 queryOf(
                     """
-                    insert into fraskatt(
+                    INSERT INTO fraskatt(
                     trekkid,
                     sekvensnummer,
                     trekkversjon,
@@ -51,7 +52,7 @@ object RepositoryNy {
                     trekkstatus
                     )
                     
-                    values(:trekkid, :sekvensnummer, :trekkversjon, :opprettet, :saksnummer, :trekkpliktig, :skyldner, :trekkstatus)
+                    VALUES(:trekkid, :sekvensnummer, :trekkversjon, :opprettet, :saksnummer, :trekkpliktig, :skyldner, :trekkstatus)
                     """.trimIndent(),
                     mapOf(
                         "trekkid" to trekkpaalegg.trekkid,
@@ -69,13 +70,13 @@ object RepositoryNy {
             session.update(
                 queryOf(
                     """
-                    insert into periode(
+                    INSERT INTO periode(
                     fraskatt_id,
                     dato_start, 
                     dato_slutt,
                     trekkbelop,
                     trekkprosent)
-                    values(:fraskattID, :startdato, :sluttDato, :trekkBelop, :trekkProsent)     
+                    VALUES(:fraskattID, :startdato, :sluttDato, :trekkBelop, :trekkProsent)     
                     """.trimIndent(),
                     mapOf(
                         "fraskattID" to fraSkattId,
@@ -90,13 +91,13 @@ object RepositoryNy {
         session.update(
             queryOf(
                 """
-                insert into betalingsinformasjonfraskatt(
+                INSERT INTO betalingsinformasjonfraskatt(
                 fraskatt_id,
                 betalingsmottaker,
                 kidnummer,
                 kontonummer
                 )
-                values(:fraskattID, :betalingsmottaker, :kidnummer, :kontonummer)   
+                VALUES(:fraskattID, :betalingsmottaker, :kidnummer, :kontonummer)   
                 """.trimIndent(),
                 mapOf(
                     "fraskattID" to fraSkattId,
@@ -106,7 +107,18 @@ object RepositoryNy {
                 ),
             ),
         )
-
+        session.update(
+            queryOf(
+                """
+                INSERT INTO fraskatt_status(fraskatt_id, status)
+                VALUES(:fraskattID, :status)
+                """.trimIndent(),
+                mapOf(
+                    "fraskattID" to fraSkattId,
+                    "status" to MOTTATT.name,
+                ),
+            ),
+        )
         return fraSkattId
     }
 
@@ -135,6 +147,25 @@ object RepositoryNy {
                     "kodeMelding" to kvittering.mmel?.kodeMelding,
                     "beskrivelse" to kvittering.mmel?.beskrMelding,
                 ),
+            ),
+        )
+    }
+
+    fun fetchTrekkFraSkattMedStatus(status: SkattTrekkStatus, session: Session): List<TrekkFraSkatt> =
+        session.list(
+            queryOf(
+                "SELECT * FROM fraskatt f JOIN fraskatt_status s ON f.id = s.fraskatt_id WHERE s.status=:status ORDER BY f.sekvensnummer ASC",
+                mapOf("status" to status.name),
+            ),
+        ) { row ->
+            TrekkFraSkatt(row)
+        }
+
+    fun setStatus(fraSkatt: TrekkFraSkatt, status: SkattTrekkStatus, session: Session) {
+        session.update(
+            queryOf(
+                "UPDATE fraskatt_status SET status = :status, tidspunkt_satt = NOW() WHERE id = :id",
+                mapOf("id" to fraSkatt.id, "status" to status.name),
             ),
         )
     }
@@ -180,6 +211,6 @@ object RepositoryNy {
 
     fun getLastSekvensnummer(session: Session): Int =
         session.single(
-            queryOf("""SELECT MAX(sekvensnummer) FROM fraskatt"""),
+            queryOf("""SELECT sekvensnummer FROM fraskatt ORDER BY sekvensnummer DESC LIMIT 1"""),
         ) { row -> row.intOrNull(1) } ?: 0
 }

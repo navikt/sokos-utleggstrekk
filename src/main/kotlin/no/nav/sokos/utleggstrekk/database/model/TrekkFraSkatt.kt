@@ -6,6 +6,12 @@ import kotliquery.Row
 
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 
+data class FraSkattStatus(
+    val id: Long,
+    val fraSkattID: Long,
+    val status: SkattTrekkStatus,
+)
+
 data class Varkuleklasse(
     val id: Long,
     val fraSkattID: Long,
