@@ -5,11 +5,15 @@ import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
+import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.Periode
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 object RepositoryNy {
@@ -151,7 +155,85 @@ object RepositoryNy {
         )
     }
 
-    fun fetchTrekkFraSkattMedStatus(status: SkattTrekkStatus, session: Session): List<TrekkFraSkatt> =
+    fun insertTransaksjonTilOs(dto: OSDto, session: Session) {
+        session.update(
+            queryOf(
+                """
+                INSERT INTO 
+                transaksjon_os(
+                    transaksjon_id, 
+                    fraskatt_id, 
+                    aksjonskode,
+                    trekkalternativ,
+                    transaksjon_status, 
+                    kvittering_status 
+                ) 
+                VALUES(
+                    :transaksjonsId, 
+                    :fraskattId, 
+                    :aksjonskode,
+                    :trekkalternativ,
+                    :status, 
+                    :kvitteringStatus 
+                    )
+                """.trimIndent(),
+                mapOf(
+                    "transaksjonsId" to dto.transaksjonsID,
+                    "fraskattId" to dto.fraSkattID,
+                    "aksjonskode" to dto.aksjonskode.name,
+                    "trekkalternativ" to dto.trekkAlternativ.name,
+                    "status" to TransaksjonsStatus.IKKE_SENDT.name,
+                    "kvitteringStatus" to KvitteringStatus.IKKE_MOTTATT.name,
+                ),
+            ),
+        )
+    }
+
+    fun updateTransaksjonsStatus(transaksjonsId: String, transaksjonStatus: TransaksjonsStatus, session: Session) {
+        session.update(
+            queryOf(
+                """
+                UPDATE transaksjon_os 
+                SET transaksjon_status=:status, tidspunkt_siste_status=NOW() 
+                WHERE transaksjon_id=:transaksjonsId
+                """.trimIndent(),
+                mapOf(
+                    "status" to transaksjonStatus.name,
+                    "transaksjonsId" to transaksjonsId,
+                ),
+            ),
+        )
+    }
+
+    fun updateTransaksjonKvitteringStatus(transaksjonId: String, kvitteringStatus: KvitteringStatus, session: Session) {
+        session.update(
+            queryOf(
+                """
+                UPDATE transaksjon_os 
+                SET kvittering_status=:kvitteringStatus 
+                WHERE transaksjon_id=:transaksjonId
+                """.trimIndent(),
+                mapOf(
+                    "kvitteringStatus" to kvitteringStatus.name,
+                    "transaksjonId" to transaksjonId,
+                ),
+            ),
+        )
+    }
+
+    fun getTransaksjonTilOs(transaksjonsId: String, session: Session): TransaksjonOS? =
+        session.single(
+            queryOf(
+                """
+                SELECT * FROM transaksjon_os WHERE transaksjon_id=:transaksjonsId
+                """.trimIndent(),
+                mapOf("transaksjonsId" to transaksjonsId),
+            ),
+        ) { row ->
+            TransaksjonOS(row)
+        }
+
+    fun getTrekkFraSkattMedStatus(status: SkattTrekkStatus, session: Session): List<TrekkFraSkatt> =
         session.list(
             queryOf(
                 "SELECT * FROM fraskatt f JOIN fraskatt_status s ON f.id = s.fraskatt_id WHERE s.status=:status ORDER BY f.sekvensnummer ASC",

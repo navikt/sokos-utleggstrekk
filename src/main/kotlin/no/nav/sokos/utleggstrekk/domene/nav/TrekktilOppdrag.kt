@@ -1,7 +1,10 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
+import java.time.LocalDateTime
+
 import kotlinx.serialization.Serializable
 
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
@@ -9,6 +12,23 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 // De er på samme format
 typealias KvitteringFraOppdrag = TrekkTilOppdrag
+
+data class OSDto(
+    val transaksjonsID: String,
+    val fraSkattID: Long,
+    val aksjonskode: Aksjonskode,
+    val trekkAlternativ: TrekkAlternativ,
+)
+
+data class Varkuleklasse(
+    val id: Long,
+    val fraSkattID: Long,
+    val status: UtleggstrekkStatus,
+    val sendtOs: LocalDateTime,
+    val kvitteringStatus: String,
+    val aksjonskode: Aksjonskode,
+    val belop: Double,
+)
 
 @Serializable
 data class TrekkTilOppdrag(
@@ -74,23 +94,14 @@ enum class Aksjonskode(val value: String) {
     ;
 
     companion object {
-        fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode {
+        fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode =
             if (utleggstrekkTable.trekkstatus == AKTIV && utleggstrekkTable.trekkversjon == 1) {
-                return NY
+                NY
             } else if (utleggstrekkTable.trekkstatus == AVSLUTTET) {
-                return OPPH
+                OPPH
             } else {
-                return ENDR
+                ENDR
             }
-        }
-
-        fun getAksjonskodeFromValue(value: String?): Aksjonskode? {
-            if (value == null) {
-                return value
-            } else {
-                return Aksjonskode.valueOf(value)
-            }
-        }
     }
 }
 
@@ -104,16 +115,15 @@ enum class TrekkAlternativ {
     val suffix = name[3]
 
     companion object {
-        fun getTrekkAlternativ(periode: TrekkstorrelseForPeriode): TrekkAlternativ {
+        fun getTrekkAlternativ(periode: TrekkstorrelseForPeriode): TrekkAlternativ =
             if (periode.trekkbeloep != null && periode.trekkprosent == null) {
-                return LOPM
+                LOPM
             } else if (periode.trekkprosent != null && periode.trekkbeloep == null) {
-                return LOPP
+                LOPP
             } else {
                 throw NotImplementedError(
                     "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode",
                 )
             }
-        }
     }
 }

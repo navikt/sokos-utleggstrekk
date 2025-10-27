@@ -1,0 +1,49 @@
+package no.nav.sokos.utleggstrekk.database.model
+
+import java.time.LocalDateTime
+
+import kotliquery.Row
+
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+
+data class TransaksjonOS(
+    val id: Long,
+    val transaksjonsID: String,
+    val fraSkattID: Long,
+    val transaksjonStatus: TransaksjonsStatus,
+    val kvitteringStatus: KvitteringStatus,
+    val aksjonskode: Aksjonskode,
+    val trekkAlternativ: TrekkAlternativ,
+    // TODO:  val periode: Periode,
+    val tidspunktSendt: LocalDateTime,
+    val tidspunktSisteStatus: LocalDateTime,
+) {
+    constructor(row: Row) : this(
+        id = row.long("id"),
+        transaksjonsID = row.string("transaksjon_id"),
+        fraSkattID = row.long("fraskatt_id"),
+        transaksjonStatus = TransaksjonsStatus.valueOf(row.string("transaksjon_status").uppercase()),
+        kvitteringStatus = KvitteringStatus.valueOf(row.string("kvittering_status").uppercase()),
+        aksjonskode = Aksjonskode.valueOf(row.string("aksjonskode").uppercase()),
+        trekkAlternativ = TrekkAlternativ.valueOf(row.string("trekkalternativ").uppercase()),
+        tidspunktSendt = row.localDateTime("tidspunkt_sendt"),
+        tidspunktSisteStatus = row.localDateTime("tidspunkt_siste_status"),
+    )
+}
+
+enum class KvitteringStatus {
+    IKKE_MOTTATT,
+    OK,
+    FEIL,
+}
+
+enum class TransaksjonsStatus {
+    IKKE_SENDT,
+    SENDT,
+}
+
+enum class KvitteringKoder(val kode: String) {
+    OK("00"),
+    FEIL("04"),
+}

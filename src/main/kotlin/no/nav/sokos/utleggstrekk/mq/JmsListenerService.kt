@@ -12,6 +12,7 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.MQConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.service.DatabaseService
 
@@ -37,7 +38,7 @@ class JmsListenerService(
     private fun onReceipt(message: Message) {
         val jmsMessage = message.getBody(String::class.java)
         try {
-            val receipt = json.decodeFromString<TrekkTilOppdrag>(jmsMessage)
+            val receipt = json.decodeFromString<KvitteringFraOppdrag>(jmsMessage)
             processReceipt(receipt)
             message.acknowledge()
         } catch (exception: Exception) {
@@ -45,7 +46,7 @@ class JmsListenerService(
         }
     }
 
-    private fun processReceipt(receipt: TrekkTilOppdrag) {
+    private fun processReceipt(receipt: KvitteringFraOppdrag) {
         databaseService.oppdaterTrekkMedKvitteringsinfo(receipt)
         if (receipt.mmel!!.alvorlighetsgrad != "00") {
             databaseService.lagreFeilkoderFraOS(receipt)

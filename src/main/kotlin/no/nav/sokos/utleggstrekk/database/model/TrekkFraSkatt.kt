@@ -1,25 +1,11 @@
 package no.nav.sokos.utleggstrekk.database.model
 
-import kotlinx.datetime.LocalDateTime
-
 import kotliquery.Row
-
-import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 
 data class FraSkattStatus(
     val id: Long,
     val fraSkattID: Long,
     val status: SkattTrekkStatus,
-)
-
-data class Varkuleklasse(
-    val id: Long,
-    val fraSkattID: Long,
-    val status: UtleggstrekkStatus,
-    val sendtOs: LocalDateTime,
-    val kvitteringStatus: String,
-    val aksjonskode: Aksjonskode,
-    val belop: Double,
 )
 
 data class TrekkFraSkatt(
@@ -78,4 +64,9 @@ data class BetalingsinformasjonFraSkatt(
         kidnummer = row.string("kidnummer"),
         kontonummer = row.string("kontonummer"),
     )
+}
+
+enum class SkattTrekkStatus {
+    MOTTATT,
+    BEHANDLET,
 }

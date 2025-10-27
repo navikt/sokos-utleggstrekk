@@ -97,11 +97,6 @@ data class UtleggstrekkTable(
 
 fun UtleggstrekkTable.trekkIdWithSuffix(trekkAlternativ: TrekkAlternativ) = "${trekkidSke}${trekkAlternativ.suffix}"
 
-enum class SkattTrekkStatus {
-    MOTTATT,
-    BEHANDLET,
-}
-
 enum class UtleggstrekkStatus(val status: String) {
     MOTTATT("MOTTATT"),
     SENDT("SENDT"),
