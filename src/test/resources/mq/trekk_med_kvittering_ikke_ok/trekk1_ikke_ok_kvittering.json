@@ -8,7 +8,7 @@
     "sectionNavn": "CA15-FEIL-I-FELTER"
   },
   "dokument": {
-    "transaksjonsId": "CorrId01",
+    "transaksjonsId": "TransaksjonsId01",
     "innrapporteringTrekk": {
       "aksjonskode": "NY",
       "kilde": "SOKOS-UTLEGG",

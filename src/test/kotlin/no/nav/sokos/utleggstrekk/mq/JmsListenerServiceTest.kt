@@ -1,36 +1,31 @@
 package no.nav.sokos.utleggstrekk.mq
 
-import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.seconds
 
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.mockk.spyk
-import io.mockk.verify
-import kotliquery.Session
-import kotliquery.queryOf
 import org.apache.activemq.artemis.jms.client.ActiveMQQueue
 
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.RepositoryNy.getAllTransaksjonerTilOs
+import no.nav.sokos.utleggstrekk.database.RepositoryNy.getTransaksjonTilOs
+import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
+import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.MQListener
 import no.nav.sokos.utleggstrekk.listener.MQListener.connectionFactory
-import no.nav.sokos.utleggstrekk.service.DatabaseService
 import no.nav.sokos.utleggstrekk.service.withTransaction
-import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 class JmsListenerServiceTest :
     BehaviorSpec({
-        extensions(listOf(MQListener))
+        extensions(listOf(MQListener, DBListener))
 
-        val testContainer = TestContainer()
-        val dbService = DatabaseService(testContainer.dataSource)
         val replyQueue = ActiveMQQueue("replyQueue")
-        val dbServiceSpy = spyk(dbService)
 
         JmsListenerService(
-            databaseService = dbServiceSpy,
+            DBListener.dataSource,
             osKvitteringQueue = replyQueue,
             connectionFactory,
         )
@@ -43,63 +38,49 @@ class JmsListenerServiceTest :
             )
         }
 
-        val jsonConfig =
-            Json {
-                isLenient = true
-                explicitNulls = false
-                encodeDefaults = true
-            }
+        Given("Vi mottar en kvittering") {
+            DBListener.loadInitScript("mq/trekk_med_kvittering_ok/init_db.sql")
+            val transaksjonerBefore = DBListener.dataSource.withTransaction { session -> getAllTransaksjonerTilOs(session) }
+            transaksjonerBefore.size shouldBe 1
 
-        Given("Vi mottar en OK kvittering") {
-            testContainer.loadInitScript("mq/trekk_med_kvittering_ok/init_db.sql")
-            val trekkBefore = testContainer.dataSource.withTransaction { session -> fetchTrekkWithCorrId(session, "CorrId01") }.first()
-            trekkBefore.status shouldBe UtleggstrekkStatus.MOTTATT
-            trekkBefore.kvitteringLOPM shouldBe null
-            trekkBefore.kvitteringLOPP shouldBe null
-
-            val kvittering = resourceToString("mq/trekk_med_kvittering_ok/trekk1_ok_kvittering.json")
-            jmsProducerTrekk.send(kvittering)
+            val transaksjon = transaksjonerBefore.first()
+            transaksjon.kvitteringStatus shouldBe KvitteringStatus.IKKE_MOTTATT
 
             When("OK Kvittering prosesseres") {
-                verify(timeout = 1000) { dbServiceSpy.oppdaterTrekkMedKvitteringsinfo(jsonConfig.decodeFromString<TrekkTilOppdrag>(kvittering)) }
-                Then("Skal trekk oppdateres med status ${UtleggstrekkStatus.KVITTERING_OK}") {
-                    val trekkAfter = testContainer.dataSource.withTransaction { session -> fetchTrekkWithCorrId(session, "CorrId01") }.first()
-                    trekkAfter.status shouldBe UtleggstrekkStatus.KVITTERING_OK
-                    trekkAfter.kvitteringLOPM shouldBe "B782008I"
-                    trekkAfter.kvitteringLOPP shouldBe null
+                val kvittering = resourceToString("mq/trekk_med_kvittering_ok/trekk1_ok_kvittering.json")
+                jmsProducerTrekk.send(kvittering)
+                Then("Skal trekk oppdateres med status ${KvitteringStatus.OK}") {
+                    eventually {
+                        val trekkAfter = DBListener.dataSource.withTransaction { session -> getTransaksjonTilOs(transaksjon.transaksjonsID, session) }
+                        trekkAfter.shouldNotBeNull()
+                        trekkAfter.kvitteringStatus shouldBe KvitteringStatus.OK
+                    }
                 }
             }
-        }
 
-        Given("Vi mottar en ikke-ok kvittering") {
-            testContainer.loadInitScript("mq/trekk_med_kvittering_ikke_ok/init_db.sql")
-            val trekkBefore = testContainer.dataSource.withTransaction { session -> fetchTrekkWithCorrId(session, "CorrId02") }.first()
+            When("Ikke OK Kvittering prosesseres") {
 
-            trekkBefore.status shouldBe UtleggstrekkStatus.MOTTATT
-            trekkBefore.kvitteringLOPM shouldBe null
-            trekkBefore.kvitteringLOPP shouldBe null
-
-            When("Ikke OK kvittering prosesseres") {
                 val kvittering = resourceToString("mq/trekk_med_kvittering_ikke_ok/trekk1_ikke_ok_kvittering.json")
                 jmsProducerTrekk.send(kvittering)
-                verify(timeout = 1000) { dbServiceSpy.oppdaterTrekkMedKvitteringsinfo(jsonConfig.decodeFromString<TrekkTilOppdrag>(kvittering)) }
 
-                Then("Skal trekk oppdateres med status ${UtleggstrekkStatus.KVITTERING_FEILET}") {
-                    val trekkAfter = testContainer.dataSource.withTransaction { session -> fetchTrekkWithCorrId(session, "CorrId01") }.first()
-                    trekkAfter.status shouldBe UtleggstrekkStatus.KVITTERING_FEILET
-                    trekkAfter.kvitteringLOPM shouldBe "B7XX001F"
-                    trekkAfter.kvitteringLOPP shouldBe null
+                Then("Skal trekk oppdateres med status ${KvitteringStatus.FEIL}") {
+                    eventually(duration = 1.seconds) {
+                        val trekkAfter =
+                            DBListener.dataSource.withTransaction { session ->
+                                getTransaksjonTilOs(transaksjon.transaksjonsID, session)
+                            }
+                        trekkAfter.shouldNotBeNull()
+                        trekkAfter.kvitteringStatus shouldBe KvitteringStatus.FEIL
+                    }
+                }
+                And("Feil skal insertes i database") {
+                    eventually(duration = 1.seconds) {
+                        val feilmelding = DBListener.dataSource.withTransaction { session -> RepositoryNy.getFeilmeldingerFraOS(transaksjon.transaksjonsID, session) }
+                        feilmelding.shouldNotBeNull()
+                        feilmelding.feilkode shouldBe "B7XX001F"
+                        feilmelding.beskrivelse shouldBe "Ugyldig verdi i felt: Trekktype"
+                    }
                 }
             }
         }
     })
-
-fun fetchTrekkWithCorrId(session: Session, corrid: String): List<UtleggstrekkTable> =
-    session.list(
-        queryOf(
-            """select * from utleggstrekk where corr_id = :corrId""",
-            mapOf(
-                "corrId" to corrid,
-            ),
-        ),
-    ) { row -> UtleggstrekkTable(row) }

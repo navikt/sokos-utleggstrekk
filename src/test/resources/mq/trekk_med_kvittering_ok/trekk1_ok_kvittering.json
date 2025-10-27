@@ -7,7 +7,7 @@
     "programId":"K231B782"
   },
   "dokument": {
-    "transaksjonsId": "CorrId01",
+    "transaksjonsId": "TransaksjonsId01",
     "innrapporteringTrekk": {
       "aksjonskode": "NY",
       "kilde": "SOKOS-UTLEGG",

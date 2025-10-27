@@ -233,6 +233,17 @@ object RepositoryNy {
             TransaksjonOS(row)
         }
 
+    fun getAllTransaksjonerTilOs(session: Session): List<TransaksjonOS> =
+        session.list(
+            queryOf(
+                """
+                SELECT * FROM transaksjon_os
+                """.trimIndent(),
+            ),
+        ) { row ->
+            TransaksjonOS(row)
+        }
+
     fun getTrekkFraSkattMedStatus(status: SkattTrekkStatus, session: Session): List<TrekkFraSkatt> =
         session.list(
             queryOf(

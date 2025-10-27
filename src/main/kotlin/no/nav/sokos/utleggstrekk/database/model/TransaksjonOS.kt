@@ -36,14 +36,21 @@ enum class KvitteringStatus {
     IKKE_MOTTATT,
     OK,
     FEIL,
+    UKJENT,
+    ;
+
+    companion object {
+        fun fromValue(value: String?): KvitteringStatus =
+            when (value) {
+                "00" -> OK
+                "04" -> FEIL
+                "08" -> FEIL
+                else -> UKJENT
+            }
+    }
 }
 
 enum class TransaksjonsStatus {
     IKKE_SENDT,
     SENDT,
-}
-
-enum class KvitteringKoder(val kode: String) {
-    OK("00"),
-    FEIL("04"),
 }
