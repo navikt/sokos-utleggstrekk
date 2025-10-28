@@ -50,10 +50,12 @@ class JmsListenerServiceTest :
                 val kvittering = resourceToString("mq/trekk_med_kvittering_ok/trekk1_ok_kvittering.json")
                 jmsProducerTrekk.send(kvittering)
                 Then("Skal trekk oppdateres med status ${KvitteringStatus.OK}") {
-                    eventually {
-                        val trekkAfter = DBListener.dataSource.withTransaction { session -> getTransaksjonTilOs(transaksjon.transaksjonsID, session) }
-                        trekkAfter.shouldNotBeNull()
-                        trekkAfter.kvitteringStatus shouldBe KvitteringStatus.OK
+                    eventually(duration = 1.seconds) {
+                        val transaksjonerAfter = DBListener.dataSource.withTransaction { session -> getTransaksjonTilOs(transaksjon.transaksjonsID, session) }
+                        transaksjonerAfter.shouldNotBeNull()
+                        transaksjonerAfter.kvitteringStatus shouldBe KvitteringStatus.OK
+                        // TODO: trransaksjon må oppdateres med navtrekkid (som vi får fra kvitteringen)
+                        transaksjonerAfter.navTrekkId shouldBe "navTrekkId01"
                     }
                 }
             }

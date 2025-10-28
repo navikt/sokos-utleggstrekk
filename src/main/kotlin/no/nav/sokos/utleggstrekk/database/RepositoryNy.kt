@@ -189,32 +189,43 @@ object RepositoryNy {
         )
     }
 
-    fun updateTransaksjonsStatus(transaksjonsId: String, transaksjonStatus: TransaksjonsStatus, session: Session) {
+    fun updateTransaksjonStatus(transaksjonId: String, transaksjonStatus: TransaksjonsStatus, session: Session) {
         session.update(
             queryOf(
                 """
                 UPDATE transaksjon_os 
-                SET transaksjon_status=:status, tidspunkt_siste_status=NOW() 
+                SET 
+                transaksjon_status=:status,
+                tidspunkt_siste_status=NOW() 
                 WHERE transaksjon_id=:transaksjonsId
                 """.trimIndent(),
                 mapOf(
                     "status" to transaksjonStatus.name,
-                    "transaksjonsId" to transaksjonsId,
+                    "transaksjonsId" to transaksjonId,
                 ),
             ),
         )
     }
 
-    fun updateTransaksjonKvitteringStatus(transaksjonId: String, kvitteringStatus: KvitteringStatus, session: Session) {
+    // TODO: Rename?
+    fun updateTransaksjon(
+        transaksjonId: String,
+        kvitteringStatus: KvitteringStatus,
+        navTrekkId: String,
+        session: Session,
+    ) {
         session.update(
             queryOf(
                 """
                 UPDATE transaksjon_os 
-                SET kvittering_status=:kvitteringStatus 
+                SET 
+                kvittering_status=:kvitteringStatus,
+                nav_trekk_id=:navTrekkId
                 WHERE transaksjon_id=:transaksjonId
                 """.trimIndent(),
                 mapOf(
                     "kvitteringStatus" to kvitteringStatus.name,
+                    "navTrekkId" to navTrekkId,
                     "transaksjonId" to transaksjonId,
                 ),
             ),
@@ -278,10 +289,10 @@ object RepositoryNy {
             ),
         ) { row -> TrekkFraSkatt(row) }
 
-    fun getTrekkFraSkatt(id: Long, session: Session): TrekkFraSkatt? =
+    fun getTrekkFraSkatt(id: String, session: Session): TrekkFraSkatt? =
         session.single(
             queryOf(
-                """SELECT * FROM fraskatt WHERE id=:id""".trimIndent(),
+                """SELECT * FROM fraskatt WHERE trekkid=:id""".trimIndent(),
                 mapOf("id" to id),
             ),
         ) { row -> TrekkFraSkatt(row) }

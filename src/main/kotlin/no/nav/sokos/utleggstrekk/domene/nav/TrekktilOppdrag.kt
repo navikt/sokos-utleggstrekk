@@ -12,6 +12,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 // De er på samme format
 typealias KvitteringFraOppdrag = TrekkTilOppdrag
+typealias DokumentTilOppdrag = TrekkTilOppdrag
 
 data class OSDto(
     val transaksjonsID: String,
@@ -61,7 +62,7 @@ data class Document(
 @Serializable
 data class InnrapporteringTrekk(
     val aksjonskode: Aksjonskode,
-    val navTrekkId: String? = null,
+    val navTrekkId: String? = null, // TODO: spør
     val kreditorIdTss: String,
     val kreditorTrekkId: String,
     val debitorId: String,

@@ -6,8 +6,8 @@ import org.slf4j.MDC
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
+import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 
 private const val EGEN_KILDE = "SOKOS-UTLEGGSTREKK"
 
@@ -19,7 +19,7 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
 
     // TODO: Er map nødvendig?  Navn?  TrekkTilOppdrag er alltid bare 1 eller 2 lang?
     // TODO: TrekkToOppdrag er en json konvolutt for sending til Oppdrag.  Dette burde ha domeneobjekt fokus. Dette er forretningslogikk!
-    fun lagTrekkSomSkalSendes(): Map<UtleggstrekkTable, List<TrekkTilOppdrag>> {
+    fun lagTrekkSomSkalSendes(): Map<UtleggstrekkTable, List<DokumentTilOppdrag>> {
         // Vi må først lagre status knyttet til id i FraSkatt tabell
         val trekkIkkeSendt = databaseService.hentAlleTrekkSomIkkeErSendt() // rename hentAlleTrekkSomIkkeErBehandlet
         return trekkIkkeSendt.associateWith { trekk ->
@@ -30,7 +30,7 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
 
             val perioderSendesOS = utledAlleDuplikateTrekkPerioder(perioderForTrekkversjonMap, allePerioderForTrekkMap)
 
-            val trekkDokumenter =
+            val trekkDokumenter: List<DokumentTilOppdrag> =
                 if (perioderSendesOS.isEmpty()) {
                     allePerioderForTrekkMap.keys.map { key ->
                         trekk.toTrekkDokument(emptyList(), trekkAlternativ = key)

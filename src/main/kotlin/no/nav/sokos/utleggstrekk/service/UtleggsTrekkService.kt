@@ -1,23 +1,25 @@
 package no.nav.sokos.utleggstrekk.service
 
-import kotlinx.serialization.json.Json
-
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
+import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
+import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.PostgresDataSource
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 
 class UtleggsTrekkService(
-    private val databaseService: DatabaseService = DatabaseService(),
-    private val behandleTrekkService: BehandleTrekkService = BehandleTrekkService(databaseService),
+    private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
+    private val behandleTrekkService: BehandleTrekkService = BehandleTrekkService(DatabaseService(dataSource)),
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: JmsProducerService =
         JmsProducerService(
@@ -31,18 +33,12 @@ class UtleggsTrekkService(
 ) {
     private val logger = KotlinLogging.logger { }
 
-    val jsonConfig =
-        Json {
-            explicitNulls = false
-            encodeDefaults = true
-        }
-
     // Eksempel funksjon som kalles i schedulering
     suspend fun run() {
-        val nyeUtleggsTrekk = hentUtleggsTrekk()
+        val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
         // Lagrer i FraSkatt, Periode, Betalingsinformasjon
         // Vi må lagre "noe" (varkuleklasse) som har status MOTTATT eller noe sånt
-        databaseService.lagreUtleggstrekkNy(nyeUtleggsTrekk)
+        processTrekkpaalegg(nyeUtleggsTrekk)
 
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
         logger.info { "Det er ${trekktilSending.size} trekk som skal sendes" }
@@ -50,23 +46,39 @@ class UtleggsTrekkService(
     }
 
     private suspend fun hentUtleggsTrekk(): List<Trekkpaalegg> {
-        val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
+        val sisteSekvensnr = dataSource.withTransaction { session -> RepositoryNy.getLastSekvensnummer(session) }
         return skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
     }
 
-    // TODO: refaktorere
-    // TODO: Felles Jsonobjekt MEN skriv tester først
-    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>) {
-    /*    mqProducer.send(jsonConfig.encodeToString(trekkTilOppdragMap.trekkSomSkalSendes))
-        databaseService.oppdaterTrekkStatus(trekkTilOppdragMap.transaksjonsID, SENDT)*/
+    private fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
+        saveTrekkpalegg(trekkpaalegg)
+    }
 
+    private fun saveTrekkpalegg(trekkpaalegg: List<Trekkpaalegg>) {
+        trekkpaalegg.forEach { trekk ->
+            dataSource.withTransaction { session ->
+                RepositoryNy.insertTrekkFraSkatt(trekk, session)
+            }
+        }
+    }
+
+    private fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<DokumentTilOppdrag>>) {
         trekkTilOppdragMap
             .forEach {
-                val dokumentListe = it.value.map { dokument -> jsonConfig.encodeToString(dokument) }
-                dokumentListe.forEach { dokument ->
-                    mqProducer.send(dokument)
+                sendTrekkTilOS(it.value)
+            }
+    }
+
+    private fun sendTrekkTilOS(trekkMeldinger: List<DokumentTilOppdrag>) {
+        trekkMeldinger
+            .forEach { melding ->
+                runCatching {
+                    mqProducer.send(jsonConfig.encodeToString(melding))
+                }.onSuccess {
+                    dataSource.withTransaction { session ->
+                        RepositoryNy.updateTransaksjonStatus(melding.dokument.transaksjonsId, TransaksjonsStatus.SENDT, session)
+                    }
                 }
-                databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
             }
     }
 }

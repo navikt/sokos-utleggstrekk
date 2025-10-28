@@ -49,7 +49,7 @@ class RepositoryTest :
                 id.shouldNotBeNull()
 
                 Then("Skal Trekkpålegg lagres i tabellen 'fraskatt'") {
-                    val lagretTrekk = getTrekkFraSkatt(id)
+                    val lagretTrekk = getTrekkFraSkatt(trekkpaalegg.trekkid)
                     lagretTrekk.shouldNotBeNull()
                     compareTrekk(trekkpaalegg, lagretTrekk)
                 }
@@ -121,7 +121,7 @@ class RepositoryTest :
 
             When("Transaksjonstatus oppdateres") {
                 DBListener.dataSource.withTransaction { session ->
-                    RepositoryNy.updateTransaksjonsStatus(dto.transaksjonsID, TransaksjonsStatus.SENDT, session)
+                    RepositoryNy.updateTransaksjonStatus(dto.transaksjonsID, TransaksjonsStatus.SENDT, session)
                 }
                 val transaksjonTilOs =
                     DBListener.dataSource.withTransaction { session ->
@@ -137,9 +137,11 @@ class RepositoryTest :
                     transaksjonTilOs.tidspunktSisteStatus.shouldBeIn(now.minusSeconds(10)..now)
                 }
             }
-            When("Kvitteringstatus oppdateres") {
+            When("Transaksjon oppdateres med kvitteringsstatus og navtrekkid") {
+                val nyKvitteringStatus = KvitteringStatus.OK
+                val nyNavTrekkId = "123456789"
                 DBListener.dataSource.withTransaction { session ->
-                    RepositoryNy.updateTransaksjonKvitteringStatus(dto.transaksjonsID, KvitteringStatus.OK, session)
+                    RepositoryNy.updateTransaksjon(dto.transaksjonsID, nyKvitteringStatus, nyNavTrekkId, session)
                 }
                 val transaksjonTilOs =
                     DBListener.dataSource.withTransaction { session ->
@@ -148,11 +150,14 @@ class RepositoryTest :
                 transaksjonTilOs.shouldNotBeNull()
                 Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
 
-                    transaksjonTilOs.kvitteringStatus shouldBe KvitteringStatus.OK
+                    transaksjonTilOs.kvitteringStatus shouldBe nyKvitteringStatus
                 }
                 And("Tidspunktsistestatus skal være nå") {
                     val now = LocalDateTime.now()
                     transaksjonTilOs.tidspunktSisteStatus.shouldBeIn(now.minusSeconds(10)..now)
+                }
+                And("Navtrekkid skal ikke være blank") {
+                    transaksjonTilOs.navTrekkId shouldBe nyNavTrekkId
                 }
             }
         }
@@ -256,7 +261,7 @@ private fun getMaxSekvensnummer(): Int =
         RepositoryNy.getLastSekvensnummer(session)
     }
 
-private fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
+private fun getTrekkFraSkatt(id: String): TrekkFraSkatt? =
     DBListener.dataSource.withTransaction { session ->
         RepositoryNy.getTrekkFraSkatt(id, session)
     }

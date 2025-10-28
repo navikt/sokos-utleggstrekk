@@ -95,8 +95,15 @@ object TestData {
             skyldner,
             AKTIV,
             perioder,
-            Betalingsinformasjon("mr.mottaker", "13812738912427", "6123101233424"),
+            mottaker,
         )
 
-    private val trekkPeriode = listOf(TrekkstorrelseForPeriode("2026-02-02", "2026-04-02", trekkprosent = Trekkprosent(20.0)))
+    private val trekkPeriode =
+        listOf(
+            TrekkstorrelseForPeriode(
+                "2026-02-02",
+                "2026-04-02",
+                trekkprosent = Trekkprosent(20.0),
+            ),
+        )
 }

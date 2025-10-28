@@ -11,10 +11,10 @@ import kotliquery.Row
 
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Document
+import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 @Serializable
@@ -69,8 +69,8 @@ data class UtleggstrekkTable(
         periodeTableList: List<TrekkPeriodeTable>,
         aksjonskode: Aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),
         trekkAlternativ: TrekkAlternativ = periodeTableList[0].trekkAlternativ,
-    ): TrekkTilOppdrag =
-        TrekkTilOppdrag(
+    ): DokumentTilOppdrag =
+        DokumentTilOppdrag(
             Document(
                 transaksjonsId = corrid,
                 InnrapporteringTrekk(
