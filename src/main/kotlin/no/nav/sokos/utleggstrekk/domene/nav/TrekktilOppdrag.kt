@@ -16,6 +16,7 @@ data class OSDto(
     val fraSkattID: String,
     val aksjonskode: Aksjonskode,
     val trekkAlternativ: TrekkAlternativ,
+    val dokumentTilOppdrag: DokumentTilOppdrag,
 )
 
 @Serializable

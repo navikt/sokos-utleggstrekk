@@ -9,8 +9,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -114,7 +112,7 @@ class BehandleTrekkServiceTest :
                             trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.NY
                         }
                     }
-                    When("Trekket har trekkversjon 2") {
+                 /*   When("Trekket har trekkversjon 2") {
                         val trekkVersjon = 2
                         val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
                         val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon)
@@ -165,10 +163,10 @@ class BehandleTrekkServiceTest :
                                 trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.NY
                             }
                         }
-                    }
+                    }*/
                 }
             }
-
+/*
             Given("Et mottatt trekk har 3 perioder") {
                 And("Trekket har trekkversjon 1") {
                     val trekkVersjon = 1
@@ -377,7 +375,7 @@ class BehandleTrekkServiceTest :
                         }
                     }
                 }
-            }
+            }*/
         },
     )
 

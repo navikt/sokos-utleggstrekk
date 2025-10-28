@@ -92,7 +92,7 @@ internal class UtleggsTrekkServiceTest :
                     withClue("Perioder skal lagres") {
                         val perioder =
                             DBListener.dataSource.withTransaction { session ->
-                                RepositoryNy.getPerioderForTrekk(trekkFraSkatt.id, session)
+                                RepositoryNy.getAllePerioderForTrekkId(trekkFraSkatt.id, session)
                             }
                         perioder.size shouldBe 1
                         val periode = perioder.first()

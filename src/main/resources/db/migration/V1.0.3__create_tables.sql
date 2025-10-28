@@ -22,7 +22,7 @@ create table "periode"
     dato_start          text      NOT NULL,
     dato_slutt          text      NULL,
     trekkbelop          decimal   NULL,
-    trekkprosent        text      NULL
+    trekkprosent        decimal      NULL
 );
 
 

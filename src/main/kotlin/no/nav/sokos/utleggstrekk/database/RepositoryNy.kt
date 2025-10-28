@@ -310,11 +310,34 @@ object RepositoryNy {
             ),
         ) { row -> TrekkFraSkatt(row) }
 
-    fun getPerioderForTrekk(id: Long, session: Session): List<Periode> =
+    fun getAllePerioderForTrekkId(fraSkattId: Long, session: Session): List<Periode> =
         session.list(
             queryOf(
-                """SELECT * FROM periode WHERE fraskatt_id=:id""".trimIndent(),
-                mapOf("id" to id),
+                """SELECT * FROM periode WHERE fraskatt_id=:fraSkattId""".trimIndent(),
+                mapOf("fraSkattId" to fraSkattId),
+            ),
+        ) { row -> Periode(row) }
+
+    fun getPerioderForTrekkVersjon(
+        fraSkattId: Long,
+        sekvensnummer: Int,
+        trekkversjon: Int,
+        session: Session,
+    ): List<Periode> =
+        session.list(
+            queryOf(
+                """
+                    SELECT p.* FROM periode p
+                JOIN fraskatt f ON p.fraskatt_id = f.id
+                WHERE f.sekvensnummer = :sekvensnummer
+                 AND f.trekkversjon = :trekkversjon
+                   
+                """.trimIndent(),
+                mapOf(
+                    "sekvensnummer" to sekvensnummer,
+                    "fraSkattId" to fraSkattId,
+                    "trekkversjon" to trekkversjon,
+                ),
             ),
         ) { row -> Periode(row) }
 
@@ -330,4 +353,16 @@ object RepositoryNy {
         session.single(
             queryOf("""SELECT sekvensnummer FROM fraskatt ORDER BY sekvensnummer DESC LIMIT 1"""),
         ) { row -> row.intOrNull(1) } ?: 0
+
+    // TODO: Bruke fraskatt_status? Må også oppdatere hvordan ostransaksjon funker
+    fun getTrekkSomIkkeErSendt(session: Session) =
+        session.list(
+            queryOf(
+                """
+                SELECT f.* FROM fraskatt f
+                LEFT JOIN transaksjon_os t ON t.fraskatt_trekk_id = f.trekkid
+                WHERE t.transaksjon_status IS NULL OR t.transaksjon_status = 'IKKE_SENDT'
+                """.trimIndent(),
+            ),
+        ) { row -> TrekkFraSkatt(row) }
 }

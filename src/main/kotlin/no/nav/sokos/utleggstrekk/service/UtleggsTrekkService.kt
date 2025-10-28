@@ -13,7 +13,6 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -39,13 +38,26 @@ class UtleggsTrekkService(
     // Eksempel funksjon som kalles i schedulering
     suspend fun run() {
         val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
-        // Lagrer i FraSkatt, Periode, Betalingsinformasjon
-        // Vi må lagre "noe" (varkuleklasse) som har status MOTTATT eller noe sånt
+
         processTrekkpaalegg(nyeUtleggsTrekk)
 
         val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
         logger.info { "Det er ${trekktilSending.size} trekk som skal sendes" }
-        sendTrekkTilOS(trekktilSending)
+        trekktilSending.forEach {
+            val trekkMeldinger: List<DokumentTilOppdrag> = it.value
+            val trekkidFraSkatt: String = it.key.trekkidSke
+            trekkMeldinger.forEach { melding ->
+                val dto =
+                    OSDto(
+                        transaksjonsID = UUID.randomUUID().toString(),
+                        fraSkattID = trekkidFraSkatt,
+                        aksjonskode = melding.dokument.innrapporteringTrekk.aksjonskode,
+                        trekkAlternativ = melding.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
+                        melding,
+                    )
+                sendTrekkTilOS(dto)
+            }
+        }
     }
 
     private suspend fun hentUtleggsTrekk(): List<Trekkpaalegg> {
@@ -65,35 +77,18 @@ class UtleggsTrekkService(
         }
     }
 
-    private fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<DokumentTilOppdrag>>) {
-        trekkTilOppdragMap
-            .forEach {
-                sendTrekkTilOS(it.value, it.key.trekkidSke)
+    private fun sendTrekkTilOS(dto: OSDto) {
+        dataSource.withTransaction { session ->
+            RepositoryNy.insertTransaksjonTilOs(dto, session)
+        }
+        runCatching {
+            mqProducer.send(jsonConfig.encodeToString(dto.dokumentTilOppdrag))
+        }.onSuccess {
+            dataSource.withTransaction { session ->
+                RepositoryNy.updateTransaksjonStatus(dto.transaksjonsID, TransaksjonsStatus.SENDT, session)
             }
-    }
-
-    private fun sendTrekkTilOS(trekkMeldinger: List<DokumentTilOppdrag>, trekkidFraSkatt: String) {
-        trekkMeldinger
-            .forEach { melding ->
-                val dto =
-                    OSDto(
-                        transaksjonsID = UUID.randomUUID().toString(),
-                        fraSkattID = trekkidFraSkatt,
-                        aksjonskode = melding.dokument.innrapporteringTrekk.aksjonskode,
-                        trekkAlternativ = melding.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
-                    )
-                dataSource.withTransaction { session ->
-                    RepositoryNy.insertTransaksjonTilOs(dto, session)
-                }
-                runCatching {
-                    mqProducer.send(jsonConfig.encodeToString(melding))
-                }.onSuccess {
-                    dataSource.withTransaction { session ->
-                        RepositoryNy.updateTransaksjonStatus(melding.dokument.transaksjonsId, TransaksjonsStatus.SENDT, session)
-                    }
-                }.onFailure { exception ->
-                    logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
-                }
-            }
+        }.onFailure { exception ->
+            logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
+        }
     }
 }

@@ -1,8 +1,12 @@
 package no.nav.sokos.utleggstrekk.service
 
+import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import org.slf4j.MDC
 
+import no.nav.sokos.utleggstrekk.database.PostgresDataSource
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
@@ -15,8 +19,35 @@ private val LOPENDE_BELOP = TrekkAlternativ.LOPM
 private val LOPENDE_PROSENT = TrekkAlternativ.LOPP
 
 // TODO: Sjekk at vi ikke sender navtrekkid på endringer
-class BehandleTrekkService(private val databaseService: DatabaseService) {
+class BehandleTrekkService(
+    private val databaseService: DatabaseService,
+    private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
+) {
     val logger = KotlinLogging.logger { }
+
+    fun run() {
+        val trekkSomSkalSendes =
+            dataSource.withTransaction { session ->
+                RepositoryNy.getTrekkSomIkkeErSendt(session)
+            }
+        trekkSomSkalSendes.forEach { trekk ->
+            lagTrekk(trekk)
+        }
+
+        //   val allePerioderForTrekkMap = databaseService.hentAllePerioderForTrekkId(trekk).groupBy { it.trekkAlternativ }
+
+        //   val perioderSendesOS = utledAlleDuplikateTrekkPerioder(perioderForTrekkversjonMap, allePerioderForTrekkMap)
+    }
+
+    fun lagTrekk(trekk: TrekkFraSkatt) {
+        val fraSkattId = trekk.id
+        val trekkIdSKE = trekk.trekkid
+
+        val perioderForTrekkversjon =
+            dataSource.withTransaction { session ->
+                RepositoryNy.getPerioderForTrekkVersjon(fraSkattId, trekk.sekvensnummer, trekk.trekkversjon, session)
+            }
+    }
 
     // TODO: Er map nødvendig?  Navn?  TrekkTilOppdrag er alltid bare 1 eller 2 lang?
     // TODO: TrekkToOppdrag er en json konvolutt for sending til Oppdrag.  Dette burde ha domeneobjekt fokus. Dette er forretningslogikk!
@@ -26,8 +57,8 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
         return trekkIkkeSendt.associateWith { trekk ->
             MDC.put("x-correlation-id", trekk.corrid)
 
-            val perioderForTrekkversjonMap = databaseService.hentAllePerioderForTrekkVersjon(trekk).groupBy { it.trekkAlternativ }
             val allePerioderForTrekkMap = databaseService.hentAllePerioderForTrekkId(trekk).groupBy { it.trekkAlternativ }
+            val perioderForTrekkversjonMap = databaseService.hentAllePerioderForTrekkVersjon(trekk).groupBy { it.trekkAlternativ }
 
             val perioderSendesOS = utledAlleDuplikateTrekkPerioder(perioderForTrekkversjonMap, allePerioderForTrekkMap)
 
