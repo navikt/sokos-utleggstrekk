@@ -11,6 +11,7 @@ import org.apache.activemq.artemis.jms.client.ActiveMQQueue
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.RepositoryNy.getAllTransaksjonerTilOs
 import no.nav.sokos.utleggstrekk.database.RepositoryNy.getTransaksjonTilOs
+import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.MQListener
@@ -54,7 +55,6 @@ class JmsListenerServiceTest :
                         val transaksjonerAfter = DBListener.dataSource.withTransaction { session -> getTransaksjonTilOs(transaksjon.transaksjonsID, session) }
                         transaksjonerAfter.shouldNotBeNull()
                         transaksjonerAfter.kvitteringStatus shouldBe KvitteringStatus.OK
-                        // TODO: trransaksjon må oppdateres med navtrekkid (som vi får fra kvitteringen)
                         transaksjonerAfter.navTrekkId shouldBe "navTrekkId01"
                     }
                 }
@@ -73,6 +73,7 @@ class JmsListenerServiceTest :
                             }
                         trekkAfter.shouldNotBeNull()
                         trekkAfter.kvitteringStatus shouldBe KvitteringStatus.FEIL
+                        trekkAfter.navTrekkId shouldBe INGEN_TREKK_ID_I_KVITTERING
                     }
                 }
                 And("Feil skal insertes i database") {

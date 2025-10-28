@@ -5,6 +5,7 @@ import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
+import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.Periode
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
@@ -225,7 +226,7 @@ object RepositoryNy {
                 """.trimIndent(),
                 mapOf(
                     "kvitteringStatus" to kvitteringStatus.name,
-                    "navTrekkId" to navTrekkId,
+                    "navTrekkId" to navTrekkId.ifEmpty { INGEN_TREKK_ID_I_KVITTERING },
                     "transaksjonId" to transaksjonId,
                 ),
             ),

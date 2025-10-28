@@ -78,6 +78,8 @@ class UtleggsTrekkService(
                     dataSource.withTransaction { session ->
                         RepositoryNy.updateTransaksjonStatus(melding.dokument.transaksjonsId, TransaksjonsStatus.SENDT, session)
                     }
+                }.onFailure { exception ->
+                    logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
                 }
             }
     }

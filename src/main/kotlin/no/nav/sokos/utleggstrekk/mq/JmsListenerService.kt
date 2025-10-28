@@ -50,8 +50,13 @@ class JmsListenerService(
     private fun processReceipt(receipt: KvitteringFraOppdrag) {
         val kvitteringStatus = KvitteringStatus.fromValue(receipt.mmel?.alvorlighetsgrad)
         dataSource.withTransaction { session ->
-            println("OPPDATERER TRANSAKSJON ${receipt.dokument.transaksjonsId} med status $kvitteringStatus OG NAVTREKKID ${receipt.dokument.innrapporteringTrekk.navTrekkId}")
-            RepositoryNy.updateTransaksjon(receipt.dokument.transaksjonsId, kvitteringStatus, receipt.dokument.innrapporteringTrekk.navTrekkId ?: "Ingen TrekkId i kvittering", session)
+
+            RepositoryNy.updateTransaksjon(
+                receipt.dokument.transaksjonsId,
+                kvitteringStatus,
+                receipt.dokument.innrapporteringTrekk.navTrekkId,
+                session,
+            )
 
             if (kvitteringStatus == KvitteringStatus.FEIL) {
                 RepositoryNy.insertFeilmeldingFraOS(receipt, session)

@@ -7,6 +7,8 @@ import kotliquery.Row
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 
+const val INGEN_TREKK_ID_I_KVITTERING = "Mottok ingen NavTrekkId i kvittering"
+
 data class TransaksjonOS(
     val id: Long,
     val transaksjonsID: String,
@@ -55,4 +57,5 @@ enum class KvitteringStatus {
 enum class TransaksjonsStatus {
     IKKE_SENDT,
     SENDT,
+    FEIL,
 }
