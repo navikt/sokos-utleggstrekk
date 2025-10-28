@@ -1,6 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
-import com.zaxxer.hikari.HikariDataSource
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -11,11 +11,10 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
@@ -63,9 +62,7 @@ internal class UtleggsTrekkServiceTest :
                 }
 
             val behandleTrekkServiceMock =
-                mockk<BehandleTrekkService>(relaxed = true) {
-                    // every { lagTrekkSomSkalSendes()  } returns mapOf("key" to )
-                }
+                mockk<BehandleTrekkService>(relaxed = true)
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
@@ -77,32 +74,7 @@ internal class UtleggsTrekkServiceTest :
 
             When("Trekk sendes") {
                 utleggsTrekkService.run()
-                val trekkFraSkatt =
-                    DBListener.dataSource.withTransaction { session ->
-                        RepositoryNy.getTrekkFraSkatt(trekkpaalegg.trekkid, session)
-                    }
-                trekkFraSkatt.shouldNotBeNull()
-                Then("Skal trekkpaalegget lagres i databasen") {
 
-                    val perioder =
-                        DBListener.dataSource.withTransaction { session ->
-                            RepositoryNy.getPerioderForTrekk(trekkFraSkatt.id, session)
-                        }
-                    perioder.size shouldBe 1
-                    val periode = perioder.first()
-                    periode.trekkprosent.shouldNotBeNull()
-                    periode.trekkprosent shouldBe trekkPeriode.trekkprosent!!.trekkprosent
-                    periode.trekkbeloep.shouldBeNull()
-                    periode.trekkbeloep shouldBe trekkPeriode.trekkbeloep
-
-                    val betalingsInformasjon =
-                        DBListener.dataSource.withTransaction { session ->
-                            RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session)
-                        }
-
-                    betalingsInformasjon.shouldNotBeNull()
-                    betalingsInformasjon.betalingsmottaker shouldBe mottaker.betalingsmottaker
-                }
                 // TODO: Skal håndtering av serialisering flyttes til JMSProducer?
                 Then("Skal trekk serialiseres riktig") {
                     capturedPayloads.forEach {
@@ -110,23 +82,44 @@ internal class UtleggsTrekkServiceTest :
                         it shouldContain "TRK1"
                     }
                 }
+                Then("Skal trekkpaalegget lagres i databasen") {
+                    val trekkFraSkatt =
+                        DBListener.dataSource.withTransaction { session ->
+                            RepositoryNy.getTrekkFraSkatt(trekkpaalegg.trekkid, session)
+                        }
+                    trekkFraSkatt.shouldNotBeNull()
 
-                Then("Skal transaksjonsstatus oppdateres til SENDT") {
-                 /*   val allTrekk = testContainer.dataSource.getAllTrekk()
-                    allTrekk.size shouldBe 1
-                    allTrekk
-                        .filter { it.status == UtleggstrekkStatus.SENDT }
-                        .size shouldBe 1*/
+                    withClue("Perioder skal lagres") {
+                        val perioder =
+                            DBListener.dataSource.withTransaction { session ->
+                                RepositoryNy.getPerioderForTrekk(trekkFraSkatt.id, session)
+                            }
+                        perioder.size shouldBe 1
+                        val periode = perioder.first()
+                        periode.trekkprosent.shouldNotBeNull()
+                        periode.trekkprosent shouldBe trekkPeriode.trekkprosent!!.trekkprosent
+                        periode.trekkbeloep.shouldBeNull()
+                        periode.trekkbeloep shouldBe trekkPeriode.trekkbeloep
+                    }
+
+                    withClue("Betalingsinformasjon skal lagres") {
+                        val betalingsInformasjon =
+                            DBListener.dataSource.withTransaction { session ->
+                                RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session)
+                            }
+
+                        betalingsInformasjon.shouldNotBeNull()
+                        betalingsInformasjon.betalingsmottaker shouldBe mottaker.betalingsmottaker
+                    }
+                }
+
+                Then("Skal transaksjon oppdateres") {
+                    val transaksjoner =
+                        DBListener.dataSource.withTransaction { session ->
+                            RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkpaalegg.trekkid, session)
+                        }
+                    transaksjoner.forEach { it.transaksjonStatus shouldBe TransaksjonsStatus.SENDT }
                 }
             }
         }
     })
-
-private fun HikariDataSource.getAllTrekk(): List<UtleggstrekkTable> =
-    withTransaction { session ->
-        session.list(
-            queryOf(
-                "SELECT * FROM utleggstrekk",
-            ),
-        ) { row -> UtleggstrekkTable(row) }
-    }

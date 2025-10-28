@@ -163,7 +163,7 @@ object RepositoryNy {
                 INSERT INTO 
                 transaksjon_os(
                     transaksjon_id, 
-                    fraskatt_id, 
+                    fraskatt_trekk_id, 
                     aksjonskode,
                     trekkalternativ,
                     transaksjon_status, 
@@ -240,6 +240,18 @@ object RepositoryNy {
                 SELECT * FROM transaksjon_os WHERE transaksjon_id=:transaksjonsId
                 """.trimIndent(),
                 mapOf("transaksjonsId" to transaksjonsId),
+            ),
+        ) { row ->
+            TransaksjonOS(row)
+        }
+
+    fun getTransaksjonerTilOsForTrekkID(trekkIdFraSkatt: String, session: Session): List<TransaksjonOS> =
+        session.list(
+            queryOf(
+                """
+                SELECT * FROM transaksjon_os WHERE fraskatt_trekk_id=:trekkIdFraSkatt
+                """.trimIndent(),
+                mapOf("trekkIdFraSkatt" to trekkIdFraSkatt),
             ),
         ) { row ->
             TransaksjonOS(row)

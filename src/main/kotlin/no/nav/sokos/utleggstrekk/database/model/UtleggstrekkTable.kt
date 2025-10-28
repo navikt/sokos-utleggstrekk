@@ -81,8 +81,6 @@ data class UtleggstrekkTable(
                     kodeTrekkAlternativ = trekkAlternativ,
                     kid = kid,
                     kreditorsRef = saksnummer,
-                    kilde = "SOKOSUTLEGG",
-                    saldo = 0.0,
                     prioritetFomDato = opprettetSke.toJavaLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
                     perioder =
                         Perioder(

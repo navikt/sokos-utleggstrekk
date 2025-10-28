@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 import kotlinx.serialization.json.Json
 
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.ranges.shouldBeIn
@@ -85,7 +86,7 @@ class RepositoryTest :
             val dto =
                 OSDto(
                     transaksjonsID = "123id",
-                    fraSkattID = 123L,
+                    fraSkattID = "fraskatt",
                     aksjonskode = Aksjonskode.NY,
                     trekkAlternativ = TrekkAlternativ.LOPP,
                 )
@@ -99,6 +100,13 @@ class RepositoryTest :
                     }
                 transaksjonTilOs.shouldNotBeNull()
 
+                DBListener.dataSource.withTransaction { session ->
+                    RepositoryNy
+                        .getTransaksjonerTilOsForTrekkID(dto.fraSkattID, session)
+                        .shouldNotBeEmpty()
+                        .shouldHaveSize(1)
+                        .first() shouldBe transaksjonTilOs
+                }
                 Then("Skal transaksjonstatus skal være TransaksjonsStatus.IKKE_SENDT") {
                     transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.IKKE_SENDT
                 }
@@ -217,18 +225,18 @@ class RepositoryTest :
 
             val trekkMottatt = DBListener.dataSource.withTransaction { session -> RepositoryNy.getTrekkFraSkattMedStatus(MOTTATT, session) }
 
-            trekkMottatt.size shouldBe 2
+            trekkMottatt.shouldHaveSize(2)
             val ettTrekk = trekkMottatt.first()
 
             When("Et trekk endrer status til BEHANDLET") {
                 DBListener.dataSource.withTransaction { session -> RepositoryNy.setStatus(ettTrekk, BEHANDLET, session) }
                 val behandlet = DBListener.dataSource.withTransaction { session -> RepositoryNy.getTrekkFraSkattMedStatus(BEHANDLET, session) }
-                behandlet.size shouldBe 1
+                behandlet.shouldHaveSize(1)
                 behandlet.first().id shouldBe ettTrekk.id
 
                 Then("Dukker det ikke opp blandt MOTTATTE trekk") {
                     val mottatt = DBListener.dataSource.withTransaction { session -> RepositoryNy.getTrekkFraSkattMedStatus(MOTTATT, session) }
-                    mottatt.size shouldBe 1
+                    mottatt.shouldHaveSize(1)
                     mottatt.first().id shouldNotBe ettTrekk.id
                 }
             }

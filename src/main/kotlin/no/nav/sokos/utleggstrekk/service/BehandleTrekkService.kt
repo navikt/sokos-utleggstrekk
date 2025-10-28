@@ -14,6 +14,7 @@ private const val EGEN_KILDE = "SOKOS-UTLEGGSTREKK"
 private val LOPENDE_BELOP = TrekkAlternativ.LOPM
 private val LOPENDE_PROSENT = TrekkAlternativ.LOPP
 
+// TODO: Sjekk at vi ikke sender navtrekkid på endringer
 class BehandleTrekkService(private val databaseService: DatabaseService) {
     val logger = KotlinLogging.logger { }
 
@@ -21,7 +22,7 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
     // TODO: TrekkToOppdrag er en json konvolutt for sending til Oppdrag.  Dette burde ha domeneobjekt fokus. Dette er forretningslogikk!
     fun lagTrekkSomSkalSendes(): Map<UtleggstrekkTable, List<DokumentTilOppdrag>> {
         // Vi må først lagre status knyttet til id i FraSkatt tabell
-        val trekkIkkeSendt = databaseService.hentAlleTrekkSomIkkeErSendt() // rename hentAlleTrekkSomIkkeErBehandlet
+        val trekkIkkeSendt: List<UtleggstrekkTable> = databaseService.hentAlleTrekkSomIkkeErSendt() // rename hentAlleTrekkSomIkkeErBehandlet
         return trekkIkkeSendt.associateWith { trekk ->
             MDC.put("x-correlation-id", trekk.corrid)
 

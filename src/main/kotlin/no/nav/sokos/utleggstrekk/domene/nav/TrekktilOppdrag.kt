@@ -1,10 +1,7 @@
 package no.nav.sokos.utleggstrekk.domene.nav
 
-import java.time.LocalDateTime
-
 import kotlinx.serialization.Serializable
 
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
@@ -16,19 +13,9 @@ typealias DokumentTilOppdrag = TrekkTilOppdrag
 
 data class OSDto(
     val transaksjonsID: String,
-    val fraSkattID: Long,
+    val fraSkattID: String,
     val aksjonskode: Aksjonskode,
     val trekkAlternativ: TrekkAlternativ,
-)
-
-data class Varkuleklasse(
-    val id: Long,
-    val fraSkattID: Long,
-    val status: UtleggstrekkStatus,
-    val sendtOs: LocalDateTime,
-    val kvitteringStatus: String,
-    val aksjonskode: Aksjonskode,
-    val belop: Double,
 )
 
 @Serializable
@@ -59,6 +46,9 @@ data class Document(
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
+const val KODE_TREKKTYPE = "TRK1"
+const val KILDE = "SOKOSUTLEGG"
+
 @Serializable
 data class InnrapporteringTrekk(
     val aksjonskode: Aksjonskode,
@@ -66,11 +56,11 @@ data class InnrapporteringTrekk(
     val kreditorIdTss: String,
     val kreditorTrekkId: String,
     val debitorId: String,
-    val kodeTrekktype: String = "TRK1",
+    val kodeTrekktype: String = KODE_TREKKTYPE,
     val kodeTrekkAlternativ: TrekkAlternativ,
     val kid: String,
     val kreditorsRef: String,
-    val kilde: String = "SOKOSUTLEGG",
+    val kilde: String = KILDE,
     val saldo: Double = 0.0,
     val prioritetFomDato: String,
     val gyldigTomDato: String? = null,

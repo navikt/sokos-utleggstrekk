@@ -12,7 +12,7 @@ const val INGEN_TREKK_ID_I_KVITTERING = "Mottok ingen NavTrekkId i kvittering"
 data class TransaksjonOS(
     val id: Long,
     val transaksjonsID: String,
-    val fraSkattID: Long,
+    val fraSkattID: String,
     val navTrekkId: String,
     val transaksjonStatus: TransaksjonsStatus,
     val kvitteringStatus: KvitteringStatus,
@@ -25,7 +25,7 @@ data class TransaksjonOS(
     constructor(row: Row) : this(
         id = row.long("id"),
         transaksjonsID = row.string("transaksjon_id"),
-        fraSkattID = row.long("fraskatt_id"),
+        fraSkattID = row.string("fraskatt_trekk_id"),
         navTrekkId = row.string("nav_trekk_id"),
         transaksjonStatus = TransaksjonsStatus.valueOf(row.string("transaksjon_status").uppercase()),
         kvitteringStatus = KvitteringStatus.valueOf(row.string("kvittering_status").uppercase()),
@@ -57,5 +57,4 @@ enum class KvitteringStatus {
 enum class TransaksjonsStatus {
     IKKE_SENDT,
     SENDT,
-    FEIL,
 }

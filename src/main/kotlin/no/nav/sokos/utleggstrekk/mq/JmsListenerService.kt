@@ -59,6 +59,7 @@ class JmsListenerService(
             )
 
             if (kvitteringStatus == KvitteringStatus.FEIL) {
+                // TODO: Slackmelding
                 RepositoryNy.insertFeilmeldingFraOS(receipt, session)
                 logError(receipt)
             }

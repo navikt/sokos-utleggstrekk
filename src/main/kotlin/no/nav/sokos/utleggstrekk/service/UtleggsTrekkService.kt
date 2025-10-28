@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.util.UUID
+
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import com.zaxxer.hikari.HikariDataSource
@@ -13,6 +15,7 @@ import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
@@ -65,13 +68,23 @@ class UtleggsTrekkService(
     private fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<DokumentTilOppdrag>>) {
         trekkTilOppdragMap
             .forEach {
-                sendTrekkTilOS(it.value)
+                sendTrekkTilOS(it.value, it.key.trekkidSke)
             }
     }
 
-    private fun sendTrekkTilOS(trekkMeldinger: List<DokumentTilOppdrag>) {
+    private fun sendTrekkTilOS(trekkMeldinger: List<DokumentTilOppdrag>, trekkidFraSkatt: String) {
         trekkMeldinger
             .forEach { melding ->
+                val dto =
+                    OSDto(
+                        transaksjonsID = UUID.randomUUID().toString(),
+                        fraSkattID = trekkidFraSkatt,
+                        aksjonskode = melding.dokument.innrapporteringTrekk.aksjonskode,
+                        trekkAlternativ = melding.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
+                    )
+                dataSource.withTransaction { session ->
+                    RepositoryNy.insertTransaksjonTilOs(dto, session)
+                }
                 runCatching {
                     mqProducer.send(jsonConfig.encodeToString(melding))
                 }.onSuccess {
