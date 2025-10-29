@@ -3,16 +3,9 @@
 package no.nav.sokos.utleggstrekk.util
 
 import java.time.LocalDateTime
-import java.util.UUID
 
 import kotlin.time.ExperimentalTime
-import kotlinx.datetime.toKotlinLocalDateTime
 
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
@@ -21,7 +14,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 object TestData {
-    fun UtleggstrekkTable(
+     /*fun utleggstrekkTable(
         sekvensnummer: Int,
         trekkIdSke: String,
         trekkversjon: Int,
@@ -51,7 +44,7 @@ object TestData {
         tidspunktOpprettet = LocalDateTime.now().toKotlinLocalDateTime(), // TODO: ikke bruke KotlinLocalDateTime her.
     )
 
-    fun UtleggstrekkTable.trekkPeriode(
+   fun UtleggstrekkTable.trekkPeriode(
         sats: Double,
         trekkAlternativ: TrekkAlternativ,
         datoStart: String,
@@ -66,7 +59,7 @@ object TestData {
         sats,
         trekkAlternativ,
         LocalDateTime.now().toKotlinLocalDateTime(), // TODO: ikke bruke KotlinLocalDateTime her.
-    )
+    )*/
 
     fun Trekkpaalegg(
         trekkId: String,

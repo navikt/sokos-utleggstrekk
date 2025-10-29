@@ -2,6 +2,9 @@ package no.nav.sokos.utleggstrekk.database.model
 
 import kotliquery.Row
 
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
+
 data class FraSkattStatus(
     val id: Long,
     val fraSkattID: Long,
@@ -50,7 +53,33 @@ data class Periode(
         trekkbeloep = row.doubleOrNull("trekkbelop"),
         trekkprosent = row.doubleOrNull("trekkprosent"),
     )
+
+    fun satsFor(alternativ: TrekkAlternativ): Double =
+        if (alternativ == TrekkAlternativ.LOPM) {
+            trekkbeloep ?: 0.0
+        } else {
+            trekkprosent ?: 0.0
+        }
+
+    fun kildeFor(alternativ: TrekkAlternativ): String =
+        if (alternativ == LOPM && trekkbeloep != null) {
+            "SKATTEETATEN" // TODO: Make it a constant
+        } else {
+            "SOKOS-UTLEGGSTREKK"
+        }
 }
+
+/**
+ *   "trekkstoerrelseForPeriode": [
+ *     {
+ *       "startdato": "2025-06-01",
+ *       "sluttdato": "2025-08-08",
+ *       "trekkprosent": {
+ *         "trekkprosent": 23.0
+ *       }
+ *     },
+ *
+ */
 
 data class BetalingsinformasjonFraSkatt(
     val id: Long,

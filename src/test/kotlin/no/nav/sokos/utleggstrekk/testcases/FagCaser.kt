@@ -2,10 +2,30 @@ package no.nav.sokos.utleggstrekk.testcases
 
 import io.kotest.core.spec.style.BehaviorSpec
 
+import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.listener.DBListener
+import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
+import no.nav.sokos.utleggstrekk.service.withTransaction
+import no.nav.sokos.utleggstrekk.util.resourceToString
+
 class FagCaser :
     BehaviorSpec({
 
+        extensions(DBListener)
+        val behandleTrekkService =
+            BehandleTrekkServiceNy(
+                dataSource = DBListener.dataSource,
+            )
+
         Given("Nytt trekk (som ikke endres)") {
+            val skalSendes: TrekkFraSkatt = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+            DBListener.dataSource.withTransaction { session ->
+                RepositoryNy.insertTrekkFraSkatt(skalSendes, session)
+            }
+
             When("Periode april 2026 - 24. juli 2026 - 25 prosent") {
                 Then("TRK1 LOPP") {}
                 And("Periode 1.april - 31. juli 2026 ") {}

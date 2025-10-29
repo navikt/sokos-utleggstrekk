@@ -101,7 +101,6 @@ class Repository(private val dataSource: HikariDataSource) {
                 queryOf(
                     """
                     insert into trekkperiode (
-                    sekvensnummer,
                     trekkid_ske,
                     trekkversjon,
                     dato_start, 
@@ -114,7 +113,6 @@ class Repository(private val dataSource: HikariDataSource) {
                 ),
             )
         perioder.forEach { periode ->
-            prepStmt.setInt(1, periode.sekvensnummer)
             prepStmt.setString(2, periode.trekkidSke)
             prepStmt.setInt(3, periode.trekkversjon)
             prepStmt.setString(4, periode.datoStart)

@@ -40,7 +40,11 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
                     perioderSendesOS.map { perioder ->
                         databaseService.lagreGenerertePerioder(perioder.filter { it.kilde == EGEN_KILDE })
 
-                        if (trekk.trekkversjon > 1 && allePerioderForTrekkMap[perioder.first().trekkAlternativ]!!.minBy { it.trekkversjon }.trekkversjon == trekk.trekkversjon) {
+                        if (trekk.trekkversjon > 1 &&
+                            allePerioderForTrekkMap[perioder.first().trekkAlternativ]!!
+                                .minBy { it.trekkversjon }
+                                .trekkversjon == trekk.trekkversjon
+                        ) {
                             logger.info("Oppretter nytt trekk for ${trekk.trekkidSke}/${trekk.trekkversjon}/${perioder[0].trekkAlternativ}")
                             trekk.toTrekkDokument(perioder, Aksjonskode.NY)
                         } else {

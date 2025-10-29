@@ -8,13 +8,16 @@ import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.Periode
+import no.nav.sokos.utleggstrekk.database.model.PeriodeStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 object RepositoryNy {
@@ -343,6 +346,22 @@ object RepositoryNy {
             ),
         ) { row -> Periode(row) }
 
+    fun getTrekkAlternativ(trekkIdSke: String, session: Session): List<TrekkAlternativ> =
+        session.list(
+            queryOf(
+                """SELECT DISTINCT trekkalternativ FROM trekkperiode WHERE trekkid_ske=:trekkIdSke""",
+                mapOf("trekkIdSke" to trekkIdSke),
+            ),
+        ) { row -> TrekkAlternativ.valueOf(row.string("trekkalternativ").uppercase()) }
+
+    fun getPerioderTilOs(trekkIdSke: String, session: Session): List<TrekkPeriodeTable> =
+        session.list(
+            queryOf(
+                """SELECT * FROM trekkperiode WHERE trekkid_ske=:trekkIdSke AND status!='SLETTET'""",
+                mapOf("trekkIdSke" to trekkIdSke),
+            ),
+        ) { row -> TrekkPeriodeTable(row) }
+
     fun getBetalingsinformasjonForTrekk(id: Long, session: Session): BetalingsinformasjonFraSkatt? =
         session.single(
             queryOf(
@@ -367,4 +386,9 @@ object RepositoryNy {
                 """.trimIndent(),
             ),
         ) { row -> TrekkFraSkatt(row) }
+
+    fun updatePeriodeStatus(periode: TrekkPeriodeTable, status: PeriodeStatus, session: kotliquery.TransactionalSession) {
+    }
+
+    fun insertTrekkForOS(nyPeriode: TrekkPeriodeTable, session: Session) {}
 }

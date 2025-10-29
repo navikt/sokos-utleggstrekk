@@ -58,3 +58,9 @@ enum class TransaksjonsStatus {
     IKKE_SENDT,
     SENDT,
 }
+
+enum class PeriodeStatus {
+    IKKE_SENDT,
+    SENDT,
+    SLETTET,
+}
