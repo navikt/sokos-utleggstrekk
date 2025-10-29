@@ -35,6 +35,7 @@ data class TrekkFraSkatt(
 data class Periode(
     val id: Long,
     val fraSkattID: Long,
+    val trekkIdSke: String,
     val startdato: String,
     val sluttdato: String?,
     val trekkbeloep: Double?,
@@ -43,6 +44,7 @@ data class Periode(
     constructor(row: Row) : this(
         id = row.long("id"),
         fraSkattID = row.long("fraskatt_id"),
+        trekkIdSke = row.string("trekk_id_ske"),
         startdato = row.string("dato_start"),
         sluttdato = row.stringOrNull("dato_slutt"),
         trekkbeloep = row.doubleOrNull("trekkbelop"),

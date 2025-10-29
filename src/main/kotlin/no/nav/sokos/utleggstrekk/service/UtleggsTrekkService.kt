@@ -50,7 +50,7 @@ class UtleggsTrekkService(
                 val dto =
                     OSDto(
                         transaksjonsID = UUID.randomUUID().toString(),
-                        fraSkattID = trekkidFraSkatt,
+                        trekkIDSke = trekkidFraSkatt,
                         aksjonskode = melding.dokument.innrapporteringTrekk.aksjonskode,
                         trekkAlternativ = melding.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
                         melding,

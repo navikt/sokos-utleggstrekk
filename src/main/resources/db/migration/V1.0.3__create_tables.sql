@@ -19,6 +19,7 @@ create table "periode"
 (
     id                  bigserial primary key,
     fraskatt_id         bigserial NOT NULL references fraskatt(id),
+    trekk_id_ske        text NOT NULL,
     dato_start          text      NOT NULL,
     dato_slutt          text      NULL,
     trekkbelop          decimal   NULL,

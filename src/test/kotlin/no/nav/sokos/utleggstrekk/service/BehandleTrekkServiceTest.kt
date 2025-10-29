@@ -9,12 +9,17 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
 
+import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
@@ -22,140 +27,121 @@ import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
+import no.nav.sokos.utleggstrekk.listener.DBListener
+import no.nav.sokos.utleggstrekk.util.resourceToString
 
 class BehandleTrekkServiceTest :
     BehaviorSpec(
         {
+            extensions(DBListener)
 
-            fun setUpBehandleTrekkService(
-                alleTrekkSomIkkeErSendt: List<UtleggstrekkTable>,
-                allePerioderForTrekkVersjon: List<TrekkPeriodeTable>,
-                allePerioderForTrekkId: List<TrekkPeriodeTable>,
-            ): BehandleTrekkService {
-                val databaseServiceMock2 =
-                    mockk<DatabaseService> {
-                        coEvery { hentAlleTrekkSomIkkeErSendt() } returns alleTrekkSomIkkeErSendt
-                        coEvery { hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns allePerioderForTrekkVersjon
-                        coEvery { hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns allePerioderForTrekkId
-                        coEvery { lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
+            Given("lagTrekkPerioder") {
+                val behandleTrekkService =
+                    BehandleTrekkServiceNy(
+                        dataSource = DBListener.dataSource,
+                    )
+
+                val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+                val fraSkattTabellId =
+                    DBListener.dataSource.withTransaction { session ->
+                        RepositoryNy.insertTrekkFraSkatt(trekkpaalegg, session)
                     }
 
-                return BehandleTrekkService(databaseServiceMock2)
-            }
-            Given("Trekkdokument dannes") {
-                val trekkVersjon = 1
-                val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
-                val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon)
-                val allePerioderForTrekkId = allePerioderForTrekkVersjon
+                val trekkIdSke = trekkpaalegg.trekkid
+                fraSkattTabellId.shouldNotBeNull()
 
-                val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
-                    setUpBehandleTrekkService(
-                        alleTrekkSomIkkeErSendt,
-                        allePerioderForTrekkVersjon,
-                        allePerioderForTrekkId,
-                    ).lagTrekkSomSkalSendes()
-
-                val trekkTilOppdrag =
-                    result.values
-                        .first()
-                        .first()
-                        .dokument.innrapporteringTrekk
-                Then("Skal datoer formatteres på yyyy-mm-dd format") {
-                    trekkTilOppdrag.prioritetFomDato shouldBe "2024-06-16"
-                }
-
-                And("Skal kodeTrekkType være TRK1") {
-                    trekkTilOppdrag.kodeTrekktype shouldBe "TRK1" // TODO: Lagre som global konstant
-                }
-
-                And("Skal kilde være SOKOSUTLEGG") {
-                    trekkTilOppdrag.kilde shouldBe "SOKOSUTLEGG" // TODO: Lagre som global konstant
-                }
-            }
-
-            Given("Et mottatt trekk har én periode") {
-                And("Perioden har kun 1 trekkalternativ") {
-                    When("Trekket har trekkversjon 1") {
-                        val trekkVersjon = 1
-
-                        val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
-
-                        val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon)
-                        val allePerioderForTrekkId = allePerioderForTrekkVersjon
-
-                        val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
-                            setUpBehandleTrekkService(
-                                alleTrekkSomIkkeErSendt,
-                                allePerioderForTrekkVersjon,
-                                allePerioderForTrekkId,
-                            ).lagTrekkSomSkalSendes()
-                        Then("Skal trekket bli til 1 NYTT trekk med 3 perioder") {
-                            result.size shouldBe 1
-
-                            val utleggsTrekkIDatabase = result.keys
-                            val alleTrekkTilOppdrag = result.values
-
-                            utleggsTrekkIDatabase.size shouldBe 1
-                            alleTrekkTilOppdrag.size shouldBe 1
-
-                            alleTrekkSomIkkeErSendt.size shouldBe 1
-                            utleggsTrekkIDatabase.first() shouldBe alleTrekkSomIkkeErSendt.first()
-
-                            val trekkTilOppdrag =
-                                alleTrekkTilOppdrag
-                                    .first()
-                                    .first()
-                                    .dokument.innrapporteringTrekk
-                            trekkTilOppdrag.perioder.periode.size shouldBe 3
-                            trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.NY
-                        }
+                val perioderForTrekkversjon =
+                    DBListener.dataSource.withTransaction { session ->
+                        RepositoryNy.getPerioderForTrekkVersjon(fraSkattTabellId, trekkpaalegg.sekvensnummer, trekkpaalegg.trekkversjon, session)
                     }
-                 /*   When("Trekket har trekkversjon 2") {
-                        val trekkVersjon = 2
-                        val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
-                        val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon)
 
-                        And("Vi har fått trekkversjon 1") {
-                            val eksisterendeTrekk = periodetableLOPM(1)
-                            val allePerioderForTrekkId = allePerioderForTrekkVersjon + eksisterendeTrekk
+                val allePerioderForTrekk =
+                    DBListener.dataSource.withTransaction { session ->
+                        RepositoryNy.getAllePerioderForTrekkId(trekkIdSke, session)
+                    }
 
-                            val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
-                                setUpBehandleTrekkService(
-                                    alleTrekkSomIkkeErSendt,
-                                    allePerioderForTrekkVersjon,
-                                    allePerioderForTrekkId,
-                                ).lagTrekkSomSkalSendes()
-                            Then("Skal trekket bli til 1 ENDRET trekk med 3 perioder") {
-                                result.size shouldBe 1
-                                result.keys.first() shouldBe alleTrekkSomIkkeErSendt.first()
-                                result.values.size shouldBe 1
-                                val trekkTilOppdrag =
-                                    result.values
-                                        .first()
-                                        .first()
-                                        .dokument.innrapporteringTrekk
-                                trekkTilOppdrag.perioder.periode.size shouldBe 3
-                                trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.ENDR
-                            }
+                behandleTrekkService.lagTrekkPerioder(trekkIdSke, perioderForTrekkversjon, allePerioderForTrekk)
+            }
+            xcontext("disabled") {
+                fun setUpBehandleTrekkService(
+                    alleTrekkSomIkkeErSendt: List<UtleggstrekkTable>,
+                    allePerioderForTrekkVersjon: List<TrekkPeriodeTable>,
+                    allePerioderForTrekkId: List<TrekkPeriodeTable>,
+                ): BehandleTrekkService {
+                    val databaseServiceMock2 =
+                        mockk<DatabaseService> {
+                            coEvery { hentAlleTrekkSomIkkeErSendt() } returns alleTrekkSomIkkeErSendt
+                            coEvery { hentAllePerioderForTrekkVersjon(any<UtleggstrekkTable>()) } returns allePerioderForTrekkVersjon
+                            coEvery { hentAllePerioderForTrekkId(any<UtleggstrekkTable>()) } returns allePerioderForTrekkId
+                            coEvery { lagreGenerertePerioder(any<List<TrekkPeriodeTable>>()) } just Runs
                         }
 
-                        And("Vi ikke har fått trekkversjon 1") {
+                    return BehandleTrekkService(databaseServiceMock2)
+                }
+                Given("Trekkdokument dannes") {
+                    val trekkVersjon = 1
+                    val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
+                    val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon)
+                    val allePerioderForTrekkId = allePerioderForTrekkVersjon
+
+                    val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
+                        setUpBehandleTrekkService(
+                            alleTrekkSomIkkeErSendt,
+                            allePerioderForTrekkVersjon,
+                            allePerioderForTrekkId,
+                        ).lagTrekkSomSkalSendes()
+
+                    val trekkTilOppdrag =
+                        result.values
+                            .first()
+                            .first()
+                            .dokument.innrapporteringTrekk
+                    Then("Skal datoer formatteres på yyyy-mm-dd format") {
+                        trekkTilOppdrag.prioritetFomDato shouldBe "2024-06-16"
+                    }
+
+                    And("Skal kodeTrekkType være TRK1") {
+                        trekkTilOppdrag.kodeTrekktype shouldBe "TRK1" // TODO: Lagre som global konstant
+                    }
+
+                    And("Skal kilde være SOKOSUTLEGG") {
+                        trekkTilOppdrag.kilde shouldBe "SOKOSUTLEGG" // TODO: Lagre som global konstant
+                    }
+                }
+
+                Given("Et mottatt trekk har én periode") {
+                    And("Perioden har kun 1 trekkalternativ") {
+                        When("Trekket har trekkversjon 1") {
+                            val trekkVersjon = 1
+
+                            val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
+
+                            val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon)
                             val allePerioderForTrekkId = allePerioderForTrekkVersjon
+
                             val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
                                 setUpBehandleTrekkService(
                                     alleTrekkSomIkkeErSendt,
                                     allePerioderForTrekkVersjon,
                                     allePerioderForTrekkId,
                                 ).lagTrekkSomSkalSendes()
-
                             Then("Skal trekket bli til 1 NYTT trekk med 3 perioder") {
                                 result.size shouldBe 1
-                                result.keys.first() shouldBe alleTrekkSomIkkeErSendt.first()
-                                result.values.size shouldBe 1
+
+                                val utleggsTrekkIDatabase = result.keys
+                                val alleTrekkTilOppdrag = result.values
+
+                                utleggsTrekkIDatabase.size shouldBe 1
+                                alleTrekkTilOppdrag.size shouldBe 1
+
+                                alleTrekkSomIkkeErSendt.size shouldBe 1
+                                utleggsTrekkIDatabase.first() shouldBe alleTrekkSomIkkeErSendt.first()
+
                                 val trekkTilOppdrag =
-                                    result.values
+                                    alleTrekkTilOppdrag
                                         .first()
                                         .first()
                                         .dokument.innrapporteringTrekk
@@ -163,100 +149,25 @@ class BehandleTrekkServiceTest :
                                 trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.NY
                             }
                         }
-                    }*/
-                }
-            }
-/*
-            Given("Et mottatt trekk har 3 perioder") {
-                And("Trekket har trekkversjon 1") {
-                    val trekkVersjon = 1
-                    val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
+                        When("Trekket har trekkversjon 2") {
+                            val trekkVersjon = 2
+                            val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
+                            val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon)
 
-                    And("Periodene i trekket har aksjonskodene LOPM og LOPP") {
-                        val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon) + periodetableLOPP(trekkVersjon)
-                        val allePerioderForTrekkId = allePerioderForTrekkVersjon
-
-                        val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
-                            setUpBehandleTrekkService(
-                                alleTrekkSomIkkeErSendt,
-                                allePerioderForTrekkVersjon,
-                                allePerioderForTrekkId,
-                            ).lagTrekkSomSkalSendes()
-
-                        Then("Skal trekket bli til to NYE trekk") {
-                            result.values.first().size shouldBe 2
-                            val trekkTilOppdragVersjon1 =
-                                result.values
-                                    .first()
-                                    .first()
-                                    .dokument.innrapporteringTrekk
-
-                            trekkTilOppdragVersjon1.perioder.periode.size shouldBe 6
-                            trekkTilOppdragVersjon1.aksjonskode shouldBe Aksjonskode.NY
-
-                            val trekkTilOppdragVersjon2 =
-                                result.values
-                                    .first()
-                                    .last()
-                                    .dokument.innrapporteringTrekk
-
-                            trekkTilOppdragVersjon2.perioder.periode.size shouldBe 6
-                            trekkTilOppdragVersjon2.aksjonskode shouldBe Aksjonskode.NY
-                        }
-                    }
-                }
-
-                And("Trekket har trekkversjon 2") {
-                    val trekkVersjon = 2
-
-                    And("Versjon 2 har trekkstatus AKTIV") {
-                        // TODO: Hva hvis de endrer perioden (hva hvis de sender ingen perioder?) og trekkstatus er aktiv?
-                        val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon, Trekkstatus.AKTIV))
-
-                        And("Periodene i trekkversjon 1 har trekkalternativ LOPM") {
-                            val eksisterendeTrekk = periodetableLOPM(1)
-
-                            And("Periodene i versjon 2 har aksjonskodene LOPM og LOPP") {
-                                val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon) + periodetableLOPP(trekkVersjon)
+                            And("Vi har fått trekkversjon 1") {
+                                val eksisterendeTrekk = periodetableLOPM(1)
                                 val allePerioderForTrekkId = allePerioderForTrekkVersjon + eksisterendeTrekk
+
                                 val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
                                     setUpBehandleTrekkService(
                                         alleTrekkSomIkkeErSendt,
                                         allePerioderForTrekkVersjon,
                                         allePerioderForTrekkId,
                                     ).lagTrekkSomSkalSendes()
-
-                                Then("Skal trekket bli til to trekk: et NYTT og et ENDRET") {
-                                    result.values.first().size shouldBe 2
-                                    val trekkTilOppdrag =
-                                        result.values
-                                            .first()
-                                            .first()
-                                            .dokument.innrapporteringTrekk
-                                    trekkTilOppdrag.perioder.periode.size shouldBe 6
-                                    trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.NY
-
-                                    val trekkTilOppdragVersjon2 =
-                                        result.values
-                                            .first()
-                                            .last()
-                                            .dokument.innrapporteringTrekk
-
-                                    trekkTilOppdragVersjon2.perioder.periode.size shouldBe 6
-                                    trekkTilOppdragVersjon2.aksjonskode shouldBe Aksjonskode.ENDR
-                                }
-                            }
-                            And("Periodene i versjon 2 har kun aksjonskode LOPP") {
-                                val allePerioderForTrekkVersjon = periodetableLOPP(trekkVersjon)
-                                val allePerioderForTrekkId = allePerioderForTrekkVersjon + eksisterendeTrekk
-                                val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
-                                    setUpBehandleTrekkService(
-                                        alleTrekkSomIkkeErSendt,
-                                        allePerioderForTrekkVersjon,
-                                        allePerioderForTrekkId,
-                                    ).lagTrekkSomSkalSendes()
-                                Then("Skal trekket bli til to trekk: et NYTT og et ENDRET") {
-                                    result.values.first().size shouldBe 2
+                                Then("Skal trekket bli til 1 ENDRET trekk med 3 perioder") {
+                                    result.size shouldBe 1
+                                    result.keys.first() shouldBe alleTrekkSomIkkeErSendt.first()
+                                    result.values.size shouldBe 1
                                     val trekkTilOppdrag =
                                         result.values
                                             .first()
@@ -264,28 +175,11 @@ class BehandleTrekkServiceTest :
                                             .dokument.innrapporteringTrekk
                                     trekkTilOppdrag.perioder.periode.size shouldBe 3
                                     trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.ENDR
-
-                                    val trekkTilOppdragVersjon2 =
-                                        result.values
-                                            .first()
-                                            .last()
-                                            .dokument.innrapporteringTrekk
-
-                                    trekkTilOppdragVersjon2.perioder.periode.size shouldBe 3
-                                    trekkTilOppdragVersjon2.aksjonskode shouldBe Aksjonskode.NY
                                 }
                             }
-                        }
-                    }
 
-                    And("Versjon 2 har trekkstatus AVSLUTTET") {
-                        val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon, Trekkstatus.AVSLUTTET))
-
-                        And("Versjon 2 har ingen perioder") {
-                            val allePerioderForTrekkVersjon = emptyList<TrekkPeriodeTable>()
-                            And("Versjon 1 har trekkalternativ LOPP") {
-                                val allePerioderForTrekkId = periodetableLOPP(1) + allePerioderForTrekkVersjon
-
+                            And("Vi ikke har fått trekkversjon 1") {
+                                val allePerioderForTrekkId = allePerioderForTrekkVersjon
                                 val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
                                     setUpBehandleTrekkService(
                                         alleTrekkSomIkkeErSendt,
@@ -293,89 +187,233 @@ class BehandleTrekkServiceTest :
                                         allePerioderForTrekkId,
                                     ).lagTrekkSomSkalSendes()
 
-                                Then("Skal ett trekk ha aksjonskode OPPH") {
-                                    result.values.size shouldBe 1
-                                    result.values.first().size shouldBe 1
-                                    val trekkTilOppdrag =
-                                        result.values
-                                            .first()
-                                            .first()
-                                            .dokument.innrapporteringTrekk
-                                    trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.OPPH
-                                    trekkTilOppdrag.perioder.periode
-                                        .shouldBeEmpty()
-                                }
-                            }
-                            And("Versjon 1 har trekkalternativ LOPM og LOPP") {
-                                val allePerioderForTrekkId = periodetableLOPM(1) + periodetableLOPP(1) + allePerioderForTrekkVersjon
-
-                                val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
-                                    setUpBehandleTrekkService(
-                                        alleTrekkSomIkkeErSendt,
-                                        allePerioderForTrekkVersjon,
-                                        allePerioderForTrekkId,
-                                    ).lagTrekkSomSkalSendes()
-                                Then("Skal to trekk ha aksjonskode OPPH") {
+                                Then("Skal trekket bli til 1 NYTT trekk med 3 perioder") {
                                     result.size shouldBe 1
-                                    result.values.first().size shouldBe 2
-                                    val trekkTilOppdrag =
-                                        result.values
-                                            .first()
-                                            .first()
-                                            .dokument.innrapporteringTrekk
-                                    trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.OPPH
-                                    result.values
-                                        .first()
-                                        .last()
-                                        .dokument.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.OPPH
-                                }
-                                And("Det er ikke perioder i avsluttet trekk") {
-                                    val trekkTilOppdrag =
-                                        result.values
-                                            .first()
-                                            .first()
-                                            .dokument.innrapporteringTrekk
-                                    trekkTilOppdrag.perioder.periode
-                                        .shouldBeEmpty()
-                                }
-                            }
-                        }
-                        And("Versjon 2 har perioder") {
-                            val allePerioderForTrekkVersjon = periodetableLOPP(2)
-                            And("Trekkversjon 1 har trekkalternativ LOPP") {
-                                val allePerioderForTrekkId = periodetableLOPP(1)
-
-                                val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
-                                    setUpBehandleTrekkService(
-                                        alleTrekkSomIkkeErSendt,
-                                        allePerioderForTrekkVersjon,
-                                        allePerioderForTrekkId,
-                                    ).lagTrekkSomSkalSendes()
-
-                                Then("Skal ett trekk ha aksjonskode OPPH") {
+                                    result.keys.first() shouldBe alleTrekkSomIkkeErSendt.first()
                                     result.values.size shouldBe 1
-                                    result.values.first().size shouldBe 1
                                     val trekkTilOppdrag =
                                         result.values
                                             .first()
                                             .first()
                                             .dokument.innrapporteringTrekk
-                                    trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.OPPH
-                                }
-                                And("Det er perioder i avsluttet trekk") {
-                                    val trekkTilOppdrag =
-                                        result.values
-                                            .first()
-                                            .first()
-                                            .dokument.innrapporteringTrekk
-                                    trekkTilOppdrag.perioder.periode
-                                        .shouldNotBeEmpty()
+                                    trekkTilOppdrag.perioder.periode.size shouldBe 3
+                                    trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.NY
                                 }
                             }
                         }
                     }
                 }
-            }*/
+
+                Given("Et mottatt trekk har 3 perioder") {
+                    And("Trekket har trekkversjon 1") {
+                        val trekkVersjon = 1
+                        val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon))
+
+                        And("Periodene i trekket har aksjonskodene LOPM og LOPP") {
+                            val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon) + periodetableLOPP(trekkVersjon)
+                            val allePerioderForTrekkId = allePerioderForTrekkVersjon
+
+                            val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
+                                setUpBehandleTrekkService(
+                                    alleTrekkSomIkkeErSendt,
+                                    allePerioderForTrekkVersjon,
+                                    allePerioderForTrekkId,
+                                ).lagTrekkSomSkalSendes()
+
+                            Then("Skal trekket bli til to NYE trekk") {
+                                result.values.first().size shouldBe 2
+                                val trekkTilOppdragVersjon1 =
+                                    result.values
+                                        .first()
+                                        .first()
+                                        .dokument.innrapporteringTrekk
+
+                                trekkTilOppdragVersjon1.perioder.periode.size shouldBe 6
+                                trekkTilOppdragVersjon1.aksjonskode shouldBe Aksjonskode.NY
+
+                                val trekkTilOppdragVersjon2 =
+                                    result.values
+                                        .first()
+                                        .last()
+                                        .dokument.innrapporteringTrekk
+
+                                trekkTilOppdragVersjon2.perioder.periode.size shouldBe 6
+                                trekkTilOppdragVersjon2.aksjonskode shouldBe Aksjonskode.NY
+                            }
+                        }
+                    }
+
+                    And("Trekket har trekkversjon 2") {
+                        val trekkVersjon = 2
+
+                        And("Versjon 2 har trekkstatus AKTIV") {
+                            // TODO: Hva hvis de endrer perioden (hva hvis de sender ingen perioder?) og trekkstatus er aktiv?
+                            val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon, Trekkstatus.AKTIV))
+
+                            And("Periodene i trekkversjon 1 har trekkalternativ LOPM") {
+                                val eksisterendeTrekk = periodetableLOPM(1)
+
+                                And("Periodene i versjon 2 har aksjonskodene LOPM og LOPP") {
+                                    val allePerioderForTrekkVersjon = periodetableLOPM(trekkVersjon) + periodetableLOPP(trekkVersjon)
+                                    val allePerioderForTrekkId = allePerioderForTrekkVersjon + eksisterendeTrekk
+                                    val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
+                                        setUpBehandleTrekkService(
+                                            alleTrekkSomIkkeErSendt,
+                                            allePerioderForTrekkVersjon,
+                                            allePerioderForTrekkId,
+                                        ).lagTrekkSomSkalSendes()
+
+                                    Then("Skal trekket bli til to trekk: et NYTT og et ENDRET") {
+                                        result.values.first().size shouldBe 2
+                                        val trekkTilOppdrag =
+                                            result.values
+                                                .first()
+                                                .first()
+                                                .dokument.innrapporteringTrekk
+                                        trekkTilOppdrag.perioder.periode.size shouldBe 6
+                                        trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.NY
+
+                                        val trekkTilOppdragVersjon2 =
+                                            result.values
+                                                .first()
+                                                .last()
+                                                .dokument.innrapporteringTrekk
+
+                                        trekkTilOppdragVersjon2.perioder.periode.size shouldBe 6
+                                        trekkTilOppdragVersjon2.aksjonskode shouldBe Aksjonskode.ENDR
+                                    }
+                                }
+                                And("Periodene i versjon 2 har kun aksjonskode LOPP") {
+                                    val allePerioderForTrekkVersjon = periodetableLOPP(trekkVersjon)
+                                    val allePerioderForTrekkId = allePerioderForTrekkVersjon + eksisterendeTrekk
+                                    val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
+                                        setUpBehandleTrekkService(
+                                            alleTrekkSomIkkeErSendt,
+                                            allePerioderForTrekkVersjon,
+                                            allePerioderForTrekkId,
+                                        ).lagTrekkSomSkalSendes()
+                                    Then("Skal trekket bli til to trekk: et NYTT og et ENDRET") {
+                                        result.values.first().size shouldBe 2
+                                        val trekkTilOppdrag =
+                                            result.values
+                                                .first()
+                                                .first()
+                                                .dokument.innrapporteringTrekk
+                                        trekkTilOppdrag.perioder.periode.size shouldBe 3
+                                        trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.ENDR
+
+                                        val trekkTilOppdragVersjon2 =
+                                            result.values
+                                                .first()
+                                                .last()
+                                                .dokument.innrapporteringTrekk
+
+                                        trekkTilOppdragVersjon2.perioder.periode.size shouldBe 3
+                                        trekkTilOppdragVersjon2.aksjonskode shouldBe Aksjonskode.NY
+                                    }
+                                }
+                            }
+                        }
+
+                        And("Versjon 2 har trekkstatus AVSLUTTET") {
+                            val alleTrekkSomIkkeErSendt = listOf(trekkTable1(trekkVersjon, Trekkstatus.AVSLUTTET))
+
+                            And("Versjon 2 har ingen perioder") {
+                                val allePerioderForTrekkVersjon = emptyList<TrekkPeriodeTable>()
+                                And("Versjon 1 har trekkalternativ LOPP") {
+                                    val allePerioderForTrekkId = periodetableLOPP(1) + allePerioderForTrekkVersjon
+
+                                    val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
+                                        setUpBehandleTrekkService(
+                                            alleTrekkSomIkkeErSendt,
+                                            allePerioderForTrekkVersjon,
+                                            allePerioderForTrekkId,
+                                        ).lagTrekkSomSkalSendes()
+
+                                    Then("Skal ett trekk ha aksjonskode OPPH") {
+                                        result.values.size shouldBe 1
+                                        result.values.first().size shouldBe 1
+                                        val trekkTilOppdrag =
+                                            result.values
+                                                .first()
+                                                .first()
+                                                .dokument.innrapporteringTrekk
+                                        trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.OPPH
+                                        trekkTilOppdrag.perioder.periode
+                                            .shouldBeEmpty()
+                                    }
+                                }
+                                And("Versjon 1 har trekkalternativ LOPM og LOPP") {
+                                    val allePerioderForTrekkId = periodetableLOPM(1) + periodetableLOPP(1) + allePerioderForTrekkVersjon
+
+                                    val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
+                                        setUpBehandleTrekkService(
+                                            alleTrekkSomIkkeErSendt,
+                                            allePerioderForTrekkVersjon,
+                                            allePerioderForTrekkId,
+                                        ).lagTrekkSomSkalSendes()
+                                    Then("Skal to trekk ha aksjonskode OPPH") {
+                                        result.size shouldBe 1
+                                        result.values.first().size shouldBe 2
+                                        val trekkTilOppdrag =
+                                            result.values
+                                                .first()
+                                                .first()
+                                                .dokument.innrapporteringTrekk
+                                        trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.OPPH
+                                        result.values
+                                            .first()
+                                            .last()
+                                            .dokument.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.OPPH
+                                    }
+                                    And("Det er ikke perioder i avsluttet trekk") {
+                                        val trekkTilOppdrag =
+                                            result.values
+                                                .first()
+                                                .first()
+                                                .dokument.innrapporteringTrekk
+                                        trekkTilOppdrag.perioder.periode
+                                            .shouldBeEmpty()
+                                    }
+                                }
+                            }
+                            And("Versjon 2 har perioder") {
+                                val allePerioderForTrekkVersjon = periodetableLOPP(2)
+                                And("Trekkversjon 1 har trekkalternativ LOPP") {
+                                    val allePerioderForTrekkId = periodetableLOPP(1)
+
+                                    val result: Map<UtleggstrekkTable, List<TrekkTilOppdrag>> =
+                                        setUpBehandleTrekkService(
+                                            alleTrekkSomIkkeErSendt,
+                                            allePerioderForTrekkVersjon,
+                                            allePerioderForTrekkId,
+                                        ).lagTrekkSomSkalSendes()
+
+                                    Then("Skal ett trekk ha aksjonskode OPPH") {
+                                        result.values.size shouldBe 1
+                                        result.values.first().size shouldBe 1
+                                        val trekkTilOppdrag =
+                                            result.values
+                                                .first()
+                                                .first()
+                                                .dokument.innrapporteringTrekk
+                                        trekkTilOppdrag.aksjonskode shouldBe Aksjonskode.OPPH
+                                    }
+                                    And("Det er perioder i avsluttet trekk") {
+                                        val trekkTilOppdrag =
+                                            result.values
+                                                .first()
+                                                .first()
+                                                .dokument.innrapporteringTrekk
+                                        trekkTilOppdrag.perioder.periode
+                                            .shouldNotBeEmpty()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
     )
 

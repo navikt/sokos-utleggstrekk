@@ -49,7 +49,7 @@ object RepositoryNy {
                     INSERT INTO fraskatt(
                     trekkid,
                     sekvensnummer,
-                    trekkversjon,
+                    trekkversjon,                                           
                     opprettet,
                     saksnummer,
                     trekkpliktig,
@@ -77,14 +77,16 @@ object RepositoryNy {
                     """
                     INSERT INTO periode(
                     fraskatt_id,
+                    trekk_id_ske,
                     dato_start, 
                     dato_slutt,
                     trekkbelop,
                     trekkprosent)
-                    VALUES(:fraskattID, :startdato, :sluttDato, :trekkBelop, :trekkProsent)     
+                    VALUES(:fraskattID, :trekkIDSke, :startdato, :sluttDato, :trekkBelop, :trekkProsent)     
                     """.trimIndent(),
                     mapOf(
                         "fraskattID" to fraSkattId,
+                        "trekkIDSke" to trekkpaalegg.trekkid,
                         "startdato" to periode.startdato,
                         "sluttDato" to periode.sluttdato,
                         "trekkBelop" to periode.trekkbeloep?.trekkbeloep,
@@ -163,7 +165,7 @@ object RepositoryNy {
                 INSERT INTO 
                 transaksjon_os(
                     transaksjon_id, 
-                    fraskatt_trekk_id, 
+                    trekk_id_ske, 
                     aksjonskode,
                     trekkalternativ,
                     transaksjon_status, 
@@ -171,7 +173,7 @@ object RepositoryNy {
                 ) 
                 VALUES(
                     :transaksjonsId, 
-                    :fraskattId, 
+                    :trekkIdSke, 
                     :aksjonskode,
                     :trekkalternativ,
                     :status, 
@@ -180,7 +182,7 @@ object RepositoryNy {
                 """.trimIndent(),
                 mapOf(
                     "transaksjonsId" to dto.transaksjonsID,
-                    "fraskattId" to dto.fraSkattID,
+                    "trekkIdSke" to dto.trekkIDSke,
                     "aksjonskode" to dto.aksjonskode.name,
                     "trekkalternativ" to dto.trekkAlternativ.name,
                     "status" to TransaksjonsStatus.IKKE_SENDT.name,
@@ -245,13 +247,13 @@ object RepositoryNy {
             TransaksjonOS(row)
         }
 
-    fun getTransaksjonerTilOsForTrekkID(trekkIdFraSkatt: String, session: Session): List<TransaksjonOS> =
+    fun getTransaksjonerTilOsForTrekkID(trekkIdSke: String, session: Session): List<TransaksjonOS> =
         session.list(
             queryOf(
                 """
-                SELECT * FROM transaksjon_os WHERE fraskatt_trekk_id=:trekkIdFraSkatt
+                SELECT * FROM transaksjon_os WHERE trekk_id_ske=:trekkIdSke
                 """.trimIndent(),
-                mapOf("trekkIdFraSkatt" to trekkIdFraSkatt),
+                mapOf("trekkIdSke" to trekkIdSke),
             ),
         ) { row ->
             TransaksjonOS(row)
@@ -310,11 +312,11 @@ object RepositoryNy {
             ),
         ) { row -> TrekkFraSkatt(row) }
 
-    fun getAllePerioderForTrekkId(fraSkattId: Long, session: Session): List<Periode> =
+    fun getAllePerioderForTrekkId(trekkIdSke: String, session: Session): List<Periode> =
         session.list(
             queryOf(
-                """SELECT * FROM periode WHERE fraskatt_id=:fraSkattId""".trimIndent(),
-                mapOf("fraSkattId" to fraSkattId),
+                """SELECT * FROM periode WHERE trekk_id_ske=:trekkIdSke""".trimIndent(),
+                mapOf("trekkIdSke" to trekkIdSke),
             ),
         ) { row -> Periode(row) }
 
@@ -360,7 +362,7 @@ object RepositoryNy {
             queryOf(
                 """
                 SELECT f.* FROM fraskatt f
-                LEFT JOIN transaksjon_os t ON t.fraskatt_trekk_id = f.trekkid
+                LEFT JOIN transaksjon_os t ON t.trekk_id_ske = f.trekkid
                 WHERE t.transaksjon_status IS NULL OR t.transaksjon_status = 'IKKE_SENDT'
                 """.trimIndent(),
             ),

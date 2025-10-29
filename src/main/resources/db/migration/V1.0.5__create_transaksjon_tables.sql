@@ -10,7 +10,7 @@ CREATE TABLE transaksjon_os
 (
     id                     bigserial primary key,
     transaksjon_id         text  NOT NULL,
-    fraskatt_trekk_id      text NOT NULL,
+    trekk_id_ske          text NOT NULL,
     nav_trekk_id           text NOT NULL DEFAULT '',
     transaksjon_status     text NOT NULL,
     kvittering_status      text  NOT NULL,
@@ -20,4 +20,4 @@ CREATE TABLE transaksjon_os
     tidspunkt_siste_status timestamp NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_sendt_til_os_fraskatt_id ON transaksjon_os (id, fraskatt_trekk_id);
+CREATE INDEX idx_sendt_til_os_fraskatt_id ON transaksjon_os (id, trekk_id_ske);

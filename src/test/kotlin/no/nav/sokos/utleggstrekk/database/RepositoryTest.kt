@@ -2,8 +2,9 @@ package no.nav.sokos.utleggstrekk.database
 
 import java.time.LocalDateTime
 
-import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.seconds
 
+import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -13,6 +14,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.mockk
 
+import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
@@ -37,20 +39,13 @@ class RepositoryTest :
     BehaviorSpec({
         extensions(DBListener)
 
-        val json =
-            Json {
-                prettyPrint = true
-                isLenient = true
-                explicitNulls = false
-            }
-
         Given("Vi henter trekk som ikke er sendt") {
-            val skalSendes = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+            val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
             saveTrekkpaalegg(skalSendes)
             val dto =
                 OSDto(
                     transaksjonsID = "SkalSendes",
-                    fraSkattID = skalSendes.trekkid,
+                    trekkIDSke = skalSendes.trekkid,
                     aksjonskode = Aksjonskode.NY,
                     trekkAlternativ = TrekkAlternativ.LOPP,
                     mockk<DokumentTilOppdrag>(), // TODO: Legge inn faktisk dokument og lagre det som string i DB?
@@ -66,7 +61,7 @@ class RepositoryTest :
             val dtoSomErSendt =
                 OSDto(
                     transaksjonsID = "SkalIkkeSendes",
-                    fraSkattID = trekkSomErSendt.trekkid,
+                    trekkIDSke = trekkSomErSendt.trekkid,
                     aksjonskode = Aksjonskode.NY,
                     trekkAlternativ = TrekkAlternativ.LOPP,
                     mockk<DokumentTilOppdrag>(), // TODO: Legge inn faktisk dokument og lagre det som string i DB?
@@ -85,80 +80,98 @@ class RepositoryTest :
         }
 
         Given("Vi henter perioder for trekk med én versjon") {
-            val trekkpaalegg1 = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+            DBListener.clearDB()
+            val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
             val idtrekkpaalegg1 = saveTrekkpaalegg(trekkpaalegg1)
+            val trekkIdSke = trekkpaalegg1.trekkid
 
             idtrekkpaalegg1.shouldNotBeNull()
             val perioder: List<Periode> =
                 DBListener.dataSource.withTransaction { session ->
-                    RepositoryNy.getAllePerioderForTrekkId(idtrekkpaalegg1, session)
+                    RepositoryNy.getAllePerioderForTrekkId(trekkIdSke, session)
                 }
 
             perioder.shouldHaveSize(1)
 
-            val trekkpaalegg2 = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk2_versjon1_to_perioder_belop.json")).first()
+            val trekkpaalegg2 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk2_versjon1_to_perioder_belop.json")).first()
             val idtrekkpaalegg2 = saveTrekkpaalegg(trekkpaalegg2)
-
+            val trekkIdSke2 = trekkpaalegg2.trekkid
             idtrekkpaalegg2.shouldNotBeNull()
 
             val perioder2: List<Periode> =
                 DBListener.dataSource.withTransaction { session ->
-                    RepositoryNy.getAllePerioderForTrekkId(idtrekkpaalegg2, session)
+                    RepositoryNy.getAllePerioderForTrekkId(trekkIdSke2, session)
                 }
-            perioder2.shouldHaveSize(2)
+            perioder2.shouldHaveSize(3)
         }
 
+        // TODO rydd opp :)
         Given("Vi henter perioder for trekk med flere versjoner") {
-            val trekkpaalegg1 = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
-            val idtrekkpaalegg1: Long? = saveTrekkpaalegg(trekkpaalegg1)
+            DBListener.clearDB()
+            val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
 
+            val idtrekkpaalegg1: Long? = saveTrekkpaalegg(trekkpaalegg1)
             idtrekkpaalegg1.shouldNotBeNull()
 
-            val perioder =
-                DBListener.dataSource.withTransaction { session ->
-                    RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1, trekkpaalegg1.sekvensnummer, trekkpaalegg1.trekkversjon, session)
-                }
-
-            perioder.shouldHaveSize(1)
-
-            val trekkpaalegg2 = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_skatt_Trekk1_versjon2_endret_belop.json")).first()
+            val trekkpaalegg2 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_skatt_Trekk1_versjon2_endret_belop.json")).first()
             val idtrekkpaalegg2 = saveTrekkpaalegg(trekkpaalegg2)
             idtrekkpaalegg2.shouldNotBeNull()
 
-            val perioder2 =
-                DBListener.dataSource.withTransaction { session ->
-                    RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2, trekkpaalegg2.sekvensnummer, trekkpaalegg2.trekkversjon, session)
-                }
+            When("getPerioderForTrekkVersjon") {
 
-            perioder2.shouldHaveSize(2)
+                Then("Skal perioder hentes kun for trekk med gitt versjon, sekvensnummer og trekkid") {
+                    val perioderVersjon1 =
+                        DBListener.dataSource.withTransaction { session ->
+                            RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1, trekkpaalegg1.sekvensnummer, trekkpaalegg1.trekkversjon, session)
+                        }
+
+                    perioderVersjon1.shouldHaveSize(1)
+                    val perioderVersjon2 =
+                        DBListener.dataSource.withTransaction { session ->
+                            RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2, trekkpaalegg2.sekvensnummer, trekkpaalegg2.trekkversjon, session)
+                        }
+                    perioderVersjon2.shouldHaveSize(2)
+                }
+            }
+
+            When("getPerioderForTrekkId") {
+                Then("Skal alle perioder for det trekket hentes") {
+                    val perioder = DBListener.dataSource.withTransaction { session -> RepositoryNy.getAllePerioderForTrekkId(trekkpaalegg1.trekkid, session) }
+                    perioder.shouldHaveSize(3)
+                }
+            }
         }
 
         Given("Data fra skatt skal lagres") {
-            val trekkpaalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+            DBListener.clearDB()
+            val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
 
             When("Trekkpålegg lagres") {
                 val id = saveTrekkpaalegg(trekkpaalegg)
                 id.shouldNotBeNull()
 
-                Then("Skal Trekkpålegg lagres i tabellen 'fraskatt'") {
+                eventually(duration = 1.seconds) {
                     val lagretTrekk = getTrekkFraSkatt(trekkpaalegg.trekkid)
                     lagretTrekk.shouldNotBeNull()
-                    compareTrekk(trekkpaalegg, lagretTrekk)
-                }
-                And("TrekkstørrelseForPeriode skal lagres i tabellen 'peride'") {
-                    val lagretPeriode = getPerioderForTrekk(id)
-                    comparePerioder(trekkpaalegg.trekkstoerrelseForPeriode, lagretPeriode)
-                }
-                And("Betalingsinformasjon skal lagres i tabellen 'betalingsinformasjonfraskatt'") {
-                    val lagretBetalingsinformasjon = getBetalingsinformasjonForTrekk(id)
-                    lagretBetalingsinformasjon.shouldNotBeNull()
-                    compareBetalingsinformasjon(trekkpaalegg.betalingsinformasjon, lagretBetalingsinformasjon)
+                    Then("Skal Trekkpålegg lagres i tabellen 'fraskatt'") {
+
+                        compareTrekk(trekkpaalegg, lagretTrekk)
+                    }
+                    And("TrekkstørrelseForPeriode skal lagres i tabellen 'periOde'") {
+                        val lagretPeriode = getPerioderForTrekk(lagretTrekk.trekkid)
+                        comparePerioder(trekkpaalegg.trekkstoerrelseForPeriode, lagretPeriode)
+                    }
+                    And("Betalingsinformasjon skal lagres i tabellen 'betalingsinformasjonfraskatt'") {
+                        val lagretBetalingsinformasjon = getBetalingsinformasjonForTrekk(id)
+                        lagretBetalingsinformasjon.shouldNotBeNull()
+                        compareBetalingsinformasjon(trekkpaalegg.betalingsinformasjon, lagretBetalingsinformasjon)
+                    }
                 }
             }
         }
 
         Given("Feilmelding skal lagres") {
-            val kvittering = json.decodeFromString<KvitteringFraOppdrag>(resourceToString("kvittering-feil.json"))
+            val kvittering = jsonConfig.decodeFromString<KvitteringFraOppdrag>(resourceToString("kvittering-feil.json"))
             DBListener.dataSource.withTransaction { session -> RepositoryNy.insertFeilmeldingFraOS(kvittering, session) }
 
             Then("Skal trekkid, trekkalternativ, corrid, feilkode og beskrivelse lagres") {
@@ -177,7 +190,7 @@ class RepositoryTest :
             val dto =
                 OSDto(
                     transaksjonsID = "123id",
-                    fraSkattID = "fraskatt",
+                    trekkIDSke = "fraskatt",
                     aksjonskode = Aksjonskode.NY,
                     trekkAlternativ = TrekkAlternativ.LOPP,
                     mockk<DokumentTilOppdrag>(), // TODO: Legge inn faktisk dokument og lagre det som string i DB?
@@ -194,7 +207,7 @@ class RepositoryTest :
 
                 DBListener.dataSource.withTransaction { session ->
                     RepositoryNy
-                        .getTransaksjonerTilOsForTrekkID(dto.fraSkattID, session)
+                        .getTransaksjonerTilOsForTrekkID(dto.trekkIDSke, session)
                         .shouldNotBeEmpty()
                         .shouldHaveSize(1)
                         .first() shouldBe transaksjonTilOs
@@ -267,7 +280,7 @@ class RepositoryTest :
             val sekvensNummer = getMaxSekvensnummer()
             sekvensNummer shouldBe 0
             val trekkpaalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
+                jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             trekkpaalegg.forEach { saveTrekkpaalegg(it) }
             Then("Skal høyeste sekvensnummer være lik høyeste sekvensnummer i data fra skatt") {
                 val newMaxSekvensNummer = getMaxSekvensnummer()
@@ -281,7 +294,7 @@ class RepositoryTest :
             DBListener.clearDB()
             doesTrekkExist("1", 1, 1) shouldBe false
             val trekkpalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
+                jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             trekkpalegg.forEach { saveTrekkpaalegg(it) }
 
             getMaxSekvensnummer() shouldBe trekkpalegg.maxOf { it.sekvensnummer }
@@ -295,7 +308,7 @@ class RepositoryTest :
 
         Given("Det kommer inn trekk ut av rekkefølge") {
             DBListener.clearDB()
-            val trekkpaalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("diverse_trekk_ut_av_sekvens.json"))
+            val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("diverse_trekk_ut_av_sekvens.json"))
             trekkpaalegg.forEach { saveTrekkpaalegg(it) }
 
             Then("Kommer i riktig rekkefølge når de hentes fra DB") {
@@ -312,7 +325,7 @@ class RepositoryTest :
             DBListener.clearDB()
             doesTrekkExist("1", 1, 1) shouldBe false
             val trekkpalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
+                jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             trekkpalegg.forEach { saveTrekkpaalegg(it) }
 
             val trekkMottatt = DBListener.dataSource.withTransaction { session -> RepositoryNy.getTrekkFraSkattMedStatus(MOTTATT, session) }
@@ -371,7 +384,7 @@ private fun getAllTrekkFraSkatt(): List<TrekkFraSkatt> =
         RepositoryNy.getAllTrekkFraSkatt(session)
     }
 
-private fun getPerioderForTrekk(trekkId: Long): List<Periode> =
+private fun getPerioderForTrekk(trekkId: String): List<Periode> =
     DBListener.dataSource.withTransaction { session ->
         RepositoryNy.getAllePerioderForTrekkId(trekkId, session)
     }

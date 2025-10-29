@@ -11,9 +11,10 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 typealias KvitteringFraOppdrag = TrekkTilOppdrag
 typealias DokumentTilOppdrag = TrekkTilOppdrag
 
+// TODO: TSS ID
 data class OSDto(
     val transaksjonsID: String,
-    val fraSkattID: String,
+    val trekkIDSke: String,
     val aksjonskode: Aksjonskode,
     val trekkAlternativ: TrekkAlternativ,
     val dokumentTilOppdrag: DokumentTilOppdrag,

@@ -3,7 +3,7 @@
 INSERT INTO
     transaksjon_os(
     transaksjon_id,
-    fraskatt_trekk_id,
+    trekk_id_ske,
     nav_trekk_id,
     aksjonskode,
     trekkalternativ,
