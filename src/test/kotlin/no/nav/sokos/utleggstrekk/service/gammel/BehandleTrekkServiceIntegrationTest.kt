@@ -1,13 +1,11 @@
-
-package no.nav.sokos.utleggstrekk.service
+package no.nav.sokos.utleggstrekk.service.gammel
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.KVITTERING_OK
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
+import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -15,10 +13,11 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
+import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
+import no.nav.sokos.utleggstrekk.service.DatabaseService
+import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.TestData
-
-// TODO: Spør Endre om det er viktig å slette trekk dersom ett trekk ikke lenger har to trekktyper.
 
 class BehandleTrekkServiceIntegrationTest :
     BehaviorSpec({
@@ -40,7 +39,7 @@ class BehandleTrekkServiceIntegrationTest :
                 storedInDb(trekk)
                 return dataSource.withTransaction { session ->
                     val utleggstrekk = repository.fetchTrekkNotSendt(session).find { it.sekvensnummer == trekk.sekvensnummer }
-                    repository.updateNavTrekkStatus(utleggstrekk!!.corrid, SENDT, session)
+                    repository.updateNavTrekkStatus(utleggstrekk!!.corrid, UtleggstrekkStatus.SENDT, session)
                     utleggstrekk
                 }
             }
@@ -48,7 +47,14 @@ class BehandleTrekkServiceIntegrationTest :
             fun storedInDbAndSentOk(trekk: Trekkpaalegg, trekkAlternativ: TrekkAlternativ): UtleggstrekkTable {
                 val utleggstrekk = storedInDbAndSent(trekk)
                 dataSource.withTransaction { session ->
-                    repository.updateKvitteringStatus(utleggstrekk.corrid, KVITTERING_OK, navTrekkId = "00123456", kvittering = "00", trekkalternativ = trekkAlternativ, session = session)
+                    repository.updateKvitteringStatus(
+                        utleggstrekk.corrid,
+                        UtleggstrekkStatus.KVITTERING_OK,
+                        navTrekkId = "00123456",
+                        kvittering = "00",
+                        trekkalternativ = trekkAlternativ,
+                        session = session,
+                    )
                 }
                 return utleggstrekk
             }

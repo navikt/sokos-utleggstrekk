@@ -4,13 +4,17 @@ import io.kotest.core.spec.style.BehaviorSpec
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
-import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
 import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
+/*
+*  HVIS trekk har status avsluttet:
+* Vi sender OPPH til OS
+* OG vi skal sende  datogyldigtom = dagens dato minus 1
+* */
 class FagCaser :
     BehaviorSpec({
 
@@ -21,10 +25,11 @@ class FagCaser :
             )
 
         Given("Nytt trekk (som ikke endres)") {
-            val skalSendes: TrekkFraSkatt = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
-            DBListener.dataSource.withTransaction { session ->
-                RepositoryNy.insertTrekkFraSkatt(skalSendes, session)
-            }
+            val skalSendes: Trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+            val idForTrekk =
+                DBListener.dataSource.withTransaction { session ->
+                    RepositoryNy.insertTrekkFraSkatt(skalSendes, session)
+                }
 
             When("Periode april 2026 - 24. juli 2026 - 25 prosent") {
                 Then("TRK1 LOPP") {}

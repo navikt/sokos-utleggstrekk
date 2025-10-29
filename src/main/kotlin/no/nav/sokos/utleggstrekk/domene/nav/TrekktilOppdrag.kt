@@ -57,6 +57,7 @@ data class InnrapporteringTrekk(
     val navTrekkId: String = "",
     val kreditorIdTss: String,
     val kreditorTrekkId: String,
+    // val gyldigTomDato: String = LocalDate().minusDays(1).toString(),
     val debitorId: String,
     val kodeTrekktype: String = KODE_TREKKTYPE,
     val kodeTrekkAlternativ: TrekkAlternativ,

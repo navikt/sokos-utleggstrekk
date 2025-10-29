@@ -1,4 +1,4 @@
-package no.nav.sokos.utleggstrekk.service
+package no.nav.sokos.utleggstrekk.service.gammel
 
 import kotlinx.serialization.json.Json
 
@@ -13,6 +13,9 @@ import no.nav.sokos.utleggstrekk.database.model.trekkIdWithSuffix
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
+import no.nav.sokos.utleggstrekk.service.DatabaseService
+import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.TestContainer
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
