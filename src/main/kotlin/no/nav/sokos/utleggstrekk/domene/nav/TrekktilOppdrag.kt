@@ -101,9 +101,9 @@ enum class Aksjonskode(val value: String) {
 
 // Aksjonskoder er NY, ENDR (endring), KANS (kanseller), OPPH (opphør), ENRS (endring restsaldo).
 @Serializable
-enum class TrekkAlternativ {
-    LOPM, //   Løpende trekk månedssats
-    LOPP, //   Løpende trekk prosentsats
+enum class TrekkAlternativ(val value: String) {
+    LOPM("M"), //   Løpende trekk månedssats
+    LOPP("P"), //   Løpende trekk prosentsats
     ;
 
     val suffix = name[3]

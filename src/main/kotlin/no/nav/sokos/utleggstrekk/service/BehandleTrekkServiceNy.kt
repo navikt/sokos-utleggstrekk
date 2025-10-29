@@ -4,24 +4,40 @@ import com.zaxxer.hikari.HikariDataSource
 
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
-import no.nav.sokos.utleggstrekk.database.model.Periode
+import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeStatus.IKKE_SENDT
 import no.nav.sokos.utleggstrekk.database.model.PeriodeStatus.SLETTET
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.sameAs
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.ENDR
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.NY
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.OPPH
+import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
+import no.nav.sokos.utleggstrekk.domene.nav.Periode
+import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
+import no.nav.sokos.utleggstrekk.utils.TSSId
 
 data class MeldingTilOppdrag(
     val transaksjonsID: String,
-    val trekkSomSkalSendes: TrekkTilOppdrag,
+    val dokument: DokumentTilOppdrag,
 )
+
+const val KODE_TREKKTYPE = "TRK1"
+const val KILDE = "SOKOSUTLEGG"
 
 class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = PostgresDataSource.dataSource) {
     // Ting er allerede lagret i databasen når vi kommer hit
+
     fun run() {
         val trekkSomSkalSendes =
             dataSource.withTransaction { session ->
@@ -35,6 +51,7 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
     fun lagTrekk(trekk: TrekkFraSkatt) {
         val fraSkattTabellId = trekk.id
 
+        // For å lage dokument trenger vi perioder som hører til denne trekkversjonen
         val perioderForTrekkversjon =
             dataSource.withTransaction { session ->
                 RepositoryNy.getPerioderForTrekkVersjon(fraSkattTabellId, trekk.sekvensnummer, trekk.trekkversjon, session)
@@ -44,15 +61,13 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
             lagTrekkPerioderIDB(trekk, perioderForTrekkversjon)
         }
 
-        lagTrekkDokument() // TODO
+        // Vi trenger så å utlede trekkalternativer for disse periodene
+        val perioderInformasjon = utledTrekkAlternativForPeriode(perioderForTrekkversjon)
+
+        lagTrekkDokument(trekk, perioderInformasjon) // TODO
     }
 
-    data class PeriodeInformasjon(
-        val periode: Periode,
-        val trekkalternativ: TrekkAlternativ,
-    )
-
-    fun lagTrekkPerioderIDB(trekkFraSkatt: TrekkFraSkatt, perioderForTrekkversjon: List<Periode>) {
+    fun lagTrekkPerioderIDB(trekkFraSkatt: TrekkFraSkatt, perioderForTrekkversjon: List<PeriodeFraSkatt>) {
         dataSource.withTransaction { session ->
             // if trekkversjon = 1
             // lag dokument, return
@@ -108,12 +123,10 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
         }
     }
 
-    private fun lagPeriodeInformasjon(periode: Periode): PeriodeInformasjon = PeriodeInformasjon(periode, getTrekkAlternativ(periode))
-
-    fun getTrekkAlternativ(periode: Periode): TrekkAlternativ =
-        if (periode.trekkbeloep != null && periode.trekkprosent == null) {
+    private fun getTrekkAlternativ(periodeFraSkatt: PeriodeFraSkatt): TrekkAlternativ =
+        if (periodeFraSkatt.trekkbeloep != null && periodeFraSkatt.trekkprosent == null) {
             LOPM
-        } else if (periode.trekkprosent != null && periode.trekkbeloep == null) {
+        } else if (periodeFraSkatt.trekkprosent != null && periodeFraSkatt.trekkbeloep == null) {
             LOPP
         } else {
             throw NotImplementedError(
@@ -121,9 +134,75 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
             )
         }
 
-    fun lagTrekkDokument() {
+    data class PeriodeInformasjon(
+        val trekkidSke: String,
+        val periodeFraSkatt: PeriodeFraSkatt,
+        val trekkalternativ: TrekkAlternativ,
+    )
+
+    fun utledTrekkAlternativForPeriode(perioder: List<PeriodeFraSkatt>): List<PeriodeInformasjon> =
+        perioder.map { periode ->
+            val trekkalternativ = getTrekkAlternativ(periode)
+            PeriodeInformasjon(periode.trekkIdSke, periode, trekkalternativ)
+        }
+
+    fun lagTrekkDokument(trekkFraSkatt: TrekkFraSkatt, perioderInformasjon: List<PeriodeInformasjon>) {
         // Må finne: TSSID, Aksjonskode, Trekkalternativ, Perioder
-        // Bør dette lagres i DB? Hvordan? Hvor? Lage tabell som som er 1:1 med det vi sender til OS?
-        // Men det bør være lett for oss å debugge når vi får saker fra folk
+        // kreditorTrekkId skal ha M eller P på slutten
+
+        // Må hente betalingsinformasjonen til trekket for å finne tssid og kid
+
+        val trekkalternativ = perioderInformasjon.first().trekkalternativ
+
+        val betalingsinformasjon: BetalingsinformasjonFraSkatt? = dataSource.withTransaction { session -> RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session) }
+
+        if (betalingsinformasjon == null) {
+            throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
+        }
+        val perioder =
+            Perioder(
+                perioderInformasjon.map {
+                    val sats: Double =
+                        when (it.trekkalternativ) {
+                            LOPM -> it.periodeFraSkatt.trekkbeloep ?: error("trekkbeloep is null for LOPM")
+                            LOPP -> it.periodeFraSkatt.trekkprosent ?: error("trekkprosent is null for LOPP")
+                        }
+                    Periode(
+                        periodeFomDato = it.periodeFraSkatt.startdato,
+                        periodeTomDato = it.periodeFraSkatt.sluttdato ?: "9999-12-31",
+                        sats,
+                    )
+                },
+            )
+
+        val aksjonskode = getAksjonskodeForTrekk(trekkFraSkatt)
+        val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
+        val tssId = TSSId.getTssId(betalingsinformasjon.betalingsmottaker, betalingsinformasjon.kontonummer)
+        val innrapporteringTrekk =
+            InnrapporteringTrekk(
+                aksjonskode = aksjonskode,
+                kreditorIdTss = tssId,
+                kreditorTrekkId = nyTrekkId,
+                debitorId = trekkFraSkatt.skyldner,
+                kodeTrekkAlternativ = trekkalternativ,
+                kid = betalingsinformasjon.kidnummer,
+                kreditorsRef = trekkFraSkatt.saksnummer,
+                prioritetFomDato = trekkFraSkatt.opprettet,
+                perioder = perioder,
+            )
     }
+
+    fun getAksjonskodeForTrekk(trekkFraSkatt: TrekkFraSkatt): Aksjonskode =
+        when (Trekkstatus.valueOf(trekkFraSkatt.trekkstatus)) {
+            AKTIV -> {
+                if (trekkFraSkatt.trekkversjon == 1) {
+                    NY
+                } else {
+                    ENDR
+                }
+            }
+            AVSLUTTET -> {
+                OPPH
+            }
+        }
 }

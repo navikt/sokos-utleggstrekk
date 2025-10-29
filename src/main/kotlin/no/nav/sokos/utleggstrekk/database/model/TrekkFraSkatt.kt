@@ -35,7 +35,7 @@ data class TrekkFraSkatt(
     )
 }
 
-data class Periode(
+data class PeriodeFraSkatt(
     val id: Long,
     val fraSkattID: Long,
     val trekkIdSke: String,

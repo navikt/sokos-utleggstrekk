@@ -18,7 +18,7 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
-import no.nav.sokos.utleggstrekk.database.model.Periode
+import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.BEHANDLET
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
@@ -86,7 +86,7 @@ class RepositoryTest :
             val trekkIdSke = trekkpaalegg1.trekkid
 
             idtrekkpaalegg1.shouldNotBeNull()
-            val perioder: List<Periode> =
+            val perioder: List<PeriodeFraSkatt> =
                 DBListener.dataSource.withTransaction { session ->
                     RepositoryNy.getAllePerioderForTrekkId(trekkIdSke, session)
                 }
@@ -98,7 +98,7 @@ class RepositoryTest :
             val trekkIdSke2 = trekkpaalegg2.trekkid
             idtrekkpaalegg2.shouldNotBeNull()
 
-            val perioder2: List<Periode> =
+            val perioder2: List<PeriodeFraSkatt> =
                 DBListener.dataSource.withTransaction { session ->
                     RepositoryNy.getAllePerioderForTrekkId(trekkIdSke2, session)
                 }
@@ -384,7 +384,7 @@ private fun getAllTrekkFraSkatt(): List<TrekkFraSkatt> =
         RepositoryNy.getAllTrekkFraSkatt(session)
     }
 
-private fun getPerioderForTrekk(trekkId: String): List<Periode> =
+private fun getPerioderForTrekk(trekkId: String): List<PeriodeFraSkatt> =
     DBListener.dataSource.withTransaction { session ->
         RepositoryNy.getAllePerioderForTrekkId(trekkId, session)
     }
@@ -400,14 +400,14 @@ private fun compareBetalingsinformasjon(betalingsinformasjon: Betalingsinformasj
     lagret.kontonummer shouldBe betalingsinformasjon.kontonummer
 }
 
-private fun comparePeriode(trekkstorrelseForPeriode: TrekkstorrelseForPeriode, lagret: Periode) {
+private fun comparePeriode(trekkstorrelseForPeriode: TrekkstorrelseForPeriode, lagret: PeriodeFraSkatt) {
     lagret.startdato shouldBe trekkstorrelseForPeriode.startdato
     lagret.sluttdato shouldBe trekkstorrelseForPeriode.sluttdato
     lagret.trekkbeloep shouldBe trekkstorrelseForPeriode.trekkbeloep?.trekkbeloep
     lagret.trekkprosent shouldBe trekkstorrelseForPeriode.trekkprosent?.trekkprosent
 }
 
-private fun comparePerioder(trekkstorrelseForPeriode: List<TrekkstorrelseForPeriode>, lagret: List<Periode>) {
+private fun comparePerioder(trekkstorrelseForPeriode: List<TrekkstorrelseForPeriode>, lagret: List<PeriodeFraSkatt>) {
     lagret.size shouldBe trekkstorrelseForPeriode.size
     trekkstorrelseForPeriode.forEach { periode ->
         val lagretPeriode = lagret.find { it.startdato == periode.startdato }

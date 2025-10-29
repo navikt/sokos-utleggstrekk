@@ -33,9 +33,7 @@ class BehandleTrekkService(private val databaseService: DatabaseService) {
 
             val trekkDokumenter: List<DokumentTilOppdrag> =
                 if (perioderSendesOS.isEmpty()) {
-                    allePerioderForTrekkMap.keys.map { key ->
-                        trekk.toTrekkDokument(emptyList(), trekkAlternativ = key)
-                    }
+                    allePerioderForTrekkMap.keys.map { key -> trekk.toTrekkDokument(emptyList(), trekkAlternativ = key) }
                 } else {
                     perioderSendesOS.map { perioder ->
                         databaseService.lagreGenerertePerioder(perioder.filter { it.kilde == EGEN_KILDE })

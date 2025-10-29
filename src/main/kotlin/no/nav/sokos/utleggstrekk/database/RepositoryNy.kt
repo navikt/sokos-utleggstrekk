@@ -7,7 +7,7 @@ import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
-import no.nav.sokos.utleggstrekk.database.model.Periode
+import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
@@ -315,20 +315,20 @@ object RepositoryNy {
             ),
         ) { row -> TrekkFraSkatt(row) }
 
-    fun getAllePerioderForTrekkId(trekkIdSke: String, session: Session): List<Periode> =
+    fun getAllePerioderForTrekkId(trekkIdSke: String, session: Session): List<PeriodeFraSkatt> =
         session.list(
             queryOf(
                 """SELECT * FROM periode WHERE trekk_id_ske=:trekkIdSke""".trimIndent(),
                 mapOf("trekkIdSke" to trekkIdSke),
             ),
-        ) { row -> Periode(row) }
+        ) { row -> PeriodeFraSkatt(row) }
 
     fun getPerioderForTrekkVersjon(
         fraSkattId: Long,
         sekvensnummer: Int,
         trekkversjon: Int,
         session: Session,
-    ): List<Periode> =
+    ): List<PeriodeFraSkatt> =
         session.list(
             queryOf(
                 """
@@ -344,7 +344,7 @@ object RepositoryNy {
                     "trekkversjon" to trekkversjon,
                 ),
             ),
-        ) { row -> Periode(row) }
+        ) { row -> PeriodeFraSkatt(row) }
 
     fun getTrekkAlternativ(trekkIdSke: String, session: Session): List<TrekkAlternativ> =
         session.list(

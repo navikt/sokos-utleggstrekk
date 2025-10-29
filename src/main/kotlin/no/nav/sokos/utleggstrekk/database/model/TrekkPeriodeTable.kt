@@ -56,7 +56,7 @@ data class TrekkPeriodeTable(
     }
 }
 
-fun Periode.sameAs(other: TrekkPeriodeTable): Boolean =
+fun PeriodeFraSkatt.sameAs(other: TrekkPeriodeTable): Boolean =
     this.startdato == other.datoStart &&
         this.sluttdato == other.datoSlutt &&
         when (other.trekkAlternativ) {
