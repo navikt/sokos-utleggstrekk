@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 import com.zaxxer.hikari.HikariDataSource
@@ -8,11 +10,7 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
-import no.nav.sokos.utleggstrekk.database.model.PeriodeStatus.IKKE_SENDT
-import no.nav.sokos.utleggstrekk.database.model.PeriodeStatus.SLETTET
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
-import no.nav.sokos.utleggstrekk.database.model.sameAs
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.ENDR
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.NY
@@ -68,9 +66,9 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
         // For å lage dokument trenger vi perioder som hører til denne trekkversjonen
         val perioderForTrekkversjon = perioderForTrekkVersjon(trekk)
 
-        if (trekk.trekkversjon != 1) {
+     /*   if (trekk.trekkversjon != 1) {
             lagTrekkPerioderIDB(trekk, perioderForTrekkversjon)
-        }
+        }*/
 
         val perioderInformasjon = utledTrekkAlternativForPeriode(perioderForTrekkversjon)
 
@@ -89,7 +87,7 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
             PeriodeInformasjon(periode.trekkIdSke, periode, trekkalternativ)
         }
 
-    fun lagTrekkPerioderIDB(trekkFraSkatt: TrekkFraSkatt, perioderForTrekkversjon: List<PeriodeFraSkatt>) {
+/*    fun lagTrekkPerioderIDB(trekkFraSkatt: TrekkFraSkatt, perioderForTrekkversjon: List<PeriodeFraSkatt>) {
         dataSource.withTransaction { session ->
             // if trekkversjon = 1
             // lag dokument, return
@@ -145,19 +143,21 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
                 }
             }
         }
-    }
+    }*/
 
     private fun getTrekkAlternativ(periodeFraSkatt: PeriodeFraSkatt): TrekkAlternativ =
-        if (periodeFraSkatt.trekkbeloep != null && periodeFraSkatt.trekkprosent == null) {
-            LOPM
-        } else if (periodeFraSkatt.trekkprosent != null && periodeFraSkatt.trekkbeloep == null) {
-            LOPP
-        } else {
-            throw NotImplementedError(
-                "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode",
-            )
-        }.also {
-            println("getTrekkAlternativ: $it")
+        when {
+            periodeFraSkatt.trekkbeloep != null && periodeFraSkatt.trekkprosent == null -> {
+                LOPM
+            }
+            periodeFraSkatt.trekkprosent != null && periodeFraSkatt.trekkbeloep == null -> {
+                LOPP
+            }
+            else -> {
+                throw NotImplementedError(
+                    "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode",
+                )
+            }
         }
 
     fun lagTrekkDokument(trekkFraSkatt: TrekkFraSkatt, perioderInformasjon: List<PeriodeInformasjon>): Document {
@@ -185,11 +185,20 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
                 },
             )
 
+        val transaksjonsID = UUID.randomUUID().toString()
+        val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().minusDays(1).toString() else null
         val aksjonskode = getAksjonskodeForTrekk(trekkFraSkatt)
         val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
-        val kilde = "SKATTEETATEN"
+
         val tssId = "kreditorIdTss"
-        val gyldigTomDato = "En dato"
+
+        val prioritetfomdato =
+            Instant
+                .parse(trekkFraSkatt.opprettet)
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate()
+                .toString()
+
         //  val tssId = TSSId.getTssId(betalingsinformasjon.betalingsmottaker, betalingsinformasjon.kontonummer)
         val innrapporteringTrekk =
             InnrapporteringTrekk(
@@ -198,16 +207,16 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
                 kreditorTrekkId = nyTrekkId,
                 kodeTrekkAlternativ = trekkalternativ,
                 kodeTrekktype = KODE_TREKKTYPE,
-                kilde = kilde,
+                kilde = KILDE,
                 gyldigTomDato = gyldigTomDato,
                 perioder = perioder,
                 debitorId = trekkFraSkatt.skyldner,
                 kid = betalingsinformasjon.kidnummer,
                 kreditorsRef = trekkFraSkatt.saksnummer,
-                prioritetFomDato = trekkFraSkatt.opprettet,
+                prioritetFomDato = prioritetfomdato,
             )
 
-        return DokumentTilOppdrag("transaksjonsid", innrapporteringTrekk)
+        return DokumentTilOppdrag(transaksjonsID, innrapporteringTrekk)
     }
 
     fun getAksjonskodeForTrekk(trekkFraSkatt: TrekkFraSkatt): Aksjonskode =
@@ -221,7 +230,6 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
                 }
             }
             AVSLUTTET -> {
-                // Må sette gyldigTom til dagensdato -1 og sende ENDR
                 ENDR
             }
         }
