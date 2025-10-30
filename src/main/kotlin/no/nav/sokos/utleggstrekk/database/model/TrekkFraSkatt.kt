@@ -4,6 +4,7 @@ import kotliquery.Row
 
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 
 const val SOKOS_KILDE = "SOKOS-UTLEGGSTREKK"
 const val SKATT_KILDE = "SKATTEETATEN"
@@ -58,7 +59,7 @@ data class PeriodeFraSkatt(
     )
 
     fun satsFor(alternativ: TrekkAlternativ): Double =
-        if (alternativ == TrekkAlternativ.LOPM) {
+        if (alternativ == LOPM) {
             trekkbeloep ?: 0.0
         } else {
             trekkprosent ?: 0.0
@@ -73,9 +74,15 @@ data class PeriodeFraSkatt(
 
     fun trekkAlternativ(): TrekkAlternativ =
         when {
-            trekkbeloep == null -> TrekkAlternativ.LOPP
-            else -> TrekkAlternativ.LOPM
+            trekkprosent != null -> LOPP
+            trekkbeloep != null -> LOPM
+            else -> throw IllegalArgumentException("Periode uten beløp eller prosent")
         }
+
+    fun sameAs(periodeTilOS: PeriodeTilOS): Boolean =
+        startdato == periodeTilOS.fom &&
+            sluttdato == periodeTilOS.tom &&
+            satsFor(trekkAlternativ()) == periodeTilOS.sats
 }
 
 data class BetalingsinformasjonFraSkatt(

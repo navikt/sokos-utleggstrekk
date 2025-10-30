@@ -289,7 +289,7 @@ class RepositoryTest :
             val allTrekkFraSkatt = getAllTrekkFraSkatt()
             allTrekkFraSkatt.shouldNotBeEmpty()
             doesTrekkExist("1", 1) shouldBe true
-            doesTrekkExist("2_xx", 2) shouldBe true
+            doesTrekkExist("2_xx", 1) shouldBe true
             doesTrekkExist("1", 2) shouldBe false
         }
 

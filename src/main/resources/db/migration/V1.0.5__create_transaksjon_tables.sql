@@ -1,7 +1,5 @@
 DROP TABLE IF EXISTS transaksjon_os;
 
-
-
 CREATE TABLE transaksjon_os
 (
     id                     bigserial primary key,
@@ -37,9 +35,3 @@ CREATE TABLE periode_til_os
 );
 
 CREATE INDEX idx_sendt_til_os_fraskatt_id ON transaksjon_os (id, trekk_id_ske);
-
-ALTER TABLE trekkperiode
-    ADD COLUMN status text NOT NULL DEFAULT 'IKKE_SENDT';
-
-ALTER TABLE trekkperiode
-    ADD COLUMN transaksjons_os_id bigserial NOT NULL;

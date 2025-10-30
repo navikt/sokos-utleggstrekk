@@ -6,6 +6,7 @@ import kotliquery.Row
 
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 
+// TODO: Slett
 data class TrekkPeriodeTable(
     val trekkPeriodeTableId: Int,
     val trekkidSke: String,
@@ -16,8 +17,6 @@ data class TrekkPeriodeTable(
     val trekkAlternativ: TrekkAlternativ,
     val tidspunktOpprettet: LocalDateTime = LocalDateTime.now(),
     val kilde: String,
-    val status: PeriodeStatus = PeriodeStatus.IKKE_SENDT,
-    val transaksjonOSId: Long = 0L,
 ) {
     constructor(row: Row) : this(
         trekkPeriodeTableId = row.int("id"),
@@ -29,8 +28,6 @@ data class TrekkPeriodeTable(
         trekkAlternativ = TrekkAlternativ.valueOf(row.string("trekkalternativ")),
         tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet"),
         kilde = row.string("kilde"),
-        status = PeriodeStatus.valueOf(row.string("status").uppercase()),
-        transaksjonOSId = row.long("transaksjons_os_id"),
     )
 
     fun toTrekkDokumentPeriode() =
