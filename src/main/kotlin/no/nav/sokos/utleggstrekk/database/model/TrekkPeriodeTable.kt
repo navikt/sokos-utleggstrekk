@@ -40,6 +40,7 @@ data class TrekkPeriodeTable(
             sats = this.sats,
         )
 }
+/*
 
 fun PeriodeFraSkatt.sameAs(other: PeriodeTilOS): Boolean =
     this.startdato == other.fom &&
@@ -51,4 +52,4 @@ fun PeriodeFraSkatt.sameAs(other: PeriodeTilOS): Boolean =
             TrekkAlternativ.LOPM -> {
                 this.trekkprosent == other.sats
             }
-        }
+        }*/

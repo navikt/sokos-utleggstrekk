@@ -285,7 +285,7 @@ object RepositoryNy {
                 mapOf("transaksjonsId" to transaksjonsId),
             ),
         ) { row ->
-            val transaksjonId = row.string("transaksjon_id")
+            val transaksjonId = row.long("id")
             val perioderTilOS = getPerioderForTransaksjon(transaksjonId, session)
 
             TransaksjonOS(row, perioderTilOS)
@@ -300,7 +300,7 @@ object RepositoryNy {
                 mapOf("trekkIdSke" to trekkIdSke),
             ),
         ) { row ->
-            val transaksjonId = row.string("transaksjon_id")
+            val transaksjonId = row.long("id")
             val perioderTilOS = getPerioderForTransaksjon(transaksjonId, session)
 
             TransaksjonOS(row, perioderTilOS)
@@ -314,7 +314,7 @@ object RepositoryNy {
                 """.trimIndent(),
             ),
         ) { row ->
-            val transaksjonId = row.string("transaksjon_id")
+            val transaksjonId = row.long("id")
             val perioderTilOS = getPerioderForTransaksjon(transaksjonId, session)
 
             TransaksjonOS(row, perioderTilOS)
@@ -450,21 +450,21 @@ object RepositoryNy {
                 """.trimIndent(),
             ),
         ) { row ->
-            val transaksjonId = row.string("transaksjon_id")
+            val transaksjonId = row.long("id")
             val perioderTilOS = getPerioderForTransaksjon(transaksjonId, session)
 
             TransaksjonOS(row, perioderTilOS)
         }
     }
 
-    private fun getPerioderForTransaksjon(transaksjonId: String, session: Session): MutableList<PeriodeTilOS> {
+    private fun getPerioderForTransaksjon(transaksjonOSId: Long, session: Session): MutableList<PeriodeTilOS> {
         val perioderTilOS = mutableListOf<PeriodeTilOS>()
         session.list(
             queryOf(
                 """
-                select * from periode_til_os where transaksjons_os_id = :transaksjonId
+                select * from periode_til_os where transaksjon_os_id = :transaksjonOSId
                 """.trimIndent(),
-                mapOf("transaksjonId" to transaksjonId),
+                mapOf("transaksjonOSId" to transaksjonOSId),
             ),
         ) { periodeRow ->
             perioderTilOS.add(PeriodeTilOS(periodeRow))

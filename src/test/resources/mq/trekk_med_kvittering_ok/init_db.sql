@@ -1,20 +1,40 @@
 INSERT INTO
     transaksjon_os(
-    transaksjon_id,
-    trekk_id_ske,
     nav_trekk_id,
-    aksjonskode,
-    trekkalternativ,
+    transaksjon_id,
     transaksjon_status,
-    kvittering_status
+    trekk_id_ske,
+    kvittering_status,
+    aksjonskode,
+    kreditor_id_tss,
+    kreditor_trekk_id,
+    kreditorsref,
+    debitor_id,
+    trekk_alternativ,
+    trekk_type,
+    kid,
+    kilde,
+    prioritet_fom_dato,
+    gyldig_tom_dato
 )
 VALUES(
+       'NavTrekkId01',
           'TransaksjonsId01',
-          123,
-            '',
+       'SENDT',
+          '123SkeID',
+            'IKKE_MOTTATT',
           'NY',
+       'TSSId' ,
+       'KreditorTrekkId',
+       'KreditorRef',
+       'DebitorId',
           'LOPM',
-          'SENDT',
-          'IKKE_MOTTATT'
+          'KRED',
+        'Kidnummer',
+       'Kilde' ,
+      '2018-01-01',
+        '2018-01-01'
+
+
       ) ;
 
