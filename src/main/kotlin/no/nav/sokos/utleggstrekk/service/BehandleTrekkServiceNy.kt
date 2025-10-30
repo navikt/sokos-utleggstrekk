@@ -10,6 +10,8 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
+import no.nav.sokos.utleggstrekk.database.model.PerioderTilOS
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.ENDR
@@ -71,9 +73,9 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
         // For å lage dokument trenger vi perioder som hører til denne trekkversjonen
         val perioderForTrekkversjon = perioderForTrekkVersjon(trekk)
 
-     /*   if (trekk.trekkversjon != 1) {
-            lagTrekkPerioderIDB(trekk, perioderForTrekkversjon)
-        }*/
+        /*   if (trekk.trekkversjon != 1) {
+               lagTrekkPerioderIDB(trekk, perioderForTrekkversjon)
+           }*/
 
         val perioderInformasjon = utledTrekkAlternativForPeriode(perioderForTrekkversjon)
 
@@ -92,69 +94,100 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
             PeriodeInformasjon(periode.trekkIdSke, periode, trekkalternativ)
         }
 
-/*    fun lagTrekkPerioderIDB(trekkFraSkatt: TrekkFraSkatt, perioderForTrekkversjon: List<PeriodeFraSkatt>) {
+    fun nyeTrekkTilOs(trekkFraSkatt: TrekkFraSkatt, trekkPerioder: List<PeriodeFraSkatt>): PerioderTilOS =
         dataSource.withTransaction { session ->
-            // if trekkversjon = 1
-            // lag dokument, return
-            val trekkAlternativer =
-                RepositoryNy.getTrekkAlternativOS(trekkFraSkatt.trekkid, session).toSet() +
-                    perioderForTrekkversjon.map { getTrekkAlternativ(it) }.toSet()
-
-            val perioderSendtTilOS = RepositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, session)
-
-            //  filtrere vekk alle perioder som allerede er sendt til OS fordi de trenger vi ikke sende på nytt
-            val nyePerioder = perioderForTrekkversjon.filterNot { periode -> perioderSendtTilOS.any { periode.sameAs(it) } }
-
-            // Hvis nytt trekk: Ikke gjør noe av dette
-
-            // Hvis endring på trekk: Hvis ikke endring på periode: Ikke gjør noe av dette
-
-            // Hvis endring på trekk og på periode:
-            // Her må vi enten alltid lage periode med 0.0, eller sjekke hva vi har sendt
-            // Hvis beløp == 0 og prosent != 0: Sette til LOPP og med prosent, OG lage periode for LOPM hvor beløp = 0
-            // Hvis beløp != 0 og prosent == 0: Sette til LOPM med beløp, OG lage periode for LOPP hvor prosent = 0
-
-            // Hvis periode fra versjon 1 mangler i versjon 2 så skal den få status SLETTET
-            val perioderSomSkalEndresIOS =
-                perioderSendtTilOS.filter { it.isExpired() }.filterNot { periode ->
-                    perioderForTrekkversjon.any { it.sameAs(periode) }
+            val alternativ =
+                buildSet {
+                    addAll(trekkPerioder.map { it.trekkAlternativ() }.distinct())
+                    addAll(RepositoryNy.getAlternativForTrekk(trekkFraSkatt, session))
                 }
 
-            perioderSomSkalEndresIOS.forEach { periode ->
-                RepositoryNy.updatePeriodeStatus(periode, SLETTET, session)
-            }
+            val gamlePerioder =
+                alternativ.associateWith { alternativ ->
+                    RepositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, alternativ, session).filterNot { it.isExpired() }
+                }
 
-            perioderSomSkalEndresIOS.filterNot { it.status == IKKE_SENDT }.forEach { periode ->
-                // Sletting vil si å opprette ny periode i samme intervall med sats = 0
-                val nyPeriode = periode.copy(sats = 0.0, status = IKKE_SENDT)
-                RepositoryNy.insertTrekkForOS(nyPeriode, session)
-            }
+            val nyePerioder = trekkPerioder.filterNot { periode -> gamlePerioder[periode.trekkAlternativ()]?.any { periode.sameAs(it) } ?: false }
+            val nyePerioderForOS = alternativ.associateWith { mutableListOf<PeriodeTilOS>() }.toMutableMap()
 
             nyePerioder.forEach { periode ->
-                trekkAlternativer.forEach { alternativ ->
-                    val nyPeriode =
-                        TrekkPeriodeTable(
-                            trekkPeriodeTableId = 0,
-                            trekkidSke = trekkFraSkatt.trekkid,
-                            trekkversjon = trekkFraSkatt.trekkversjon,
-                            datoStart = periode.startdato,
-                            datoSlutt = periode.sluttdato,
-                            sats = periode.satsFor(alternativ),
-                            trekkAlternativ = alternativ,
-                            kilde = periode.kildeFor(alternativ),
-                            status = IKKE_SENDT,
-                        )
-                    RepositoryNy.insertTrekkForOS(nyPeriode, session)
+                alternativ.forEach { alternativ ->
+                    nyePerioderForOS[alternativ]?.add(PeriodeTilOS(sats = periode.satsFor(alternativ), fom = periode.startdato, tom = periode.sluttdato))
                 }
             }
+
+            PerioderTilOS(
+                LOPM = nyePerioderForOS[LOPM]?.toList().orEmpty(),
+                LOPP = nyePerioderForOS[LOPP]?.toList().orEmpty(),
+            )
         }
-    }*/
+
+    /*
+    fun lagTrekkPerioderIDB(trekkFraSkatt: TrekkFraSkatt, perioderForTrekkversjon: List<PeriodeFraSkatt>) {
+       dataSource.withTransaction { session ->
+           // if trekkversjon = 1
+           // lag dokument, return
+           val trekkAlternativer =
+               RepositoryNy.getTrekkAlternativOS(trekkFraSkatt.trekkid, session).toSet() +
+                   perioderForTrekkversjon.map { getTrekkAlternativ(it) }.toSet()
+
+           val perioderSendtTilOS = RepositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, session)
+
+           //  filtrere vekk alle perioder som allerede er sendt til OS fordi de trenger vi ikke sende på nytt
+           val nyePerioder = perioderForTrekkversjon.filterNot { periode -> perioderSendtTilOS.any { periode.sameAs(it) } }
+
+           // Hvis nytt trekk: Ikke gjør noe av dette
+
+           // Hvis endring på trekk: Hvis ikke endring på periode: Ikke gjør noe av dette
+
+           // Hvis endring på trekk og på periode:
+           // Her må vi enten alltid lage periode med 0.0, eller sjekke hva vi har sendt
+           // Hvis beløp == 0 og prosent != 0: Sette til LOPP og med prosent, OG lage periode for LOPM hvor beløp = 0
+           // Hvis beløp != 0 og prosent == 0: Sette til LOPM med beløp, OG lage periode for LOPP hvor prosent = 0
+
+           // Hvis periode fra versjon 1 mangler i versjon 2 så skal den få status SLETTET
+           val perioderSomSkalEndresIOS =
+               perioderSendtTilOS.filter { it.isExpired() }.filterNot { periode ->
+                   perioderForTrekkversjon.any { it.sameAs(periode) }
+               }
+
+           perioderSomSkalEndresIOS.forEach { periode ->
+               RepositoryNy.updatePeriodeStatus(periode, SLETTET, session)
+           }
+
+           perioderSomSkalEndresIOS.filterNot { it.status == IKKE_SENDT }.forEach { periode ->
+               // Sletting vil si å opprette ny periode i samme intervall med sats = 0
+               val nyPeriode = periode.copy(sats = 0.0, status = IKKE_SENDT)
+               RepositoryNy.insertTrekkForOS(nyPeriode, session)
+           }
+
+           nyePerioder.forEach { periode ->
+               trekkAlternativer.forEach { alternativ ->
+                   val nyPeriode =
+                       TrekkPeriodeTable(
+                           trekkPeriodeTableId = 0,
+                           trekkidSke = trekkFraSkatt.trekkid,
+                           trekkversjon = trekkFraSkatt.trekkversjon,
+                           datoStart = periode.startdato,
+                           datoSlutt = periode.sluttdato,
+                           sats = periode.satsFor(alternativ),
+                           trekkAlternativ = alternativ,
+                           kilde = periode.kildeFor(alternativ),
+                           status = IKKE_SENDT,
+                       )
+                   RepositoryNy.insertTrekkForOS(nyPeriode, session)
+               }
+           }
+       }
+    }
+     */
 
     private fun getTrekkAlternativ(periodeFraSkatt: PeriodeFraSkatt): TrekkAlternativ =
         when {
             periodeFraSkatt.trekkbeloep != null && periodeFraSkatt.trekkprosent == null -> {
                 LOPM
             }
+
             periodeFraSkatt.trekkprosent != null && periodeFraSkatt.trekkbeloep == null -> {
                 LOPP
             }
@@ -236,6 +269,7 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
                     trekkForTrekkId(trekkFraSkatt).find { it.trekkversjon == trekkVersjon - 1 }?.let { ENDR } ?: NY
                 }
             }
+
             AVSLUTTET -> {
                 ENDR
             }
