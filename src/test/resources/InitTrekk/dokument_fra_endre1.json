@@ -1,0 +1,29 @@
+{"dokument":
+{"transaksjonsId":"",
+  "innrapporteringTrekk":
+  {"aksjonskode":"NY",
+    "kreditorIdTss":"80000345435",
+    "kreditorTrekkId":"3",
+    "debitorId":"01018941372",
+    "kodeTrekkAlternativ":"LOPM",
+    "kid":"17654202400",
+    "kreditorsRef":"sak-2023-899",
+    "kodeTrekktype":"TRK1",
+    "kilde":"XYZ",
+    "saldo":0.0,
+    "prioritetFomDato":"2024-06-16",
+    "perioder":
+    {"periode":
+    [{"periodeFomDato":"2023-06-13",
+      "periodeTomDato":"2024-11-30",
+      "sats":5000.0},
+      {"periodeFomDato":"2024-12-01",
+        "periodeTomDato":"2024-12-31",
+        "sats":0.0},
+      {"periodeFomDato":"2025-01-01",
+        "periodeTomDato":"",
+        "sats":5000.0}]
+    }
+  }
+}
+}

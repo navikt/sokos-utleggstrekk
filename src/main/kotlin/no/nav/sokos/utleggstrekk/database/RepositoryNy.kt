@@ -376,7 +376,7 @@ object RepositoryNy {
         ) { row -> row.intOrNull(1) } ?: 0
 
     // TODO: Bruke fraskatt_status? Må også oppdatere hvordan ostransaksjon funker
-    fun getTrekkSomIkkeErSendt(session: Session) =
+    fun getTrekkSomIkkeErSendt(session: Session): List<TrekkFraSkatt> =
         session.list(
             queryOf(
                 """

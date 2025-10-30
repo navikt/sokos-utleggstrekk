@@ -25,7 +25,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
-import no.nav.sokos.utleggstrekk.utils.TSSId
 
 data class MeldingTilOppdrag(
     val transaksjonsID: String,
@@ -35,27 +34,39 @@ data class MeldingTilOppdrag(
 const val KODE_TREKKTYPE = "TRK1"
 const val KILDE = "SOKOSUTLEGG"
 
-class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = PostgresDataSource.dataSource) {
+class BehandleTrekkServiceNy(
+    private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
+    val repository: RepositoryNy = RepositoryNy,
+) {
     // Ting er allerede lagret i databasen når vi kommer hit
 
     fun run() {
-        val trekkSomSkalSendes =
-            dataSource.withTransaction { session ->
-                RepositoryNy.getTrekkSomIkkeErSendt(session)
-            }
-        trekkSomSkalSendes.forEach { trekk ->
+        val trekkSomSkalSendes = trekkSomSkalSendes()
+      /*  trekkSomSkalSendes.forEach { trekk ->
             lagTrekk(trekk)
-        }
+        }*/
     }
+
+    fun trekkSomSkalSendes(): List<TrekkFraSkatt> =
+        dataSource.withTransaction { session ->
+            repository.getTrekkSomIkkeErSendt(session)
+        }
+
+    fun perioderForTrekkVersjon(trekkFraSkatt: TrekkFraSkatt) =
+        dataSource.withTransaction { session ->
+            RepositoryNy.getPerioderForTrekkVersjon(trekkFraSkatt.id, trekkFraSkatt.sekvensnummer, trekkFraSkatt.trekkversjon, session)
+        }
+
+    fun betalingsInformasjonForTrekk(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt? =
+        dataSource.withTransaction { session ->
+            RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session)
+        }
 
     fun lagTrekk(trekk: TrekkFraSkatt) {
         val fraSkattTabellId = trekk.id
 
         // For å lage dokument trenger vi perioder som hører til denne trekkversjonen
-        val perioderForTrekkversjon =
-            dataSource.withTransaction { session ->
-                RepositoryNy.getPerioderForTrekkVersjon(fraSkattTabellId, trekk.sekvensnummer, trekk.trekkversjon, session)
-            }
+        val perioderForTrekkversjon = perioderForTrekkVersjon(trekk)
 
         if (trekk.trekkversjon != 1) {
             lagTrekkPerioderIDB(trekk, perioderForTrekkversjon)
@@ -154,7 +165,7 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
 
         val trekkalternativ = perioderInformasjon.first().trekkalternativ
 
-        val betalingsinformasjon: BetalingsinformasjonFraSkatt? = dataSource.withTransaction { session -> RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session) }
+        val betalingsinformasjon: BetalingsinformasjonFraSkatt? = betalingsInformasjonForTrekk(trekkFraSkatt)
 
         if (betalingsinformasjon == null) {
             throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
@@ -177,11 +188,11 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
 
         val aksjonskode = getAksjonskodeForTrekk(trekkFraSkatt)
         val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
-        val tssId = TSSId.getTssId(betalingsinformasjon.betalingsmottaker, betalingsinformasjon.kontonummer)
+        //  val tssId = TSSId.getTssId(betalingsinformasjon.betalingsmottaker, betalingsinformasjon.kontonummer)
         val innrapporteringTrekk =
             InnrapporteringTrekk(
                 aksjonskode = aksjonskode,
-                kreditorIdTss = tssId,
+                kreditorIdTss = "TSS ID HER",
                 kreditorTrekkId = nyTrekkId,
                 debitorId = trekkFraSkatt.skyldner,
                 kodeTrekkAlternativ = trekkalternativ,

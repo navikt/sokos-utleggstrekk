@@ -1,11 +1,96 @@
 package no.nav.sokos.utleggstrekk.service
 
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
+import io.mockk.every
+import io.mockk.mockk
+
+import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 
 class BehandleTrekkServiceTest :
     BehaviorSpec({
 
+        fun lagTrekkFraSkatt(): TrekkFraSkatt {
+            val tabellEntryId = 1L
+            val trekkVersjon = 1
+            val sekvensnummer = 1
+            val trekkId = "2a"
+            val opprettet = "2024-06-16T13:33:05.672Z"
+            val saksnummer = "Test_Beløp1"
+            val trekkpliktig = "12345678901"
+            val skyldner = "10987654321"
+            val trekkstatus = "AKTIV"
+
+            return TrekkFraSkatt(
+                id = tabellEntryId,
+                trekkid = trekkId,
+                sekvensnummer = sekvensnummer,
+                trekkversjon = trekkVersjon,
+                opprettet = opprettet,
+                saksnummer = saksnummer,
+                trekkpliktig = trekkpliktig,
+                skyldner = skyldner,
+                trekkstatus = trekkstatus,
+            )
+        }
+
+        fun lagPerioderForTrekkFraSkatt(trekkFraSkatt: TrekkFraSkatt): PeriodeFraSkatt {
+            val tabellEntryId = 1L
+            val fraSkattId = trekkFraSkatt.id
+            val trekkIdSke = trekkFraSkatt.trekkid
+            val startDato = "2023-06-13"
+            val sluttDato = "2024-11-30"
+            val trekkBelop = 5000.00
+            val trekkProsent = null
+            return PeriodeFraSkatt(tabellEntryId, fraSkattId, trekkIdSke, startDato, sluttDato, trekkBelop, trekkProsent)
+        }
+
+        fun lagBetalingsinformasjonForTrekkFraSkatt(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt {
+            val betalingsmottaker = "971648198"
+            val kidnummer = "17654202404"
+            val kontonummer = "76940512057"
+            return BetalingsinformasjonFraSkatt(1L, trekkFraSkatt.id, betalingsmottaker, kidnummer, kontonummer)
+        }
         Given("Trekkdokument dannes") {
+
+            val trekkFraSkatt = lagTrekkFraSkatt()
+            val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+            val perioderForTrekkFraSkatt = listOf(lagPerioderForTrekkFraSkatt(trekkFraSkatt))
+            perioderForTrekkFraSkatt.size shouldBe 1
+            val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(trekkFraSkatt)
+
+            val behandleTrekkServiceNy =
+                mockk<BehandleTrekkServiceNy>(relaxed = true) {
+                    every { trekkSomSkalSendes() } returns alleTrekkSomIkkeErSendt
+                    every { perioderForTrekkVersjon(any()) } returns perioderForTrekkFraSkatt
+                    every { betalingsInformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
+                }
+
+            val trekkSomIkkeErSendt = behandleTrekkServiceNy.trekkSomSkalSendes()
+            trekkSomIkkeErSendt.size shouldBe alleTrekkSomIkkeErSendt.size
+
+            val trekkSomSkalSendes = trekkSomIkkeErSendt.first()
+            val perioderForTrekkVersjon = behandleTrekkServiceNy.perioderForTrekkVersjon(trekkSomSkalSendes)
+            perioderForTrekkVersjon.size shouldBe perioderForTrekkFraSkatt.size
+
+            val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(perioderForTrekkFraSkatt)
+
+            periodeInformasjon.size shouldBe perioderForTrekkFraSkatt.size
+            periodeInformasjon.size shouldBe 1
+            val periode = periodeInformasjon.first()
+            periode.trekkalternativ shouldBe TrekkAlternativ.LOPM
+            periode.trekkidSke shouldBe trekkFraSkatt.trekkid
+            periode.periodeFraSkatt shouldBe perioderForTrekkFraSkatt.first()
+
+            When("Trekkdokument dannes for trekk fra skatt") {
+            }
+
+            Then("Skal trekkpliktig og skyldner være med") {
+            }
+
             Then("Skal datoer formatteres på yyyy-mm-dd format") {
             }
 
