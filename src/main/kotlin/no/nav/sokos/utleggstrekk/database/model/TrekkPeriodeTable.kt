@@ -1,9 +1,6 @@
 package no.nav.sokos.utleggstrekk.database.model
 
-import java.time.LocalDate
-
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.toKotlinLocalDateTime
+import java.time.LocalDateTime
 
 import kotliquery.Row
 
@@ -17,16 +14,9 @@ data class TrekkPeriodeTable(
     val datoSlutt: String?,
     val sats: Double,
     val trekkAlternativ: TrekkAlternativ,
-    // TODO: kotlinx har med parsing å gjøre. Bytt til java LocalDateTime
-    val tidspunktOpprettet: LocalDateTime =
-        java.time.LocalDateTime
-            .now()
-            .toKotlinLocalDateTime(),
-    // TODO: Hører til modellen av hva vi sender til Oppdrag.
-    val kilde: String = "SKATTEETATEN",
-    // TODO fjern defaultverdi
+    val tidspunktOpprettet: LocalDateTime = LocalDateTime.now(),
+    val kilde: String,
     val status: PeriodeStatus = PeriodeStatus.IKKE_SENDT,
-    // TODO fjern defaultverdi
     val transaksjonOSId: Long = 0L,
 ) {
     constructor(row: Row) : this(
@@ -37,7 +27,7 @@ data class TrekkPeriodeTable(
         datoSlutt = row.string("dato_slutt"),
         sats = row.double("sats"),
         trekkAlternativ = TrekkAlternativ.valueOf(row.string("trekkalternativ")),
-        tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(),
+        tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet"),
         kilde = row.string("kilde"),
         status = PeriodeStatus.valueOf(row.string("status").uppercase()),
         transaksjonOSId = row.long("transaksjons_os_id"),
@@ -49,16 +39,11 @@ data class TrekkPeriodeTable(
             periodeTomDato = this.datoSlutt ?: "",
             sats = this.sats,
         )
-
-    fun isExpired(): Boolean {
-        val end = datoSlutt?.let { LocalDate.parse(datoSlutt) } ?: return false
-        return end.isBefore(LocalDate.now()) // TODO:  Må bruke "opprettet" fra trekkversjonen fra skatt?
-    }
 }
 
-fun PeriodeFraSkatt.sameAs(other: TrekkPeriodeTable): Boolean =
-    this.startdato == other.datoStart &&
-        this.sluttdato == other.datoSlutt &&
+fun PeriodeFraSkatt.sameAs(other: PeriodeTilOS): Boolean =
+    this.startdato == other.fom &&
+        this.sluttdato == other.tom &&
         when (other.trekkAlternativ) {
             TrekkAlternativ.LOPP -> {
                 this.trekkprosent == other.sats

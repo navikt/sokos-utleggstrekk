@@ -2,22 +2,7 @@ package no.nav.sokos.utleggstrekk.service.gammel
 
 import kotlinx.serialization.json.Json
 
-import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldBeIn
-import io.kotest.matchers.shouldBe
-import kotliquery.queryOf
-
-import no.nav.sokos.utleggstrekk.database.Repository
-import no.nav.sokos.utleggstrekk.database.model.trekkIdWithSuffix
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
-import no.nav.sokos.utleggstrekk.service.DatabaseService
-import no.nav.sokos.utleggstrekk.service.withTransaction
-import no.nav.sokos.utleggstrekk.util.TestContainer
-import no.nav.sokos.utleggstrekk.util.resourceToString
 
 internal class LifecycleTest :
     BehaviorSpec({
@@ -28,7 +13,7 @@ internal class LifecycleTest :
                 explicitNulls = false
             }
 
-        xcontext("disabled") {
+ /*       xcontext("disabled") {
             val testContainer = TestContainer()
             val dataSource = testContainer.dataSource
             val repository = Repository(dataSource)
@@ -153,5 +138,5 @@ internal class LifecycleTest :
                     }
                 }
             }
-        }
+        }*/
     })

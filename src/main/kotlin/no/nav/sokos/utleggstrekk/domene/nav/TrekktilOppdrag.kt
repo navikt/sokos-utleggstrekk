@@ -9,14 +9,12 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 // De er på samme format
 typealias KvitteringFraOppdrag = TrekkTilOppdrag
-typealias DokumentTilOppdrag = TrekkTilOppdrag
+typealias DokumentTilOppdrag = Document
 
 // TODO: TSS ID
 data class OSDto(
     val transaksjonsID: String,
     val trekkIDSke: String,
-    val aksjonskode: Aksjonskode,
-    val trekkAlternativ: TrekkAlternativ,
     val dokumentTilOppdrag: DokumentTilOppdrag,
 )
 
@@ -57,15 +55,15 @@ data class InnrapporteringTrekk(
     val navTrekkId: String = "",
     val kreditorIdTss: String,
     val kreditorTrekkId: String,
-    // val gyldigTomDato: String = LocalDate().minusDays(1).toString(),
+    val kreditorsRef: String,
     val debitorId: String,
     val kodeTrekktype: String = KODE_TREKKTYPE,
     val kodeTrekkAlternativ: TrekkAlternativ,
     val kid: String,
-    val kreditorsRef: String,
     val kilde: String = KILDE,
     val saldo: Double = 0.0,
     val prioritetFomDato: String,
+    // val gyldigTomDato: String = LocalDate().minusDays(1).toString(),
     val gyldigTomDato: String? = null,
     val perioder: Perioder,
 )

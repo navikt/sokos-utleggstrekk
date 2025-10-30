@@ -9,33 +9,19 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldNotBeEmpty
-import io.kotest.matchers.shouldBe
-import io.mockk.Runs
-import io.mockk.coEvery
-import io.mockk.just
-import io.mockk.mockk
 
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.listener.DBListener
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
-import no.nav.sokos.utleggstrekk.service.DatabaseService
 
 class BehandleTrekkServiceNygammelTest :
     BehaviorSpec(
         {
             extensions(DBListener)
 
-            xcontext("disabled") {
+           /* xcontext("disabled") {
                 fun setUpBehandleTrekkService(
                     alleTrekkSomIkkeErSendt: List<UtleggstrekkTable>,
                     allePerioderForTrekkVersjon: List<TrekkPeriodeTable>,
@@ -383,7 +369,7 @@ class BehandleTrekkServiceNygammelTest :
                         }
                     }
                 }
-            }
+            }*/
         },
     )
 
@@ -409,6 +395,7 @@ private fun trekkTable1(trekkVersjon: Int, trekkStatus: Trekkstatus = AKTIV) =
         tidspunktSendtOs = null,
         tidspunktOpprettet = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     )
+/*
 
 private fun periodetableLOPM(trekkVersjon: Int) =
     listOf(
@@ -470,4 +457,4 @@ private fun periodetableLOPP(trekkVersjon: Int) =
             sats = 25.00,
             trekkAlternativ = LOPP,
         ),
-    )
+    )*/

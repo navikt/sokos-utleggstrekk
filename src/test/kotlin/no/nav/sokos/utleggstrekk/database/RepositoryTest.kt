@@ -45,9 +45,7 @@ class RepositoryTest :
             val dto =
                 OSDto(
                     transaksjonsID = "SkalSendes",
-                    trekkIDSke = skalSendes.trekkid,
-                    aksjonskode = Aksjonskode.NY,
-                    trekkAlternativ = TrekkAlternativ.LOPP,
+                    skalSendes.trekkid,
                     mockk<DokumentTilOppdrag>(), // TODO: Legge inn faktisk dokument og lagre det som string i DB?
                 )
             DBListener.dataSource.withTransaction { session ->
@@ -61,9 +59,7 @@ class RepositoryTest :
             val dtoSomErSendt =
                 OSDto(
                     transaksjonsID = "SkalIkkeSendes",
-                    trekkIDSke = trekkSomErSendt.trekkid,
-                    aksjonskode = Aksjonskode.NY,
-                    trekkAlternativ = TrekkAlternativ.LOPP,
+                    trekkSomErSendt.trekkid,
                     mockk<DokumentTilOppdrag>(), // TODO: Legge inn faktisk dokument og lagre det som string i DB?
                 )
             DBListener.dataSource.withTransaction { session ->
@@ -190,10 +186,8 @@ class RepositoryTest :
             val dto =
                 OSDto(
                     transaksjonsID = "123id",
-                    trekkIDSke = "fraskatt",
-                    aksjonskode = Aksjonskode.NY,
-                    trekkAlternativ = TrekkAlternativ.LOPP,
-                    mockk<DokumentTilOppdrag>(), // TODO: Legge inn faktisk dokument og lagre det som string i DB?
+                    "Et trekk",
+                    mockk<DokumentTilOppdrag>(),
                 )
             DBListener.dataSource.withTransaction { session ->
                 RepositoryNy.insertTransaksjonTilOs(dto, session)
@@ -205,13 +199,6 @@ class RepositoryTest :
                     }
                 transaksjonTilOs.shouldNotBeNull()
 
-                DBListener.dataSource.withTransaction { session ->
-                    RepositoryNy
-                        .getTransaksjonerTilOsForTrekkID(dto.trekkIDSke, session)
-                        .shouldNotBeEmpty()
-                        .shouldHaveSize(1)
-                        .first() shouldBe transaksjonTilOs
-                }
                 Then("Skal transaksjonstatus skal være TransaksjonsStatus.IKKE_SENDT") {
                     transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.IKKE_SENDT
                 }

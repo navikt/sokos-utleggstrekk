@@ -18,11 +18,11 @@ data class TransaksjonOS(
     val kvitteringStatus: KvitteringStatus,
     val aksjonskode: Aksjonskode,
     val trekkAlternativ: TrekkAlternativ,
-    // TODO:  val periode: Periode,
+    val perioder: List<PeriodeTilOS>,
     val tidspunktSendt: LocalDateTime,
     val tidspunktSisteStatus: LocalDateTime,
 ) {
-    constructor(row: Row) : this(
+    constructor(row: Row, perioder: List<PeriodeTilOS>) : this(
         id = row.long("id"),
         transaksjonsID = row.string("transaksjon_id"),
         trekkIdSke = row.string("trekk_id_ske"),
@@ -33,6 +33,7 @@ data class TransaksjonOS(
         trekkAlternativ = TrekkAlternativ.valueOf(row.string("trekkalternativ").uppercase()),
         tidspunktSendt = row.localDateTime("tidspunkt_sendt"),
         tidspunktSisteStatus = row.localDateTime("tidspunkt_siste_status"),
+        perioder = perioder,
     )
 }
 

@@ -8,6 +8,7 @@
   },
   "dokument": {
     "transaksjonsId": "TransaksjonsId01",
+
     "innrapporteringTrekk": {
       "aksjonskode": "NY",
       "kilde": "SOKOS-UTLEGG",

@@ -15,7 +15,7 @@ import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 fun Routing.utleggstrekkApi(utleggsTrekkService: UtleggsTrekkService) {
     route("utleggstrekk") {
         get("hentNyeTrekk") {
-            utleggsTrekkService.run()
+            utleggsTrekkService.schedule()
             call.respond(HttpStatusCode.OK, "Sender trekk til OS")
         }
     }

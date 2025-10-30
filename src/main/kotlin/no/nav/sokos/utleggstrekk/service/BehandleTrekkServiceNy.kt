@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.util.UUID
+
 import com.zaxxer.hikari.HikariDataSource
 
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
@@ -14,9 +16,10 @@ import no.nav.sokos.utleggstrekk.database.model.sameAs
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.ENDR
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.NY
-import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.OPPH
+import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
+import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -34,22 +37,21 @@ data class MeldingTilOppdrag(
 const val KODE_TREKKTYPE = "TRK1"
 const val KILDE = "SOKOSUTLEGG"
 
-class BehandleTrekkServiceNy(
-    private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
-    val repository: RepositoryNy = RepositoryNy,
-) {
+// todo: flytt datasource inn RepositoryNy
+class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = PostgresDataSource.dataSource) {
     // Ting er allerede lagret i databasen når vi kommer hit
 
-    fun run() {
-        val trekkSomSkalSendes = trekkSomSkalSendes()
-      /*  trekkSomSkalSendes.forEach { trekk ->
-            lagTrekk(trekk)
-        }*/
+    fun schedule() {
+        trekkSomSkalSendes().forEach { trekk ->
+            val document = lagTrekkDokument(trekk)
+            val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document)
+            dataSource.withTransaction { session -> RepositoryNy.insertTransaksjonTilOs(dto, session) }
+        }
     }
 
     fun trekkSomSkalSendes(): List<TrekkFraSkatt> =
         dataSource.withTransaction { session ->
-            repository.getTrekkSomIkkeErSendt(session)
+            RepositoryNy.getTrekkSomIkkeErSendt(session)
         }
 
     fun perioderForTrekkVersjon(trekkFraSkatt: TrekkFraSkatt) =
@@ -62,9 +64,7 @@ class BehandleTrekkServiceNy(
             RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session)
         }
 
-    fun lagTrekk(trekk: TrekkFraSkatt) {
-        val fraSkattTabellId = trekk.id
-
+    fun lagTrekkDokument(trekk: TrekkFraSkatt): Document {
         // For å lage dokument trenger vi perioder som hører til denne trekkversjonen
         val perioderForTrekkversjon = perioderForTrekkVersjon(trekk)
 
@@ -72,17 +72,30 @@ class BehandleTrekkServiceNy(
             lagTrekkPerioderIDB(trekk, perioderForTrekkversjon)
         }
 
-        // Vi trenger så å utlede trekkalternativer for disse periodene
         val perioderInformasjon = utledTrekkAlternativForPeriode(perioderForTrekkversjon)
 
-        lagTrekkDokument(trekk, perioderInformasjon) // TODO
+        return lagTrekkDokument(trekk, perioderInformasjon)
     }
+
+    data class PeriodeInformasjon(
+        val trekkidSke: String,
+        val periodeFraSkatt: PeriodeFraSkatt,
+        val trekkalternativ: TrekkAlternativ,
+    )
+
+    fun utledTrekkAlternativForPeriode(perioder: List<PeriodeFraSkatt>): List<PeriodeInformasjon> =
+        perioder.map { periode ->
+            val trekkalternativ = getTrekkAlternativ(periode)
+            PeriodeInformasjon(periode.trekkIdSke, periode, trekkalternativ)
+        }
 
     fun lagTrekkPerioderIDB(trekkFraSkatt: TrekkFraSkatt, perioderForTrekkversjon: List<PeriodeFraSkatt>) {
         dataSource.withTransaction { session ->
             // if trekkversjon = 1
             // lag dokument, return
-            val osTrekkAlternativer = RepositoryNy.getTrekkAlternativ(trekkFraSkatt.trekkid, session).toSet()
+            val trekkAlternativer =
+                RepositoryNy.getTrekkAlternativOS(trekkFraSkatt.trekkid, session).toSet() +
+                    perioderForTrekkversjon.map { getTrekkAlternativ(it) }.toSet()
 
             val perioderSendtTilOS = RepositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, session)
 
@@ -115,7 +128,7 @@ class BehandleTrekkServiceNy(
             }
 
             nyePerioder.forEach { periode ->
-                osTrekkAlternativer.forEach { alternativ ->
+                trekkAlternativer.forEach { alternativ ->
                     val nyPeriode =
                         TrekkPeriodeTable(
                             trekkPeriodeTableId = 0,
@@ -143,33 +156,19 @@ class BehandleTrekkServiceNy(
             throw NotImplementedError(
                 "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode",
             )
+        }.also {
+            println("getTrekkAlternativ: $it")
         }
 
-    data class PeriodeInformasjon(
-        val trekkidSke: String,
-        val periodeFraSkatt: PeriodeFraSkatt,
-        val trekkalternativ: TrekkAlternativ,
-    )
-
-    fun utledTrekkAlternativForPeriode(perioder: List<PeriodeFraSkatt>): List<PeriodeInformasjon> =
-        perioder.map { periode ->
-            val trekkalternativ = getTrekkAlternativ(periode)
-            PeriodeInformasjon(periode.trekkIdSke, periode, trekkalternativ)
-        }
-
-    fun lagTrekkDokument(trekkFraSkatt: TrekkFraSkatt, perioderInformasjon: List<PeriodeInformasjon>) {
+    fun lagTrekkDokument(trekkFraSkatt: TrekkFraSkatt, perioderInformasjon: List<PeriodeInformasjon>): Document {
         // Må finne: TSSID, Aksjonskode, Trekkalternativ, Perioder
         // kreditorTrekkId skal ha M eller P på slutten
 
         // Må hente betalingsinformasjonen til trekket for å finne tssid og kid
 
         val trekkalternativ = perioderInformasjon.first().trekkalternativ
+        val betalingsinformasjon: BetalingsinformasjonFraSkatt = betalingsInformasjonForTrekk(trekkFraSkatt) ?: throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
 
-        val betalingsinformasjon: BetalingsinformasjonFraSkatt? = betalingsInformasjonForTrekk(trekkFraSkatt)
-
-        if (betalingsinformasjon == null) {
-            throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
-        }
         val perioder =
             Perioder(
                 perioderInformasjon.map {
@@ -188,24 +187,33 @@ class BehandleTrekkServiceNy(
 
         val aksjonskode = getAksjonskodeForTrekk(trekkFraSkatt)
         val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
+        val kilde = "SKATTEETATEN"
+        val tssId = "kreditorIdTss"
+        val gyldigTomDato = "En dato"
         //  val tssId = TSSId.getTssId(betalingsinformasjon.betalingsmottaker, betalingsinformasjon.kontonummer)
         val innrapporteringTrekk =
             InnrapporteringTrekk(
                 aksjonskode = aksjonskode,
-                kreditorIdTss = "TSS ID HER",
+                kreditorIdTss = tssId,
                 kreditorTrekkId = nyTrekkId,
-                debitorId = trekkFraSkatt.skyldner,
                 kodeTrekkAlternativ = trekkalternativ,
+                kodeTrekktype = KODE_TREKKTYPE,
+                kilde = kilde,
+                gyldigTomDato = gyldigTomDato,
+                perioder = perioder,
+                debitorId = trekkFraSkatt.skyldner,
                 kid = betalingsinformasjon.kidnummer,
                 kreditorsRef = trekkFraSkatt.saksnummer,
                 prioritetFomDato = trekkFraSkatt.opprettet,
-                perioder = perioder,
             )
+
+        return DokumentTilOppdrag("transaksjonsid", innrapporteringTrekk)
     }
 
     fun getAksjonskodeForTrekk(trekkFraSkatt: TrekkFraSkatt): Aksjonskode =
         when (Trekkstatus.valueOf(trekkFraSkatt.trekkstatus)) {
             AKTIV -> {
+                // TODO: Kan være NY med trekkversjon != 1
                 if (trekkFraSkatt.trekkversjon == 1) {
                     NY
                 } else {
@@ -213,7 +221,8 @@ class BehandleTrekkServiceNy(
                 }
             }
             AVSLUTTET -> {
-                OPPH
+                // Må sette gyldigTom til dagensdato -1 og sende ENDR
+                ENDR
             }
         }
 }

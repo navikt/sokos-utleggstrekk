@@ -10,7 +10,6 @@ import kotlinx.serialization.Serializable
 import kotliquery.Row
 
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
-import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.Perioder
@@ -71,24 +70,22 @@ data class UtleggstrekkTable(
         trekkAlternativ: TrekkAlternativ = periodeTableList[0].trekkAlternativ,
     ): DokumentTilOppdrag =
         DokumentTilOppdrag(
-            Document(
-                transaksjonsId = corrid,
-                InnrapporteringTrekk(
-                    aksjonskode = aksjonskode,
-                    kreditorIdTss = betalingsmottaker,
-                    kreditorTrekkId = trekkIdWithSuffix(trekkAlternativ),
-                    debitorId = skyldner,
-                    kodeTrekkAlternativ = trekkAlternativ,
-                    kid = kid,
-                    kreditorsRef = saksnummer,
-                    prioritetFomDato = opprettetSke.toJavaLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
-                    perioder =
-                        Perioder(
-                            periodeTableList.map {
-                                it.toTrekkDokumentPeriode()
-                            },
-                        ),
-                ),
+            transaksjonsId = corrid,
+            InnrapporteringTrekk(
+                aksjonskode = aksjonskode,
+                kreditorIdTss = betalingsmottaker,
+                kreditorTrekkId = trekkIdWithSuffix(trekkAlternativ),
+                debitorId = skyldner,
+                kodeTrekkAlternativ = trekkAlternativ,
+                kid = kid,
+                kreditorsRef = saksnummer,
+                prioritetFomDato = opprettetSke.toJavaLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
+                perioder =
+                    Perioder(
+                        periodeTableList.map {
+                            it.toTrekkDokumentPeriode()
+                        },
+                    ),
             ),
         )
 }

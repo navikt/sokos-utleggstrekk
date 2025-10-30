@@ -1,7 +1,10 @@
-{"dokument":
-{"transaksjonsId":"",
-  "innrapporteringTrekk":
-  {"aksjonskode":"NY",
+{
+
+  "dokument":
+{
+  "transaksjonsId":"",
+  "innrapporteringTrekk":  {
+    "aksjonskode":"NY",
     "kreditorIdTss":"80000345435",
     "kreditorTrekkId":"3",
     "debitorId":"01018941372",

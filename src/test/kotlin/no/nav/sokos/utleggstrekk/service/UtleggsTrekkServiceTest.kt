@@ -73,7 +73,7 @@ internal class UtleggsTrekkServiceTest :
                 )
 
             When("Trekk sendes") {
-                utleggsTrekkService.run()
+                utleggsTrekkService.schedule()
 
                 // TODO: Skal håndtering av serialisering flyttes til JMSProducer?
                 Then("Skal trekk serialiseres riktig") {

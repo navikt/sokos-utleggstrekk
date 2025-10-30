@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.service
 
-import java.util.UUID
-
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import com.zaxxer.hikari.HikariDataSource
@@ -13,7 +11,6 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
-import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
@@ -36,27 +33,13 @@ class UtleggsTrekkService(
     private val logger = KotlinLogging.logger { }
 
     // Eksempel funksjon som kalles i schedulering
-    suspend fun run() {
+    suspend fun schedule() {
         val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
 
         processTrekkpaalegg(nyeUtleggsTrekk)
 
-        val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
-        logger.info { "Det er ${trekktilSending.size} trekk som skal sendes" }
-        trekktilSending.forEach {
-            val trekkMeldinger: List<DokumentTilOppdrag> = it.value
-            val trekkidFraSkatt: String = it.key.trekkidSke
-            trekkMeldinger.forEach { melding ->
-                val dto =
-                    OSDto(
-                        transaksjonsID = UUID.randomUUID().toString(),
-                        trekkIDSke = trekkidFraSkatt,
-                        aksjonskode = melding.dokument.innrapporteringTrekk.aksjonskode,
-                        trekkAlternativ = melding.dokument.innrapporteringTrekk.kodeTrekkAlternativ,
-                        melding,
-                    )
-                sendTrekkTilOS(dto)
-            }
+        dataSource.withTransaction { session ->
+            RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt(session)
         }
     }
 

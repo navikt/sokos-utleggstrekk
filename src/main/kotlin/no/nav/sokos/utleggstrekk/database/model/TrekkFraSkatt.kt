@@ -5,6 +5,9 @@ import kotliquery.Row
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 
+const val SOKOS_KILDE = "SOKOS-UTLEGGSTREKK"
+const val SKATT_KILDE = "SKATTEETATEN"
+
 data class FraSkattStatus(
     val id: Long,
     val fraSkattID: Long,
@@ -63,23 +66,17 @@ data class PeriodeFraSkatt(
 
     fun kildeFor(alternativ: TrekkAlternativ): String =
         if (alternativ == LOPM && trekkbeloep != null) {
-            "SKATTEETATEN" // TODO: Make it a constant
+            SKATT_KILDE
         } else {
-            "SOKOS-UTLEGGSTREKK"
+            SOKOS_KILDE
+        }
+
+    fun trekkAlternativ(): TrekkAlternativ =
+        when {
+            trekkbeloep == null -> TrekkAlternativ.LOPP
+            else -> TrekkAlternativ.LOPM
         }
 }
-
-/**
- *   "trekkstoerrelseForPeriode": [
- *     {
- *       "startdato": "2025-06-01",
- *       "sluttdato": "2025-08-08",
- *       "trekkprosent": {
- *         "trekkprosent": 23.0
- *       }
- *     },
- *
- */
 
 data class BetalingsinformasjonFraSkatt(
     val id: Long,

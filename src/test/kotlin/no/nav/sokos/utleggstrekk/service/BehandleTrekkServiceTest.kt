@@ -2,18 +2,28 @@ package no.nav.sokos.utleggstrekk.service
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.unmockkObject
 
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 
 class BehandleTrekkServiceTest :
     BehaviorSpec({
 
-        fun lagTrekkFraSkatt(): TrekkFraSkatt {
+        afterTest {
+            clearAllMocks()
+            unmockkObject(RepositoryNy)
+        }
+
+        fun lagTestTrekkFraSkatt(): TrekkFraSkatt {
             val tabellEntryId = 1L
             val trekkVersjon = 1
             val sekvensnummer = 1
@@ -56,18 +66,18 @@ class BehandleTrekkServiceTest :
         }
         Given("Trekkdokument dannes") {
 
-            val trekkFraSkatt = lagTrekkFraSkatt()
+            val trekkFraSkatt = lagTestTrekkFraSkatt()
             val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+            // TODO: Når vi har flytter datasource inn RepositoryNy, skal vi mocke den i stedet for å hente periodene fra skatt
             val perioderForTrekkFraSkatt = listOf(lagPerioderForTrekkFraSkatt(trekkFraSkatt))
             perioderForTrekkFraSkatt.size shouldBe 1
             val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(trekkFraSkatt)
 
-            val behandleTrekkServiceNy =
-                mockk<BehandleTrekkServiceNy>(relaxed = true) {
-                    every { trekkSomSkalSendes() } returns alleTrekkSomIkkeErSendt
-                    every { perioderForTrekkVersjon(any()) } returns perioderForTrekkFraSkatt
-                    every { betalingsInformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
-                }
+            val behandleTrekkServiceNy = spyk(BehandleTrekkServiceNy(mockk(relaxed = true)))
+            every { behandleTrekkServiceNy.trekkSomSkalSendes() } returns alleTrekkSomIkkeErSendt
+            every { behandleTrekkServiceNy.perioderForTrekkVersjon(any()) } returns perioderForTrekkFraSkatt
+            every { behandleTrekkServiceNy.betalingsInformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
+            perioderForTrekkFraSkatt.size shouldBe 1
 
             val trekkSomIkkeErSendt = behandleTrekkServiceNy.trekkSomSkalSendes()
             trekkSomIkkeErSendt.size shouldBe alleTrekkSomIkkeErSendt.size
@@ -78,7 +88,7 @@ class BehandleTrekkServiceTest :
 
             val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(perioderForTrekkFraSkatt)
 
-            periodeInformasjon.size shouldBe perioderForTrekkFraSkatt.size
+            periodeInformasjon.size shouldBe perioderForTrekkFraSkatt.size // expected 1 but was 0
             periodeInformasjon.size shouldBe 1
             val periode = periodeInformasjon.first()
             periode.trekkalternativ shouldBe TrekkAlternativ.LOPM
@@ -86,18 +96,24 @@ class BehandleTrekkServiceTest :
             periode.periodeFraSkatt shouldBe perioderForTrekkFraSkatt.first()
 
             When("Trekkdokument dannes for trekk fra skatt") {
-            }
+                val document = behandleTrekkServiceNy.lagTrekkDokument(trekkSomSkalSendes, periodeInformasjon)
 
-            Then("Skal trekkpliktig og skyldner være med") {
-            }
+                val innrapporteringTrekk = document.innrapporteringTrekk
+                innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
+                innrapporteringTrekk.kodeTrekkAlternativ shouldBe periode.trekkalternativ
 
-            Then("Skal datoer formatteres på yyyy-mm-dd format") {
-            }
+                Then("Skal trekkpliktig og skyldner være med") {
+                }
 
-            And("Skal kodeTrekkType være TRK1") {
-            }
+                Then("Skal datoer formatteres på yyyy-mm-dd format") {
+                    innrapporteringTrekk.prioritetFomDato shouldBe periode.periodeFraSkatt.startdato
+                }
 
-            And("Skal kilde være SOKOSUTLEGG") {
+                And("Skal kodeTrekkType være TRK1") {
+                }
+
+                And("Skal kilde være SOKOSUTLEGG") {
+                }
             }
         }
 
