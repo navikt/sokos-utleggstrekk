@@ -21,23 +21,16 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 object RepositoryNy {
-    fun doesTrekkExist(
-        trekkId: String,
-        sekvensnummer: Int,
-        trekkversjon: Int,
-        session: Session,
-    ): Boolean =
+    fun doesTrekkExist(trekkId: String, trekkversjon: Int, session: Session): Boolean =
         session.single(
             queryOf(
                 """
                 SELECT 1
                 FROM fraskatt
-                WHERE sekvensnummer = :sekvensnummer
-                  AND trekkid = :trekkId
+                WHERE trekkid = :trekkId
                   AND trekkversjon = :trekkversjon
                 """.trimIndent(),
                 mapOf(
-                    "sekvensnummer" to sekvensnummer,
                     "trekkId" to trekkId,
                     "trekkversjon" to trekkversjon,
                 ),
@@ -354,8 +347,8 @@ object RepositoryNy {
             ),
         ) { row -> TrekkFraSkatt(row) }
 
-    fun getTrekkFraSkatt(id: String, session: Session): TrekkFraSkatt? =
-        session.single(
+    fun getTrekkFraSkatt(id: String, session: Session): List<TrekkFraSkatt> =
+        session.list(
             queryOf(
                 """SELECT * FROM fraskatt WHERE trekkid=:id""".trimIndent(),
                 mapOf("id" to id),
@@ -425,7 +418,7 @@ object RepositoryNy {
             queryOf("""SELECT sekvensnummer FROM fraskatt ORDER BY sekvensnummer DESC LIMIT 1"""),
         ) { row -> row.intOrNull(1) } ?: 0
 
-    // TODO: Bruke fraskatt_status? Må også oppdatere hvordan ostransaksjon funker
+// TODO: Bruke fraskatt_status? Må også oppdatere hvordan ostransaksjon funker
     fun getTrekkSomIkkeErSendt(session: Session): List<TrekkFraSkatt> =
         session.list(
             queryOf(

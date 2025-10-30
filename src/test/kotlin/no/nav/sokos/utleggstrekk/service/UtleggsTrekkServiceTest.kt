@@ -92,7 +92,7 @@ internal class UtleggsTrekkServiceTest :
                     withClue("Perioder skal lagres") {
                         val perioder =
                             DBListener.dataSource.withTransaction { session ->
-                                RepositoryNy.getAllePerioderForTrekkId(trekkFraSkatt.trekkid, session)
+                                RepositoryNy.getAllePerioderForTrekkId(trekkFraSkatt.first().trekkid, session)
                             }
                         perioder.size shouldBe 1
                         val periode = perioder.first()
@@ -105,7 +105,7 @@ internal class UtleggsTrekkServiceTest :
                     withClue("Betalingsinformasjon skal lagres") {
                         val betalingsInformasjon =
                             DBListener.dataSource.withTransaction { session ->
-                                RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session)
+                                RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.first().id, session)
                             }
 
                         betalingsInformasjon.shouldNotBeNull()

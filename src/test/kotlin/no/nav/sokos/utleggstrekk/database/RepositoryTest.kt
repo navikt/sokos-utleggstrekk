@@ -279,7 +279,7 @@ class RepositoryTest :
 
         Given("Det finnes eksisterende trekk") {
             DBListener.clearDB()
-            doesTrekkExist("1", 1, 1) shouldBe false
+            doesTrekkExist("1", 1) shouldBe false
             val trekkpalegg =
                 jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             trekkpalegg.forEach { saveTrekkpaalegg(it) }
@@ -288,9 +288,9 @@ class RepositoryTest :
 
             val allTrekkFraSkatt = getAllTrekkFraSkatt()
             allTrekkFraSkatt.shouldNotBeEmpty()
-            doesTrekkExist("1", 1, 1) shouldBe true
-            doesTrekkExist("2_xx", 2, 1) shouldBe true
-            doesTrekkExist("1", 2, 2) shouldBe false
+            doesTrekkExist("1", 1) shouldBe true
+            doesTrekkExist("2_xx", 2) shouldBe true
+            doesTrekkExist("1", 2) shouldBe false
         }
 
         Given("Det kommer inn trekk ut av rekkefølge") {
@@ -310,7 +310,7 @@ class RepositoryTest :
 
         Given("To trekk finnes med status MOTTATT") {
             DBListener.clearDB()
-            doesTrekkExist("1", 1, 1) shouldBe false
+            doesTrekkExist("1", 1) shouldBe false
             val trekkpalegg =
                 jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             trekkpalegg.forEach { saveTrekkpaalegg(it) }
@@ -346,9 +346,9 @@ private fun compareTrekk(trekkpaalegg: Trekkpaalegg, lagret: TrekkFraSkatt) {
     lagret.trekkpliktig shouldBe trekkpaalegg.trekkpliktig
 }
 
-private fun doesTrekkExist(trekkId: String, sekvensnummer: Int, trekkversjon: Int): Boolean =
+private fun doesTrekkExist(trekkId: String, trekkversjon: Int): Boolean =
     DBListener.dataSource.withTransaction { session ->
-        RepositoryNy.doesTrekkExist(trekkId, sekvensnummer, trekkversjon, session)
+        RepositoryNy.doesTrekkExist(trekkId, trekkversjon, session)
     }
 
 private fun saveTrekkpaalegg(trekkpalegg: Trekkpaalegg): Long? =
@@ -363,7 +363,7 @@ private fun getMaxSekvensnummer(): Int =
 
 private fun getTrekkFraSkatt(id: String): TrekkFraSkatt? =
     DBListener.dataSource.withTransaction { session ->
-        RepositoryNy.getTrekkFraSkatt(id, session)
+        RepositoryNy.getTrekkFraSkatt(id, session).first()
     }
 
 private fun getAllTrekkFraSkatt(): List<TrekkFraSkatt> =

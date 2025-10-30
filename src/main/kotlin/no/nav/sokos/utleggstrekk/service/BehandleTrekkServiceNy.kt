@@ -57,6 +57,11 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
             RepositoryNy.getPerioderForTrekkVersjon(trekkFraSkatt.id, trekkFraSkatt.sekvensnummer, trekkFraSkatt.trekkversjon, session)
         }
 
+    fun trekkForTrekkId(trekkFraSkatt: TrekkFraSkatt): List<TrekkFraSkatt> =
+        dataSource.withTransaction { session ->
+            RepositoryNy.getTrekkFraSkatt(trekkFraSkatt.trekkid, session)
+        }
+
     fun betalingsInformasjonForTrekk(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt? =
         dataSource.withTransaction { session ->
             RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session)
@@ -219,18 +224,21 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
         return DokumentTilOppdrag(transaksjonsID, innrapporteringTrekk)
     }
 
-    fun getAksjonskodeForTrekk(trekkFraSkatt: TrekkFraSkatt): Aksjonskode =
-        when (Trekkstatus.valueOf(trekkFraSkatt.trekkstatus)) {
+    fun getAksjonskodeForTrekk(trekkFraSkatt: TrekkFraSkatt): Aksjonskode {
+        val trekkVersjon = trekkFraSkatt.trekkversjon
+
+        return when (Trekkstatus.valueOf(trekkFraSkatt.trekkstatus)) {
             AKTIV -> {
                 // TODO: Kan være NY med trekkversjon != 1
-                if (trekkFraSkatt.trekkversjon == 1) {
+                if (trekkVersjon == 1) {
                     NY
                 } else {
-                    ENDR
+                    trekkForTrekkId(trekkFraSkatt).find { it.trekkversjon == trekkVersjon - 1 }?.let { ENDR } ?: NY
                 }
             }
             AVSLUTTET -> {
                 ENDR
             }
         }
+    }
 }
