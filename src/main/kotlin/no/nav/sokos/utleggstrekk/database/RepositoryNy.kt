@@ -8,7 +8,6 @@ import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
-import no.nav.sokos.utleggstrekk.database.model.PeriodeStatus
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
@@ -396,12 +395,15 @@ object RepositoryNy {
             ),
         ) { row -> TrekkAlternativ.valueOf(row.string("trekkalternativ").uppercase()) }
 
-    fun getPerioderTilOs(trekkIdSke: String, session: Session): List<PeriodeTilOS> =
+    fun getPerioderTilOs(trekkIdSke: String, alternativ: TrekkAlternativ, session: Session): List<PeriodeTilOS> =
         session.list(
             queryOf(
                 """SELECT * FROM periode_til_os p JOIN transaksjon_os t ON p.transaksjons_os_id = t.id 
-                    WHERE trekkid_ske=:trekkIdSke AND t.kvittering_status = 'OK' OR t.kvittering_status = 'IKKE_MOTTATT'""",
-                mapOf("trekkIdSke" to trekkIdSke),
+                    WHERE trekk_id_ske=:trekkIdSke AND p.trekkAlternativ=:trekkAlternativ AND t.kvittering_status in ('IKKE_MOTTATT, 'OK')""",
+                mapOf(
+                    "trekkIdSke" to trekkIdSke,
+                    "trekkAlternativ" to alternativ,
+                ),
             ),
         ) { row -> PeriodeTilOS(row) }
 
@@ -430,8 +432,8 @@ object RepositoryNy {
             ),
         ) { row -> TrekkFraSkatt(row) }
 
-    fun updatePeriodeStatus(periode: PeriodeTilOS, status: PeriodeStatus, session: kotliquery.TransactionalSession) {
-    }
+    // fun updatePeriodeStatus(periode: PeriodeTilOS, status: PeriodeStatus, session: kotliquery.TransactionalSession) {
+    // }
 
     fun insertTrekkForOS(nyPeriode: PeriodeTilOS, session: Session) {}
 
@@ -450,7 +452,7 @@ object RepositoryNy {
         }
     }
 
-    private fun getPerioderForTransaksjon(transaksjonOSId: Long, session: Session): MutableList<PeriodeTilOS> {
+    private fun getPerioderForTransaksjon(transaksjonOSId: Long, session: Session): List<PeriodeTilOS> {
         val perioderTilOS = mutableListOf<PeriodeTilOS>()
         session.list(
             queryOf(
@@ -462,6 +464,19 @@ object RepositoryNy {
         ) { periodeRow ->
             perioderTilOS.add(PeriodeTilOS(periodeRow))
         }
-        return perioderTilOS
+        return perioderTilOS.toList()
     }
+
+    fun getAlternativForTrekk(trekk: TrekkFraSkatt, session: Session): Set<TrekkAlternativ> =
+        session
+            .list(
+                queryOf(
+                    """
+                    SELECT DISTINCT trekk_alternativ from transaksjon_os WHERE trekk_id_ske=:trekkIdSek'
+                    """.trimIndent(),
+                    mapOf("trekkIdSek" to trekk),
+                ),
+            ) { row ->
+                TrekkAlternativ.valueOf(row.string("trekk_alternativ"))
+            }.toSet()
 }

@@ -5,11 +5,11 @@ import java.time.LocalDate
 import kotliquery.Row
 
 data class PeriodeTilOS(
-    val id: Long,
-    val osTransaksjonId: Long,
+    val id: Long = 0,
+    val osTransaksjonId: Long = 0,
     val sats: Double,
     val fom: String,
-    val tom: String,
+    val tom: String?,
 ) {
     constructor(row: Row) : this(
         id = row.long("id"),
@@ -25,3 +25,8 @@ data class PeriodeTilOS(
             else -> LocalDate.parse(tom).isBefore(LocalDate.now())
         }
 }
+
+data class PerioderTilOS(
+    val LOPM: List<PeriodeTilOS>,
+    val LOPP: List<PeriodeTilOS>,
+)
