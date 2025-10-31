@@ -4,6 +4,8 @@ import java.time.LocalDate
 
 import kotliquery.Row
 
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+
 data class PeriodeTilOS(
     val id: Long = 0,
     val osTransaksjonId: Long = 0,
@@ -29,4 +31,11 @@ data class PeriodeTilOS(
 data class PerioderTilOS(
     val LOPM: List<PeriodeTilOS>,
     val LOPP: List<PeriodeTilOS>,
-)
+) {
+    operator fun get(alternativ: TrekkAlternativ) =
+        when {
+            alternativ == TrekkAlternativ.LOPP -> LOPP
+            alternativ == TrekkAlternativ.LOPM -> LOPM
+            else -> throw NotImplementedError("Ukjent trekkalternativ $alternativ")
+        }
+}

@@ -20,6 +20,7 @@ import no.nav.sokos.utleggstrekk.service.withTransaction
 
 class JmsListenerService(
     private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
+    private val repositoryNy: RepositoryNy,
     val osKvitteringQueue: Queue =
         MQQueue(PropertiesConfig.MQProperties().replyQueueName).apply {
             targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
@@ -51,7 +52,7 @@ class JmsListenerService(
         val kvitteringStatus = KvitteringStatus.fromValue(receipt.mmel?.alvorlighetsgrad)
         dataSource.withTransaction { session ->
 
-            RepositoryNy.updateTransaksjon(
+            repositoryNy.updateTransaksjon(
                 receipt.dokument.transaksjonsId,
                 kvitteringStatus,
                 receipt.dokument.innrapporteringTrekk.navTrekkId,
@@ -60,7 +61,7 @@ class JmsListenerService(
 
             if (kvitteringStatus == KvitteringStatus.FEIL) {
                 // TODO: Slackmelding
-                RepositoryNy.insertFeilmeldingFraOS(receipt, session)
+                repositoryNy.insertFeilmeldingFraOS(receipt, session)
                 logError(receipt)
             }
         }

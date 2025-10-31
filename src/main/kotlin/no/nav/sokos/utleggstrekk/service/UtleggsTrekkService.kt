@@ -18,7 +18,7 @@ import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 
 class UtleggsTrekkService(
     private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
-    private val behandleTrekkService: BehandleTrekkService = BehandleTrekkService(DatabaseService(dataSource)),
+    private val repositoryNy: RepositoryNy = RepositoryNy(dataSource),
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: JmsProducerService =
         JmsProducerService(
@@ -27,7 +27,7 @@ class UtleggsTrekkService(
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 },
             replyQueue =
-                JmsListenerService().osKvitteringQueue,
+                JmsListenerService(dataSource, repositoryNy).osKvitteringQueue,
         ),
 ) {
     private val logger = KotlinLogging.logger { }
@@ -39,12 +39,12 @@ class UtleggsTrekkService(
         processTrekkpaalegg(nyeUtleggsTrekk)
 
         dataSource.withTransaction { session ->
-            RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt(session)
+            repositoryNy.getTransaksjonerTilOsSomIkkeErSendt(session)
         }
     }
 
     private suspend fun hentUtleggsTrekk(): List<Trekkpaalegg> {
-        val sisteSekvensnr = dataSource.withTransaction { session -> RepositoryNy.getLastSekvensnummer(session) }
+        val sisteSekvensnr = dataSource.withTransaction { session -> repositoryNy.getLastSekvensnummer(session) }
         return skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
     }
 
@@ -55,20 +55,20 @@ class UtleggsTrekkService(
     private fun saveTrekkpalegg(trekkpaalegg: List<Trekkpaalegg>) {
         trekkpaalegg.forEach { trekk ->
             dataSource.withTransaction { session ->
-                RepositoryNy.insertTrekkFraSkatt(trekk, session)
+                repositoryNy.insertTrekkFraSkatt(trekk, session)
             }
         }
     }
 
     private fun sendTrekkTilOS(dto: OSDto) {
         dataSource.withTransaction { session ->
-            RepositoryNy.insertTransaksjonTilOs(dto, session)
+            repositoryNy.insertTransaksjonTilOs(dto, session)
         }
         runCatching {
             mqProducer.send(jsonConfig.encodeToString(dto.dokumentTilOppdrag))
         }.onSuccess {
             dataSource.withTransaction { session ->
-                RepositoryNy.updateTransaksjonStatus(dto.transaksjonID, TransaksjonsStatus.SENDT, session)
+                repositoryNy.updateTransaksjonStatus(dto.transaksjonID, TransaksjonsStatus.SENDT, session)
             }
         }.onFailure { exception ->
             logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }

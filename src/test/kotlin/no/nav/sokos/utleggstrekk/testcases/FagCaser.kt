@@ -3,9 +3,9 @@ package no.nav.sokos.utleggstrekk.testcases
 import io.kotest.core.spec.style.BehaviorSpec
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
+import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
 import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.resourceToString

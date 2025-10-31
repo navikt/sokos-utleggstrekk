@@ -8,7 +8,6 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.KVITTERING_FEILET
@@ -16,7 +15,6 @@ import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.KVITTERING_OK
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 private val logger = KotlinLogging.logger { }
 
@@ -66,20 +64,6 @@ class DatabaseService(private val dataSource: HikariDataSource = PostgresDataSou
         dataSource.withTransaction { session ->
             repository.fetchPerioderForTrekkVersion(trekk, session)
         }
-
-    fun hentSisteSekvensnummer(): Int =
-        dataSource.withTransaction { session ->
-            repository.fetchLastSekvensnr(session)
-        }
-
-    fun lagreUtleggstrekkNy(trekkListe: List<Trekkpaalegg>) {
-        dataSource.withTransaction { session ->
-            trekkListe.forEach { trekk ->
-                // Skal det lagres i vår kule klasse her?
-                RepositoryNy.insertTrekkFraSkatt(trekk, session)
-            }
-        }
-    }
 
     fun lagreGenerertePerioder(perioder: List<TrekkPeriodeTable>) {
         dataSource.withTransaction { session ->

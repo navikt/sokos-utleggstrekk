@@ -5,18 +5,18 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldBeEmpty
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.unmockkObject
 
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -26,7 +26,6 @@ class BehandleTrekkServiceTest :
 
         afterTest {
             clearAllMocks()
-            unmockkObject(RepositoryNy)
         }
 
         fun lagTestTrekkFraSkatt(trekkVersjon: Int = 1): TrekkFraSkatt {
@@ -97,13 +96,25 @@ class BehandleTrekkServiceTest :
             alleTrekkSomIkkeErSendt: List<TrekkFraSkatt>,
             perioderForTrekkFraSkatt: List<PeriodeFraSkatt>,
             alleTrekkForTrekkId: List<TrekkFraSkatt>,
+            kjenteLOPPPerioder: List<PeriodeTilOS> = emptyList(),
+            kjenteLOPMPerioder: List<PeriodeTilOS> = emptyList(),
         ): BehandleTrekkServiceNy {
             val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(alleTrekkSomIkkeErSendt.first())
-            val behandleTrekkServiceNy = spyk(BehandleTrekkServiceNy(mockk(relaxed = true)))
-            every { behandleTrekkServiceNy.trekkSomSkalSendes() } returns alleTrekkSomIkkeErSendt
-            every { behandleTrekkServiceNy.perioderForTrekkVersjon(any()) } returns perioderForTrekkFraSkatt
-            every { behandleTrekkServiceNy.trekkForTrekkId(any()) } returns alleTrekkForTrekkId
-            every { behandleTrekkServiceNy.betalingsInformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
+            val repositoryNy = mockk<RepositoryNy>()
+            val behandleTrekkServiceNy = BehandleTrekkServiceNy(mockk(relaxed = true), repositoryNy)
+            val trekkAlternativIOS =
+                buildSet {
+                    if (kjenteLOPMPerioder.isNotEmpty()) add(TrekkAlternativ.LOPM)
+                    if (kjenteLOPPPerioder.isNotEmpty()) add(TrekkAlternativ.LOPP)
+                }
+
+            every { repositoryNy.getOsAlternativForTrekk(any(), any()) } returns trekkAlternativIOS
+            every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM, any()) } returns kjenteLOPMPerioder
+            every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP, any()) } returns kjenteLOPPPerioder
+            every { repositoryNy.getTrekkSomIkkeErSendt(any()) } returns alleTrekkSomIkkeErSendt
+            every { repositoryNy.getPerioderForTrekk(any(), any()) } returns perioderForTrekkFraSkatt
+            every { repositoryNy.getTrekkFraSkatt(any(), any()) } returns alleTrekkForTrekkId
+            every { repositoryNy.getBetalingsinformasjonForTrekk(any(), any()) } returns betalingsinformasjonForTrekkFraSkatt
 
             return behandleTrekkServiceNy
         }
@@ -115,20 +126,25 @@ class BehandleTrekkServiceTest :
             val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(trekkFraSkatt)
 
             val perioderForTrekkVersjon = listOf(lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, sats = 5000.0))
+            val periode = perioderForTrekkVersjon.first()
             val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
 
-            val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(perioderForTrekkVersjon)
+            // behandleTrekkServiceNy.lagTrekkDokument(trekkFraSkatt)
+            // val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(perioderForTrekkVersjon)
+            // val periode = periodeInformasjon.first()
 
-            val periode = periodeInformasjon.first()
             When("Trekkdokument dannes for trekk fra skatt") {
-                val trekkDokument = behandleTrekkServiceNy.lagTrekkDokument(trekkFraSkatt, periodeInformasjon)
+                val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(trekkFraSkatt)
+                trekkDokumenter.size shouldBe 1
+
+                val trekkDokument = trekkDokumenter.first()
 
                 val innrapporteringTrekk = trekkDokument.innrapporteringTrekk
 
                 Then("Skal all informasjon være med") {
                     innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
                     innrapporteringTrekk.kreditorTrekkId shouldBe "${trekkFraSkatt.trekkid}${innrapporteringTrekk.kodeTrekkAlternativ.value}"
-                    innrapporteringTrekk.kodeTrekkAlternativ shouldBe periode.trekkalternativ
+                    innrapporteringTrekk.kodeTrekkAlternativ shouldBe periode.trekkAlternativ()
 
                     innrapporteringTrekk.gyldigTomDato.shouldBeNull()
                     innrapporteringTrekk.perioder.periode.size shouldBe 1
@@ -146,10 +162,10 @@ class BehandleTrekkServiceTest :
                             .toString()
                     innrapporteringTrekk.perioder.periode
                         .first()
-                        .periodeFomDato shouldBe periode.periodeFraSkatt.startdato
+                        .periodeFomDato shouldBe periode.startdato
                     innrapporteringTrekk.perioder.periode
                         .first()
-                        .periodeTomDato shouldBe periode.periodeFraSkatt.sluttdato
+                        .periodeTomDato shouldBe periode.sluttdato
                 }
 
                 Then("Skal datoer formatteres på yyyy-mm-dd format") {
@@ -180,14 +196,14 @@ class BehandleTrekkServiceTest :
                     val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
 
                     val perioderForTrekkVersjon = lagPerioderForSkattLOPM(trekkFraSkatt)
-                    val allePerioderForTrekkId = perioderForTrekkVersjon
                     val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first())
 
-                    val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(perioderForTrekkVersjon)
-                    val trekkDokument = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first(), periodeInformasjon).innrapporteringTrekk
                     Then("Skal trekket bli til 1 NYTT trekk med 3 perioder") {
-                        trekkDokument.aksjonskode shouldBe Aksjonskode.NY
-                        trekkDokument.perioder.periode.size shouldBe 3
+                        trekkDokumenter shouldHaveSize 1
+                        val trekkDokument = trekkDokumenter.first()
+                        trekkDokument.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
+                        trekkDokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
                     }
                 }
                 When("Trekket har trekkversjon 2") {
@@ -195,28 +211,38 @@ class BehandleTrekkServiceTest :
                     val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
                     val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
                     val allePerioderForTrekkVersjon = lagPerioderForSkattLOPM(trekkFraSkatt)
-
+                    val kjenteLOPMPerioder = allePerioderForTrekkVersjon.map { PeriodeTilOS(sats = it.trekkbeloep!!, periodeFomDato = it.startdato, periodeTomDato = it.sluttdato) }
                     val eksisterendeTrekk = listOf(lagTestTrekkFraSkatt(1))
 
                     And("Vi har fått trekkversjon 1") {
                         val alleTrekkForTrekkId = eksisterendeTrekk
-                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, allePerioderForTrekkVersjon, alleTrekkForTrekkId)
-                        val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(allePerioderForTrekkVersjon)
-                        val trekkDokument = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first(), periodeInformasjon).innrapporteringTrekk
+                        val behandleTrekkServiceNy =
+                            setUpBehandleTrekkServiceNy(
+                                alleTrekkSomIkkeErSendt,
+                                allePerioderForTrekkVersjon,
+                                alleTrekkForTrekkId,
+                                kjenteLOPMPerioder = kjenteLOPMPerioder,
+                            )
+                        //                       val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(allePerioderForTrekkVersjon)
+                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first())
 
                         Then("Skal trekket bli til 1 ENDRET trekk med 3 perioder") {
-                            trekkDokument.aksjonskode shouldBe Aksjonskode.ENDR
-                            trekkDokument.perioder.periode.size shouldBe 3
+                            trekkDokumenter shouldHaveSize 1
+                            val trekkDokument = trekkDokumenter.first()
+                            trekkDokument.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.ENDR
+                            trekkDokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
                         }
                     }
                     And("Vi ikke har fått trekkversjon 1") {
                         val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, allePerioderForTrekkVersjon, emptyList())
-                        val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(allePerioderForTrekkVersjon)
-                        val trekkDokument = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first(), periodeInformasjon).innrapporteringTrekk
-                        Then("Skal trekket bli til 1 NYTT trekk med 3 perioder") {
+                        // val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(allePerioderForTrekkVersjon)
+                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first())
 
-                            trekkDokument.aksjonskode shouldBe Aksjonskode.NY
-                            trekkDokument.perioder.periode.size shouldBe 3
+                        Then("Skal trekket bli til 1 NYTT trekk med 3 perioder") {
+                            trekkDokumenter shouldHaveSize 1
+                            val trekkDokument = trekkDokumenter.first()
+                            trekkDokument.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
+                            trekkDokument.innrapporteringTrekk.perioder.periode.size shouldBe 3
                         }
                     }
                 }

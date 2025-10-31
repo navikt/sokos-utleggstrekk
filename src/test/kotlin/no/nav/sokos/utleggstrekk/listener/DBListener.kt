@@ -13,6 +13,7 @@ import org.testcontainers.utility.DockerImageName
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.service.withTransaction
 
 object DBListener : TestListener {
@@ -35,6 +36,8 @@ object DBListener : TestListener {
     }.apply {
         PostgresDataSource.migrate(container.toDataSource())
     }
+
+    val RepositoryNy = RepositoryNy(dataSource)
 
     fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
 

@@ -37,6 +37,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
+import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.resourceToString
 

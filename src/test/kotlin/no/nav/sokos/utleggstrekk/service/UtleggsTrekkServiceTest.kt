@@ -13,13 +13,13 @@ import io.mockk.just
 import io.mockk.mockk
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
+import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 import no.nav.sokos.utleggstrekk.util.TestData.Trekkpaalegg
 
@@ -67,9 +67,9 @@ internal class UtleggsTrekkServiceTest :
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     dataSource = DBListener.dataSource,
+                    RepositoryNy,
                     skeClient = skeClientMock,
                     mqProducer = mqProducerMock,
-                    behandleTrekkService = behandleTrekkServiceMock,
                 )
 
             When("Trekk sendes") {

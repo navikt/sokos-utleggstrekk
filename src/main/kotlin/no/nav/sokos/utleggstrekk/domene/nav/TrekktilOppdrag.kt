@@ -3,8 +3,7 @@ package no.nav.sokos.utleggstrekk.domene.nav
 import kotlinx.serialization.Serializable
 
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 // De er på samme format
@@ -86,10 +85,11 @@ enum class Aksjonskode(val value: String) {
     ;
 
     companion object {
+        @Deprecated("Skal slettes")
         fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode =
-            if (utleggstrekkTable.trekkstatus == AKTIV && utleggstrekkTable.trekkversjon == 1) {
+            if (utleggstrekkTable.trekkstatus == Trekkstatus.AKTIV && utleggstrekkTable.trekkversjon == 1) {
                 NY
-            } else if (utleggstrekkTable.trekkstatus == AVSLUTTET) {
+            } else if (utleggstrekkTable.trekkstatus == Trekkstatus.AVSLUTTET) {
                 OPPH
             } else {
                 ENDR

@@ -8,12 +8,10 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.apache.activemq.artemis.jms.client.ActiveMQQueue
 
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
-import no.nav.sokos.utleggstrekk.database.RepositoryNy.getAllTransaksjonerTilOs
-import no.nav.sokos.utleggstrekk.database.RepositoryNy.getTransaksjonTilOs
 import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.listener.DBListener
+import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.listener.MQListener
 import no.nav.sokos.utleggstrekk.listener.MQListener.connectionFactory
 import no.nav.sokos.utleggstrekk.service.withTransaction
@@ -27,6 +25,7 @@ class JmsListenerServiceTest :
 
         JmsListenerService(
             DBListener.dataSource,
+            RepositoryNy,
             osKvitteringQueue = replyQueue,
             connectionFactory,
         )
@@ -41,7 +40,7 @@ class JmsListenerServiceTest :
 
         Given("Vi mottar en kvittering") {
             DBListener.loadInitScript("mq/trekk_med_kvittering_ok/init_db.sql")
-            val transaksjonerBefore = DBListener.dataSource.withTransaction { session -> getAllTransaksjonerTilOs(session) }
+            val transaksjonerBefore = DBListener.dataSource.withTransaction { session -> RepositoryNy.getAllTransaksjonerTilOs(session) }
             transaksjonerBefore.size shouldBe 1
 
             val transaksjon = transaksjonerBefore.first()
@@ -52,7 +51,7 @@ class JmsListenerServiceTest :
                 jmsProducerTrekk.send(kvittering)
                 Then("Skal trekk oppdateres med status ${KvitteringStatus.OK}") {
                     eventually(duration = 1.seconds) {
-                        val transaksjonerAfter = DBListener.dataSource.withTransaction { session -> getTransaksjonTilOs(transaksjon.transaksjonsID, session) }
+                        val transaksjonerAfter = DBListener.dataSource.withTransaction { session -> RepositoryNy.getTransaksjonTilOs(transaksjon.transaksjonsID, session) }
                         transaksjonerAfter.shouldNotBeNull()
                         transaksjonerAfter.kvitteringStatus shouldBe KvitteringStatus.OK
                         transaksjonerAfter.navTrekkId shouldBe "navTrekkId01"
@@ -69,7 +68,7 @@ class JmsListenerServiceTest :
                     eventually(duration = 1.seconds) {
                         val trekkAfter =
                             DBListener.dataSource.withTransaction { session ->
-                                getTransaksjonTilOs(transaksjon.transaksjonsID, session)
+                                RepositoryNy.getTransaksjonTilOs(transaksjon.transaksjonsID, session)
                             }
                         trekkAfter.shouldNotBeNull()
                         trekkAfter.kvitteringStatus shouldBe KvitteringStatus.FEIL

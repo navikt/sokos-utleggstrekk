@@ -1,5 +1,6 @@
 package no.nav.sokos.utleggstrekk.database
 
+import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Session
 import kotliquery.queryOf
 
@@ -20,7 +21,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
-object RepositoryNy {
+class RepositoryNy(private val dataSource: HikariDataSource) {
     fun doesTrekkExist(trekkId: String, trekkversjon: Int, session: Session): Boolean =
         session.single(
             queryOf(
@@ -426,6 +427,9 @@ object RepositoryNy {
             ),
         ) { row -> PeriodeFraSkatt(row) }
 
+    fun getPerioderForTrekk(trekkFraSkatt: TrekkFraSkatt, session: Session): List<PeriodeFraSkatt> =
+        getPerioderForTrekkVersjon(trekkFraSkatt.id, trekkFraSkatt.sekvensnummer, trekkFraSkatt.trekkversjon, session)
+
     fun getTrekkAlternativOS(trekkIdSke: String, session: Session): List<TrekkAlternativ> =
         session.list(
             queryOf(
@@ -535,12 +539,13 @@ object RepositoryNy {
         return perioderTilOS.toList()
     }
 
-    fun getAlternativForTrekk(trekk: TrekkFraSkatt, session: Session): Set<TrekkAlternativ> =
+    fun getOsAlternativForTrekk(trekk: TrekkFraSkatt, session: Session): Set<TrekkAlternativ> =
         session
             .list(
                 queryOf(
                     """
-                    SELECT DISTINCT trekk_alternativ from transaksjon_os WHERE trekk_id_ske=:trekkIdSek'
+                    SELECT DISTINCT trekk_alternativ from transaksjon_os WHERE trekk_id_ske=:trekkIdSek AND
+                        transaksjonStatus NOT IN ('FEIL', 'UKJENT')
                     """.trimIndent(),
                     mapOf("trekkIdSek" to trekk),
                 ),

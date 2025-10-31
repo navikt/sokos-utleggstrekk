@@ -16,6 +16,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
+// TODO: Remove me
 @Serializable
 data class UtleggstrekkTable(
     val utleggstrekkTableId: Long,

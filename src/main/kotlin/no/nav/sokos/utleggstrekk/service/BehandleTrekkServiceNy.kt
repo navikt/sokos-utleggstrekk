@@ -9,7 +9,6 @@ import com.zaxxer.hikari.HikariDataSource
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
-import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.PerioderTilOS
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
@@ -25,89 +24,108 @@ import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
 
 const val KODE_TREKKTYPE = "TRK1"
 const val KILDE = "SOKOSUTLEGG"
 
 // todo: flytt datasource inn RepositoryNy
-class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = PostgresDataSource.dataSource) {
+class BehandleTrekkServiceNy(
+    private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
+    private val repositoryNy: RepositoryNy = RepositoryNy(dataSource),
+) {
     // Ting er allerede lagret i databasen når vi kommer hit
 
     fun schedule() {
         trekkSomSkalSendes().forEach { trekk ->
-            val document = lagTrekkDokument(trekk)
-            val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document)
-            dataSource.withTransaction { session -> RepositoryNy.insertTransaksjonTilOs(dto, session) }
+            val documents = lagTrekkDokument(trekk)
+
+            documents.forEach { document ->
+                val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document)
+                dataSource.withTransaction { session -> repositoryNy.insertTransaksjonTilOs(dto, session) }
+            }
         }
     }
 
     fun trekkSomSkalSendes(): List<TrekkFraSkatt> =
         dataSource.withTransaction { session ->
-            RepositoryNy.getTrekkSomIkkeErSendt(session)
+            repositoryNy.getTrekkSomIkkeErSendt(session)
         }
 
-    fun perioderForTrekkVersjon(trekkFraSkatt: TrekkFraSkatt) =
+    fun osAlternativForTrekk(trekkFraSkatt: TrekkFraSkatt) =
         dataSource.withTransaction { session ->
-            RepositoryNy.getPerioderForTrekkVersjon(trekkFraSkatt.id, trekkFraSkatt.sekvensnummer, trekkFraSkatt.trekkversjon, session)
+            repositoryNy.getOsAlternativForTrekk(trekkFraSkatt, session)
         }
 
     fun trekkForTrekkId(trekkFraSkatt: TrekkFraSkatt): List<TrekkFraSkatt> =
         dataSource.withTransaction { session ->
-            RepositoryNy.getTrekkFraSkatt(trekkFraSkatt.trekkid, session)
+            repositoryNy.getTrekkFraSkatt(trekkFraSkatt.trekkid, session)
         }
 
     fun betalingsInformasjonForTrekk(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt? =
         dataSource.withTransaction { session ->
-            RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session)
+            repositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id, session)
         }
 
-    fun lagTrekkDokument(trekk: TrekkFraSkatt): Document {
-        // For å lage dokument trenger vi perioder som hører til denne trekkversjonen
-        val perioderForTrekkversjon = perioderForTrekkVersjon(trekk)
+    fun lagTrekkDokument(trekk: TrekkFraSkatt): List<Document> {
+        // Vi trenger å vite om trekk(ene) er kjent for OS
+        val kjenteAlternativ = osAlternativForTrekk(trekk)
+        val nyePerioderTilOS = nyePerioderTilOS(trekk)
 
-        /*   if (trekk.trekkversjon != 1) {
-               lagTrekkPerioderIDB(trekk, perioderForTrekkversjon)
-           }*/
-
-        val perioderInformasjon = utledTrekkAlternativForPeriode(perioderForTrekkversjon)
-
-        return lagTrekkDokument(trekk, perioderInformasjon)
+        return listOf(LOPM, LOPP).mapNotNull { alternativ ->
+            when {
+                nyePerioderTilOS[alternativ].isEmpty() -> null
+                else ->
+                    lagTrekkDokument(
+                        trekkFraSkatt = trekk,
+                        trekkalternativ = alternativ,
+                        aksjonskode = if (kjenteAlternativ.contains(alternativ)) ENDR else NY,
+                        perioderTilOS = nyePerioderTilOS[alternativ],
+                    )
+            }
+        }
     }
 
-    data class PeriodeInformasjon(
-        val trekkidSke: String,
-        val periodeFraSkatt: PeriodeFraSkatt,
-        val trekkalternativ: TrekkAlternativ,
-    )
-
-    fun utledTrekkAlternativForPeriode(perioder: List<PeriodeFraSkatt>): List<PeriodeInformasjon> =
-        perioder.map { periode ->
-            val trekkalternativ = getTrekkAlternativ(periode)
-            PeriodeInformasjon(periode.trekkIdSke, periode, trekkalternativ)
-        }
-
-    fun nyeTrekkTilOs(trekkFraSkatt: TrekkFraSkatt, trekkPerioder: List<PeriodeFraSkatt>): PerioderTilOS =
+    fun nyePerioderTilOS(trekkFraSkatt: TrekkFraSkatt): PerioderTilOS =
         dataSource.withTransaction { session ->
+            val trekkPerioder = repositoryNy.getPerioderForTrekk(trekkFraSkatt, session)
+
+            // Alternativene som finnes i dette trekket + alternativ fra dokumenter vi har sendt eller skal sende til OS
             val alternativ =
                 buildSet {
                     addAll(trekkPerioder.map { it.trekkAlternativ() }.distinct())
-                    addAll(RepositoryNy.getAlternativForTrekk(trekkFraSkatt, session))
+                    addAll(repositoryNy.getOsAlternativForTrekk(trekkFraSkatt, session))
                 }
 
-            val gamlePerioder =
+            // Vi henter kjente osPerioder for å se etter endringer. Bare perioder som er fortsatt gyldige og som har en sats er relevante.
+            val osPerioder =
                 alternativ.associateWith { alternativ ->
-                    RepositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, alternativ, session).filterNot { it.isExpired() }
+                    repositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, alternativ, session).filterNot { it.isExpired() || it.sats == 0.0 }
                 }
 
-            val nyePerioder = trekkPerioder.filterNot { periode -> gamlePerioder[periode.trekkAlternativ()]?.any { periode.sameAs(it) } ?: false }
-            val nyePerioderForOS = alternativ.associateWith { mutableListOf<PeriodeTilOS>() }.toMutableMap()
+            // De osPeriodene med sats, fortsatt gyldige, men som ikke finnes i trekkFraSkatt gjelder ikke lenger og må nulles i OS.
+            val osPerioderIkkeItrekkFraSkatt =
+                osPerioder.mapValues { (alternativ, list) ->
+                    list.filterNot { osPeriode -> trekkPerioder.any { it.trekkAlternativ() == alternativ && it.sameAs(osPeriode) } }
+                }
 
+            // For hvert trekkAlternativ har vi en liste over nye perioder til OS.
+            val nyePerioderForOS = alternativ.associateWith { mutableListOf<PeriodeTilOS>() }
+
+            // For hver periode i OS som er gyldig og har sats men ikke er med i trekkFra skatt lager vi en ny periode for å nulle den i OS.
+            alternativ.forEach { alternativ ->
+                osPerioderIkkeItrekkFraSkatt.getValue(alternativ).forEach { periodeBorte ->
+                    nyePerioderForOS.getValue(alternativ).add(periodeBorte.copy(id = 0L, sats = 0.0, osTransaksjonId = 0L))
+                }
+            }
+
+            // Vi filterer vekk alle perioder OS kjenner fra før. Disse skal ikke bli nye perioder til OS.
+            val nyePerioder = trekkPerioder.filterNot { periode -> osPerioder.getValue(periode.trekkAlternativ()).any { periode.sameAs(it) } }
+
+            // for hver periode ikke kjent for OS, for hvert aktuelle trekkalternativ, lager vi en ny periode.
             nyePerioder.forEach { periode ->
                 alternativ.forEach { alternativ ->
-                    nyePerioderForOS[alternativ]?.add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = periode.startdato, periodeTomDato = periode.sluttdato))
+                    nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = periode.startdato, periodeTomDato = periode.sluttdato))
                 }
             }
 
@@ -177,50 +195,26 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
     }
      */
 
-    private fun getTrekkAlternativ(periodeFraSkatt: PeriodeFraSkatt): TrekkAlternativ =
-        when {
-            periodeFraSkatt.trekkbeloep != null && periodeFraSkatt.trekkprosent == null -> {
-                LOPM
-            }
-
-            periodeFraSkatt.trekkprosent != null && periodeFraSkatt.trekkbeloep == null -> {
-                LOPP
-            }
-            else -> {
-                throw NotImplementedError(
-                    "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode",
-                )
-            }
-        }
-
-    fun lagTrekkDokument(trekkFraSkatt: TrekkFraSkatt, perioderInformasjon: List<PeriodeInformasjon>): Document {
+    fun lagTrekkDokument(
+        trekkFraSkatt: TrekkFraSkatt,
+        trekkalternativ: TrekkAlternativ,
+        aksjonskode: Aksjonskode,
+        perioderTilOS: List<PeriodeTilOS>,
+    ): Document {
         // Må finne: TSSID, Aksjonskode, Trekkalternativ, Perioder
         // kreditorTrekkId skal ha M eller P på slutten
 
         // Må hente betalingsinformasjonen til trekket for å finne tssid og kid
 
-        val trekkalternativ = perioderInformasjon.first().trekkalternativ
         val betalingsinformasjon: BetalingsinformasjonFraSkatt = betalingsInformasjonForTrekk(trekkFraSkatt) ?: throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
 
         val perioder =
             Perioder(
-                perioderInformasjon.map {
-                    val sats: Double =
-                        when (it.trekkalternativ) {
-                            LOPM -> it.periodeFraSkatt.trekkbeloep ?: error("trekkbeloep is null for LOPM")
-                            LOPP -> it.periodeFraSkatt.trekkprosent ?: error("trekkprosent is null for LOPP")
-                        }
-                    Periode(
-                        periodeFomDato = it.periodeFraSkatt.startdato,
-                        periodeTomDato = it.periodeFraSkatt.sluttdato ?: "9999-12-31",
-                        sats,
-                    )
-                },
+                perioderTilOS.map { Periode(it.periodeFomDato, it.periodeTomDato ?: "9999-12-31", it.sats) },
             )
 
         val transaksjonsID = UUID.randomUUID().toString()
         val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().minusDays(1).toString() else null
-        val aksjonskode = getAksjonskodeForTrekk(trekkFraSkatt)
         val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
 
         val tssId = "kreditorIdTss"
@@ -250,24 +244,5 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
             )
 
         return DokumentTilOppdrag(transaksjonsID, innrapporteringTrekk)
-    }
-
-    fun getAksjonskodeForTrekk(trekkFraSkatt: TrekkFraSkatt): Aksjonskode {
-        val trekkVersjon = trekkFraSkatt.trekkversjon
-
-        return when (Trekkstatus.valueOf(trekkFraSkatt.trekkstatus)) {
-            AKTIV -> {
-                // TODO: Kan være NY med trekkversjon != 1
-                if (trekkVersjon == 1) {
-                    NY
-                } else {
-                    trekkForTrekkId(trekkFraSkatt).find { it.trekkversjon == trekkVersjon - 1 }?.let { ENDR } ?: NY
-                }
-            }
-
-            AVSLUTTET -> {
-                ENDR
-            }
-        }
     }
 }
