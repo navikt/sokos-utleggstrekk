@@ -29,11 +29,6 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
 
-data class MeldingTilOppdrag(
-    val transaksjonsID: String,
-    val dokument: DokumentTilOppdrag,
-)
-
 const val KODE_TREKKTYPE = "TRK1"
 const val KILDE = "SOKOSUTLEGG"
 
@@ -112,7 +107,7 @@ class BehandleTrekkServiceNy(private val dataSource: HikariDataSource = Postgres
 
             nyePerioder.forEach { periode ->
                 alternativ.forEach { alternativ ->
-                    nyePerioderForOS[alternativ]?.add(PeriodeTilOS(sats = periode.satsFor(alternativ), fom = periode.startdato, tom = periode.sluttdato))
+                    nyePerioderForOS[alternativ]?.add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = periode.startdato, periodeTomDato = periode.sluttdato))
                 }
             }
 

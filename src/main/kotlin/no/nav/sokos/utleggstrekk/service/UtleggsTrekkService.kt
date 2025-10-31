@@ -68,7 +68,7 @@ class UtleggsTrekkService(
             mqProducer.send(jsonConfig.encodeToString(dto.dokumentTilOppdrag))
         }.onSuccess {
             dataSource.withTransaction { session ->
-                RepositoryNy.updateTransaksjonStatus(dto.transaksjonsID, TransaksjonsStatus.SENDT, session)
+                RepositoryNy.updateTransaksjonStatus(dto.transaksjonID, TransaksjonsStatus.SENDT, session)
             }
         }.onFailure { exception ->
             logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }

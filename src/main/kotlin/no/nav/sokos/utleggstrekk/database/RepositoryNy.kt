@@ -10,14 +10,15 @@ import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
-import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 object RepositoryNy {
     fun doesTrekkExist(trekkId: String, trekkversjon: Int, session: Session): Boolean =
@@ -35,6 +36,51 @@ object RepositoryNy {
                 ),
             ),
         ) { 1 } != null
+
+    fun insertPeriodeFraSkatt(
+        fraSkattId: Long?,
+        trekkIdSke: String,
+        periode: TrekkstorrelseForPeriode,
+        session: Session,
+    ) {
+        session.update(
+            queryOf(
+                """
+                INSERT INTO periode(
+                fraskatt_id,
+                trekk_id_ske,
+                dato_start, 
+                dato_slutt,
+                trekkbelop,
+                trekkprosent)
+                VALUES(:fraskattID, :trekkIDSke, :startdato, :sluttDato, :trekkBelop, :trekkProsent)     
+                """.trimIndent(),
+                mapOf(
+                    "fraskattID" to fraSkattId,
+                    "trekkIDSke" to trekkIdSke,
+                    "startdato" to periode.startdato,
+                    "sluttDato" to periode.sluttdato,
+                    "trekkBelop" to periode.trekkbeloep?.trekkbeloep,
+                    "trekkProsent" to periode.trekkprosent?.trekkprosent,
+                ),
+            ),
+        )
+    }
+
+    fun insertFraSkattStatus(fraSkattId: Long?, status: SkattTrekkStatus, session: Session) {
+        session.update(
+            queryOf(
+                """
+                INSERT INTO fraskatt_status(fraskatt_id, status)
+                VALUES(:fraskattID, :status)
+                """.trimIndent(),
+                mapOf(
+                    "fraskattID" to fraSkattId,
+                    "status" to status.name,
+                ),
+            ),
+        )
+    }
 
     fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg, session: Session): Long? {
         val fraSkattId =
@@ -67,29 +113,15 @@ object RepositoryNy {
                 ),
             )
         trekkpaalegg.trekkstoerrelseForPeriode.forEach { periode ->
-            session.update(
-                queryOf(
-                    """
-                    INSERT INTO periode(
-                    fraskatt_id,
-                    trekk_id_ske,
-                    dato_start, 
-                    dato_slutt,
-                    trekkbelop,
-                    trekkprosent)
-                    VALUES(:fraskattID, :trekkIDSke, :startdato, :sluttDato, :trekkBelop, :trekkProsent)     
-                    """.trimIndent(),
-                    mapOf(
-                        "fraskattID" to fraSkattId,
-                        "trekkIDSke" to trekkpaalegg.trekkid,
-                        "startdato" to periode.startdato,
-                        "sluttDato" to periode.sluttdato,
-                        "trekkBelop" to periode.trekkbeloep?.trekkbeloep,
-                        "trekkProsent" to periode.trekkprosent?.trekkprosent,
-                    ),
-                ),
-            )
+            insertPeriodeFraSkatt(fraSkattId, trekkpaalegg.trekkid, periode, session)
         }
+        insertBetalingsinformasjonFraSkatt(fraSkattId, trekkpaalegg.betalingsinformasjon, session)
+        insertFraSkattStatus(fraSkattId, SkattTrekkStatus.MOTTATT, session)
+
+        return fraSkattId
+    }
+
+    fun insertBetalingsinformasjonFraSkatt(fraSkattId: Long?, betalingsInformasjon: Betalingsinformasjon, session: Session) {
         session.update(
             queryOf(
                 """
@@ -103,25 +135,12 @@ object RepositoryNy {
                 """.trimIndent(),
                 mapOf(
                     "fraskattID" to fraSkattId,
-                    "betalingsmottaker" to trekkpaalegg.betalingsinformasjon.betalingsmottaker,
-                    "kidnummer" to trekkpaalegg.betalingsinformasjon.kidnummer,
-                    "kontonummer" to trekkpaalegg.betalingsinformasjon.kontonummer,
+                    "betalingsmottaker" to betalingsInformasjon.betalingsmottaker,
+                    "kidnummer" to betalingsInformasjon.kidnummer,
+                    "kontonummer" to betalingsInformasjon.kontonummer,
                 ),
             ),
         )
-        session.update(
-            queryOf(
-                """
-                INSERT INTO fraskatt_status(fraskatt_id, status)
-                VALUES(:fraskattID, :status)
-                """.trimIndent(),
-                mapOf(
-                    "fraskattID" to fraSkattId,
-                    "status" to MOTTATT.name,
-                ),
-            ),
-        )
-        return fraSkattId
     }
 
     fun insertFeilmeldingFraOS(kvittering: KvitteringFraOppdrag, session: Session) {
@@ -153,73 +172,95 @@ object RepositoryNy {
         )
     }
 
+    private object TransaksjonOsTable {
+        const val TRANSAKSJONS_ID_PARAM = "transaksjonsId"
+        const val TRANSAKSJON_STATUS_PARAM = "transaksjonStatus"
+        const val TREKK_ID_SKE_PARAM = "trekkIdSke"
+        const val KVITTERING_STATUS_PARAM = "kvitteringStatus"
+        const val AKSJONSKODE_PARAM = "aksjonskode"
+        const val KREDITOR_ID_TSS_PARAM = "kreditorIdTss"
+        const val KREDITOR_TREKK_ID_PARAM = "kreditorTrekkId"
+        const val KREDITORSREF_PARAM = "kreditorsref"
+        const val DEBITOR_ID_PARAM = "debitorId"
+        const val TREKKALTERNATIV_PARAM = "trekkalternativ"
+        const val TREKK_TYPE_PARAM = "trekkType"
+        const val KID_PARAM = "kid"
+        const val KILDE_PARAM = "kilde"
+        const val PRIORITET_FOM_DATO_PARAM = "prioritetFomDato"
+        const val GYLDIG_TOM_DATO_PARAM = "gyldigTomDato"
+        const val TRANSAKSJON_ID_COLUMN = "transaksjon_id"
+        const val TRANSAKSJON_STATUS_COLUMN = "transaksjon_status"
+        const val TREKK_ID_SKE_COLUMN = "trekk_id_ske"
+        const val KVITTERING_STATUS_COLUMN = "kvittering_status"
+        const val AKSJONSKODE_COLUMN = "aksjonskode"
+        const val KREDITOR_ID_TSS_COLUMN = "kreditor_id_tss"
+        const val KREDITOR_TREKK_ID_COLUMN = "kreditor_trekk_id"
+        const val KREDITORSREF_COLUMN = "kreditorsref"
+        const val DEBITOR_ID_COLUMN = "debitor_id"
+        const val TREKK_ALTERNATIV_COLUMN = "trekk_alternativ"
+        const val TREKK_TYPE_COLUMN = "trekk_type"
+        const val KID_COLUMN = "kid"
+        const val KILDE_COLUMN = "kilde"
+        const val PRIORITET_FOM_DATO_COLUMN = "prioritet_fom_dato"
+        const val GYLDIG_TOM_DATO_COLUMN = "gyldig_tom_dato"
+    }
+
     fun insertTransaksjonTilOs(dto: OSDto, session: Session) {
         session.update(
             queryOf(
                 """
                 INSERT INTO 
                 transaksjon_os(
-                    id,
-                    nav_trekk_id,
-                    transaksjon_id, 
-                    transaksjon_status, 
-                    trekk_id_ske, 
-                    kvittering_status,
-                    tidspunkt_sendt,
-                    tidspunkt_siste_status,
-                    aksjonskode,
-                    krediror_id_tss,
-                    kreditor_trekk_id,
-                    kreditorsref,
-                    debitor_id,
-                    trekk_alternativ,
-                    trekk_type,
-                    kid,
-                    kilde,
-                    saldo,
-                    prioritet_fom_dato,
-                    gyldig_tom_dato,
+                    ${TransaksjonOsTable.TRANSAKSJON_ID_COLUMN}, 
+                     ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}, 
+                     ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}, 
+                     ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}, 
+                     ${TransaksjonOsTable.AKSJONSKODE_COLUMN}, 
+                     ${TransaksjonOsTable.KREDITOR_ID_TSS_COLUMN}, 
+                     ${TransaksjonOsTable.KREDITOR_TREKK_ID_COLUMN}, 
+                     ${TransaksjonOsTable.KREDITORSREF_COLUMN}, 
+                     ${TransaksjonOsTable.DEBITOR_ID_COLUMN}, 
+                     ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}, 
+                     ${TransaksjonOsTable.TREKK_TYPE_COLUMN}, 
+                     ${TransaksjonOsTable.KID_COLUMN},
+                     ${TransaksjonOsTable.KILDE_COLUMN},
+                     ${TransaksjonOsTable.PRIORITET_FOM_DATO_COLUMN},
+                     ${TransaksjonOsTable.GYLDIG_TOM_DATO_COLUMN}
                 ) 
                 VALUES(
-                    :id,
-                    :navTrekkId,
-                    :transaksjonsId, 
-                    :transaksjonStatus,
-                    :trekkIdSke,
-                    :kvitteringStatus 
-                    :tidspunktSendt,
-                    :tidspunktSisteStatus,
-                    :aksjonskode,
-                    :kreditorIdTss,
-                    :kreditorTrekkId,
-                    :kreditorsef,
-                    :debitorId,
-                    :trekkalternativ,
-                    :trekkType,
-                    :kid,
-                    :kilde,
-                    :saldo,
-                    :prioritetFomDato,
-                    :gyldigTomDato,
+                    :${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM},
+                    :${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
+                    :${TransaksjonOsTable.TREKK_ID_SKE_PARAM},
+                    :${TransaksjonOsTable.KVITTERING_STATUS_PARAM},
+                    :${TransaksjonOsTable.AKSJONSKODE_PARAM},
+                    :${TransaksjonOsTable.KREDITOR_ID_TSS_PARAM},
+                    :${TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM},
+                    :${TransaksjonOsTable.KREDITORSREF_PARAM},
+                    :${TransaksjonOsTable.DEBITOR_ID_PARAM},
+                    :${TransaksjonOsTable.TREKKALTERNATIV_PARAM},
+                    :${TransaksjonOsTable.TREKK_TYPE_PARAM},
+                    :${TransaksjonOsTable.KID_PARAM},
+                    :${TransaksjonOsTable.KILDE_PARAM},
+                    :${TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM},
+                    :${TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM}
                     )
                 """.trimIndent(),
                 mapOf(
-                    "transaksjonsId" to dto.transaksjonsID,
-                    "transaksjonStatus" to TransaksjonsStatus.IKKE_SENDT.name,
-                    "trekkIdSke" to dto.trekkIDSke,
-                    "kvitteringStatus" to KvitteringStatus.IKKE_MOTTATT.name,
-                    "aksjonskode" to dto.dokumentTilOppdrag.innrapporteringTrekk.aksjonskode,
-                    "kreditorIdTss" to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorIdTss,
-                    "kreditorTrekkId" to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorTrekkId,
-                    "kreditorsref" to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorsRef,
-                    "debitorId" to dto.dokumentTilOppdrag.innrapporteringTrekk.debitorId,
-                    "trekkalternativ" to dto.dokumentTilOppdrag.innrapporteringTrekk.kodeTrekkAlternativ.name,
-                    "trekkType" to dto.dokumentTilOppdrag.innrapporteringTrekk.kodeTrekktype,
-                    "kid" to dto.dokumentTilOppdrag.innrapporteringTrekk.kid,
-                    "kilde" to dto.dokumentTilOppdrag.innrapporteringTrekk.kilde,
-                    "saldo" to dto.dokumentTilOppdrag.innrapporteringTrekk.saldo,
-                    "prioritetFomDato" to dto.dokumentTilOppdrag.innrapporteringTrekk.prioritetFomDato,
-                    "gyldigTomDato" to dto.dokumentTilOppdrag.innrapporteringTrekk.gyldigTomDato,
+                    TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to dto.transaksjonID,
+                    TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to TransaksjonsStatus.IKKE_SENDT.name,
+                    TransaksjonOsTable.TREKK_ID_SKE_PARAM to dto.trekkIDSke,
+                    TransaksjonOsTable.KVITTERING_STATUS_PARAM to KvitteringStatus.IKKE_MOTTATT.name,
+                    TransaksjonOsTable.AKSJONSKODE_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.aksjonskode.name,
+                    TransaksjonOsTable.KREDITOR_ID_TSS_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorIdTss,
+                    TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorTrekkId,
+                    TransaksjonOsTable.KREDITORSREF_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorsRef,
+                    TransaksjonOsTable.DEBITOR_ID_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.debitorId,
+                    TransaksjonOsTable.TREKKALTERNATIV_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kodeTrekkAlternativ.name,
+                    TransaksjonOsTable.TREKK_TYPE_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kodeTrekktype,
+                    TransaksjonOsTable.KID_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kid,
+                    TransaksjonOsTable.KILDE_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kilde,
+                    TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.prioritetFomDato,
+                    TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.gyldigTomDato,
                 ),
             ),
         )
@@ -388,21 +429,48 @@ object RepositoryNy {
     fun getTrekkAlternativOS(trekkIdSke: String, session: Session): List<TrekkAlternativ> =
         session.list(
             queryOf(
-                """SELECT DISTINCT trekkalternativ FROM transaksjon_os WHERE trekkid_ske=:trekkIdSke AND
-                    kvittering_status = 'OK' OR kvittering_status = 'IKKE_MOTTATT
+                """SELECT 
+                    DISTINCT ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}
+                     FROM transaksjon_os 
+                     WHERE ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}=:${TransaksjonOsTable.TREKK_ID_SKE_PARAM}
+                      AND ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.OK}' 
+                      OR ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}  = '${KvitteringStatus.IKKE_MOTTATT.name}'
                 """.trimMargin(),
-                mapOf("trekkIdSke" to trekkIdSke),
+                mapOf(TransaksjonOsTable.TREKK_ID_SKE_PARAM to trekkIdSke),
             ),
-        ) { row -> TrekkAlternativ.valueOf(row.string("trekkalternativ").uppercase()) }
+        ) { row -> TrekkAlternativ.valueOf(row.string(TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN).uppercase()) }
+
+    fun insertPeriodeTilOs(transaksjonOSId: Int, periodeTilOs: PeriodeTilOS, session: Session) {
+        session.update(
+            queryOf(
+                """
+                                INSERT INTO periode_til_os (transaksjon_os_id, sats, periode_fom_dato, periode_tom_dato)
+                                VALUES (:transaksjon_os_id, :sats, :periodeFomDato, :periodeTomDato)
+                                """,
+                mapOf(
+                    "transaksjon_os_id" to transaksjonOSId,
+                    "sats" to periodeTilOs.sats,
+                    "periodeFomDato" to periodeTilOs.periodeFomDato,
+                    "periodeTomDato" to periodeTilOs.periodeTomDato,
+                ),
+            ),
+        )
+    }
 
     fun getPerioderTilOs(trekkIdSke: String, alternativ: TrekkAlternativ, session: Session): List<PeriodeTilOS> =
         session.list(
             queryOf(
-                """SELECT * FROM periode_til_os p JOIN transaksjon_os t ON p.transaksjons_os_id = t.id 
-                    WHERE trekk_id_ske=:trekkIdSke AND p.trekkAlternativ=:trekkAlternativ AND t.kvittering_status in ('IKKE_MOTTATT, 'OK')""",
+                """SELECT * FROM
+                     periode_til_os p 
+                    JOIN transaksjon_os t ON p.transaksjon_os_id = t.id 
+                    WHERE 
+                    trekk_id_ske=:trekkIdSke 
+                    AND t.trekk_alternativ=:trekkAlternativ 
+                    AND t.kvittering_status in ('${KvitteringStatus.IKKE_MOTTATT.name}', '${KvitteringStatus.OK.name}')
+                    """,
                 mapOf(
                     "trekkIdSke" to trekkIdSke,
-                    "trekkAlternativ" to alternativ,
+                    "trekkAlternativ" to alternativ.name,
                 ),
             ),
         ) { row -> PeriodeTilOS(row) }

@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS transaksjon_os;
 CREATE TABLE transaksjon_os
 (
     id                     bigserial primary key,
-    nav_trekk_id           text      NOT NULL DEFAULT '',
+    nav_trekk_id           text     NOT NULL DEFAULT '',
     transaksjon_id         text      NOT NULL,
     transaksjon_status     text      NOT NULL,
     trekk_id_ske           text      NOT NULL,
@@ -21,8 +21,8 @@ CREATE TABLE transaksjon_os
     kid text NOT NULL,
     kilde text NOT NULL,
     saldo decimal NOT NULL default 0.0,
-    prioritet_fom_dato date NOT NULL,
-    gyldig_tom_dato date NULL DEFAULT NULL
+    prioritet_fom_dato text NOT NULL,
+    gyldig_tom_dato text NULL DEFAULT NULL
 );
 
 CREATE TABLE periode_til_os
@@ -30,8 +30,8 @@ CREATE TABLE periode_til_os
     id               bigserial primary key,
     transaksjon_os_id bigserial NOT NULL references transaksjon_os(id),
     sats             decimal   NOT NULL,
-    periodeFomDato    date NOT NULL,
-    periodeTomDato     date NOT NULL
+    periode_fom_dato    text NOT NULL,
+    periode_tom_dato     text NOT NULL
 );
 
 CREATE INDEX idx_sendt_til_os_fraskatt_id ON transaksjon_os (id, trekk_id_ske);

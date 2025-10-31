@@ -8,21 +8,21 @@ data class PeriodeTilOS(
     val id: Long = 0,
     val osTransaksjonId: Long = 0,
     val sats: Double,
-    val fom: String,
-    val tom: String?,
+    val periodeFomDato: String,
+    val periodeTomDato: String?,
 ) {
     constructor(row: Row) : this(
         id = row.long("id"),
-        osTransaksjonId = row.long("transaksjons_os_id"),
+        osTransaksjonId = row.long("transaksjon_os_id"),
         sats = row.double("sats"),
-        fom = row.string("fom"),
-        tom = row.string("tom"),
+        periodeFomDato = row.string("periode_fom_dato"),
+        periodeTomDato = row.string("periode_tom_dato"),
     )
 
     fun isExpired(): Boolean =
         when {
-            tom == null -> false
-            else -> LocalDate.parse(tom).isBefore(LocalDate.now())
+            periodeTomDato == null -> false
+            else -> LocalDate.parse(periodeTomDato).isBefore(LocalDate.now())
         }
 }
 

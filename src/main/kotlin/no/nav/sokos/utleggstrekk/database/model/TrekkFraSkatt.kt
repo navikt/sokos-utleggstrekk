@@ -80,8 +80,8 @@ data class PeriodeFraSkatt(
         }
 
     fun sameAs(periodeTilOS: PeriodeTilOS): Boolean =
-        startdato == periodeTilOS.fom &&
-            sluttdato == periodeTilOS.tom &&
+        startdato == periodeTilOS.periodeFomDato &&
+            sluttdato == periodeTilOS.periodeTomDato &&
             satsFor(trekkAlternativ()) == periodeTilOS.sats
 }
 

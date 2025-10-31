@@ -13,7 +13,7 @@ typealias DokumentTilOppdrag = Document
 
 // TODO: TSS ID
 data class OSDto(
-    val transaksjonsID: String,
+    val transaksjonID: String,
     val trekkIDSke: String,
     val dokumentTilOppdrag: DokumentTilOppdrag,
 )
