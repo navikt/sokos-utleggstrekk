@@ -7,7 +7,6 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
-import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 /*
@@ -19,17 +18,11 @@ class FagCaser :
     BehaviorSpec({
 
         extensions(DBListener)
-        val behandleTrekkService =
-            BehandleTrekkServiceNy(
-                dataSource = DBListener.dataSource,
-            )
+        val behandleTrekkService = BehandleTrekkServiceNy(RepositoryNy)
 
         Given("Nytt trekk (som ikke endres)") {
             val skalSendes: Trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
-            val idForTrekk =
-                DBListener.dataSource.withTransaction { session ->
-                    RepositoryNy.insertTrekkFraSkatt(skalSendes, session)
-                }
+            val idForTrekk = RepositoryNy.saveTrekkpaalegg(skalSendes)
 
             When("Periode april 2026 - 24. juli 2026 - 25 prosent") {
                 Then("TRK1 LOPP") {}

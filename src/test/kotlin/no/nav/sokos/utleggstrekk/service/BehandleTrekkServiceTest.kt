@@ -101,20 +101,20 @@ class BehandleTrekkServiceTest :
         ): BehandleTrekkServiceNy {
             val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(alleTrekkSomIkkeErSendt.first())
             val repositoryNy = mockk<RepositoryNy>()
-            val behandleTrekkServiceNy = BehandleTrekkServiceNy(mockk(relaxed = true), repositoryNy)
+            val behandleTrekkServiceNy = BehandleTrekkServiceNy(repositoryNy)
             val trekkAlternativIOS =
                 buildSet {
                     if (kjenteLOPMPerioder.isNotEmpty()) add(TrekkAlternativ.LOPM)
                     if (kjenteLOPPPerioder.isNotEmpty()) add(TrekkAlternativ.LOPP)
                 }
 
-            every { repositoryNy.getOsAlternativForTrekk(any(), any()) } returns trekkAlternativIOS
-            every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM, any()) } returns kjenteLOPMPerioder
-            every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP, any()) } returns kjenteLOPPPerioder
-            every { repositoryNy.getTrekkSomIkkeErSendt(any()) } returns alleTrekkSomIkkeErSendt
-            every { repositoryNy.getPerioderForTrekk(any(), any()) } returns perioderForTrekkFraSkatt
-            every { repositoryNy.getTrekkFraSkatt(any(), any()) } returns alleTrekkForTrekkId
-            every { repositoryNy.getBetalingsinformasjonForTrekk(any(), any()) } returns betalingsinformasjonForTrekkFraSkatt
+            every { repositoryNy.getOsAlternativForTrekk(any()) } returns trekkAlternativIOS
+            every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM) } returns kjenteLOPMPerioder
+            every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP) } returns kjenteLOPPPerioder
+            every { repositoryNy.getTrekkSomIkkeErSendt() } returns alleTrekkSomIkkeErSendt
+            every { repositoryNy.getPerioderForTrekk(any()) } returns perioderForTrekkFraSkatt
+            every { repositoryNy.getTrekkFraSkatt(any()) } returns alleTrekkForTrekkId
+            every { repositoryNy.getBetalingsinformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
 
             return behandleTrekkServiceNy
         }
@@ -197,7 +197,7 @@ class BehandleTrekkServiceTest :
 
                     val perioderForTrekkVersjon = lagPerioderForSkattLOPM(trekkFraSkatt)
                     val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
-                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first())
+                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
 
                     Then("Skal trekket bli til 1 NYTT trekk med 3 perioder") {
                         trekkDokumenter shouldHaveSize 1
@@ -224,7 +224,7 @@ class BehandleTrekkServiceTest :
                                 kjenteLOPMPerioder = kjenteLOPMPerioder,
                             )
                         //                       val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(allePerioderForTrekkVersjon)
-                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first())
+                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
 
                         Then("Skal trekket bli til 1 ENDRET trekk med 3 perioder") {
                             trekkDokumenter shouldHaveSize 1
@@ -236,7 +236,7 @@ class BehandleTrekkServiceTest :
                     And("Vi ikke har fått trekkversjon 1") {
                         val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, allePerioderForTrekkVersjon, emptyList())
                         // val periodeInformasjon = behandleTrekkServiceNy.utledTrekkAlternativForPeriode(allePerioderForTrekkVersjon)
-                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(behandleTrekkServiceNy.trekkSomSkalSendes().first())
+                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
 
                         Then("Skal trekket bli til 1 NYTT trekk med 3 perioder") {
                             trekkDokumenter shouldHaveSize 1

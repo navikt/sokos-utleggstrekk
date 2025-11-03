@@ -14,7 +14,6 @@ import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.listener.MQListener
 import no.nav.sokos.utleggstrekk.listener.MQListener.connectionFactory
-import no.nav.sokos.utleggstrekk.service.withTransaction
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 class JmsListenerServiceTest :
@@ -24,7 +23,6 @@ class JmsListenerServiceTest :
         val replyQueue = ActiveMQQueue("replyQueue")
 
         JmsListenerService(
-            DBListener.dataSource,
             RepositoryNy,
             osKvitteringQueue = replyQueue,
             connectionFactory,
@@ -40,7 +38,7 @@ class JmsListenerServiceTest :
 
         Given("Vi mottar en kvittering") {
             DBListener.loadInitScript("mq/trekk_med_kvittering_ok/init_db.sql")
-            val transaksjonerBefore = DBListener.dataSource.withTransaction { session -> RepositoryNy.getAllTransaksjonerTilOs(session) }
+            val transaksjonerBefore = RepositoryNy.getAllTransaksjonerTilOs()
             transaksjonerBefore.size shouldBe 1
 
             val transaksjon = transaksjonerBefore.first()
@@ -51,7 +49,7 @@ class JmsListenerServiceTest :
                 jmsProducerTrekk.send(kvittering)
                 Then("Skal trekk oppdateres med status ${KvitteringStatus.OK}") {
                     eventually(duration = 1.seconds) {
-                        val transaksjonerAfter = DBListener.dataSource.withTransaction { session -> RepositoryNy.getTransaksjonTilOs(transaksjon.transaksjonsID, session) }
+                        val transaksjonerAfter = RepositoryNy.getTransaksjonTilOs(transaksjon.transaksjonsID)
                         transaksjonerAfter.shouldNotBeNull()
                         transaksjonerAfter.kvitteringStatus shouldBe KvitteringStatus.OK
                         transaksjonerAfter.navTrekkId shouldBe "navTrekkId01"
@@ -66,10 +64,7 @@ class JmsListenerServiceTest :
 
                 Then("Skal trekk oppdateres med status ${KvitteringStatus.FEIL}") {
                     eventually(duration = 1.seconds) {
-                        val trekkAfter =
-                            DBListener.dataSource.withTransaction { session ->
-                                RepositoryNy.getTransaksjonTilOs(transaksjon.transaksjonsID, session)
-                            }
+                        val trekkAfter = RepositoryNy.getTransaksjonTilOs(transaksjon.transaksjonsID)
                         trekkAfter.shouldNotBeNull()
                         trekkAfter.kvitteringStatus shouldBe KvitteringStatus.FEIL
                         trekkAfter.navTrekkId shouldBe INGEN_TREKK_ID_I_KVITTERING
@@ -77,7 +72,7 @@ class JmsListenerServiceTest :
                 }
                 And("Feil skal insertes i database") {
                     eventually(duration = 1.seconds) {
-                        val feilmelding = DBListener.dataSource.withTransaction { session -> RepositoryNy.getFeilmeldingerFraOS(transaksjon.transaksjonsID, session) }
+                        val feilmelding = RepositoryNy.getFeilmeldingerFraOS(transaksjon.transaksjonsID)
                         feilmelding.shouldNotBeNull()
                         feilmelding.feilkode shouldBe "B7XX001F"
                         feilmelding.beskrivelse shouldBe "Ugyldig verdi i felt: Trekktype"

@@ -66,7 +66,6 @@ internal class UtleggsTrekkServiceTest :
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    dataSource = DBListener.dataSource,
                     RepositoryNy,
                     skeClient = skeClientMock,
                     mqProducer = mqProducerMock,
@@ -83,16 +82,13 @@ internal class UtleggsTrekkServiceTest :
                     }
                 }
                 Then("Skal trekkpaalegget lagres i databasen") {
-                    val trekkFraSkatt =
-                        DBListener.dataSource.withTransaction { session ->
-                            RepositoryNy.getTrekkFraSkatt(trekkpaalegg.trekkid, session)
-                        }
+                    val trekkFraSkatt = RepositoryNy.getTrekkFraSkatt(trekkpaalegg.trekkid)
                     trekkFraSkatt.shouldNotBeNull()
 
                     withClue("Perioder skal lagres") {
                         val perioder =
                             DBListener.dataSource.withTransaction { session ->
-                                RepositoryNy.getAllePerioderForTrekkId(trekkFraSkatt.first().trekkid, session)
+                                RepositoryNy.getAllePerioderForTrekkId(trekkFraSkatt.first().trekkid)
                             }
                         perioder.size shouldBe 1
                         val periode = perioder.first()
@@ -103,10 +99,7 @@ internal class UtleggsTrekkServiceTest :
                     }
 
                     withClue("Betalingsinformasjon skal lagres") {
-                        val betalingsInformasjon =
-                            DBListener.dataSource.withTransaction { session ->
-                                RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.first().id, session)
-                            }
+                        val betalingsInformasjon = RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.first().id)
 
                         betalingsInformasjon.shouldNotBeNull()
                         betalingsInformasjon.betalingsmottaker shouldBe mottaker.betalingsmottaker
@@ -114,10 +107,7 @@ internal class UtleggsTrekkServiceTest :
                 }
 
                 Then("Skal transaksjon oppdateres") {
-                    val transaksjoner =
-                        DBListener.dataSource.withTransaction { session ->
-                            RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkpaalegg.trekkid, session)
-                        }
+                    val transaksjoner = RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkpaalegg.trekkid)
                     transaksjoner.forEach { it.transaksjonStatus shouldBe TransaksjonsStatus.SENDT }
                 }
             }

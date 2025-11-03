@@ -2,7 +2,6 @@ package no.nav.sokos.utleggstrekk.mq
 
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
-import com.zaxxer.hikari.HikariDataSource
 import jakarta.jms.ConnectionFactory
 import jakarta.jms.JMSContext
 import jakarta.jms.Message
@@ -16,11 +15,9 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
-import no.nav.sokos.utleggstrekk.service.withTransaction
 
 class JmsListenerService(
-    private val dataSource: HikariDataSource = PostgresDataSource.dataSource,
-    private val repositoryNy: RepositoryNy,
+    private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
     val osKvitteringQueue: Queue =
         MQQueue(PropertiesConfig.MQProperties().replyQueueName).apply {
             targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
@@ -50,20 +47,17 @@ class JmsListenerService(
 
     private fun processReceipt(receipt: KvitteringFraOppdrag) {
         val kvitteringStatus = KvitteringStatus.fromValue(receipt.mmel?.alvorlighetsgrad)
-        dataSource.withTransaction { session ->
 
-            repositoryNy.updateTransaksjon(
-                receipt.dokument.transaksjonsId,
-                kvitteringStatus,
-                receipt.dokument.innrapporteringTrekk.navTrekkId,
-                session,
-            )
+        repositoryNy.updateTransaksjon(
+            receipt.dokument.transaksjonsId,
+            kvitteringStatus,
+            receipt.dokument.innrapporteringTrekk.navTrekkId,
+        )
 
-            if (kvitteringStatus == KvitteringStatus.FEIL) {
-                // TODO: Slackmelding
-                repositoryNy.insertFeilmeldingFraOS(receipt, session)
-                logError(receipt)
-            }
+        if (kvitteringStatus == KvitteringStatus.FEIL) {
+            // TODO: Slackmelding
+            repositoryNy.insertFeilmeldingFraOS(receipt)
+            logError(receipt)
         }
     }
 
