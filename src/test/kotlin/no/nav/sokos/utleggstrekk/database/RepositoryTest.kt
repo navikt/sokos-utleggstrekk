@@ -14,6 +14,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.ranges.shouldBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
@@ -239,11 +240,11 @@ class RepositoryTest :
                     transaksjonTilOs.kvitteringStatus shouldBe KvitteringStatus.IKKE_MOTTATT
                 }
                 And("Tidspunktsendt skal være nå") {
-                    val now = LocalDateTime.now()
+                    val now = dbNow()
                     transaksjonTilOs.tidspunktSendt.shouldBeIn(now.minusSeconds(10)..now)
                 }
                 And("Tidspunktsistestatus skal være nå") {
-                    val now = LocalDateTime.now()
+                    val now = dbNow()
                     transaksjonTilOs.tidspunktSisteStatus.shouldBeIn(now.minusSeconds(10)..now)
                 }
                 And("Enumverdier skal lagres korrekt") {
@@ -266,7 +267,7 @@ class RepositoryTest :
                     transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.SENDT
                 }
                 And("Tidspunktsistestatus skal være nå") {
-                    val now = LocalDateTime.now()
+                    val now = dbNow()
                     transaksjonTilOs.tidspunktSisteStatus.shouldBeIn(now.minusSeconds(10)..now)
                 }
             }
@@ -286,7 +287,7 @@ class RepositoryTest :
                     transaksjonTilOs.kvitteringStatus shouldBe nyKvitteringStatus
                 }
                 And("Tidspunktsistestatus skal være nå") {
-                    val now = LocalDateTime.now()
+                    val now = dbNow()
                     transaksjonTilOs.tidspunktSisteStatus.shouldBeIn(now.minusSeconds(10)..now)
                 }
                 And("Navtrekkid skal ikke være blank") {
@@ -503,6 +504,11 @@ class RepositoryTest :
             }
         }
     })
+
+private fun dbNow(): LocalDateTime =
+    DBListener.dataSource.withTransaction { session ->
+        session.single(queryOf("select now() as tidspunkt")) { row -> row.localDateTime("tidspunkt") }!!
+    }
 
 private fun compareTrekk(trekkpaalegg: Trekkpaalegg, lagret: TrekkFraSkatt) {
     lagret.trekkstatus shouldBe trekkpaalegg.trekkstatus.name
