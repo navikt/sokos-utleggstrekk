@@ -77,7 +77,7 @@ class RepositoryTest :
         Given("Vi henter trekk som ikke er sendt") {
             val dokument = resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")
             val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(dokument).first()
-            RepositoryNy.saveTrekkpaalegg(skalSendes)
+            RepositoryNy.insertTrekkFraSkatt(skalSendes)
             val dto =
                 OSDto(
                     transaksjonID = "SkalSendes",
@@ -87,10 +87,10 @@ class RepositoryTest :
                 )
             RepositoryNy.insertTransaksjonTilOs(dto)
 
-            RepositoryNy.saveTrekkpaalegg(skalSendes.copy(trekkid = "SkalOgsåSendes"))
+            RepositoryNy.insertTrekkFraSkatt(skalSendes.copy(trekkid = "SkalOgsåSendes"))
 
             val trekkSomErSendt = skalSendes.copy(trekkid = "SkalIkkeSendes")
-            RepositoryNy.saveTrekkpaalegg(skalSendes.copy(trekkid = "SkalIkkeSendes"))
+            RepositoryNy.insertTrekkFraSkatt(skalSendes.copy(trekkid = "SkalIkkeSendes"))
             val dtoSomErSendt =
                 OSDto(
                     transaksjonID = "SkalIkkeSendes",
@@ -109,7 +109,7 @@ class RepositoryTest :
         Given("Vi henter perioder for trekk med én versjon") {
             DBListener.clearDB()
             val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
-            val idtrekkpaalegg1 = RepositoryNy.saveTrekkpaalegg(trekkpaalegg1)
+            val idtrekkpaalegg1 = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg1)
             val trekkIdSke = trekkpaalegg1.trekkid
 
             idtrekkpaalegg1.shouldNotBeNull()
@@ -118,7 +118,7 @@ class RepositoryTest :
             perioder.shouldHaveSize(1)
 
             val trekkpaalegg2 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk2_versjon1_to_perioder_belop.json")).first()
-            val idtrekkpaalegg2 = RepositoryNy.saveTrekkpaalegg(trekkpaalegg2)
+            val idtrekkpaalegg2 = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg2)
             val trekkIdSke2 = trekkpaalegg2.trekkid
             idtrekkpaalegg2.shouldNotBeNull()
 
@@ -130,11 +130,11 @@ class RepositoryTest :
             DBListener.clearDB()
             val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
 
-            val idtrekkpaalegg1: Long? = RepositoryNy.saveTrekkpaalegg(trekkpaalegg1)
+            val idtrekkpaalegg1: Long? = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg1)
             idtrekkpaalegg1.shouldNotBeNull()
 
             val trekkpaalegg2 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_skatt_Trekk1_versjon2_endret_belop.json")).first()
-            val idtrekkpaalegg2 = RepositoryNy.saveTrekkpaalegg(trekkpaalegg2)
+            val idtrekkpaalegg2 = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg2)
             idtrekkpaalegg2.shouldNotBeNull()
 
             When("getPerioderForTrekkVersjon") {
@@ -162,7 +162,7 @@ class RepositoryTest :
             val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
 
             When("Trekkpålegg lagres") {
-                val id = RepositoryNy.saveTrekkpaalegg(trekkpaalegg)
+                val id = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg)
                 id.shouldNotBeNull()
 
                 eventually(duration = 1.seconds) {
@@ -269,7 +269,7 @@ class RepositoryTest :
             sekvensNummer shouldBe 0
             val trekkpaalegg =
                 jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            trekkpaalegg.forEach { RepositoryNy.saveTrekkpaalegg(it) }
+            trekkpaalegg.forEach { RepositoryNy.insertTrekkFraSkatt(it) }
             Then("Skal høyeste sekvensnummer være lik høyeste sekvensnummer i data fra skatt") {
                 val newMaxSekvensNummer = RepositoryNy.getLastSekvensnummer()
 
@@ -283,7 +283,7 @@ class RepositoryTest :
             doesTrekkExist("1", 1) shouldBe false
             val trekkpalegg =
                 jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            trekkpalegg.forEach { RepositoryNy.saveTrekkpaalegg(it) }
+            trekkpalegg.forEach { RepositoryNy.insertTrekkFraSkatt(it) }
 
             RepositoryNy.getLastSekvensnummer() shouldBe trekkpalegg.maxOf { it.sekvensnummer }
 
@@ -297,7 +297,7 @@ class RepositoryTest :
         Given("Det kommer inn trekk ut av rekkefølge") {
             DBListener.clearDB()
             val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("diverse_trekk_ut_av_sekvens.json"))
-            trekkpaalegg.forEach { RepositoryNy.saveTrekkpaalegg(it) }
+            trekkpaalegg.forEach { RepositoryNy.insertTrekkFraSkatt(it) }
 
             Then("Kommer i riktig rekkefølge når de hentes fra DB") {
                 val trekkNotSent: List<TrekkFraSkatt> = RepositoryNy.getTrekkFraSkattMedStatus(MOTTATT)
@@ -311,7 +311,7 @@ class RepositoryTest :
             doesTrekkExist("1", 1) shouldBe false
             val trekkpalegg =
                 jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            trekkpalegg.forEach { RepositoryNy.saveTrekkpaalegg(it) }
+            trekkpalegg.forEach { RepositoryNy.insertTrekkFraSkatt(it) }
 
             val trekkMottatt = RepositoryNy.getTrekkFraSkattMedStatus(MOTTATT)
 
@@ -319,7 +319,7 @@ class RepositoryTest :
             val ettTrekk = trekkMottatt.first()
 
             When("Et trekk endrer status til BEHANDLET") {
-                RepositoryNy.setStatus(ettTrekk, BEHANDLET)
+                RepositoryNy.setStatus(ettTrekk.id, BEHANDLET)
                 val behandlet = RepositoryNy.getTrekkFraSkattMedStatus(BEHANDLET)
                 behandlet.shouldHaveSize(1)
                 behandlet.first().id shouldBe ettTrekk.id
@@ -491,7 +491,7 @@ class RepositoryTest :
             DBListener.clearDB()
             val trekkId = 1L
             val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
-            val idtrekkpaalegg1 = RepositoryNy.saveTrekkpaalegg(trekkpaalegg1) ?: 0L
+            RepositoryNy.insertTrekkFraSkatt(trekkpaalegg1) ?: 0L
 
             val sampleBetalingsinformasjon =
                 Betalingsinformasjon(
@@ -499,8 +499,6 @@ class RepositoryTest :
                     kidnummer = "17654202404",
                     kontonummer = "76940512057",
                 )
-
-            RepositoryNy.insertBetalingsinformasjonFraSkatt(fraSkattId = idtrekkpaalegg1, sampleBetalingsinformasjon)
 
             When("Betalingsinformasjon hentes for TrekkID: $trekkId") {
                 val betalingsinformasjon = RepositoryNy.getBetalingsinformasjonForTrekk(trekkId)

@@ -22,7 +22,7 @@ class FagCaser :
 
         Given("Nytt trekk (som ikke endres)") {
             val skalSendes: Trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
-            val idForTrekk = RepositoryNy.saveTrekkpaalegg(skalSendes)
+            val idForTrekk = RepositoryNy.insertTrekkFraSkatt(skalSendes)
 
             When("Periode april 2026 - 24. juli 2026 - 25 prosent") {
                 Then("TRK1 LOPP") {}

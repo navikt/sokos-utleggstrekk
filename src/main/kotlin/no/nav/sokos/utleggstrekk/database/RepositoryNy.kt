@@ -19,7 +19,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.service.withTransaction
 
 class RepositoryNy(private val dataSource: HikariDataSource) {
@@ -43,63 +42,76 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
 
     fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg): Long? =
         dataSource.withTransaction { session ->
-            session.updateAndReturnGeneratedKey(
-                queryOf(
-                    """
-                    INSERT INTO fraskatt(
-                        trekkid,
-                        sekvensnummer,
-                        trekkversjon,                                           
-                        opprettet,
-                        saksnummer,
-                        trekkpliktig,
-                        skyldner,
-                        trekkstatus
-                    ) VALUES(:trekkid, :sekvensnummer, :trekkversjon, :opprettet, :saksnummer, :trekkpliktig, :skyldner, :trekkstatus)
-                    """.trimIndent(),
-                    mapOf(
-                        "trekkid" to trekkpaalegg.trekkid,
-                        "sekvensnummer" to trekkpaalegg.sekvensnummer,
-                        "trekkversjon" to trekkpaalegg.trekkversjon,
-                        "opprettet" to trekkpaalegg.opprettet,
-                        "saksnummer" to trekkpaalegg.saksnummer,
-                        "trekkpliktig" to trekkpaalegg.trekkpliktig,
-                        "skyldner" to trekkpaalegg.skyldner,
-                        "trekkstatus" to trekkpaalegg.trekkstatus.name,
-                    ),
-                ),
-            )
-        }
 
-    fun insertPeriodeFraSkatt(fraSkattId: Long?, trekkIdSke: String, periode: TrekkstorrelseForPeriode) {
-        dataSource.withTransaction { session ->
+            val fraSkattId =
+                session.updateAndReturnGeneratedKey(
+                    queryOf(
+                        """
+                        INSERT INTO fraskatt(
+                            trekkid,
+                            sekvensnummer,
+                            trekkversjon,                                           
+                            opprettet,
+                            saksnummer,
+                            trekkpliktig,
+                            skyldner,
+                            trekkstatus
+                        ) VALUES(:trekkid, :sekvensnummer, :trekkversjon, :opprettet, :saksnummer, :trekkpliktig, :skyldner, :trekkstatus)
+                        """.trimIndent(),
+                        mapOf(
+                            "trekkid" to trekkpaalegg.trekkid,
+                            "sekvensnummer" to trekkpaalegg.sekvensnummer,
+                            "trekkversjon" to trekkpaalegg.trekkversjon,
+                            "opprettet" to trekkpaalegg.opprettet,
+                            "saksnummer" to trekkpaalegg.saksnummer,
+                            "trekkpliktig" to trekkpaalegg.trekkpliktig,
+                            "skyldner" to trekkpaalegg.skyldner,
+                            "trekkstatus" to trekkpaalegg.trekkstatus.name,
+                        ),
+                    ),
+                )
+            trekkpaalegg.trekkstoerrelseForPeriode.forEach { periode ->
+                session.update(
+                    queryOf(
+                        """
+                        INSERT INTO periode(
+                            fraskatt_id,
+                            trekk_id_ske,
+                            dato_start, 
+                            dato_slutt,
+                            trekkbelop,
+                            trekkprosent
+                        ) VALUES(:fraskattID, :trekkIDSke, :startdato, :sluttDato, :trekkBelop, :trekkProsent)     
+                        """.trimIndent(),
+                        mapOf(
+                            "fraskattID" to fraSkattId,
+                            "trekkIDSke" to trekkpaalegg.trekkid,
+                            "startdato" to periode.startdato,
+                            "sluttDato" to periode.sluttdato,
+                            "trekkBelop" to periode.trekkbeloep?.trekkbeloep,
+                            "trekkProsent" to periode.trekkprosent?.trekkprosent,
+                        ),
+                    ),
+                )
+            }
             session.update(
                 queryOf(
                     """
-                    INSERT INTO periode(
+                    INSERT INTO betalingsinformasjonfraskatt(
                         fraskatt_id,
-                        trekk_id_ske,
-                        dato_start, 
-                        dato_slutt,
-                        trekkbelop,
-                        trekkprosent
-                    ) VALUES(:fraskattID, :trekkIDSke, :startdato, :sluttDato, :trekkBelop, :trekkProsent)     
+                        betalingsmottaker,
+                        kidnummer,
+                        kontonummer
+                    ) VALUES(:fraskattID, :betalingsmottaker, :kidnummer, :kontonummer)   
                     """.trimIndent(),
                     mapOf(
                         "fraskattID" to fraSkattId,
-                        "trekkIDSke" to trekkIdSke,
-                        "startdato" to periode.startdato,
-                        "sluttDato" to periode.sluttdato,
-                        "trekkBelop" to periode.trekkbeloep?.trekkbeloep,
-                        "trekkProsent" to periode.trekkprosent?.trekkprosent,
+                        "betalingsmottaker" to trekkpaalegg.betalingsinformasjon.betalingsmottaker,
+                        "kidnummer" to trekkpaalegg.betalingsinformasjon.kidnummer,
+                        "kontonummer" to trekkpaalegg.betalingsinformasjon.kontonummer,
                     ),
                 ),
             )
-        }
-    }
-
-    fun insertFraSkattStatus(fraSkattId: Long?, status: SkattTrekkStatus) {
-        dataSource.withTransaction { session ->
             session.update(
                 queryOf(
                     """
@@ -108,23 +120,12 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                     """.trimIndent(),
                     mapOf(
                         "fraskattID" to fraSkattId,
-                        "status" to status.name,
+                        "status" to SkattTrekkStatus.MOTTATT.name,
                     ),
                 ),
             )
+            return@withTransaction fraSkattId
         }
-    }
-
-    fun saveTrekkpaalegg(trekkpaalegg: Trekkpaalegg): Long? {
-        val fraSkattId = insertTrekkFraSkatt(trekkpaalegg)
-        trekkpaalegg.trekkstoerrelseForPeriode.forEach { periode ->
-            insertPeriodeFraSkatt(fraSkattId, trekkpaalegg.trekkid, periode)
-        }
-        insertBetalingsinformasjonFraSkatt(fraSkattId, trekkpaalegg.betalingsinformasjon)
-        insertFraSkattStatus(fraSkattId, SkattTrekkStatus.MOTTATT)
-
-        return fraSkattId
-    }
 
     fun insertBetalingsinformasjonFraSkatt(fraSkattId: Long?, betalingsInformasjon: Betalingsinformasjon) {
         dataSource.withTransaction { session ->
@@ -396,12 +397,12 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             }
         }
 
-    fun setStatus(fraSkatt: TrekkFraSkatt, status: SkattTrekkStatus) {
+    fun setStatus(fraSkattId: Long, status: SkattTrekkStatus) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
                     "UPDATE fraskatt_status SET status = :status, tidspunkt_satt = NOW() WHERE id = :id",
-                    mapOf("id" to fraSkatt.id, "status" to status.name),
+                    mapOf("id" to fraSkattId, "status" to status.name),
                 ),
             )
         }
