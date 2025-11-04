@@ -180,7 +180,10 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         }
     }
 
-    private object TransaksjonOsTable {
+    object TransaksjonOsTable {
+        const val TABLE_NAME = "transaksjon_os"
+        const val ID_COLUMN = "id"
+        const val NAV_TREKK_ID_PARAM = "navTrekkId"
         const val TRANSAKSJONS_ID_PARAM = "transaksjonsId"
         const val TRANSAKSJON_STATUS_PARAM = "transaksjonStatus"
         const val TREKK_ID_SKE_PARAM = "trekkIdSke"
@@ -194,12 +197,17 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         const val TREKK_TYPE_PARAM = "trekkType"
         const val KID_PARAM = "kid"
         const val KILDE_PARAM = "kilde"
+        const val DOKUMENT_JSON_PARAM = "dokumentJson"
         const val PRIORITET_FOM_DATO_PARAM = "prioritetFomDato"
         const val GYLDIG_TOM_DATO_PARAM = "gyldigTomDato"
-        const val TRANSAKSJON_ID_COLUMN = "transaksjon_id"
+
+        const val NAV_TREKK_ID_COLUMN = "nav_trekk_id"
+        const val TRANSAKSJONS_ID_COLUMN = "transaksjons_id"
         const val TRANSAKSJON_STATUS_COLUMN = "transaksjon_status"
         const val TREKK_ID_SKE_COLUMN = "trekk_id_ske"
         const val KVITTERING_STATUS_COLUMN = "kvittering_status"
+        const val TIDSPUNKT_SENDT_COLUMN = "tidspunkt_sendt"
+        const val TIDSPUNKT_SISTE_STATUS_COLUMN = "tidspunkt_siste_status"
         const val AKSJONSKODE_COLUMN = "aksjonskode"
         const val KREDITOR_ID_TSS_COLUMN = "kreditor_id_tss"
         const val KREDITOR_TREKK_ID_COLUMN = "kreditor_trekk_id"
@@ -209,8 +217,11 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         const val TREKK_TYPE_COLUMN = "trekk_type"
         const val KID_COLUMN = "kid"
         const val KILDE_COLUMN = "kilde"
+        const val SALDO_COLUMN = "saldo"
+
         const val PRIORITET_FOM_DATO_COLUMN = "prioritet_fom_dato"
         const val GYLDIG_TOM_DATO_COLUMN = "gyldig_tom_dato"
+        const val DOKUMENT_JSON_COLUMN = "dokument_json"
     }
 
     fun insertTransaksjonTilOs(dto: OSDto) {
@@ -218,57 +229,60 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             session.update(
                 queryOf(
                     """
-                    INSERT INTO 
-                    transaksjon_os(
-                        ${TransaksjonOsTable.TRANSAKSJON_ID_COLUMN}, 
-                         ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}, 
-                         ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}, 
-                         ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}, 
-                         ${TransaksjonOsTable.AKSJONSKODE_COLUMN}, 
-                         ${TransaksjonOsTable.KREDITOR_ID_TSS_COLUMN}, 
-                         ${TransaksjonOsTable.KREDITOR_TREKK_ID_COLUMN}, 
-                         ${TransaksjonOsTable.KREDITORSREF_COLUMN}, 
-                         ${TransaksjonOsTable.DEBITOR_ID_COLUMN}, 
-                         ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}, 
-                         ${TransaksjonOsTable.TREKK_TYPE_COLUMN}, 
-                         ${TransaksjonOsTable.KID_COLUMN},
-                         ${TransaksjonOsTable.KILDE_COLUMN},
-                         ${TransaksjonOsTable.PRIORITET_FOM_DATO_COLUMN},
-                         ${TransaksjonOsTable.GYLDIG_TOM_DATO_COLUMN}
-                    ) VALUES(
-                        :${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM},
-                        :${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
-                        :${TransaksjonOsTable.TREKK_ID_SKE_PARAM},
-                        :${TransaksjonOsTable.KVITTERING_STATUS_PARAM},
-                        :${TransaksjonOsTable.AKSJONSKODE_PARAM},
-                        :${TransaksjonOsTable.KREDITOR_ID_TSS_PARAM},
-                        :${TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM},
-                        :${TransaksjonOsTable.KREDITORSREF_PARAM},
-                        :${TransaksjonOsTable.DEBITOR_ID_PARAM},
-                        :${TransaksjonOsTable.TREKKALTERNATIV_PARAM},
-                        :${TransaksjonOsTable.TREKK_TYPE_PARAM},
-                        :${TransaksjonOsTable.KID_PARAM},
-                        :${TransaksjonOsTable.KILDE_PARAM},
-                        :${TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM},
-                        :${TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM}
-                    )
+                      INSERT INTO 
+                    ${TransaksjonOsTable.TABLE_NAME} (
+                          ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}, 
+                           ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}, 
+                           ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}, 
+                           ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}, 
+                           ${TransaksjonOsTable.AKSJONSKODE_COLUMN}, 
+                           ${TransaksjonOsTable.KREDITOR_ID_TSS_COLUMN}, 
+                           ${TransaksjonOsTable.KREDITOR_TREKK_ID_COLUMN}, 
+                           ${TransaksjonOsTable.KREDITORSREF_COLUMN}, 
+                           ${TransaksjonOsTable.DEBITOR_ID_COLUMN}, 
+                           ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}, 
+                           ${TransaksjonOsTable.TREKK_TYPE_COLUMN}, 
+                           ${TransaksjonOsTable.KID_COLUMN},
+                           ${TransaksjonOsTable.KILDE_COLUMN},
+                           ${TransaksjonOsTable.DOKUMENT_JSON_COLUMN}, 
+                           ${TransaksjonOsTable.PRIORITET_FOM_DATO_COLUMN},
+                           ${TransaksjonOsTable.GYLDIG_TOM_DATO_COLUMN}
+                      ) VALUES(
+                          :${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM},
+                          :${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
+                          :${TransaksjonOsTable.TREKK_ID_SKE_PARAM},
+                          :${TransaksjonOsTable.KVITTERING_STATUS_PARAM},
+                          :${TransaksjonOsTable.AKSJONSKODE_PARAM},
+                          :${TransaksjonOsTable.KREDITOR_ID_TSS_PARAM},
+                          :${TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM},
+                          :${TransaksjonOsTable.KREDITORSREF_PARAM},
+                          :${TransaksjonOsTable.DEBITOR_ID_PARAM},
+                          :${TransaksjonOsTable.TREKKALTERNATIV_PARAM},
+                          :${TransaksjonOsTable.TREKK_TYPE_PARAM},
+                          :${TransaksjonOsTable.KID_PARAM},
+                          :${TransaksjonOsTable.KILDE_PARAM},
+                          :${TransaksjonOsTable.DOKUMENT_JSON_PARAM},
+                          :${TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM},
+                          :${TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM}
+                      )
                     """.trimIndent(),
                     mapOf(
                         TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to dto.transaksjonID,
                         TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to TransaksjonsStatus.IKKE_SENDT.name,
                         TransaksjonOsTable.TREKK_ID_SKE_PARAM to dto.trekkIDSke,
                         TransaksjonOsTable.KVITTERING_STATUS_PARAM to KvitteringStatus.IKKE_MOTTATT.name,
-                        TransaksjonOsTable.AKSJONSKODE_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.aksjonskode.name,
-                        TransaksjonOsTable.KREDITOR_ID_TSS_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorIdTss,
-                        TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorTrekkId,
-                        TransaksjonOsTable.KREDITORSREF_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kreditorsRef,
-                        TransaksjonOsTable.DEBITOR_ID_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.debitorId,
-                        TransaksjonOsTable.TREKKALTERNATIV_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kodeTrekkAlternativ.name,
-                        TransaksjonOsTable.TREKK_TYPE_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kodeTrekktype,
-                        TransaksjonOsTable.KID_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kid,
-                        TransaksjonOsTable.KILDE_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.kilde,
-                        TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.prioritetFomDato,
-                        TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM to dto.dokumentTilOppdrag.innrapporteringTrekk.gyldigTomDato,
+                        TransaksjonOsTable.AKSJONSKODE_PARAM to dto.innrapporteringTrekk.aksjonskode.name,
+                        TransaksjonOsTable.KREDITOR_ID_TSS_PARAM to dto.innrapporteringTrekk.kreditorIdTss,
+                        TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM to dto.innrapporteringTrekk.kreditorTrekkId,
+                        TransaksjonOsTable.KREDITORSREF_PARAM to dto.innrapporteringTrekk.kreditorsRef,
+                        TransaksjonOsTable.DEBITOR_ID_PARAM to dto.innrapporteringTrekk.debitorId,
+                        TransaksjonOsTable.TREKKALTERNATIV_PARAM to dto.innrapporteringTrekk.kodeTrekkAlternativ.name,
+                        TransaksjonOsTable.TREKK_TYPE_PARAM to dto.innrapporteringTrekk.kodeTrekktype,
+                        TransaksjonOsTable.KID_PARAM to dto.innrapporteringTrekk.kid,
+                        TransaksjonOsTable.KILDE_PARAM to dto.innrapporteringTrekk.kilde,
+                        TransaksjonOsTable.DOKUMENT_JSON_PARAM to dto.documentJson,
+                        TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM to dto.innrapporteringTrekk.prioritetFomDato,
+                        TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM to dto.innrapporteringTrekk.gyldigTomDato,
                     ),
                 ),
             )
@@ -280,15 +294,15 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             session.update(
                 queryOf(
                     """
-                    UPDATE transaksjon_os 
-                    SET 
-                    transaksjon_status=:status,
-                    tidspunkt_siste_status=NOW() 
-                    WHERE transaksjon_id=:transaksjonsId
+                     UPDATE  ${TransaksjonOsTable.TABLE_NAME}  
+                     SET 
+                    ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}=:${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
+                     ${TransaksjonOsTable.TIDSPUNKT_SISTE_STATUS_COLUMN}=NOW() 
+                     WHERE ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}=:${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM}
                     """.trimIndent(),
                     mapOf(
-                        "status" to transaksjonStatus.name,
-                        "transaksjonsId" to transaksjonId,
+                        TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to transaksjonStatus.name,
+                        TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to transaksjonId,
                     ),
                 ),
             )
@@ -301,16 +315,17 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             session.update(
                 queryOf(
                     """
-                    UPDATE transaksjon_os 
+                    UPDATE  ${TransaksjonOsTable.TABLE_NAME}  
                     SET 
-                    kvittering_status=:kvitteringStatus,
-                    nav_trekk_id=:navTrekkId
-                    WHERE transaksjon_id=:transaksjonId
+                    ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}=:${TransaksjonOsTable.KVITTERING_STATUS_PARAM},
+                      ${TransaksjonOsTable.NAV_TREKK_ID_COLUMN}=:${TransaksjonOsTable.NAV_TREKK_ID_PARAM}
+                    WHERE 
+                      ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}=:${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM}
                     """.trimIndent(),
                     mapOf(
-                        "kvitteringStatus" to kvitteringStatus.name,
-                        "navTrekkId" to navTrekkId.ifEmpty { INGEN_TREKK_ID_I_KVITTERING },
-                        "transaksjonId" to transaksjonId,
+                        TransaksjonOsTable.KVITTERING_STATUS_PARAM to kvitteringStatus.name,
+                        TransaksjonOsTable.NAV_TREKK_ID_PARAM to navTrekkId.ifEmpty { INGEN_TREKK_ID_I_KVITTERING },
+                        TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to transaksjonId,
                     ),
                 ),
             )
@@ -322,12 +337,13 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             session.single(
                 queryOf(
                     """
-                    SELECT * FROM transaksjon_os WHERE transaksjon_id=:transaksjonsId
+                    SELECT * FROM  ${TransaksjonOsTable.TABLE_NAME}  WHERE 
+                    ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}=:${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM}
                     """.trimIndent(),
-                    mapOf("transaksjonsId" to transaksjonsId),
+                    mapOf(TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to transaksjonsId),
                 ),
             ) { row ->
-                val transaksjonId = row.long("id")
+                val transaksjonId = row.long(TransaksjonOsTable.ID_COLUMN)
                 val perioderTilOS = getPerioderForTransaksjon(transaksjonId, session)
 
                 TransaksjonOS(row, perioderTilOS)
@@ -339,9 +355,10 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             session.list(
                 queryOf(
                     """
-                    SELECT * FROM transaksjon_os WHERE trekk_id_ske=:trekkIdSke
+                    SELECT * FROM ${TransaksjonOsTable.TABLE_NAME} WHERE 
+                    ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}=:${TransaksjonOsTable.TREKK_ID_SKE_PARAM}
                     """.trimIndent(),
-                    mapOf("trekkIdSke" to trekkIdSke),
+                    mapOf(TransaksjonOsTable.TREKK_ID_SKE_PARAM to trekkIdSke),
                 ),
             ) { row ->
                 val transaksjonId = row.long("id")
@@ -356,7 +373,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             session.list(
                 queryOf(
                     """
-                    SELECT * FROM transaksjon_os
+                    SELECT * FROM  ${TransaksjonOsTable.TABLE_NAME} 
                     """.trimIndent(),
                 ),
             ) { row ->
@@ -456,7 +473,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 queryOf(
                     """
                         SELECT DISTINCT ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}
-                        FROM transaksjon_os 
+                        FROM  ${TransaksjonOsTable.TABLE_NAME}  
                         WHERE ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}=:${TransaksjonOsTable.TREKK_ID_SKE_PARAM}
                         AND ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.OK}' 
                         OR ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}  = '${KvitteringStatus.IKKE_MOTTATT.name}'
@@ -492,7 +509,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                     """
                         SELECT * 
                         FROM periode_til_os p 
-                        JOIN transaksjon_os t ON p.transaksjon_os_id = t.id 
+                        JOIN  ${TransaksjonOsTable.TABLE_NAME}  t ON p.transaksjon_os_id = t.id 
                         WHERE trekk_id_ske=:trekkIdSke 
                         AND t.trekk_alternativ=:trekkAlternativ 
                         AND t.kvittering_status in ('${KvitteringStatus.IKKE_MOTTATT.name}', '${KvitteringStatus.OK.name}')
@@ -529,21 +546,19 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 queryOf(
                     """
                     SELECT f.* FROM fraskatt f
-                    LEFT JOIN transaksjon_os t ON t.trekk_id_ske = f.trekkid
+                    LEFT JOIN  ${TransaksjonOsTable.TABLE_NAME}  t ON t.trekk_id_ske = f.trekkid
                     WHERE t.transaksjon_status IS NULL OR t.transaksjon_status = 'IKKE_SENDT'
                     """.trimIndent(),
                 ),
             ) { row -> TrekkFraSkatt(row) }
         }
 
-    fun insertTrekkForOS(nyPeriode: PeriodeTilOS) {}
-
-    fun getTransaksjonerTilOsSomIkkeErSendt() {
+    fun getTransaksjonerTilOsSomIkkeErSendt() =
         dataSource.withTransaction { session ->
             session.list(
                 queryOf(
                     """
-                    SELECT * FROM transaksjon_os WHERE transaksjon_status IS null OR transaksjon_status = 'IKKE_SENDT'
+                    SELECT * FROM  ${TransaksjonOsTable.TABLE_NAME}  WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} IS null OR ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}  = '${TransaksjonsStatus.IKKE_SENDT.name}'
                     """.trimIndent(),
                 ),
             ) { row ->
@@ -553,7 +568,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 TransaksjonOS(row, perioderTilOS)
             }
         }
-    }
 
     private fun getPerioderForTransaksjon(transaksjonOSId: Long, session: Session): List<PeriodeTilOS> {
         val perioderTilOS = mutableListOf<PeriodeTilOS>()
@@ -576,13 +590,14 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 .list(
                     queryOf(
                         """
-                        SELECT DISTINCT trekk_alternativ from transaksjon_os WHERE trekk_id_ske=:trekkIdSek AND
-                        transaksjonStatus NOT IN ('FEIL', 'UKJENT')
+                        SELECT DISTINCT ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN} from  ${TransaksjonOsTable.TABLE_NAME}  WHERE ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}=:${TransaksjonOsTable.TREKK_ID_SKE_PARAM} 
+                        AND
+                        ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} NOT IN ('${KvitteringStatus.FEIL.name}', '${KvitteringStatus.UKJENT.name}')
                         """.trimIndent(),
-                        mapOf("trekkIdSek" to trekk),
+                        mapOf(TransaksjonOsTable.TREKK_ID_SKE_PARAM to trekk.trekkid),
                     ),
                 ) { row ->
-                    TrekkAlternativ.valueOf(row.string("trekk_alternativ"))
+                    TrekkAlternativ.valueOf(row.string(TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN).uppercase())
                 }.toSet()
         }
 }

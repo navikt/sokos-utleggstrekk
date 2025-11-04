@@ -4,12 +4,12 @@ CREATE TABLE transaksjon_os
 (
     id                     bigserial primary key,
     nav_trekk_id           text     NOT NULL DEFAULT '',
-    transaksjon_id         text      NOT NULL,
+    transaksjons_id         text      NOT NULL,
     transaksjon_status     text      NOT NULL,
     trekk_id_ske           text      NOT NULL,
     kvittering_status      text      NOT NULL,
-    tidspunkt_sendt        timestamp NOT NULL DEFAULT NOW(),
-    tidspunkt_siste_status timestamp NOT NULL DEFAULT NOW(),
+    tidspunkt_sendt        timestamp NULL DEFAULT NULL,
+    tidspunkt_siste_status timestamp NOT NULL DEFAULT now(),
 
     aksjonskode     text NOT NULL,
     kreditor_id_tss  text NOT NULL,
@@ -22,7 +22,9 @@ CREATE TABLE transaksjon_os
     kilde text NOT NULL,
     saldo decimal NOT NULL default 0.0,
     prioritet_fom_dato text NOT NULL,
-    gyldig_tom_dato text NULL DEFAULT NULL
+    gyldig_tom_dato text NULL DEFAULT NULL,
+    dokument_json text NOT NULL
+
 );
 
 CREATE TABLE periode_til_os

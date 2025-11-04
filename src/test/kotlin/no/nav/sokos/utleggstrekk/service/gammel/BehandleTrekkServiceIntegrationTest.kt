@@ -59,7 +59,7 @@ class BehandleTrekkServiceIntegrationTest :
             Given("Det finnes ett trekk i databasen med trekkstatus AKTIV, status MOTTATT som har én periode med prosenttrekk") {
                 beforeContainer {
                     storedInDb(
-                        TestData.Trekkpaalegg(
+                        TestData.makeTrekkpaalegg(
                             "trekkid1",
                             1,
                             1,

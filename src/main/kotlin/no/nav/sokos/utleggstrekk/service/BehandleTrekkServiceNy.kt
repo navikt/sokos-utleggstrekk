@@ -1,9 +1,11 @@
 package no.nav.sokos.utleggstrekk.service
 
-import java.time.Instant
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
+import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
@@ -30,18 +32,16 @@ const val KILDE = "SOKOSUTLEGG"
 class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource)) {
     // Ting er allerede lagret i databasen når vi kommer hit
 
-    fun schedule() {
+    fun behandleTrekk() =
         repositoryNy.getTrekkSomIkkeErSendt().forEach { trekk ->
             val documents = lagTrekkDokument(trekk)
 
             documents.forEach { document ->
-                val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document)
+                val documentJson = jsonConfig.encodeToString<DokumentTilOppdrag>(document)
+                val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document.innrapporteringTrekk, documentJson)
                 repositoryNy.insertTransaksjonTilOs(dto)
             }
         }
-    }
-
-    fun trekkForTrekkId(trekkFraSkatt: TrekkFraSkatt): List<TrekkFraSkatt> = repositoryNy.getTrekkFraSkatt(trekkFraSkatt.trekkid)
 
     fun betalingsInformasjonForTrekk(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt? = repositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
 
@@ -190,9 +190,8 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         val tssId = "kreditorIdTss"
 
         val prioritetfomdato =
-            Instant
-                .parse(trekkFraSkatt.opprettet)
-                .atZone(java.time.ZoneId.systemDefault())
+            OffsetDateTime
+                .parse(trekkFraSkatt.opprettet, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
                 .toLocalDate()
                 .toString()
 

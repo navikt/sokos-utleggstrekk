@@ -10,11 +10,11 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 typealias KvitteringFraOppdrag = TrekkTilOppdrag
 typealias DokumentTilOppdrag = Document
 
-// TODO: TSS ID
 data class OSDto(
     val transaksjonID: String,
     val trekkIDSke: String,
-    val dokumentTilOppdrag: DokumentTilOppdrag,
+    val innrapporteringTrekk: InnrapporteringTrekk,
+    val documentJson: String,
 )
 
 @Serializable

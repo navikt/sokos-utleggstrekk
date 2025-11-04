@@ -6,11 +6,10 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
-import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
@@ -32,10 +31,10 @@ class UtleggsTrekkService(
     // Eksempel funksjon som kalles i schedulering
     suspend fun schedule() {
         val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
-
         processTrekkpaalegg(nyeUtleggsTrekk)
+        BehandleTrekkServiceNy(repositoryNy).behandleTrekk()
 
-        repositoryNy.getTransaksjonerTilOsSomIkkeErSendt()
+        repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
     }
 
     private suspend fun hentUtleggsTrekk(): List<Trekkpaalegg> {
@@ -49,12 +48,11 @@ class UtleggsTrekkService(
         }
     }
 
-    private fun sendTrekkTilOS(dto: OSDto) {
-        repositoryNy.insertTransaksjonTilOs(dto)
+    private fun sendTrekkTilOS(transaksjonOS: TransaksjonOS) {
         runCatching {
-            mqProducer.send(jsonConfig.encodeToString(dto.dokumentTilOppdrag))
+            mqProducer.send(transaksjonOS.documentJson)
         }.onSuccess {
-            repositoryNy.updateTransaksjonStatus(dto.transaksjonID, TransaksjonsStatus.SENDT)
+            repositoryNy.updateTransaksjonStatus(transaksjonOS.transaksjonsID, TransaksjonsStatus.SENDT)
         }.onFailure { exception ->
             logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
         }

@@ -21,7 +21,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
-import no.nav.sokos.utleggstrekk.util.TestData.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
 
 internal class UtleggsTrekkServiceTest :
     BehaviorSpec({
@@ -45,7 +45,7 @@ internal class UtleggsTrekkServiceTest :
                 )
 
             val trekkpaalegg =
-                Trekkpaalegg(
+                makeTrekkpaalegg(
                     trekkId = "ID1",
                     sekvensnummer = 1,
                     trekkversjon = 1,
@@ -60,9 +60,6 @@ internal class UtleggsTrekkServiceTest :
                 mockk<SkeClient> {
                     coEvery { hentUtleggstrekkFraSekvensnr(any()) } returns listOf(trekkpaalegg)
                 }
-
-            val behandleTrekkServiceMock =
-                mockk<BehandleTrekkService>(relaxed = true)
 
             val utleggsTrekkService =
                 UtleggsTrekkService(

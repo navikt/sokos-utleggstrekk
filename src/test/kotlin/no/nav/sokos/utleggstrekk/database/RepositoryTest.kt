@@ -75,13 +75,15 @@ class RepositoryTest :
             )
 
         Given("Vi henter trekk som ikke er sendt") {
-            val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+            val dokument = resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")
+            val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(dokument).first()
             RepositoryNy.saveTrekkpaalegg(skalSendes)
             val dto =
                 OSDto(
                     transaksjonID = "SkalSendes",
                     skalSendes.trekkid,
-                    lagDokumentTilOppdrag("SkalSendes"), // TODO: Legge inn faktisk dokument
+                    lagDokumentTilOppdrag("SkalSendes").innrapporteringTrekk,
+                    dokument,
                 )
             RepositoryNy.insertTransaksjonTilOs(dto)
 
@@ -93,7 +95,8 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = "SkalIkkeSendes",
                     trekkSomErSendt.trekkid,
-                    lagDokumentTilOppdrag("SkalIkkeSendes"), // TODO: Legge inn faktisk dokument
+                    lagDokumentTilOppdrag("SkalIkkeSendes").innrapporteringTrekk, // TODO: Legge inn faktisk dokument
+                    dokument,
                 )
             RepositoryNy.insertTransaksjonTilOs(dtoSomErSendt)
             RepositoryNy.updateTransaksjonStatus(dtoSomErSendt.transaksjonID, TransaksjonsStatus.SENDT)
@@ -137,16 +140,11 @@ class RepositoryTest :
             When("getPerioderForTrekkVersjon") {
 
                 Then("Skal perioder hentes kun for trekk med gitt versjon, sekvensnummer og trekkid") {
-                    val perioderVersjon1 =
-                        DBListener.dataSource.withTransaction { session ->
-                            RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1, trekkpaalegg1.sekvensnummer, trekkpaalegg1.trekkversjon)
-                        }
+                    val perioderVersjon1 = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1, trekkpaalegg1.sekvensnummer, trekkpaalegg1.trekkversjon)
 
                     perioderVersjon1.shouldHaveSize(1)
-                    val perioderVersjon2 =
-                        DBListener.dataSource.withTransaction { session ->
-                            RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2, trekkpaalegg2.sekvensnummer, trekkpaalegg2.trekkversjon)
-                        }
+                    val perioderVersjon2 = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2, trekkpaalegg2.sekvensnummer, trekkpaalegg2.trekkversjon)
+
                     perioderVersjon2.shouldHaveSize(2)
                 }
             }
@@ -202,7 +200,8 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = "123id",
                     "Et trekk",
-                    lagDokumentTilOppdrag("TransaksjonIDa"),
+                    lagDokumentTilOppdrag("TransaksjonIDa").innrapporteringTrekk,
+                    "",
                 )
             RepositoryNy.insertTransaksjonTilOs(dto)
 
@@ -218,11 +217,11 @@ class RepositoryTest :
                 }
                 And("Tidspunktsendt skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSendt.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSendt?.shouldBeIn(now.minusSeconds(10)..now)
                 }
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSisteStatus.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
                 }
                 And("Enumverdier skal lagres korrekt") {
                     transaksjonTilOs.aksjonskode shouldBe Aksjonskode.NY
@@ -240,7 +239,7 @@ class RepositoryTest :
                 }
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSisteStatus.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
                 }
             }
             When("Transaksjon oppdateres med kvitteringsstatus og navtrekkid") {
@@ -256,7 +255,7 @@ class RepositoryTest :
                 }
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSisteStatus.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
                 }
                 And("Navtrekkid skal ikke være blank") {
                     transaksjonTilOs.navTrekkId shouldBe nyNavTrekkId
@@ -333,27 +332,90 @@ class RepositoryTest :
             }
         }
 
-        Given("Vi henter transaksjoner for en gitt TrekkID") {
+        Given("Det finnes transaksjoner i databasen") {
+            DBListener.clearDB()
             DBListener.clearDB()
             val trekkId = "TestTrekkID"
             val transaksjonsId = "123id"
 
-            val dto =
+            val transaksjonsId1 = "$transaksjonsId-1"
+            val transaksjonsId2 = "$transaksjonsId-2"
+            val transaksjonsId3 = "$transaksjonsId-3"
+            val dokument1 = lagDokumentTilOppdrag(transaksjonsId1)
+            val dokument2 = lagDokumentTilOppdrag(transaksjonsId2)
+            val dokument3 = lagDokumentTilOppdrag(transaksjonsId3)
+
+            val dto1 =
                 OSDto(
-                    transaksjonID = transaksjonsId,
+                    transaksjonID = transaksjonsId1,
                     trekkId,
-                    lagDokumentTilOppdrag(transaksjonsId),
+                    dokument1.innrapporteringTrekk,
+                    jsonConfig.encodeToString<DokumentTilOppdrag>(dokument1),
                 )
-            RepositoryNy.insertTransaksjonTilOs(dto)
+            val dto2 =
+                OSDto(
+                    transaksjonID = transaksjonsId2,
+                    trekkId,
+                    dokument2.innrapporteringTrekk,
+                    jsonConfig.encodeToString<DokumentTilOppdrag>(dokument2),
+                )
+
+            val dto3 =
+                OSDto(
+                    transaksjonID = transaksjonsId3,
+                    trekkId,
+                    dokument3.innrapporteringTrekk,
+                    jsonConfig.encodeToString<DokumentTilOppdrag>(dokument3),
+                )
+            RepositoryNy.insertTransaksjonTilOs(dto1)
+            RepositoryNy.insertTransaksjonTilOs(dto2)
+            RepositoryNy.insertTransaksjonTilOs(dto3)
 
             When("Transaksjoner hentes for TrekkID: $trekkId") {
                 val transaksjoner = RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkId)
 
                 Then("Skal transaksjonen som hentes matche transaksjonen som ble lagret") {
-                    transaksjoner.shouldHaveSize(1)
-                    val transaksjon = transaksjoner.first()
+                    transaksjoner.shouldHaveSize(3)
+                    val transaksjon = transaksjoner.first { it.transaksjonsID == transaksjonsId1 }
                     transaksjon.trekkIdSke shouldBe trekkId
-                    transaksjon.transaksjonsID shouldBe dto.transaksjonID
+                    transaksjon.transaksjonsID shouldBe dto1.transaksjonID
+                    transaksjon.kvitteringStatus shouldBe KvitteringStatus.IKKE_MOTTATT
+                    transaksjon.transaksjonStatus shouldBe TransaksjonsStatus.IKKE_SENDT
+                    transaksjon.navTrekkId shouldBe ""
+                    transaksjon.tidspunktSendt shouldBe null
+                    transaksjon.tidspunktSisteStatus?.toLocalDate() shouldBe LocalDate.now()
+                    with(dokument1.innrapporteringTrekk) {
+                        transaksjon.trekkAlternativ shouldBe kodeTrekkAlternativ
+                        transaksjon.trekktype shouldBe kodeTrekktype
+                        transaksjon.debitorId shouldBe debitorId
+                        transaksjon.kreditorsref shouldBe kreditorsRef
+                        transaksjon.aksjonskode shouldBe aksjonskode
+                        transaksjon.kreditorTrekkId shouldBe kreditorTrekkId
+                        transaksjon.kreditorIdTss shouldBe kreditorIdTss
+                        transaksjon.saldo shouldBe saldo
+                        transaksjon.kilde shouldBe kilde
+                        transaksjon.kid shouldBe kid
+                    }
+                }
+            }
+
+            When("Vi oppdaterer en transaksjonstatus") {
+                RepositoryNy.updateTransaksjonStatus(transaksjonsId3, TransaksjonsStatus.SENDT)
+
+                Then("Skal ny status settes korrekt") {
+                    val transaksjoner = RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkId)
+                    transaksjoner.filter { it.transaksjonsID == transaksjonsId3 }.shouldHaveSize(1)
+                    transaksjoner.filter { it.transaksjonStatus == TransaksjonsStatus.SENDT }.shouldHaveSize(1)
+                    transaksjoner.filter { it.transaksjonStatus == TransaksjonsStatus.IKKE_SENDT }.shouldHaveSize(2)
+                }
+            }
+            When("Vi henter transaksjoner som ikke er sendt til OS") {
+                Then("Skal transaksjonene ha transaksjon status null eller ${TransaksjonsStatus.IKKE_SENDT}") {
+                    val transaksjonerIkkeSendt = RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt()
+
+                    transaksjonerIkkeSendt.shouldHaveSize(2)
+                    transaksjonerIkkeSendt.filter { it.transaksjonStatus == TransaksjonsStatus.SENDT }.shouldHaveSize(0)
+                    transaksjonerIkkeSendt.filter { it.transaksjonStatus == TransaksjonsStatus.IKKE_SENDT }.shouldHaveSize(2)
                 }
             }
         }
@@ -368,13 +430,15 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = transaksjonsId1,
                     trekkIdSke,
-                    lagDokumentTilOppdrag(transaksjonsId1).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPM)),
+                    lagDokumentTilOppdrag(transaksjonsId1).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPM)).innrapporteringTrekk,
+                    "",
                 )
             val dto2 =
                 OSDto(
                     transaksjonID = transaksjonsId2,
                     trekkIdSke,
-                    lagDokumentTilOppdrag(transaksjonsId2).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPP)),
+                    lagDokumentTilOppdrag(transaksjonsId2).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPP)).innrapporteringTrekk,
+                    "",
                 )
             RepositoryNy.insertTransaksjonTilOs(dto1)
             RepositoryNy.insertTransaksjonTilOs(dto2)
@@ -398,7 +462,8 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = transaksjosID,
                     trekkIdSke,
-                    lagDokumentTilOppdrag(transaksjosID).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = alternativ)),
+                    lagDokumentTilOppdrag(transaksjosID).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = alternativ)).innrapporteringTrekk,
+                    "",
                 )
             val perioderTilOS =
                 PeriodeTilOS(
@@ -435,9 +500,7 @@ class RepositoryTest :
                     kontonummer = "76940512057",
                 )
 
-            DBListener.dataSource.withTransaction { session ->
-                RepositoryNy.insertBetalingsinformasjonFraSkatt(fraSkattId = idtrekkpaalegg1, sampleBetalingsinformasjon)
-            }
+            RepositoryNy.insertBetalingsinformasjonFraSkatt(fraSkattId = idtrekkpaalegg1, sampleBetalingsinformasjon)
 
             When("Betalingsinformasjon hentes for TrekkID: $trekkId") {
                 val betalingsinformasjon = RepositoryNy.getBetalingsinformasjonForTrekk(trekkId)

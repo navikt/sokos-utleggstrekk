@@ -2,8 +2,6 @@
 
 package no.nav.sokos.utleggstrekk.util
 
-import java.time.LocalDateTime
-
 import kotlin.time.ExperimentalTime
 
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
@@ -61,11 +59,11 @@ object TestData {
         LocalDateTime.now().toKotlinLocalDateTime(), // TODO: ikke bruke KotlinLocalDateTime her.
     )*/
 
-    fun Trekkpaalegg(
+    fun makeTrekkpaalegg(
         trekkId: String,
         sekvensnummer: Int,
         trekkversjon: Int,
-        opprettet: LocalDateTime = LocalDateTime.now(),
+        opprettet: String = "2024-06-16T13:33:05.672Z",
         saksnummer: String = "saksnr1",
         trekkpliktig: String = "889640782",
         skyldner: String = "19628198007",
@@ -82,11 +80,11 @@ object TestData {
             trekkId,
             sekvensnummer,
             trekkversjon,
-            opprettet.toString(),
+            opprettet,
             saksnummer,
             trekkpliktig,
             skyldner,
-            AKTIV,
+            trekkstatus,
             perioder,
             mottaker,
         )

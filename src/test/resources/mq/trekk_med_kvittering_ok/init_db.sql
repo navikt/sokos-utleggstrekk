@@ -1,7 +1,7 @@
 INSERT INTO
     transaksjon_os(
     nav_trekk_id,
-    transaksjon_id,
+    transaksjons_id,
     transaksjon_status,
     trekk_id_ske,
     kvittering_status,
@@ -14,6 +14,7 @@ INSERT INTO
     trekk_type,
     kid,
     kilde,
+   dokument_json,
     prioritet_fom_dato,
     gyldig_tom_dato
 )
@@ -32,6 +33,7 @@ VALUES(
           'KRED',
         'Kidnummer',
        'Kilde' ,
+       'DokumentJson',
       '2018-01-01',
         '2018-01-01'
 
