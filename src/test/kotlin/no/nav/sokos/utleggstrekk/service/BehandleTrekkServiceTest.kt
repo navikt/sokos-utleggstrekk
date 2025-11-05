@@ -111,7 +111,7 @@ class BehandleTrekkServiceTest :
             every { repositoryNy.getOsAlternativForTrekk(any()) } returns trekkAlternativIOS
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM) } returns kjenteLOPMPerioder
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP) } returns kjenteLOPPPerioder
-            every { repositoryNy.getTrekkSomIkkeErSendt() } returns alleTrekkSomIkkeErSendt
+            every { repositoryNy.getTrekkSomIkkeErBehandlet() } returns alleTrekkSomIkkeErSendt
             every { repositoryNy.getPerioderForTrekk(any()) } returns perioderForTrekkFraSkatt
             every { repositoryNy.getTrekkFraSkatt(any()) } returns alleTrekkForTrekkId
             every { repositoryNy.getBetalingsinformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt

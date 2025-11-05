@@ -11,6 +11,7 @@ import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.PerioderTilOS
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.ENDR
@@ -33,17 +34,17 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
     // Ting er allerede lagret i databasen når vi kommer hit
 
     fun behandleTrekk() =
-        repositoryNy.getTrekkSomIkkeErSendt().forEach { trekk ->
+        repositoryNy.getTrekkSomIkkeErBehandlet().forEach { trekk ->
             val documents = lagTrekkDokument(trekk)
 
             documents.forEach { document ->
                 val documentJson = jsonConfig.encodeToString<DokumentTilOppdrag>(document)
                 val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document.innrapporteringTrekk, documentJson)
-                repositoryNy.insertTransaksjonTilOs(dto)
+                runCatching {
+                    repositoryNy.insertTransaksjonTilOs(dto)
+                }.onSuccess { repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET) }
             }
         }
-
-    fun betalingsInformasjonForTrekk(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt? = repositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
 
     fun lagTrekkDokument(trekk: TrekkFraSkatt): List<Document> {
         // Vi trenger å vite om trekk(ene) er kjent for OS
@@ -64,7 +65,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         }
     }
 
-    fun nyePerioderTilOS(trekkFraSkatt: TrekkFraSkatt): PerioderTilOS {
+    private fun nyePerioderTilOS(trekkFraSkatt: TrekkFraSkatt): PerioderTilOS {
         val trekkPerioder = repositoryNy.getPerioderForTrekk(trekkFraSkatt)
         // Alternativene som finnes i dette trekket + alternativ fra dokumenter vi har sendt eller skal sende til OS
         val alternativ =
@@ -176,7 +177,8 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
 
         // Må hente betalingsinformasjonen til trekket for å finne tssid og kid
 
-        val betalingsinformasjon: BetalingsinformasjonFraSkatt = betalingsInformasjonForTrekk(trekkFraSkatt) ?: throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
+        val betalingsinformasjon: BetalingsinformasjonFraSkatt =
+            repositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id) ?: throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
 
         val perioder =
             Perioder(

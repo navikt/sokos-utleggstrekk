@@ -17,7 +17,6 @@ import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
-import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.service.withTransaction
 
@@ -127,29 +126,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             return@withTransaction fraSkattId
         }
 
-    fun insertBetalingsinformasjonFraSkatt(fraSkattId: Long?, betalingsInformasjon: Betalingsinformasjon) {
-        dataSource.withTransaction { session ->
-            session.update(
-                queryOf(
-                    """
-                    INSERT INTO betalingsinformasjonfraskatt(
-                        fraskatt_id,
-                        betalingsmottaker,
-                        kidnummer,
-                        kontonummer
-                    ) VALUES(:fraskattID, :betalingsmottaker, :kidnummer, :kontonummer)   
-                    """.trimIndent(),
-                    mapOf(
-                        "fraskattID" to fraSkattId,
-                        "betalingsmottaker" to betalingsInformasjon.betalingsmottaker,
-                        "kidnummer" to betalingsInformasjon.kidnummer,
-                        "kontonummer" to betalingsInformasjon.kontonummer,
-                    ),
-                ),
-            )
-        }
-    }
-
     fun insertFeilmeldingFraOS(kvittering: KvitteringFraOppdrag) {
         dataSource.withTransaction { session ->
             session.update(
@@ -227,66 +203,90 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
 
     fun insertTransaksjonTilOs(dto: OSDto) {
         dataSource.withTransaction { session ->
-            session.update(
-                queryOf(
-                    """
-                      INSERT INTO 
-                    ${TransaksjonOsTable.TABLE_NAME} (
-                          ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}, 
-                           ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}, 
-                           ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}, 
-                           ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}, 
-                           ${TransaksjonOsTable.AKSJONSKODE_COLUMN}, 
-                           ${TransaksjonOsTable.KREDITOR_ID_TSS_COLUMN}, 
-                           ${TransaksjonOsTable.KREDITOR_TREKK_ID_COLUMN}, 
-                           ${TransaksjonOsTable.KREDITORSREF_COLUMN}, 
-                           ${TransaksjonOsTable.DEBITOR_ID_COLUMN}, 
-                           ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}, 
-                           ${TransaksjonOsTable.TREKK_TYPE_COLUMN}, 
-                           ${TransaksjonOsTable.KID_COLUMN},
-                           ${TransaksjonOsTable.KILDE_COLUMN},
-                           ${TransaksjonOsTable.DOKUMENT_JSON_COLUMN}, 
-                           ${TransaksjonOsTable.PRIORITET_FOM_DATO_COLUMN},
-                           ${TransaksjonOsTable.GYLDIG_TOM_DATO_COLUMN}
-                      ) VALUES(
-                          :${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM},
-                          :${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
-                          :${TransaksjonOsTable.TREKK_ID_SKE_PARAM},
-                          :${TransaksjonOsTable.KVITTERING_STATUS_PARAM},
-                          :${TransaksjonOsTable.AKSJONSKODE_PARAM},
-                          :${TransaksjonOsTable.KREDITOR_ID_TSS_PARAM},
-                          :${TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM},
-                          :${TransaksjonOsTable.KREDITORSREF_PARAM},
-                          :${TransaksjonOsTable.DEBITOR_ID_PARAM},
-                          :${TransaksjonOsTable.TREKKALTERNATIV_PARAM},
-                          :${TransaksjonOsTable.TREKK_TYPE_PARAM},
-                          :${TransaksjonOsTable.KID_PARAM},
-                          :${TransaksjonOsTable.KILDE_PARAM},
-                          :${TransaksjonOsTable.DOKUMENT_JSON_PARAM},
-                          :${TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM},
-                          :${TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM}
-                      )
-                    """.trimIndent(),
-                    mapOf(
-                        TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to dto.transaksjonID,
-                        TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to TransaksjonsStatus.IKKE_SENDT.name,
-                        TransaksjonOsTable.TREKK_ID_SKE_PARAM to dto.trekkIDSke,
-                        TransaksjonOsTable.KVITTERING_STATUS_PARAM to KvitteringStatus.IKKE_MOTTATT.name,
-                        TransaksjonOsTable.AKSJONSKODE_PARAM to dto.innrapporteringTrekk.aksjonskode.name,
-                        TransaksjonOsTable.KREDITOR_ID_TSS_PARAM to dto.innrapporteringTrekk.kreditorIdTss,
-                        TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM to dto.innrapporteringTrekk.kreditorTrekkId,
-                        TransaksjonOsTable.KREDITORSREF_PARAM to dto.innrapporteringTrekk.kreditorsRef,
-                        TransaksjonOsTable.DEBITOR_ID_PARAM to dto.innrapporteringTrekk.debitorId,
-                        TransaksjonOsTable.TREKKALTERNATIV_PARAM to dto.innrapporteringTrekk.kodeTrekkAlternativ.name,
-                        TransaksjonOsTable.TREKK_TYPE_PARAM to dto.innrapporteringTrekk.kodeTrekktype,
-                        TransaksjonOsTable.KID_PARAM to dto.innrapporteringTrekk.kid,
-                        TransaksjonOsTable.KILDE_PARAM to dto.innrapporteringTrekk.kilde,
-                        TransaksjonOsTable.DOKUMENT_JSON_PARAM to dto.documentJson,
-                        TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM to dto.innrapporteringTrekk.prioritetFomDato,
-                        TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM to dto.innrapporteringTrekk.gyldigTomDato,
+            val id =
+                session.updateAndReturnGeneratedKey(
+                    queryOf(
+                        """
+                          INSERT INTO 
+                        ${TransaksjonOsTable.TABLE_NAME} (
+                              ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}, 
+                               ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}, 
+                               ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}, 
+                               ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}, 
+                               ${TransaksjonOsTable.AKSJONSKODE_COLUMN}, 
+                               ${TransaksjonOsTable.KREDITOR_ID_TSS_COLUMN}, 
+                               ${TransaksjonOsTable.KREDITOR_TREKK_ID_COLUMN}, 
+                               ${TransaksjonOsTable.KREDITORSREF_COLUMN}, 
+                               ${TransaksjonOsTable.DEBITOR_ID_COLUMN}, 
+                               ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}, 
+                               ${TransaksjonOsTable.TREKK_TYPE_COLUMN}, 
+                               ${TransaksjonOsTable.KID_COLUMN},
+                               ${TransaksjonOsTable.KILDE_COLUMN},
+                               ${TransaksjonOsTable.DOKUMENT_JSON_COLUMN}, 
+                               ${TransaksjonOsTable.PRIORITET_FOM_DATO_COLUMN},
+                               ${TransaksjonOsTable.GYLDIG_TOM_DATO_COLUMN}
+                          ) VALUES(
+                              :${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM},
+                              :${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
+                              :${TransaksjonOsTable.TREKK_ID_SKE_PARAM},
+                              :${TransaksjonOsTable.KVITTERING_STATUS_PARAM},
+                              :${TransaksjonOsTable.AKSJONSKODE_PARAM},
+                              :${TransaksjonOsTable.KREDITOR_ID_TSS_PARAM},
+                              :${TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM},
+                              :${TransaksjonOsTable.KREDITORSREF_PARAM},
+                              :${TransaksjonOsTable.DEBITOR_ID_PARAM},
+                              :${TransaksjonOsTable.TREKKALTERNATIV_PARAM},
+                              :${TransaksjonOsTable.TREKK_TYPE_PARAM},
+                              :${TransaksjonOsTable.KID_PARAM},
+                              :${TransaksjonOsTable.KILDE_PARAM},
+                              :${TransaksjonOsTable.DOKUMENT_JSON_PARAM},
+                              :${TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM},
+                              :${TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM}
+                          )
+                        """.trimIndent(),
+                        mapOf(
+                            TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to dto.transaksjonID,
+                            TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to TransaksjonsStatus.IKKE_SENDT.name,
+                            TransaksjonOsTable.TREKK_ID_SKE_PARAM to dto.trekkIDSke,
+                            TransaksjonOsTable.KVITTERING_STATUS_PARAM to KvitteringStatus.IKKE_MOTTATT.name,
+                            TransaksjonOsTable.AKSJONSKODE_PARAM to dto.innrapporteringTrekk.aksjonskode.name,
+                            TransaksjonOsTable.KREDITOR_ID_TSS_PARAM to dto.innrapporteringTrekk.kreditorIdTss,
+                            TransaksjonOsTable.KREDITOR_TREKK_ID_PARAM to dto.innrapporteringTrekk.kreditorTrekkId,
+                            TransaksjonOsTable.KREDITORSREF_PARAM to dto.innrapporteringTrekk.kreditorsRef,
+                            TransaksjonOsTable.DEBITOR_ID_PARAM to dto.innrapporteringTrekk.debitorId,
+                            TransaksjonOsTable.TREKKALTERNATIV_PARAM to dto.innrapporteringTrekk.kodeTrekkAlternativ.name,
+                            TransaksjonOsTable.TREKK_TYPE_PARAM to dto.innrapporteringTrekk.kodeTrekktype,
+                            TransaksjonOsTable.KID_PARAM to dto.innrapporteringTrekk.kid,
+                            TransaksjonOsTable.KILDE_PARAM to dto.innrapporteringTrekk.kilde,
+                            TransaksjonOsTable.DOKUMENT_JSON_PARAM to dto.documentJson,
+                            TransaksjonOsTable.PRIORITET_FOM_DATO_PARAM to dto.innrapporteringTrekk.prioritetFomDato,
+                            TransaksjonOsTable.GYLDIG_TOM_DATO_PARAM to dto.innrapporteringTrekk.gyldigTomDato,
+                        ),
                     ),
-                ),
-            )
+                )
+            dto.innrapporteringTrekk.perioder.periode.forEach { periode ->
+                session.update(
+                    queryOf(
+                        """ 
+                        INSERT INTO periode_til_os (
+                         transaksjon_os_id, sats, periode_fom_dato, periode_tom_dato
+                        )
+                        VALUES(
+                        :transaksjonOSForeignKey,
+                        :sats,
+                        :periodeFom,
+                        :periodeTom
+                        )
+                        """.trimIndent(),
+                        mapOf(
+                            "transaksjonOSForeignKey" to id,
+                            "sats" to periode.sats,
+                            "periodeFom" to periode.periodeFomDato,
+                            "periodeTom" to periode.periodeTomDato,
+                        ),
+                    ),
+                )
+            }
         }
     }
 
@@ -397,7 +397,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             }
         }
 
-    fun setStatus(fraSkattId: Long, status: SkattTrekkStatus) {
+    fun updateTrekkFraSkattStatus(fraSkattId: Long, status: SkattTrekkStatus) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
@@ -541,14 +541,14 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         }
 
     // TODO: Bruke fraskatt_status? Må også oppdatere hvordan ostransaksjon funker
-    fun getTrekkSomIkkeErSendt(): List<TrekkFraSkatt> =
+    fun getTrekkSomIkkeErBehandlet(): List<TrekkFraSkatt> =
         dataSource.withTransaction { session ->
             session.list(
                 queryOf(
                     """
                     SELECT f.* FROM fraskatt f
-                    LEFT JOIN  ${TransaksjonOsTable.TABLE_NAME}  t ON t.trekk_id_ske = f.trekkid
-                    WHERE t.transaksjon_status IS NULL OR t.transaksjon_status = 'IKKE_SENDT'
+                    LEFT JOIN  fraskatt_status t ON t.fraskatt_id = f.id
+                    WHERE t.status IS NULL OR t.status != 'BEHANDLET'
                     """.trimIndent(),
                 ),
             ) { row -> TrekkFraSkatt(row) }

@@ -74,7 +74,7 @@ class RepositoryTest :
                 innrapporteringTrekk = dummyInnrapporteringTrekk,
             )
 
-        Given("Vi henter trekk som ikke er sendt") {
+        Given("Vi henter trekk som ikke er behandlet") {
             val dokument = resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")
             val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(dokument).first()
             RepositoryNy.insertTrekkFraSkatt(skalSendes)
@@ -101,7 +101,7 @@ class RepositoryTest :
             RepositoryNy.insertTransaksjonTilOs(dtoSomErSendt)
             RepositoryNy.updateTransaksjonStatus(dtoSomErSendt.transaksjonID, TransaksjonsStatus.SENDT)
 
-            val ikkeSendt = RepositoryNy.getTrekkSomIkkeErSendt()
+            val ikkeSendt = RepositoryNy.getTrekkSomIkkeErBehandlet()
 
             ikkeSendt.shouldHaveSize(2)
         }
@@ -319,7 +319,7 @@ class RepositoryTest :
             val ettTrekk = trekkMottatt.first()
 
             When("Et trekk endrer status til BEHANDLET") {
-                RepositoryNy.setStatus(ettTrekk.id, BEHANDLET)
+                RepositoryNy.updateTrekkFraSkattStatus(ettTrekk.id, BEHANDLET)
                 val behandlet = RepositoryNy.getTrekkFraSkattMedStatus(BEHANDLET)
                 behandlet.shouldHaveSize(1)
                 behandlet.first().id shouldBe ettTrekk.id

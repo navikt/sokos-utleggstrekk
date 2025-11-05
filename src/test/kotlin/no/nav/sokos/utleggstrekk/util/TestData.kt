@@ -68,7 +68,14 @@ object TestData {
         trekkpliktig: String = "889640782",
         skyldner: String = "19628198007",
         trekkstatus: Trekkstatus = AKTIV,
-        perioder: List<TrekkstorrelseForPeriode> = trekkPeriode,
+        perioder: List<TrekkstorrelseForPeriode> =
+            listOf(
+                TrekkstorrelseForPeriode(
+                    "2026-02-02",
+                    "2026-04-02",
+                    trekkprosent = Trekkprosent(20.0),
+                ),
+            ),
         mottaker: Betalingsinformasjon =
             Betalingsinformasjon(
                 betalingsmottaker = "971648198",
@@ -87,14 +94,5 @@ object TestData {
             trekkstatus,
             perioder,
             mottaker,
-        )
-
-    private val trekkPeriode =
-        listOf(
-            TrekkstorrelseForPeriode(
-                "2026-02-02",
-                "2026-04-02",
-                trekkprosent = Trekkprosent(20.0),
-            ),
         )
 }
