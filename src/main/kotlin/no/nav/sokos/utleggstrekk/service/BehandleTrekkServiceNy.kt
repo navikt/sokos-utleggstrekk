@@ -20,7 +20,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
-import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
@@ -51,17 +50,13 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         val kjenteAlternativ = repositoryNy.getOsAlternativForTrekk(trekk)
         val nyePerioderTilOS = nyePerioderTilOS(trekk)
 
-        return listOf(LOPM, LOPP).mapNotNull { alternativ ->
-            when {
-                nyePerioderTilOS[alternativ].isEmpty() -> null
-                else ->
-                    lagTrekkDokument(
-                        trekkFraSkatt = trekk,
-                        trekkalternativ = alternativ,
-                        aksjonskode = if (kjenteAlternativ.contains(alternativ)) ENDR else NY,
-                        perioderTilOS = nyePerioderTilOS[alternativ],
-                    )
-            }
+        return nyePerioderTilOS.alternativ.map { alternativ ->
+            lagTrekkDokument(
+                trekkFraSkatt = trekk,
+                trekkalternativ = alternativ,
+                aksjonskode = if (kjenteAlternativ.contains(alternativ)) ENDR else NY,
+                perioderTilOS = nyePerioderTilOS[alternativ],
+            )
         }
     }
 
@@ -73,6 +68,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
                 addAll(trekkPerioder.map { it.trekkAlternativ() }.distinct())
                 addAll(repositoryNy.getOsAlternativForTrekk(trekkFraSkatt))
             }
+
         // Vi henter kjente osPerioder for å se etter endringer. Bare perioder som er fortsatt gyldige og som har en sats er relevante.
         val osPerioder =
             alternativ.associateWith { alternativ ->
@@ -101,6 +97,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         }
 
         return PerioderTilOS(
+            alternativ,
             LOPM = nyePerioderForOS[LOPM]?.toList().orEmpty(),
             LOPP = nyePerioderForOS[LOPP]?.toList().orEmpty(),
         )
@@ -182,7 +179,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
 
         val perioder =
             Perioder(
-                perioderTilOS.map { Periode(it.periodeFomDato, it.periodeTomDato ?: "9999-12-31", it.sats) },
+                perioderTilOS.map { it.asPeriode() },
             )
 
         val transaksjonsID = UUID.randomUUID().toString()
