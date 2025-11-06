@@ -466,34 +466,189 @@ class BehandleTrekkServiceTest :
 
         Given("Et mottatt trekk har 3 perioder") {
             And("Trekket har trekkversjon 1") {
+                val trekkVersjon = 1
+                val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
+                val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+
                 And("Periodene i trekket har aksjonskodene LOPM og LOPP") {
-                    Then("Skal trekket bli til to NYE trekk") {}
+                    val perioderForTrekkVersjon = lagPerioderForSkattLOPP(trekkFraSkatt).take(2) + lagPerioderForSkattLOPM(trekkFraSkatt).drop(2)
+                    val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
+
+                    Then("Skal trekket bli til 2 NYE trekk") {
+                        trekkDokumenter shouldHaveSize 2
+
+                        val trekkDokument1 = trekkDokumenter.first()
+                        trekkDokument1.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
+                        val dokument1Periodene = trekkDokument1.innrapporteringTrekk.perioder.periode
+                        dokument1Periodene shouldHaveSize 3
+                        dokument1Periodene[0].sats shouldBe 20.0
+                        dokument1Periodene[1].sats shouldBe 15.0
+                        dokument1Periodene[2].sats shouldBe 0.0
+
+                        val trekkDokument2 = trekkDokumenter.last()
+                        trekkDokument2.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
+                        val dokument2Periodene = trekkDokument2.innrapporteringTrekk.perioder.periode
+                        dokument2Periodene shouldHaveSize 3
+                        dokument2Periodene[0].sats shouldBe 0.0
+                        dokument2Periodene[1].sats shouldBe 0.0
+                        dokument2Periodene[2].sats shouldBe 1000.0
+                    }
                 }
-                And("Trekket har trekkversjon 2") {
-                    And("Versjon 2 har trekkstatus AKTIV") {
-                        And("Periodene i trekkversjon 1 har trekkalternativ LOPM") {
-                            And("Periodene i versjon 2 har aksjonskodene LOPM og LOPP") {
-                                Then("Skal trekket bli til to trekk: et NYTT og et ENDRET") {}
+            }
+            And("Trekket har trekkversjon 2") {
+                val trekkVersjon = 2
+                val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
+                val perioderForSkattLOPM = lagPerioderForSkattLOPM(trekkFraSkatt)
+                val perioderForSkattLOPP = lagPerioderForSkattLOPP(trekkFraSkatt)
+
+                And("Versjon 2 har trekkstatus AKTIV") {
+                    val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+                    And("Periodene i trekkversjon 1 har trekkalternativ LOPM") {
+                        And("Periodene i versjon 2 har aksjonskodene LOPM og LOPP") {
+                            val perioderForTrekkVersjon = perioderForSkattLOPM.take(1) + perioderForSkattLOPP.drop(1)
+                            val behandleTrekkServiceNy =
+                                setUpBehandleTrekkServiceNy(
+                                    alleTrekkSomIkkeErSendt,
+                                    perioderForTrekkVersjon,
+                                    kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
+                                )
+
+                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
+                            trekkDokumenter shouldHaveSize 2
+                            Then("Skal 1. trekk bli til 1 ENDRET trekk med trekkalternative LOPM og 3 perioder") {
+                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                    aksjonskode shouldBe Aksjonskode.ENDR
+                                    kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
+
+                                    val periodene = perioder.periode
+                                    periodene shouldHaveSize 3
+                                    periodene[0].sats shouldBe 3000.0
+                                    periodene[1].sats shouldBe 0.0
+                                    periodene[2].sats shouldBe 0.0
+                                }
                             }
-                            And("Periodene i versjon 2 har kun aksjonskode LOPP") {
-                                Then("Skal trekket bli til to trekk: et NYTT og et ENDRET") {}
+                            Then("Skal 2. trekk bli til 1 NYTT trekk med trekkalternative LOPP og 3 perioder") {
+                                with(trekkDokumenter.last().innrapporteringTrekk) {
+                                    aksjonskode shouldBe Aksjonskode.NY
+                                    kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
+
+                                    val periodene = perioder.periode
+                                    periodene shouldHaveSize 3
+                                    periodene[0].sats shouldBe 0.0
+                                    periodene[1].sats shouldBe 15.0
+                                    periodene[2].sats shouldBe 10.0
+                                }
+                            }
+                        }
+                        And("Periodene i versjon 2 har kun aksjonskode LOPP") {
+                            val behandleTrekkServiceNy =
+                                setUpBehandleTrekkServiceNy(
+                                    alleTrekkSomIkkeErSendt,
+                                    perioderForSkattLOPP,
+                                    kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
+                                )
+
+                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
+                            trekkDokumenter shouldHaveSize 2
+                            Then("Skal 1. trekk bli til 1 NYTT trekk med trekkalternative LOPP og 3 perioder") {
+                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                    aksjonskode shouldBe Aksjonskode.NY
+                                    kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
+
+                                    val periodene = perioder.periode
+                                    periodene shouldHaveSize 3
+                                    periodene[0].sats shouldBe 20.0
+                                    periodene[1].sats shouldBe 15.0
+                                    periodene[2].sats shouldBe 10.0
+                                }
+                            }
+
+                            Then("Skal 2. trekk bli til 1 ENDRET trekk med trekkalternative LOPM, 3 perioder med sats 0.0") {
+                                with(trekkDokumenter.last().innrapporteringTrekk) {
+                                    aksjonskode shouldBe Aksjonskode.ENDR
+                                    kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
+
+                                    perioder.periode shouldHaveSize 3
+                                    perioder.periode.forEach { it.sats shouldBe 0.0 }
+                                }
+                            }
+                        }
+                        And("Periodene i versjon 2 har kun aksjonkode LOPM") {
+                            val behandleTrekkServiceNy =
+                                setUpBehandleTrekkServiceNy(
+                                    alleTrekkSomIkkeErSendt,
+                                    perioderForSkattLOPM,
+                                    kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
+                                )
+
+                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
+                            trekkDokumenter shouldHaveSize 1
+                            Then("Skal 1 trekk bli til 1 ENDRET trekk med trekkalternative LOPM og 3 perioder") {
+                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                    aksjonskode shouldBe Aksjonskode.ENDR
+                                    kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
+
+                                    val periodene = perioder.periode
+                                    periodene shouldHaveSize 3
+                                    periodene[0].sats shouldBe 3000.0
+                                    periodene[1].sats shouldBe 2000.0
+                                    periodene[2].sats shouldBe 1000.0
+                                }
                             }
                         }
                     }
-                    And("Versjon 2 har trekkstatus AVSLUTTET") {
-                        And("Versjon 2 har ingen perioder") {
-                            And("Versjon 1 har trekkalternativ LOPP") {
-                                Then("Skal ett trekk ha aksjonskode OPPH") {}
-                            }
-                            And("Versjon 1 har trekkalternativ LOPM og LOPP") {
-                                Then("Skal to trekk ha aksjonskode OPPH") {}
-                                And("Det er ikke perioder i avsluttet trekk") {}
+                }
+                And("Versjon 2 har trekkstatus AVSLUTTET") {
+                    val avsluttetTrekkFraSkatt = trekkFraSkatt.copy(trekkstatus = Trekkstatus.AVSLUTTET.name)
+                    val alleAvsluttetTrekkSomIkkeErSent = listOf(avsluttetTrekkFraSkatt)
+                    And("Versjon 2 har ingen perioder") {
+                        // TODO: should return a document when status is cancelled and there's no periods
+                        And("Versjon 1 har trekkalternativ LOPP") {
+                            Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og med gyldigTomDato dagens -1") {}
+                        }
+                        And("Versjon 1 har trekkalternativ LOPM og LOPP") {
+                            Then("Skal trekket bli til 2 ENFRET trekk uten perioder og med gyldigTomDato dagens -1") {}
+                        }
+                    }
+                    And("Versjon 2 har 3 perioder") {
+                        And("Versjon 1 har trekkalternativ LOPP") {
+                            val behandleTrekkServiceNy =
+                                setUpBehandleTrekkServiceNy(
+                                    alleAvsluttetTrekkSomIkkeErSent,
+                                    perioderForSkattLOPP,
+                                    kjenteLOPPPerioder = perioderForSkattLOPP.toKnownPeriods(),
+                                )
+                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
+                            Then("Skal 1 trekk bli til 1 ENDRET trekk med 3 perioder og gyldigTomDato dagens -1") {
+                                trekkDokumenter shouldHaveSize 1
+                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                    aksjonskode shouldBe Aksjonskode.ENDR
+                                    perioder.periode shouldHaveSize 3
+                                    perioder.periode.forEach { it.sats shouldNotBe 0.0 }
+                                }
                             }
                         }
-                        And("Versjon 2 har perioder") {
-                            And("Trekkversjon 1 har trekkalternativ LOPP") {
-                                Then("Skal ett trekk ha aksjonskode OPPH") {}
-                                And("Det er perioder i avsluttet trekk") {}
+                        And("Versjon 1 har trekkalternativ LOPM og LOPP") {
+                            val behandleTrekkServiceNy =
+                                setUpBehandleTrekkServiceNy(
+                                    alleAvsluttetTrekkSomIkkeErSent,
+                                    perioderForSkattLOPP,
+                                    perioderForSkattLOPP.toKnownPeriods(),
+                                    perioderForSkattLOPM.toKnownPeriods(),
+                                )
+
+                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
+                            Then("Skal trekket bli til 2 ENDRET trekk med 3 perioder og gyldigTomDato dagens -1") {
+                                trekkDokumenter shouldHaveSize 2
+
+                                trekkDokumenter.forEach { dokument ->
+                                    with(dokument.innrapporteringTrekk) {
+                                        aksjonskode shouldBe Aksjonskode.ENDR
+                                        gyldigTomDato shouldBe gyldigTomDatoAvslutt
+                                        perioder.periode shouldHaveSize 3
+                                    }
+                                }
                             }
                         }
                     }
