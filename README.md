@@ -52,8 +52,47 @@ block-beta
 
 ## Hva gjør sokos-utløeggstrekk
 
-### Den gjør i hovesak 2 ting (to løyper om du vil)
+```mermaid
+sequenceDiagram
+    participant Skattetaten
+    participant sokos-utleggstrekk
+    participant DB
+    sokos-utleggstrekk->>+Skattetaten: Spør etter nye trekk etter seq=n
+    Skattetaten-->>sokos-utleggstrekk: Sender nye trekk siden seq=n
+    sokos-utleggstrekk->>DB: Lagre trekk som ubehandlet
+``` 
 
+```mermaid
+sequenceDiagram
+    participant sokos-utleggstrekk
+    participant DB
+    
+    sokos-utleggstrekk->>+DB: Spør etter ubehandlede trekk
+    DB-->>-sokos-utleggstrekk: Retur
+
+    sokos-utleggstrekk->>sokos-utleggstrekk: Produser innleggstrekkdokumenter til OZ
+    sokos-utleggstrekk->>DB: Lagre innleggstrekkmelding
+    sokos-utleggstrekk->>DB: Sett trekk til behandlet
+``` 
+
+```mermaid
+sequenceDiagram
+    participant sokos-utleggstrekk
+    participant DB
+    participant Oppdrag Z
+    
+    sokos-utleggstrekk->>+DB: Spør etter ikke sendte innleggstrekkdokumenter
+    DB-->>-sokos-utleggstrekk: Retur
+
+    sokos-utleggstrekk->>Oppdrag Z: Sender innleggstrekkdokumenter
+    sokos-utleggstrekk->>DB: Marker innleggstrekkdokumenter sendt
+        
+    Oppdrag Z->>sokos-utleggstrekk: Meldingskvitteringer
+    sokos-utleggstrekk->>DB: Oppdatere innleggstrekkdokumenter med kvitteringsstatus
+``` 
+
+
+### Den gjør i hovesak 2 ting (to løyper om du vil)
 1. henter nye eller endringer til tidligere utleggstrekk fra skatteetaten ved "et-trekk" og sender alle  mottate trekk videre til trekk komponenten i OS
 2. henter kvitteringer fra OS og oppdaterer database
 
