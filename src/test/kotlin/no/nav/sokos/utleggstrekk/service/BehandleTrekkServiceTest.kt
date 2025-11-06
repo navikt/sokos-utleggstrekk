@@ -145,52 +145,45 @@ class BehandleTrekkServiceTest :
                 val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(trekkFraSkatt)
                 trekkDokumenter.size shouldBe 1
 
-                val trekkDokument = trekkDokumenter.first()
-
-                val innrapporteringTrekk = trekkDokument.innrapporteringTrekk
-
                 Then("Skal all informasjon være med") {
-                    innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
-                    innrapporteringTrekk.kreditorTrekkId shouldBe "${trekkFraSkatt.trekkid}${innrapporteringTrekk.kodeTrekkAlternativ.value}"
-                    innrapporteringTrekk.kodeTrekkAlternativ shouldBe periode.trekkAlternativ()
+                    with(trekkDokumenter.first().innrapporteringTrekk) {
+                        aksjonskode shouldBe Aksjonskode.NY
+                        kreditorTrekkId shouldBe "${trekkFraSkatt.trekkid}${kodeTrekkAlternativ.value}"
+                        kodeTrekkAlternativ shouldBe periode.trekkAlternativ()
 
-                    innrapporteringTrekk.gyldigTomDato.shouldBeNull()
-                    innrapporteringTrekk.perioder.periode.size shouldBe 1
-                    innrapporteringTrekk.debitorId shouldBe trekkFraSkatt.skyldner
-                    innrapporteringTrekk.kid shouldBe betalingsinformasjonForTrekkFraSkatt.kidnummer
-                    innrapporteringTrekk.kreditorsRef shouldBe trekkFraSkatt.saksnummer
-                    innrapporteringTrekk.saldo shouldBe 0.0
-                    innrapporteringTrekk.navTrekkId.shouldBeEmpty()
+                        gyldigTomDato.shouldBeNull()
+                        perioder.periode.size shouldBe 1
+                        debitorId shouldBe trekkFraSkatt.skyldner
+                        kid shouldBe betalingsinformasjonForTrekkFraSkatt.kidnummer
+                        kreditorsRef shouldBe trekkFraSkatt.saksnummer
+                        saldo shouldBe 0.0
+                        navTrekkId.shouldBeEmpty()
 
-                    innrapporteringTrekk.prioritetFomDato shouldBe
-                        Instant
-                            .parse(trekkFraSkatt.opprettet)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                            .toString()
-                    innrapporteringTrekk.perioder.periode
-                        .first()
-                        .periodeFomDato shouldBe periode.startdato
-                    innrapporteringTrekk.perioder.periode
-                        .first()
-                        .periodeTomDato shouldBe periode.sluttdato
+                        prioritetFomDato shouldBe
+                            Instant
+                                .parse(trekkFraSkatt.opprettet)
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate()
+                                .toString()
+                        perioder.periode.first().periodeFomDato shouldBe periode.startdato
+                        perioder.periode.first().periodeTomDato shouldBe periode.sluttdato
+                    }
                 }
 
+                val innrapporteringTrekk = trekkDokumenter.first().innrapporteringTrekk
                 Then("Skal datoer formatteres på yyyy-mm-dd format") {
-
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                     innrapporteringTrekk.perioder.periode.forEach {
-
                         LocalDate.parse(it.periodeTomDato, dateFormatter).format(dateFormatter) shouldBe it.periodeTomDato
                         LocalDate.parse(it.periodeFomDato, dateFormatter).format(dateFormatter) shouldBe it.periodeFomDato
                     }
                 }
 
-                And("Skal kodeTrekkType være $KODE_TREKKTYPE") {
+                Then("Skal kodeTrekkType være $KODE_TREKKTYPE") {
                     innrapporteringTrekk.kodeTrekktype shouldBe KODE_TREKKTYPE
                 }
 
-                And("Skal kilde være $KILDE") {
+                Then("Skal kilde være $KILDE") {
                     innrapporteringTrekk.kilde shouldBe KILDE
                 }
             }
