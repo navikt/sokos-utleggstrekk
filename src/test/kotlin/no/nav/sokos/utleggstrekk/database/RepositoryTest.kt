@@ -74,7 +74,8 @@ class RepositoryTest :
                 innrapporteringTrekk = dummyInnrapporteringTrekk,
             )
 
-        Given("Vi henter trekk som ikke er behandlet") {
+        Given("Det finnes to trekk som er behandlet hvor ett er sendt.") {
+            DBListener.clearDB()
             val dokument = resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")
             val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(dokument).first()
             RepositoryNy.insertTrekkFraSkatt(skalSendes)
@@ -86,7 +87,6 @@ class RepositoryTest :
                     dokument,
                 )
             RepositoryNy.insertTransaksjonTilOs(dto)
-
             RepositoryNy.insertTrekkFraSkatt(skalSendes.copy(trekkid = "SkalOgsåSendes"))
 
             val trekkSomErSendt = skalSendes.copy(trekkid = "SkalIkkeSendes")
@@ -101,9 +101,10 @@ class RepositoryTest :
             RepositoryNy.insertTransaksjonTilOs(dtoSomErSendt)
             RepositoryNy.updateTransaksjonStatus(dtoSomErSendt.transaksjonID, TransaksjonsStatus.SENDT)
 
-            val ikkeSendt = RepositoryNy.getTrekkSomIkkeErBehandlet()
-
-            ikkeSendt.shouldHaveSize(2)
+            Then("Finnes det en transaksjon som ikke er sendt") {
+                val ikkeSendt = RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt()
+                ikkeSendt.shouldHaveSize(1)
+            }
         }
 
         Given("Vi henter perioder for trekk med én versjon") {
@@ -458,21 +459,29 @@ class RepositoryTest :
             val alternativ = TrekkAlternativ.LOPM
             val transaksjosID = "id1"
 
-            val dto =
-                OSDto(
-                    transaksjonID = transaksjosID,
-                    trekkIdSke,
-                    lagDokumentTilOppdrag(transaksjosID).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = alternativ)).innrapporteringTrekk,
-                    "",
-                )
             val perioderTilOS =
                 PeriodeTilOS(
                     sats = 5000.0,
                     periodeFomDato = "2024-01-01",
                     periodeTomDato = "2024-12-31",
                 )
+
+            val dto =
+                OSDto(
+                    transaksjonID = transaksjosID,
+                    trekkIdSke,
+                    lagDokumentTilOppdrag(transaksjosID)
+                        .copy(
+                            innrapporteringTrekk =
+                                dummyInnrapporteringTrekk.copy(
+                                    kodeTrekkAlternativ = alternativ,
+                                    perioder = Perioder(listOf(perioderTilOS.asPeriode())),
+                                ),
+                        ).innrapporteringTrekk,
+                    "",
+                )
+
             RepositoryNy.insertTransaksjonTilOs(dto)
-            RepositoryNy.insertPeriodeTilOs(1, perioderTilOS)
 
             When("Vi henter perioder for TrekkID '$trekkIdSke' og TrekkAlternativ '$alternativ'") {
                 val fetchedPerioder = RepositoryNy.getPerioderTilOs(trekkIdSke, alternativ)
@@ -481,6 +490,7 @@ class RepositoryTest :
                     fetchedPerioder.shouldHaveSize(1)
                     val retrieved = fetchedPerioder.first()
                     retrieved.sats shouldBe perioderTilOS.sats
+
                     retrieved.periodeFomDato shouldBe perioderTilOS.periodeFomDato
                     retrieved.periodeTomDato shouldBe perioderTilOS.periodeTomDato
                 }
