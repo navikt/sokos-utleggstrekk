@@ -4,9 +4,10 @@ import java.time.LocalDate
 
 import kotliquery.Row
 
+import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 
-data class PeriodeTilOS(
+data class PeriodeTilOS( // TODO: Kan vi klare oss med bare Periode-klassen?
     val id: Long = 0,
     val osTransaksjonId: Long = 0,
     val sats: Double,
@@ -26,9 +27,12 @@ data class PeriodeTilOS(
             periodeTomDato == null -> false
             else -> LocalDate.parse(periodeTomDato).isBefore(LocalDate.now())
         }
+
+    fun asPeriode() = Periode(this.periodeFomDato, this.periodeTomDato ?: "9999-12-31", this.sats)
 }
 
 data class PerioderTilOS(
+    val alternativ: Set<TrekkAlternativ>,
     val LOPM: List<PeriodeTilOS>,
     val LOPP: List<PeriodeTilOS>,
 ) {
