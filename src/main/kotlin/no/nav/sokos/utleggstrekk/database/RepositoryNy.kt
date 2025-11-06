@@ -484,25 +484,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             ) { row -> TrekkAlternativ.valueOf(row.string(TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN).uppercase()) }
         }
 
-    fun insertPeriodeTilOs(transaksjonOSId: Int, periodeTilOs: PeriodeTilOS) {
-        dataSource.withTransaction { session ->
-            session.update(
-                queryOf(
-                    """
-                        INSERT INTO periode_til_os (transaksjon_os_id, sats, periode_fom_dato, periode_tom_dato)
-                        VALUES (:transaksjon_os_id, :sats, :periodeFomDato, :periodeTomDato)
-                    """,
-                    mapOf(
-                        "transaksjon_os_id" to transaksjonOSId,
-                        "sats" to periodeTilOs.sats,
-                        "periodeFomDato" to periodeTilOs.periodeFomDato,
-                        "periodeTomDato" to periodeTilOs.periodeTomDato,
-                    ),
-                ),
-            )
-        }
-    }
-
     fun getPerioderTilOs(trekkIdSke: String, alternativ: TrekkAlternativ): List<PeriodeTilOS> =
         dataSource.withTransaction { session ->
             session.list(
