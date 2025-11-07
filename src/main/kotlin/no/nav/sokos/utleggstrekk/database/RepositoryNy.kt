@@ -427,46 +427,42 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             ) { row -> TrekkFraSkatt(row) }
         }
 
-    fun getTrekkFraSkatt(id: String): List<TrekkFraSkatt> =
+    /** Henter en spesifik versjon av et trekk gitt fraskatt_id */
+    fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
         dataSource.withTransaction { session ->
-            session.list(
+            session.single(
                 queryOf(
-                    """SELECT * FROM fraskatt WHERE trekkid=:id""".trimIndent(),
+                    """SELECT * FROM fraskatt WHERE id=:id""".trimIndent(),
                     mapOf("id" to id),
                 ),
             ) { row -> TrekkFraSkatt(row) }
         }
 
-    fun getAllePerioderForTrekkId(trekkIdSke: String): List<PeriodeFraSkatt> =
+    fun getTrekkFraSkatt(trekkid: String, versjon: Int): TrekkFraSkatt? =
         dataSource.withTransaction { session ->
-            session.list(
+            session.single(
                 queryOf(
-                    """SELECT * FROM periode WHERE trekk_id_ske=:trekkIdSke""".trimIndent(),
-                    mapOf("trekkIdSke" to trekkIdSke),
+                    """SELECT * FROM fraskatt WHERE trekkid=:trekkid AND trekkversjon=:versjon""".trimIndent(),
+                    mapOf("trekkid" to trekkid, "versjon" to versjon),
                 ),
-            ) { row -> PeriodeFraSkatt(row) }
+            ) { row -> TrekkFraSkatt(row) }
         }
 
-    fun getPerioderForTrekkVersjon(fraSkattId: Long, sekvensnummer: Int, trekkversjon: Int): List<PeriodeFraSkatt> =
+    fun getPerioderForTrekkVersjon(fraSkattId: Long): List<PeriodeFraSkatt> =
         dataSource.withTransaction { session ->
             session.list(
                 queryOf(
                     """
-                    SELECT p.* FROM periode p
-                    JOIN fraskatt f ON p.fraskatt_id = f.id
-                    WHERE f.sekvensnummer = :sekvensnummer
-                    AND f.trekkversjon = :trekkversjon 
+                    SELECT * FROM periode p WHERE fraskatt_id=:fraSkattId 
                     """.trimIndent(),
                     mapOf(
-                        "sekvensnummer" to sekvensnummer,
                         "fraSkattId" to fraSkattId,
-                        "trekkversjon" to trekkversjon,
                     ),
                 ),
             ) { row -> PeriodeFraSkatt(row) }
         }
 
-    fun getPerioderForTrekk(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> = getPerioderForTrekkVersjon(trekkFraSkatt.id, trekkFraSkatt.sekvensnummer, trekkFraSkatt.trekkversjon)
+    fun getPerioderForTrekk(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> = getPerioderForTrekkVersjon(trekkFraSkatt.id)
 
     fun getTrekkAlternativOS(trekkIdSke: String): List<TrekkAlternativ> =
         dataSource.withTransaction { session ->

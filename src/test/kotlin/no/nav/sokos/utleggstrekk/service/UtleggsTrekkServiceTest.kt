@@ -79,13 +79,13 @@ internal class UtleggsTrekkServiceTest :
                     }
                 }
                 Then("Skal trekkpaalegget lagres i databasen") {
-                    val trekkFraSkatt = RepositoryNy.getTrekkFraSkatt(trekkpaalegg.trekkid)
+                    val trekkFraSkatt = RepositoryNy.getTrekkFraSkatt(trekkpaalegg.trekkid, trekkpaalegg.trekkversjon)
                     trekkFraSkatt.shouldNotBeNull()
 
                     withClue("Perioder skal lagres") {
                         val perioder =
                             DBListener.dataSource.withTransaction { session ->
-                                RepositoryNy.getAllePerioderForTrekkId(trekkFraSkatt.first().trekkid)
+                                RepositoryNy.getPerioderForTrekkVersjon(trekkFraSkatt.id)
                             }
                         perioder.size shouldBe 1
                         val periode = perioder.first()
@@ -96,7 +96,7 @@ internal class UtleggsTrekkServiceTest :
                     }
 
                     withClue("Betalingsinformasjon skal lagres") {
-                        val betalingsInformasjon = RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.first().id)
+                        val betalingsInformasjon = RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
 
                         betalingsInformasjon.shouldNotBeNull()
                         betalingsInformasjon.betalingsmottaker shouldBe mottaker.betalingsmottaker

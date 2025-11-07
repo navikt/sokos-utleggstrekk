@@ -111,20 +111,18 @@ class RepositoryTest :
             DBListener.clearDB()
             val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
             val idtrekkpaalegg1 = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg1)
-            val trekkIdSke = trekkpaalegg1.trekkid
-
             idtrekkpaalegg1.shouldNotBeNull()
-            val perioder: List<PeriodeFraSkatt> = RepositoryNy.getAllePerioderForTrekkId(trekkIdSke)
+
+            val perioder: List<PeriodeFraSkatt> = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1)
 
             perioder.shouldHaveSize(1)
 
             val trekkpaalegg2 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk2_versjon1_to_perioder_belop.json")).first()
             val idtrekkpaalegg2 = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg2)
-            val trekkIdSke2 = trekkpaalegg2.trekkid
             idtrekkpaalegg2.shouldNotBeNull()
 
-            val perioder2: List<PeriodeFraSkatt> = RepositoryNy.getAllePerioderForTrekkId(trekkIdSke2)
-            perioder2.shouldHaveSize(3)
+            val perioder2: List<PeriodeFraSkatt> = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2)
+            perioder2.shouldHaveSize(2)
         }
 
         Given("Vi henter perioder for trekk med flere versjoner") {
@@ -141,19 +139,12 @@ class RepositoryTest :
             When("getPerioderForTrekkVersjon") {
 
                 Then("Skal perioder hentes kun for trekk med gitt versjon, sekvensnummer og trekkid") {
-                    val perioderVersjon1 = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1, trekkpaalegg1.sekvensnummer, trekkpaalegg1.trekkversjon)
+                    val perioderVersjon1 = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1)
 
                     perioderVersjon1.shouldHaveSize(1)
-                    val perioderVersjon2 = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2, trekkpaalegg2.sekvensnummer, trekkpaalegg2.trekkversjon)
+                    val perioderVersjon2 = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2)
 
                     perioderVersjon2.shouldHaveSize(2)
-                }
-            }
-
-            When("getPerioderForTrekkId") {
-                Then("Skal alle perioder for det trekket hentes") {
-                    val perioder = RepositoryNy.getAllePerioderForTrekkId(trekkpaalegg1.trekkid)
-                    perioder.shouldHaveSize(3)
                 }
             }
         }
@@ -167,14 +158,14 @@ class RepositoryTest :
                 id.shouldNotBeNull()
 
                 eventually(duration = 1.seconds) {
-                    val lagretTrekk = getTrekkFraSkatt(trekkpaalegg.trekkid)
+                    val lagretTrekk = getTrekkFraSkatt(id)
                     lagretTrekk.shouldNotBeNull()
                     Then("Skal Trekkpålegg lagres i tabellen 'fraskatt'") {
 
                         compareTrekk(trekkpaalegg, lagretTrekk)
                     }
                     And("TrekkstørrelseForPeriode skal lagres i tabellen 'periOde'") {
-                        val lagretPeriode = RepositoryNy.getAllePerioderForTrekkId(lagretTrekk.trekkid)
+                        val lagretPeriode = RepositoryNy.getPerioderForTrekk(lagretTrekk)
                         comparePerioder(trekkpaalegg.trekkstoerrelseForPeriode, lagretPeriode)
                     }
                     And("Betalingsinformasjon skal lagres i tabellen 'betalingsinformasjonfraskatt'") {
@@ -541,7 +532,7 @@ private fun compareTrekk(trekkpaalegg: Trekkpaalegg, lagret: TrekkFraSkatt) {
 
 private fun doesTrekkExist(trekkId: String, trekkversjon: Int): Boolean = RepositoryNy.doesTrekkExist(trekkId, trekkversjon)
 
-private fun getTrekkFraSkatt(id: String): TrekkFraSkatt = RepositoryNy.getTrekkFraSkatt(id).first()
+private fun getTrekkFraSkatt(id: Long): TrekkFraSkatt = RepositoryNy.getTrekkFraSkatt(id)!!
 
 private fun compareBetalingsinformasjon(betalingsinformasjon: Betalingsinformasjon, lagret: BetalingsinformasjonFraSkatt) {
     lagret.betalingsmottaker shouldBe betalingsinformasjon.betalingsmottaker

@@ -2,75 +2,60 @@ package no.nav.sokos.utleggstrekk.service.gammel
 
 import io.kotest.core.spec.style.BehaviorSpec
 
-import no.nav.sokos.utleggstrekk.database.Repository
-import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
+import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
-import no.nav.sokos.utleggstrekk.service.DatabaseService
-import no.nav.sokos.utleggstrekk.service.withTransaction
-import no.nav.sokos.utleggstrekk.util.TestContainer
+import no.nav.sokos.utleggstrekk.listener.DBListener
+import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
 import no.nav.sokos.utleggstrekk.util.TestData
 
 class BehandleTrekkServiceIntegrationTest :
     BehaviorSpec({
+        extensions(DBListener)
 
-        xcontext("disabled") {
-            val testContainer = TestContainer()
-            val dataSource = testContainer.dataSource
-            val repository = Repository(dataSource)
-            val dbService = DatabaseService(dataSource)
-            val behandleTrekkService = BehandleTrekkService(dbService)
+        val behandleTrekkService = BehandleTrekkServiceNy(DBListener.RepositoryNy)
 
-            beforeSpec { dataSource.withTransaction { session -> repository.clearDb(session) } }
+        beforeSpec { DBListener.clearDB() }
 
-            fun storedInDb(trekk: Trekkpaalegg) {
-                dataSource.withTransaction { session -> repository.saveAllNewUtleggstrekk(listOf(trekk), session) }
-            }
+        fun storedInDb(trekk: Trekkpaalegg): Long? = DBListener.RepositoryNy.insertTrekkFraSkatt(trekk)
 
-            fun storedInDbAndSent(trekk: Trekkpaalegg): UtleggstrekkTable {
-                storedInDb(trekk)
-                return dataSource.withTransaction { session ->
-                    val utleggstrekk = repository.fetchTrekkNotSendt(session).find { it.sekvensnummer == trekk.sekvensnummer }
-                    repository.updateNavTrekkStatus(utleggstrekk!!.corrid, UtleggstrekkStatus.SENDT, session)
-                    utleggstrekk
-                }
-            }
+        fun storedInDbAndSent(trekk: Trekkpaalegg): TrekkFraSkatt {
+            val id = storedInDb(trekk)
+            DBListener.RepositoryNy.updateTrekkFraSkattStatus(id!!, SkattTrekkStatus.BEHANDLET)
+            return DBListener.RepositoryNy.getTrekkFraSkatt(id)!!
+        }
 
-            fun storedInDbAndSentOk(trekk: Trekkpaalegg, trekkAlternativ: TrekkAlternativ): UtleggstrekkTable {
-                val utleggstrekk = storedInDbAndSent(trekk)
-                dataSource.withTransaction { session ->
-                    repository.updateKvitteringStatus(
-                        utleggstrekk.corrid,
-                        UtleggstrekkStatus.KVITTERING_OK,
-                        navTrekkId = "00123456",
-                        kvittering = "00",
-                        trekkalternativ = trekkAlternativ,
-                        session = session,
-                    )
-                }
-                return utleggstrekk
-            }
+        fun storedInDbAndSentOk(trekk: Trekkpaalegg, trekkAlternativ: TrekkAlternativ): TrekkFraSkatt {
+            val utleggstrekk = storedInDbAndSent(trekk)
+            /*
+            dataSource.withTransaction { session ->
+                repository.updateKvitteringStatus(
+                    utleggstrekk.corrid,
+                    UtleggstrekkStatus.KVITTERING_OK,
+                    navTrekkId = "00123456",
+                    kvittering = "00",
+                    trekkalternativ = trekkAlternativ,
+                    session = session,
+                )
+            }*/
+            return utleggstrekk
+        }
 
-            Given("Det finnes ett trekk i databasen med trekkstatus AKTIV, status MOTTATT som har én periode med prosenttrekk") {
-                beforeContainer {
-                    storedInDb(
-                        TestData.makeTrekkpaalegg(
-                            "trekkid1",
-                            1,
-                            1,
-                            perioder = listOf(TrekkstorrelseForPeriode("2026-02-02", "2026-04-02", trekkprosent = Trekkprosent(20.0))),
-                        ),
-                    )
-                }
-                afterContainer { dataSource.withTransaction { session -> repository.clearDb(session) } }
+        Given("Det finnes ett trekk i databasen med trekkstatus AKTIV, status MOTTATT som har én periode med prosenttrekk") {
+            storedInDb(
+                TestData.makeTrekkpaalegg(
+                    "trekkid1",
+                    1,
+                    1,
+                    perioder = listOf(TrekkstorrelseForPeriode("2026-02-02", "2026-04-02", trekkprosent = Trekkprosent(20.0))),
+                ),
+            )
 
-                When("Trekk skal behandles") {
-                    Then("Skal det produseres ett nytt trekk til OS med status NY til OS med trekkalternativ LOPP") {
+            When("Trekk skal behandles") {
+                Then("Skal det produseres ett nytt trekk til OS med status NY til OS med trekkalternativ LOPP") {
                        /* val behandlet: Map<UtleggstrekkTable, List<DokumentTilOppdrag>> = behandleTrekkService.lagTrekkSomSkalSendes()
 
                         behandlet.keys.size shouldBe 1
@@ -78,7 +63,6 @@ class BehandleTrekkServiceIntegrationTest :
                         val melding: List<Document> = behandlet.values.first()
                         melding.first().innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
                         melding.first().innrapporteringTrekk.kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP*/
-                    }
                 }
             }
         }
