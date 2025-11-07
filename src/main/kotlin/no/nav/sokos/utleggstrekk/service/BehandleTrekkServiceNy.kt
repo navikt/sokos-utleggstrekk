@@ -163,7 +163,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
     }
      */
 
-    fun lagTrekkDokument(
+    private fun lagTrekkDokument(
         trekkFraSkatt: TrekkFraSkatt,
         trekkalternativ: TrekkAlternativ,
         aksjonskode: Aksjonskode,

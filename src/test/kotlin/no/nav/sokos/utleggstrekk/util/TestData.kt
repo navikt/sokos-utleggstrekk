@@ -12,53 +12,6 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 
 object TestData {
-     /*fun utleggstrekkTable(
-        sekvensnummer: Int,
-        trekkIdSke: String,
-        trekkversjon: Int,
-        trekkstatus: Trekkstatus = AKTIV,
-        status: UtleggstrekkStatus = MOTTATT,
-    ) = UtleggstrekkTable(
-        utleggstrekkTableId = 0L,
-        trekkidNavLOPP = null,
-        trekkidNavLOPM = null,
-        sekvensnummer,
-        saksnummer = "",
-        trekkIdSke,
-        trekkversjon,
-        opprettetSke = LocalDateTime.now().toKotlinLocalDateTime(), // Bruk java-datetime.
-        trekkpliktig = "",
-        skyldner = "",
-        trekkstatus = trekkstatus,
-        kid = "",
-        kontonummer = "",
-        betalingsmottaker = "",
-        corrid = UUID.randomUUID().toString(),
-        status,
-        kvitteringLOPM = null,
-        kvitteringLOPP = null,
-        tidspunktSendtOs = null,
-        tidspunktSisteStatus = LocalDateTime.now().toKotlinLocalDateTime(), // TODO: ikke bruke KotlinLocalDateTime her.
-        tidspunktOpprettet = LocalDateTime.now().toKotlinLocalDateTime(), // TODO: ikke bruke KotlinLocalDateTime her.
-    )
-
-   fun UtleggstrekkTable.trekkPeriode(
-        sats: Double,
-        trekkAlternativ: TrekkAlternativ,
-        datoStart: String,
-        datoSlutt: String,
-    ) = TrekkPeriodeTable(
-        trekkPeriodeTableId = 0,
-        sekvensnummer,
-        trekkidSke,
-        trekkversjon,
-        datoStart,
-        datoSlutt,
-        sats,
-        trekkAlternativ,
-        LocalDateTime.now().toKotlinLocalDateTime(), // TODO: ikke bruke KotlinLocalDateTime her.
-    )*/
-
     fun makeTrekkpaalegg(
         trekkId: String,
         sekvensnummer: Int,

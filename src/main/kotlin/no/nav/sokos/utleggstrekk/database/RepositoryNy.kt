@@ -397,6 +397,18 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             }
         }
 
+    fun getTrekkFraSkattStatus(id: Long): SkattTrekkStatus? =
+        dataSource.withTransaction { session ->
+            session.single(
+                queryOf(
+                    "SELECT status FROM fraskatt f JOIN fraskatt_status s ON f.id = s.fraskatt_id WHERE f.id=:id",
+                    mapOf("id" to id),
+                ),
+            ) { row ->
+                SkattTrekkStatus.valueOf(row.string("status"))
+            }
+        }
+
     fun updateTrekkFraSkattStatus(fraSkattId: Long, status: SkattTrekkStatus) {
         dataSource.withTransaction { session ->
             session.update(
@@ -526,6 +538,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                     SELECT f.* FROM fraskatt f
                     LEFT JOIN  fraskatt_status t ON t.fraskatt_id = f.id
                     WHERE t.status IS NULL OR t.status != 'BEHANDLET'
+                    ORDER BY f.sekvensnummer ASC
                     """.trimIndent(),
                 ),
             ) { row -> TrekkFraSkatt(row) }
@@ -537,6 +550,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 queryOf(
                     """
                     SELECT * FROM  ${TransaksjonOsTable.TABLE_NAME}  WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} IS null OR ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}  = '${TransaksjonsStatus.IKKE_SENDT.name}'
+                        ORDER BY id ASC
                     """.trimIndent(),
                 ),
             ) { row ->

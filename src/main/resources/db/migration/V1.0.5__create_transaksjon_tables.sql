@@ -37,3 +37,5 @@ CREATE TABLE periode_til_os
 );
 
 CREATE INDEX idx_sendt_til_os_fraskatt_id ON transaksjon_os (id, trekk_id_ske);
+
+CREATE UNIQUE INDEX if not exists idxu_trekkfraskatt on fraskatt (trekkid, trekkversjon);
