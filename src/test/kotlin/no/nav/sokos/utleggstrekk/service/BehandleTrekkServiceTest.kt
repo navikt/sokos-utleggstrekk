@@ -6,6 +6,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
@@ -283,7 +284,7 @@ class BehandleTrekkServiceTest :
                         And("trekkstatus er AVSLUTTET") {
                             val avsluttetTrekkFraSkatt = trekkFraSkatt.copy(trekkstatus = Trekkstatus.AVSLUTTET.name)
                             val alleAvsluttetTrekkSomIkkeErSendt = listOf(avsluttetTrekkFraSkatt)
-                            And("Trekket er ingen periode") {
+                            And("Trekket har ingen periode") {
                                 val behandleTrekkServiceNy =
                                     setUpBehandleTrekkServiceNy(
                                         alleTrekkSomIkkeErSendt = alleAvsluttetTrekkSomIkkeErSendt,
@@ -292,14 +293,13 @@ class BehandleTrekkServiceTest :
                                     )
                                 Then("Skal 1 trekk bli til 1 ENDRET trekk med ingen periode og gyldigTomDate dagens -1") {
                                     val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSendt.first())
-                                    // TODO: should return a document when status is cancelled and there's no periods
-//                                    trekkDokumenter shouldHaveSize 1
-//
-//                                    with(trekkDokumenter.first().innrapporteringTrekk) {
-//                                        aksjonskode shouldBe Aksjonskode.ENDR
-//                                        gyldigTomDato shouldBe gyldigTomDatoAvslutt
-//                                        perioder.periode shouldHaveSize 0
-//                                    }
+                                    trekkDokumenter shouldHaveSize 1
+
+                                    with(trekkDokumenter.first().innrapporteringTrekk) {
+                                        aksjonskode shouldBe Aksjonskode.ENDR
+                                        gyldigTomDato shouldBe gyldigTomDatoAvslutt
+                                        perioder.periode.shouldBeEmpty()
+                                    }
                                 }
                             }
 
@@ -419,7 +419,7 @@ class BehandleTrekkServiceTest :
                         And("trekkstatus er AVSLUTTET") {
                             val avsluttetTrekkFraSkatt = trekkFraSkatt.copy(trekkstatus = Trekkstatus.AVSLUTTET.name)
                             val alleAvsluttetTrekkSomIkkeErSendt = listOf(avsluttetTrekkFraSkatt)
-                            And("Trekket er ingen periode") {
+                            And("Trekket har ingen periode") {
                                 val behandleTrekkServiceNy =
                                     setUpBehandleTrekkServiceNy(
                                         alleTrekkSomIkkeErSendt = alleAvsluttetTrekkSomIkkeErSendt,
@@ -428,14 +428,13 @@ class BehandleTrekkServiceTest :
                                     )
                                 Then("Skal 1 trekk bli til 1 ENDRET trekk med ingen periode og gyldigTomDate dagens -1") {
                                     val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSendt.first())
-                                    // TODO: should return a document when status is cancelled and there's no periods
-//                                    trekkDokumenter shouldHaveSize 1
-//
-//                                    with(trekkDokumenter.first().innrapporteringTrekk) {
-//                                        aksjonskode shouldBe Aksjonskode.ENDR
-//                                        gyldigTomDato shouldBe gyldigTomDatoAvslutt
-//                                        perioder.periode shouldHaveSize 0
-//                                    }
+                                    trekkDokumenter shouldHaveSize 1
+
+                                    with(trekkDokumenter.first().innrapporteringTrekk) {
+                                        aksjonskode shouldBe Aksjonskode.ENDR
+                                        gyldigTomDato shouldBe gyldigTomDatoAvslutt
+                                        perioder.periode.shouldBeEmpty()
+                                    }
                                 }
                             }
 
@@ -605,10 +604,41 @@ class BehandleTrekkServiceTest :
                     And("Versjon 2 har ingen perioder") {
                         // TODO: should return a document when status is cancelled and there's no periods
                         And("Versjon 1 har trekkalternativ LOPP") {
-                            Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og med gyldigTomDato dagens -1") {}
+                            val behandleTrekkServiceNy =
+                                setUpBehandleTrekkServiceNy(
+                                    alleAvsluttetTrekkSomIkkeErSent,
+                                    perioderForTrekkFraSkatt = emptyList(),
+                                    kjenteLOPPPerioder = perioderForSkattLOPP.toKnownPeriods(),
+                                )
+                            Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og med gyldigTomDato dagens -1") {
+                                val trekkDokument = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
+                                trekkDokument shouldHaveSize 1
+
+                                with(trekkDokument.first().innrapporteringTrekk) {
+                                    aksjonskode shouldBe Aksjonskode.ENDR
+                                    gyldigTomDato shouldBe gyldigTomDatoAvslutt
+                                    perioder.periode.shouldBeEmpty()
+                                }
+                            }
                         }
                         And("Versjon 1 har trekkalternativ LOPM og LOPP") {
-                            Then("Skal trekket bli til 2 ENFRET trekk uten perioder og med gyldigTomDato dagens -1") {}
+                            val behandleTrekkServiceNy =
+                                setUpBehandleTrekkServiceNy(
+                                    alleAvsluttetTrekkSomIkkeErSent,
+                                    perioderForTrekkFraSkatt = emptyList(),
+                                    kjenteLOPPPerioder = perioderForSkattLOPP.toKnownPeriods(),
+                                    kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
+                                )
+                            Then("Skal trekket bli til 2 ENDRET trekk uten perioder og med gyldigTomDato dagens -1") {
+                                val trekkDokument = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
+                                trekkDokument shouldHaveSize 2
+
+                                trekkDokument.forEach { (_, innrapporteringTrekk) ->
+                                    innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.ENDR
+                                    innrapporteringTrekk.gyldigTomDato shouldBe gyldigTomDatoAvslutt
+                                    innrapporteringTrekk.perioder.periode.shouldBeEmpty()
+                                }
+                            }
                         }
                     }
                     And("Versjon 2 har 3 perioder") {
