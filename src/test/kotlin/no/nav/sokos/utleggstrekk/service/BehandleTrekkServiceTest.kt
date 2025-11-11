@@ -6,7 +6,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
@@ -153,7 +152,7 @@ class BehandleTrekkServiceTest :
                         kodeTrekkAlternativ shouldBe periode.trekkAlternativ()
 
                         gyldigTomDato.shouldBeNull()
-                        perioder.periode.size shouldBe 1
+                        perioder!!.periode.size shouldBe 1
                         debitorId shouldBe trekkFraSkatt.skyldner
                         kid shouldBe betalingsinformasjonForTrekkFraSkatt.kidnummer
                         kreditorsRef shouldBe trekkFraSkatt.saksnummer
@@ -174,7 +173,7 @@ class BehandleTrekkServiceTest :
                 val innrapporteringTrekk = trekkDokumenter.first().innrapporteringTrekk
                 Then("Skal datoer formatteres på yyyy-mm-dd format") {
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                    innrapporteringTrekk.perioder.periode.forEach {
+                    innrapporteringTrekk.perioder!!.periode.forEach {
                         LocalDate.parse(it.periodeTomDato, dateFormatter).format(dateFormatter) shouldBe it.periodeTomDato
                         LocalDate.parse(it.periodeFomDato, dateFormatter).format(dateFormatter) shouldBe it.periodeFomDato
                     }
@@ -205,7 +204,7 @@ class BehandleTrekkServiceTest :
                         trekkDokumenter shouldHaveSize 1
                         with(trekkDokumenter.first().innrapporteringTrekk) {
                             aksjonskode shouldBe Aksjonskode.NY
-                            perioder.periode shouldHaveSize 1
+                            perioder!!.periode shouldHaveSize 1
                         }
                     }
                 }
@@ -225,7 +224,7 @@ class BehandleTrekkServiceTest :
 
                             with(trekkDokumenter.first().innrapporteringTrekk) {
                                 aksjonskode shouldBe Aksjonskode.NY
-                                perioder.periode shouldHaveSize 1
+                                perioder!!.periode shouldHaveSize 1
                             }
                         }
                     }
@@ -245,7 +244,7 @@ class BehandleTrekkServiceTest :
 
                                 with(trekkDokumenter.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
-                                    perioder.periode shouldHaveSize 1
+                                    perioder!!.periode shouldHaveSize 1
                                 }
                             }
                         }
@@ -266,7 +265,7 @@ class BehandleTrekkServiceTest :
                                 with(trekkDokumenter.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
-                                    perioder.periode shouldHaveSize 1
+                                    perioder!!.periode shouldHaveSize 1
                                     perioder.periode.first().sats shouldNotBe 0.0
                                 }
                             }
@@ -275,7 +274,7 @@ class BehandleTrekkServiceTest :
                                 with(trekkDokumenter.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
-                                    perioder.periode shouldHaveSize 1
+                                    perioder!!.periode shouldHaveSize 1
                                     perioder.periode.first().sats shouldBe 0.0
                                 }
                             }
@@ -298,7 +297,7 @@ class BehandleTrekkServiceTest :
                                     with(trekkDokumenter.first().innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
-                                        perioder.periode.shouldBeEmpty()
+                                        perioder.shouldBeNull()
                                     }
                                 }
                             }
@@ -310,15 +309,14 @@ class BehandleTrekkServiceTest :
                                         perioderForTrekkVersjon,
                                         kjenteLOPPPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                     )
-                                Then("Skal 1 trekk bli til 1 ENDRET trekk med 1 periode og gyldigTomDato dagens -1") {
+                                Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
                                     val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSendt.first())
                                     trekkDokumenter shouldHaveSize 1
 
                                     with(trekkDokumenter.first().innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
-                                        perioder.periode shouldHaveSize 1
-                                        perioder.periode.first().sats shouldNotBe 0.0
+                                        perioder.shouldBeNull()
                                     }
                                 }
                             }
@@ -342,7 +340,7 @@ class BehandleTrekkServiceTest :
 
                         with(trekkDokumenter.first().innrapporteringTrekk) {
                             aksjonskode shouldBe Aksjonskode.NY
-                            perioder.periode shouldHaveSize 1
+                            perioder!!.periode shouldHaveSize 1
                         }
                     }
                 }
@@ -361,7 +359,7 @@ class BehandleTrekkServiceTest :
                             trekkDokumenter shouldHaveSize 1
                             with(trekkDokumenter.first().innrapporteringTrekk) {
                                 aksjonskode shouldBe Aksjonskode.NY
-                                perioder.periode shouldHaveSize 1
+                                perioder!!.periode shouldHaveSize 1
                             }
                         }
                     }
@@ -382,7 +380,7 @@ class BehandleTrekkServiceTest :
                                 with(trekkDokumenter.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
-                                    perioder.periode shouldHaveSize 1
+                                    perioder!!.periode shouldHaveSize 1
                                     perioder.periode.first().sats shouldNotBe 0.0
                                 }
                             }
@@ -391,7 +389,7 @@ class BehandleTrekkServiceTest :
                                 with(trekkDokumenter.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
-                                    perioder.periode shouldHaveSize 1
+                                    perioder!!.periode shouldHaveSize 1
                                     perioder.periode.first().sats shouldBe 0.0
                                 }
                             }
@@ -410,7 +408,7 @@ class BehandleTrekkServiceTest :
                                 trekkDokumenter shouldHaveSize 1
                                 with(trekkDokumenter.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
-                                    perioder.periode shouldHaveSize 1
+                                    perioder!!.periode shouldHaveSize 1
                                     perioder.periode.first().sats shouldNotBe 0.0
                                 }
                             }
@@ -433,7 +431,7 @@ class BehandleTrekkServiceTest :
                                     with(trekkDokumenter.first().innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
-                                        perioder.periode.shouldBeEmpty()
+                                        perioder.shouldBeNull()
                                     }
                                 }
                             }
@@ -445,15 +443,14 @@ class BehandleTrekkServiceTest :
                                         perioderForTrekkVersjon,
                                         kjenteLOPMPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                     )
-                                Then("Skal 1 trekk bli til 1 ENDRET trekk med 1 periode og gyldigTomDato dagens -1") {
+                                Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
                                     val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSendt.first())
                                     trekkDokumenter shouldHaveSize 1
 
                                     with(trekkDokumenter.first().innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
-                                        perioder.periode shouldHaveSize 1
-                                        perioder.periode.first().sats shouldNotBe 0.0
+                                        perioder.shouldBeNull()
                                     }
                                 }
                             }
@@ -479,7 +476,7 @@ class BehandleTrekkServiceTest :
 
                         val trekkDokument1 = trekkDokumenter.first()
                         trekkDokument1.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
-                        val dokument1Periodene = trekkDokument1.innrapporteringTrekk.perioder.periode
+                        val dokument1Periodene = trekkDokument1.innrapporteringTrekk.perioder!!.periode
                         dokument1Periodene shouldHaveSize 3
                         dokument1Periodene[0].sats shouldBe 20.0
                         dokument1Periodene[1].sats shouldBe 15.0
@@ -487,7 +484,7 @@ class BehandleTrekkServiceTest :
 
                         val trekkDokument2 = trekkDokumenter.last()
                         trekkDokument2.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
-                        val dokument2Periodene = trekkDokument2.innrapporteringTrekk.perioder.periode
+                        val dokument2Periodene = trekkDokument2.innrapporteringTrekk.perioder!!.periode
                         dokument2Periodene shouldHaveSize 3
                         dokument2Periodene[0].sats shouldBe 0.0
                         dokument2Periodene[1].sats shouldBe 0.0
@@ -520,7 +517,7 @@ class BehandleTrekkServiceTest :
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
 
-                                    val periodene = perioder.periode
+                                    val periodene = perioder!!.periode
                                     periodene shouldHaveSize 3
                                     periodene[0].sats shouldBe 3000.0
                                     periodene[1].sats shouldBe 0.0
@@ -532,7 +529,7 @@ class BehandleTrekkServiceTest :
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
 
-                                    val periodene = perioder.periode
+                                    val periodene = perioder!!.periode
                                     periodene shouldHaveSize 3
                                     periodene[0].sats shouldBe 0.0
                                     periodene[1].sats shouldBe 15.0
@@ -555,7 +552,7 @@ class BehandleTrekkServiceTest :
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
 
-                                    val periodene = perioder.periode
+                                    val periodene = perioder!!.periode
                                     periodene shouldHaveSize 3
                                     periodene[0].sats shouldBe 20.0
                                     periodene[1].sats shouldBe 15.0
@@ -568,7 +565,7 @@ class BehandleTrekkServiceTest :
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
 
-                                    perioder.periode shouldHaveSize 3
+                                    perioder!!.periode shouldHaveSize 3
                                     perioder.periode.forEach { it.sats shouldBe 0.0 }
                                 }
                             }
@@ -588,7 +585,7 @@ class BehandleTrekkServiceTest :
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
 
-                                    val periodene = perioder.periode
+                                    val periodene = perioder!!.periode
                                     periodene shouldHaveSize 3
                                     periodene[0].sats shouldBe 3000.0
                                     periodene[1].sats shouldBe 2000.0
@@ -602,7 +599,6 @@ class BehandleTrekkServiceTest :
                     val avsluttetTrekkFraSkatt = trekkFraSkatt.copy(trekkstatus = Trekkstatus.AVSLUTTET.name)
                     val alleAvsluttetTrekkSomIkkeErSent = listOf(avsluttetTrekkFraSkatt)
                     And("Versjon 2 har ingen perioder") {
-                        // TODO: should return a document when status is cancelled and there's no periods
                         And("Versjon 1 har trekkalternativ LOPP") {
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
@@ -617,7 +613,7 @@ class BehandleTrekkServiceTest :
                                 with(trekkDokument.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     gyldigTomDato shouldBe gyldigTomDatoAvslutt
-                                    perioder.periode.shouldBeEmpty()
+                                    perioder.shouldBeNull()
                                 }
                             }
                         }
@@ -636,7 +632,7 @@ class BehandleTrekkServiceTest :
                                 trekkDokument.forEach { (_, innrapporteringTrekk) ->
                                     innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.ENDR
                                     innrapporteringTrekk.gyldigTomDato shouldBe gyldigTomDatoAvslutt
-                                    innrapporteringTrekk.perioder.periode.shouldBeEmpty()
+                                    innrapporteringTrekk.perioder.shouldBeNull()
                                 }
                             }
                         }
@@ -650,12 +646,11 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPPPerioder = perioderForSkattLOPP.toKnownPeriods(),
                                 )
                             val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
-                            Then("Skal 1 trekk bli til 1 ENDRET trekk med 3 perioder og gyldigTomDato dagens -1") {
+                            Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
                                 trekkDokumenter shouldHaveSize 1
                                 with(trekkDokumenter.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
-                                    perioder.periode shouldHaveSize 3
-                                    perioder.periode.forEach { it.sats shouldNotBe 0.0 }
+                                    perioder.shouldBeNull()
                                 }
                             }
                         }
@@ -669,14 +664,14 @@ class BehandleTrekkServiceTest :
                                 )
 
                             val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
-                            Then("Skal trekket bli til 2 ENDRET trekk med 3 perioder og gyldigTomDato dagens -1") {
+                            Then("Skal trekket bli til 2 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
                                 trekkDokumenter shouldHaveSize 2
 
                                 trekkDokumenter.forEach { dokument ->
                                     with(dokument.innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
-                                        perioder.periode shouldHaveSize 3
+                                        perioder.shouldBeNull()
                                     }
                                 }
                             }

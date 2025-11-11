@@ -64,7 +64,7 @@ data class InnrapporteringTrekk(
     val prioritetFomDato: String,
     // val gyldigTomDato: String = LocalDate().minusDays(1).toString(),
     val gyldigTomDato: String? = null,
-    val perioder: Perioder,
+    val perioder: Perioder?,
 )
 
 @Serializable
