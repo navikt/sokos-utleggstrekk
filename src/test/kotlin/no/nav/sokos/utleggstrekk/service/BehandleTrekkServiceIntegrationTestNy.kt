@@ -93,7 +93,6 @@ class BehandleTrekkServiceIntegrationTestNy :
             When("Trekk skal behandles") {
                 behandleTrekkService.behandleTrekk()
                 Then("Skal det produseres et trekk til OS med status ENDR av typen LOPP med nulling av den gamle perioden og opprettelse av ny periode") {
-
                     val transaksjonerTilOS: List<TransaksjonOS> = repository.getTransaksjonerTilOsForTrekkID(trekkid)
                     transaksjonerTilOS.shouldHaveSize(2)
                     val sendt =

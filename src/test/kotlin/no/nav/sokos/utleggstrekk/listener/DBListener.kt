@@ -14,7 +14,7 @@ import org.testcontainers.utility.DockerImageName
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
-import no.nav.sokos.utleggstrekk.service.withTransaction
+import no.nav.sokos.utleggstrekk.database.withTransaction
 
 object DBListener : TestListener {
     private val dockerImageName = "postgres:latest"

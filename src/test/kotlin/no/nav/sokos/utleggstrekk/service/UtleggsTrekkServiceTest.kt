@@ -14,6 +14,7 @@ import io.mockk.mockk
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
+import no.nav.sokos.utleggstrekk.database.withTransaction
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus

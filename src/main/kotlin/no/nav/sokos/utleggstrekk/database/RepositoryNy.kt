@@ -2,7 +2,10 @@ package no.nav.sokos.utleggstrekk.database
 
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Session
+import kotliquery.TransactionalSession
 import kotliquery.queryOf
+import kotliquery.sessionOf
+import kotliquery.using
 
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
@@ -18,7 +21,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
-import no.nav.sokos.utleggstrekk.service.withTransaction
 
 class RepositoryNy(private val dataSource: HikariDataSource) {
     fun doesTrekkExist(trekkId: String, trekkversjon: Int): Boolean =
@@ -544,7 +546,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             ) { row -> TrekkFraSkatt(row) }
         }
 
-    fun getTransaksjonerTilOsSomIkkeErSendt() =
+    fun getTransaksjonerTilOsSomIkkeErSendt(): List<TransaksjonOS> =
         dataSource.withTransaction { session ->
             session.list(
                 queryOf(
@@ -593,3 +595,10 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 }.toSet()
         }
 }
+
+fun <A> HikariDataSource.withTransaction(operation: (TransactionalSession) -> A): A =
+    using(sessionOf(this, returnGeneratedKey = true)) { session ->
+        session.transaction { tx ->
+            operation(tx)
+        }
+    }
