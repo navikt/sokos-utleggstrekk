@@ -11,6 +11,7 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldBeEmpty
+import io.kotest.matchers.string.shouldNotBeEmpty
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -21,13 +22,16 @@ import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
+import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 class BehandleTrekkServiceTest :
     BehaviorSpec({
+        val capturedOSDtos = mutableListOf<OSDto>()
 
         afterContainer {
+            capturedOSDtos.clear()
             clearAllMocks()
         }
 
@@ -113,6 +117,7 @@ class BehandleTrekkServiceTest :
             kjenteLOPMPerioder: List<PeriodeTilOS> = emptyList(),
         ): BehandleTrekkServiceNy {
             val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(alleTrekkSomIkkeErSendt.first())
+
             val repositoryNy = mockk<RepositoryNy>()
             val behandleTrekkServiceNy = BehandleTrekkServiceNy(repositoryNy)
             val trekkAlternativIOS =
@@ -127,6 +132,8 @@ class BehandleTrekkServiceTest :
             every { repositoryNy.getTrekkSomIkkeErBehandlet() } returns alleTrekkSomIkkeErSendt
             every { repositoryNy.getPerioderForTrekk(any()) } returns perioderForTrekkFraSkatt
             every { repositoryNy.getBetalingsinformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
+            every { repositoryNy.insertTransaksjonTilOs(capture(capturedOSDtos)) } returns Unit
+            every { repositoryNy.updateTrekkFraSkattStatus(any(), any()) } returns Unit
 
             return behandleTrekkServiceNy
         }
@@ -142,11 +149,15 @@ class BehandleTrekkServiceTest :
             val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
 
             When("Trekkdokument dannes for trekk fra skatt") {
-                val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(trekkFraSkatt)
-                trekkDokumenter.size shouldBe 1
+                behandleTrekkServiceNy.behandleTrekk()
+                capturedOSDtos shouldHaveSize 1
+                val osDto = capturedOSDtos.first()
+                osDto.transaksjonID.shouldNotBeEmpty()
+                osDto.trekkIDSke shouldBe trekkFraSkatt.trekkid
 
+                val innrapporteringTrekk = osDto.innrapporteringTrekk
                 Then("Skal all informasjon være med") {
-                    with(trekkDokumenter.first().innrapporteringTrekk) {
+                    with(innrapporteringTrekk) {
                         aksjonskode shouldBe Aksjonskode.NY
                         kreditorTrekkId shouldBe "${trekkFraSkatt.trekkid}${kodeTrekkAlternativ.value}"
                         kodeTrekkAlternativ shouldBe periode.trekkAlternativ()
@@ -170,7 +181,6 @@ class BehandleTrekkServiceTest :
                     }
                 }
 
-                val innrapporteringTrekk = trekkDokumenter.first().innrapporteringTrekk
                 Then("Skal datoer formatteres på yyyy-mm-dd format") {
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                     innrapporteringTrekk.perioder!!.periode.forEach {
@@ -199,10 +209,10 @@ class BehandleTrekkServiceTest :
                     Then("Skal trekket bli til 1 NYTT trekk med 1 periode") {
                         val perioderForTrekkVersjon = lagPerioderForSkattLOPP(trekkFraSkatt).take(1)
                         val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                        behandleTrekkServiceNy.behandleTrekk()
 
-                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                        trekkDokumenter shouldHaveSize 1
-                        with(trekkDokumenter.first().innrapporteringTrekk) {
+                        capturedOSDtos shouldHaveSize 1
+                        with(capturedOSDtos.first().innrapporteringTrekk) {
                             aksjonskode shouldBe Aksjonskode.NY
                             perioder!!.periode shouldHaveSize 1
                         }
@@ -217,12 +227,11 @@ class BehandleTrekkServiceTest :
 
                     And("Vi ikke har fått trekkversjon 1") {
                         val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
-                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
+                        behandleTrekkServiceNy.behandleTrekk()
 
                         Then("Skal trekket bli til 1 NYTT trekk med 1 perioder") {
-                            trekkDokumenter shouldHaveSize 1
-
-                            with(trekkDokumenter.first().innrapporteringTrekk) {
+                            capturedOSDtos shouldHaveSize 1
+                            with(capturedOSDtos.first().innrapporteringTrekk) {
                                 aksjonskode shouldBe Aksjonskode.NY
                                 perioder!!.periode shouldHaveSize 1
                             }
@@ -238,11 +247,11 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPPPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                 )
 
+                            behandleTrekkServiceNy.behandleTrekk()
                             Then("Skall trekket bli til 1 ENDRET trekk met 1 periode") {
-                                val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                                trekkDokumenter shouldHaveSize 1
+                                capturedOSDtos shouldHaveSize 1
 
-                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     perioder!!.periode shouldHaveSize 1
                                 }
@@ -258,11 +267,11 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPMPerioder = kjenteLopmPerioder,
                                 )
 
-                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                            trekkDokumenter shouldHaveSize 2
+                            behandleTrekkServiceNy.behandleTrekk()
+                            capturedOSDtos shouldHaveSize 2
 
                             Then("Skall 1. trekk bli til 1 NYTT trekk med 1 periode og trekkalternativ LOPP") {
-                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
                                     perioder!!.periode shouldHaveSize 1
@@ -271,7 +280,7 @@ class BehandleTrekkServiceTest :
                             }
 
                             Then("Skall 2. trekk bli til 1 ENDRET trekk med 1 periode med sats 0.0 og trekkalternativ LOPM") {
-                                with(trekkDokumenter.last().innrapporteringTrekk) {
+                                with(capturedOSDtos.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
                                     perioder!!.periode shouldHaveSize 1
@@ -291,10 +300,10 @@ class BehandleTrekkServiceTest :
                                         kjenteLOPPPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                     )
                                 Then("Skal 1 trekk bli til 1 ENDRET trekk med ingen periode og gyldigTomDate dagens -1") {
-                                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSendt.first())
-                                    trekkDokumenter shouldHaveSize 1
+                                    behandleTrekkServiceNy.behandleTrekk()
+                                    capturedOSDtos shouldHaveSize 1
 
-                                    with(trekkDokumenter.first().innrapporteringTrekk) {
+                                    with(capturedOSDtos.first().innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
                                         perioder.shouldBeNull()
@@ -310,10 +319,10 @@ class BehandleTrekkServiceTest :
                                         kjenteLOPPPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                     )
                                 Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
-                                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSendt.first())
-                                    trekkDokumenter shouldHaveSize 1
+                                    behandleTrekkServiceNy.behandleTrekk()
+                                    capturedOSDtos shouldHaveSize 1
 
-                                    with(trekkDokumenter.first().innrapporteringTrekk) {
+                                    with(capturedOSDtos.first().innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
                                         perioder.shouldBeNull()
@@ -334,11 +343,10 @@ class BehandleTrekkServiceTest :
                     Then("Skal trekket bli til 1 NYTT trekk med 1 periode") {
                         val perioderForTrekkVersjon = lagPerioderForSkattLOPM(trekkFraSkatt).take(1)
                         val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                        behandleTrekkServiceNy.behandleTrekk()
 
-                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                        trekkDokumenter shouldHaveSize 1
-
-                        with(trekkDokumenter.first().innrapporteringTrekk) {
+                        capturedOSDtos shouldHaveSize 1
+                        with(capturedOSDtos.first().innrapporteringTrekk) {
                             aksjonskode shouldBe Aksjonskode.NY
                             perioder!!.periode shouldHaveSize 1
                         }
@@ -353,11 +361,11 @@ class BehandleTrekkServiceTest :
 
                     And("Vi ikke har fått trekkversjon 1") {
                         val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
-                        val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
+                        behandleTrekkServiceNy.behandleTrekk()
 
                         Then("Skal trekket bli til 1 NYTT trekk med 1 perioder") {
-                            trekkDokumenter shouldHaveSize 1
-                            with(trekkDokumenter.first().innrapporteringTrekk) {
+                            capturedOSDtos shouldHaveSize 1
+                            with(capturedOSDtos.first().innrapporteringTrekk) {
                                 aksjonskode shouldBe Aksjonskode.NY
                                 perioder!!.periode shouldHaveSize 1
                             }
@@ -374,10 +382,10 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPPPerioder = kjenteLoppPerioder,
                                 )
 
-                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                            trekkDokumenter shouldHaveSize 2
+                            behandleTrekkServiceNy.behandleTrekk()
+                            capturedOSDtos shouldHaveSize 2
                             Then("Skall 1. trekk bli til 1 NYTT trekk med 1 periode og trekkalternativ LOPM") {
-                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
                                     perioder!!.periode shouldHaveSize 1
@@ -386,7 +394,7 @@ class BehandleTrekkServiceTest :
                             }
 
                             Then("Skall 1. trekk bli til 1 ENDRET trekk med 1 periode med sats 0.0 og trekkalternativ LOPP") {
-                                with(trekkDokumenter.last().innrapporteringTrekk) {
+                                with(capturedOSDtos.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
                                     perioder!!.periode shouldHaveSize 1
@@ -404,9 +412,9 @@ class BehandleTrekkServiceTest :
                                 )
 
                             Then("Skall trekket bli til 1 ENDRET trekk met 1 periode") {
-                                val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                                trekkDokumenter shouldHaveSize 1
-                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                behandleTrekkServiceNy.behandleTrekk()
+                                capturedOSDtos shouldHaveSize 1
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     perioder!!.periode shouldHaveSize 1
                                     perioder.periode.first().sats shouldNotBe 0.0
@@ -425,10 +433,10 @@ class BehandleTrekkServiceTest :
                                         kjenteLOPMPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                     )
                                 Then("Skal 1 trekk bli til 1 ENDRET trekk med ingen periode og gyldigTomDate dagens -1") {
-                                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSendt.first())
-                                    trekkDokumenter shouldHaveSize 1
+                                    behandleTrekkServiceNy.behandleTrekk()
+                                    capturedOSDtos shouldHaveSize 1
 
-                                    with(trekkDokumenter.first().innrapporteringTrekk) {
+                                    with(capturedOSDtos.first().innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
                                         perioder.shouldBeNull()
@@ -444,10 +452,10 @@ class BehandleTrekkServiceTest :
                                         kjenteLOPMPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                     )
                                 Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
-                                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSendt.first())
-                                    trekkDokumenter shouldHaveSize 1
+                                    behandleTrekkServiceNy.behandleTrekk()
+                                    capturedOSDtos shouldHaveSize 1
 
-                                    with(trekkDokumenter.first().innrapporteringTrekk) {
+                                    with(capturedOSDtos.first().innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
                                         perioder.shouldBeNull()
@@ -469,12 +477,12 @@ class BehandleTrekkServiceTest :
                 And("Periodene i trekket har aksjonskodene LOPM og LOPP") {
                     val perioderForTrekkVersjon = lagPerioderForSkattLOPP(trekkFraSkatt).take(2) + lagPerioderForSkattLOPM(trekkFraSkatt).drop(2)
                     val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
-                    val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
+                    behandleTrekkServiceNy.behandleTrekk()
 
                     Then("Skal trekket bli til 2 NYE trekk") {
-                        trekkDokumenter shouldHaveSize 2
+                        capturedOSDtos shouldHaveSize 2
 
-                        val trekkDokument1 = trekkDokumenter.first()
+                        val trekkDokument1 = capturedOSDtos.first()
                         trekkDokument1.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
                         val dokument1Periodene = trekkDokument1.innrapporteringTrekk.perioder!!.periode
                         dokument1Periodene shouldHaveSize 3
@@ -482,7 +490,7 @@ class BehandleTrekkServiceTest :
                         dokument1Periodene[1].sats shouldBe 15.0
                         dokument1Periodene[2].sats shouldBe 0.0
 
-                        val trekkDokument2 = trekkDokumenter.last()
+                        val trekkDokument2 = capturedOSDtos.last()
                         trekkDokument2.innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.NY
                         val dokument2Periodene = trekkDokument2.innrapporteringTrekk.perioder!!.periode
                         dokument2Periodene shouldHaveSize 3
@@ -510,10 +518,10 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
                                 )
 
-                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                            trekkDokumenter shouldHaveSize 2
+                            behandleTrekkServiceNy.behandleTrekk()
+                            capturedOSDtos shouldHaveSize 2
                             Then("Skal 1. trekk bli til 1 ENDRET trekk med trekkalternative LOPM og 3 perioder") {
-                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
 
@@ -525,7 +533,7 @@ class BehandleTrekkServiceTest :
                                 }
                             }
                             Then("Skal 2. trekk bli til 1 NYTT trekk med trekkalternative LOPP og 3 perioder") {
-                                with(trekkDokumenter.last().innrapporteringTrekk) {
+                                with(capturedOSDtos.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
 
@@ -545,10 +553,10 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
                                 )
 
-                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                            trekkDokumenter shouldHaveSize 2
+                            behandleTrekkServiceNy.behandleTrekk()
+                            capturedOSDtos shouldHaveSize 2
                             Then("Skal 1. trekk bli til 1 NYTT trekk med trekkalternative LOPP og 3 perioder") {
-                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
 
@@ -561,7 +569,7 @@ class BehandleTrekkServiceTest :
                             }
 
                             Then("Skal 2. trekk bli til 1 ENDRET trekk med trekkalternative LOPM, 3 perioder med sats 0.0") {
-                                with(trekkDokumenter.last().innrapporteringTrekk) {
+                                with(capturedOSDtos.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
 
@@ -578,10 +586,10 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
                                 )
 
-                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleTrekkSomIkkeErSendt.first())
-                            trekkDokumenter shouldHaveSize 1
+                            behandleTrekkServiceNy.behandleTrekk()
+                            capturedOSDtos shouldHaveSize 1
                             Then("Skal 1 trekk bli til 1 ENDRET trekk med trekkalternative LOPM og 3 perioder") {
-                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
 
@@ -607,10 +615,10 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPPPerioder = perioderForSkattLOPP.toKnownPeriods(),
                                 )
                             Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og med gyldigTomDato dagens -1") {
-                                val trekkDokument = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
-                                trekkDokument shouldHaveSize 1
+                                behandleTrekkServiceNy.behandleTrekk()
+                                capturedOSDtos shouldHaveSize 1
 
-                                with(trekkDokument.first().innrapporteringTrekk) {
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     gyldigTomDato shouldBe gyldigTomDatoAvslutt
                                     perioder.shouldBeNull()
@@ -626,10 +634,10 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
                                 )
                             Then("Skal trekket bli til 2 ENDRET trekk uten perioder og med gyldigTomDato dagens -1") {
-                                val trekkDokument = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
-                                trekkDokument shouldHaveSize 2
+                                behandleTrekkServiceNy.behandleTrekk()
+                                capturedOSDtos shouldHaveSize 2
 
-                                trekkDokument.forEach { (_, innrapporteringTrekk) ->
+                                capturedOSDtos.forEach { (_, _, innrapporteringTrekk, _) ->
                                     innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.ENDR
                                     innrapporteringTrekk.gyldigTomDato shouldBe gyldigTomDatoAvslutt
                                     innrapporteringTrekk.perioder.shouldBeNull()
@@ -645,10 +653,10 @@ class BehandleTrekkServiceTest :
                                     perioderForSkattLOPP,
                                     kjenteLOPPPerioder = perioderForSkattLOPP.toKnownPeriods(),
                                 )
-                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
+                            behandleTrekkServiceNy.behandleTrekk()
                             Then("Skal 1 trekk bli til 1 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
-                                trekkDokumenter shouldHaveSize 1
-                                with(trekkDokumenter.first().innrapporteringTrekk) {
+                                capturedOSDtos shouldHaveSize 1
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     perioder.shouldBeNull()
                                 }
@@ -663,12 +671,12 @@ class BehandleTrekkServiceTest :
                                     perioderForSkattLOPM.toKnownPeriods(),
                                 )
 
-                            val trekkDokumenter = behandleTrekkServiceNy.lagTrekkDokument(alleAvsluttetTrekkSomIkkeErSent.first())
+                            behandleTrekkServiceNy.behandleTrekk()
                             Then("Skal trekket bli til 2 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
-                                trekkDokumenter shouldHaveSize 2
+                                capturedOSDtos shouldHaveSize 2
 
-                                trekkDokumenter.forEach { dokument ->
-                                    with(dokument.innrapporteringTrekk) {
+                                capturedOSDtos.forEach { oSDto ->
+                                    with(oSDto.innrapporteringTrekk) {
                                         aksjonskode shouldBe Aksjonskode.ENDR
                                         gyldigTomDato shouldBe gyldigTomDatoAvslutt
                                         perioder.shouldBeNull()
