@@ -27,7 +27,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 class BehandleTrekkServiceTest :
     BehaviorSpec({
 
-        afterTest {
+        afterContainer {
             clearAllMocks()
         }
 
