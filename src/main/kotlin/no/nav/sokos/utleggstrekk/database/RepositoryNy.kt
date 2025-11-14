@@ -266,7 +266,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         ),
                     ),
                 )
-            dto.innrapporteringTrekk.perioder.periode.forEach { periode ->
+            dto.innrapporteringTrekk.perioder?.periode?.forEach { periode ->
                 session.update(
                     queryOf(
                         """ 

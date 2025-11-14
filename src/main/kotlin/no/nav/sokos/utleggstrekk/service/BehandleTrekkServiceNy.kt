@@ -55,7 +55,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
                 trekkFraSkatt = trekk,
                 trekkalternativ = alternativ,
                 aksjonskode = if (kjenteAlternativ.contains(alternativ)) ENDR else NY,
-                perioderTilOS = nyePerioderTilOS[alternativ],
+                perioderTilOS = if (trekk.trekkstatus == AVSLUTTET.name) emptyList() else nyePerioderTilOS[alternativ],
             )
         }
     }
@@ -177,10 +177,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         val betalingsinformasjon: BetalingsinformasjonFraSkatt =
             repositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id) ?: throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
 
-        val perioder =
-            Perioder(
-                perioderTilOS.map { it.asPeriode() },
-            )
+        val perioder = Perioder(perioderTilOS.map { it.asPeriode() }).takeUnless { it.periode.isEmpty() }
 
         val transaksjonsID = UUID.randomUUID().toString()
         val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().minusDays(1).toString() else null
