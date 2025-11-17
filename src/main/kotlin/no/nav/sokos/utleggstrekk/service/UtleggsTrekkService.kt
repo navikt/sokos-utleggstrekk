@@ -4,6 +4,7 @@ import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import mu.KotlinLogging
 
+import no.nav.sokos.utleggstrekk.client.MAX_ANTALL
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
@@ -17,6 +18,7 @@ import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 class UtleggsTrekkService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
     private val skeClient: SkeClient = SkeClient(),
+    private val maxAntall: Int = MAX_ANTALL,
     private val mqProducer: JmsProducerService =
         JmsProducerService(
             targetQueue =
@@ -30,11 +32,16 @@ class UtleggsTrekkService(
 
     // Eksempel funksjon som kalles i schedulering
     suspend fun schedule() {
-        val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
-        processTrekkpaalegg(nyeUtleggsTrekk)
+        lagreAlleNyeUtleggstrekk()
         BehandleTrekkServiceNy(repositoryNy).behandleTrekk()
-
         repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
+    }
+
+    private suspend fun lagreAlleNyeUtleggstrekk() {
+        do {
+            val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
+            processTrekkpaalegg(nyeUtleggsTrekk)
+        } while (nyeUtleggsTrekk.size >= maxAntall)
     }
 
     private suspend fun hentUtleggsTrekk(): List<Trekkpaalegg> {
