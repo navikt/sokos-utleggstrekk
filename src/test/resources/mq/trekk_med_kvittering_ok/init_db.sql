@@ -1,23 +1,42 @@
-INSERT INTO utleggstrekk (sekvensnummer, trekkid_ske, trekkversjon, saksnummer, opprettet_ske, trekkpliktig, skyldner, trekkstatus,
-                          betalingsmottaker, kid, kontonummer, corr_id, status, kvitteringlopm, kvitteringlopp, tidspunkt_sendt_os, tidspunkt_siste_status)
-VALUES ( 101,
-        '10342395',
-        1,
-        'SAK1',
-        '2025-06-16',
-        999999999,
-        19074639472,
-         'aktiv',
-        '80000427901',
-        '17654202404',
-        '76940512057',
-        'CorrId01',
-        'MOTTATT',
-        NULL,
-         NULL,
-        now(),
-        NOW() );
+INSERT INTO
+    transaksjon_os(
+    nav_trekk_id,
+    transaksjons_id,
+    transaksjon_status,
+    trekk_id_ske,
+    kvittering_status,
+    aksjonskode,
+    kreditor_id_tss,
+    kreditor_trekk_id,
+    kreditorsref,
+    debitor_id,
+    trekk_alternativ,
+    trekk_type,
+    kid,
+    kilde,
+   dokument_json,
+    prioritet_fom_dato,
+    gyldig_tom_dato
+)
+VALUES(
+       'NavTrekkId01',
+          'TransaksjonsId01',
+       'SENDT',
+          '123SkeID',
+            'IKKE_MOTTATT',
+          'NY',
+       'TSSId' ,
+       'KreditorTrekkId',
+       'KreditorRef',
+       'DebitorId',
+          'LOPM',
+          'KRED',
+        'Kidnummer',
+       'Kilde' ,
+       'DokumentJson',
+      '2018-01-01',
+        '2018-01-01'
 
 
-insert into trekkperiode(sekvensnummer, trekkid_ske, trekkversjon, dato_start, dato_slutt, sats, trekkalternativ, kilde, tidspunkt_opprettet)
-values (101,10342395, 1, '2023-06-13', '2024-11-30', 5000.00, 'LOPM', 'SOKOS-UTLEGG', now() )
+      ) ;
+

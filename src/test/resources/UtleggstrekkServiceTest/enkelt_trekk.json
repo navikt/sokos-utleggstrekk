@@ -1,31 +1,31 @@
 {
   "mmel": {
     "systemId": "231-OPPD",
-    "kodeMelding": "B7XX001F",
-    "alvorlighetsgrad": "08",
-    "beskrMelding": "Ugyldig verdi i felt: Trekktype",
-    "programId": "K231B720",
-    "sectionNavn": "CA15-FEIL-I-FELTER"
+    "kodeMelding": "B782008I",
+    "alvorlighetsgrad": "00",
+    "beskrMelding":"Oppdatering foretatt.",
+    "programId":"K231B782"
   },
   "dokument": {
     "transaksjonsId": "TransaksjonsId01",
+
     "innrapporteringTrekk": {
       "aksjonskode": "NY",
       "kilde": "SOKOS-UTLEGG",
       "navTrekkId": "",
-      "kreditorIdTss": "80000427901",
+      "kreditorIdTss": "tssIDSkatt",
       "kreditorTrekkId": "10342395",
       "debitorId": "19074639472",
       "kid":"17654202404",
       "kreditorsRef":"SAK1",
       "kodeTrekktype": "KRED",
-      "kodeTrekkAlternativ": "LOPM",
-      "prioritetFomDato":"2024-06-16",
+      "kodeTrekkAlternativ": "LOPP",
+      "prioritetFomDato":"2026-02-02",
       "perioder": {
         "periode": [ {
-          "periodeFomDato":"2023-06-13",
-          "periodeTomDato":"2024-11-30",
-          "sats":5000.00 }
+          "periodeFomDato":"2026-02-02",
+          "periodeTomDato":"2026-04-02",
+          "sats":20.00 }
         ]
       }
     }

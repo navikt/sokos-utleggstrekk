@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.mq
 
-import kotlinx.serialization.json.Json
-
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import jakarta.jms.ConnectionFactory
@@ -12,11 +10,14 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.MQConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
-import no.nav.sokos.utleggstrekk.service.DatabaseService
+import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.PostgresDataSource
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
+import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 
 class JmsListenerService(
-    private val databaseService: DatabaseService = DatabaseService(),
+    private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
     val osKvitteringQueue: Queue =
         MQQueue(PropertiesConfig.MQProperties().replyQueueName).apply {
             targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
@@ -26,7 +27,6 @@ class JmsListenerService(
     private val logger = KotlinLogging.logger {}
 
     private val jmsContext: JMSContext = connectionFactory.createContext(JMSContext.CLIENT_ACKNOWLEDGE)
-    private val json = Json { ignoreUnknownKeys = true }
 
     init {
         jmsContext.start()
@@ -37,7 +37,7 @@ class JmsListenerService(
     private fun onReceipt(message: Message) {
         val jmsMessage = message.getBody(String::class.java)
         try {
-            val receipt = json.decodeFromString<TrekkTilOppdrag>(jmsMessage)
+            val receipt = jsonConfig.decodeFromString<KvitteringFraOppdrag>(jmsMessage)
             processReceipt(receipt)
             message.acknowledge()
         } catch (exception: Exception) {
@@ -45,18 +45,26 @@ class JmsListenerService(
         }
     }
 
-    private fun processReceipt(receipt: TrekkTilOppdrag) {
-        databaseService.oppdaterTrekkMedKvitteringsinfo(receipt)
-        if (receipt.mmel!!.alvorlighetsgrad != "00") {
-            databaseService.lagreFeilkoderFraOS(receipt)
+    private fun processReceipt(receipt: KvitteringFraOppdrag) {
+        val kvitteringStatus = KvitteringStatus.fromValue(receipt.mmel?.alvorlighetsgrad)
+
+        repositoryNy.updateTransaksjon(
+            receipt.dokument.transaksjonsId,
+            kvitteringStatus,
+            receipt.dokument.innrapporteringTrekk.navTrekkId,
+        )
+
+        if (kvitteringStatus == KvitteringStatus.FEIL) {
+            // TODO: Slackmelding
+            repositoryNy.insertFeilmeldingFraOS(receipt)
             logError(receipt)
         }
     }
 
-    private fun logError(kvitteringMedFeil: TrekkTilOppdrag) {
+    private fun logError(receipt: KvitteringFraOppdrag) {
         logger.info(
-            "Trekk med kreditorstrekkID: ${kvitteringMedFeil.dokument.innrapporteringTrekk.kreditorTrekkId}, " +
-                "corrid: ${kvitteringMedFeil.dokument.transaksjonsId} har feilkode: ${kvitteringMedFeil.mmel?.kodeMelding} og beskrivelse: ${kvitteringMedFeil.mmel?.beskrMelding}",
+            "Trekk med kreditorstrekkID: ${receipt.dokument.innrapporteringTrekk.kreditorTrekkId}, " +
+                "corrid: ${receipt.dokument.transaksjonsId} har feilkode: ${receipt.mmel?.kodeMelding} og beskrivelse: ${receipt.mmel?.beskrMelding}",
         )
 
         // TODO sjekke/vurdere om det skal sendes melding til slack og evt utføre det.

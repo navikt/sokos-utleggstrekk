@@ -1,22 +1,21 @@
 package no.nav.sokos.utleggstrekk.service
 
-import kotlinx.serialization.json.Json
-
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.database.PostgresDataSource
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 
 class UtleggsTrekkService(
-    private val databaseService: DatabaseService = DatabaseService(),
-    private val behandleTrekkService: BehandleTrekkService = BehandleTrekkService(databaseService),
+    private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
     private val skeClient: SkeClient = SkeClient(),
     private val mqProducer: JmsProducerService =
         JmsProducerService(
@@ -24,60 +23,38 @@ class UtleggsTrekkService(
                 MQQueue(PropertiesConfig.MQProperties().queueName).apply {
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 },
-            replyQueue =
-                JmsListenerService().osKvitteringQueue,
+            replyQueue = JmsListenerService(repositoryNy).osKvitteringQueue,
         ),
 ) {
     private val logger = KotlinLogging.logger { }
 
-    suspend fun hentOgSendUtleggstrekk(): Int {
-        logger.info("Henter utleggstrekkfra skatt ")
-        hentOgLagreNyeUtleggstrekk()
-        val trekktilSending = behandleTrekkService.lagTrekkSomSkalSendes()
-        return sendTrekkTilOS(trekktilSending)
+    // Eksempel funksjon som kalles i schedulering
+    suspend fun schedule() {
+        val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
+        processTrekkpaalegg(nyeUtleggsTrekk)
+        BehandleTrekkServiceNy(repositoryNy).behandleTrekk()
+
+        repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
     }
 
-    suspend fun hentOgLagreNyeUtleggstrekk() {
-        // TODO Denne henter alle hver gang, Den bør bare hente nye når den skal brukes mot skatt regelmessig
-        val nyeTrekkListe = skeClient.hentAlleUtleggstrekk() // TODO endre til å kalle hentAlleNyeUtleggstrekk()
-        nyeTrekkListe
-            .also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
-            .filterNot { databaseService.trekkFinnes(it.trekkid, it.sekvensnummer, it.trekkversjon) }
-            .let {
-                logger.info("Det er ${it.size} som skal lagres")
-                databaseService.lagreUtleggstrekk(it)
-            }
+    private suspend fun hentUtleggsTrekk(): List<Trekkpaalegg> {
+        val sisteSekvensnr = repositoryNy.getLastSekvensnummer()
+        return skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
     }
 
-    val jsonConfig =
-        Json {
-            explicitNulls = false
-            encodeDefaults = true
+    private fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
+        trekkpaalegg.forEach { trekk ->
+            repositoryNy.insertTrekkFraSkatt(trekk)
         }
-
-    // TODO: refaktorere
-    // TODO: Felles Jsonobjekt MEN skriv tester først
-    fun sendTrekkTilOS(trekkTilOppdragMap: Map<UtleggstrekkTable, List<TrekkTilOppdrag>>): Int =
-        trekkTilOppdragMap
-            .map {
-                val dokumentListe = it.value.map { dokument -> jsonConfig.encodeToString(dokument) }
-                dokumentListe.forEach { dokument ->
-                    mqProducer.send(dokument)
-                }
-                databaseService.oppdaterTrekkStatus(it.key.corrid, SENDT)
-            }.size
-
-    // Ikke fjern :)
-    suspend fun hentAlleNyeUtleggstrekk() {
-        val sisteSekvensnr = databaseService.hentSisteSekvensnummer()
-        logger.info("Henter fra siste sekvensnr: $sisteSekvensnr")
-        hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sisteSekvensnr)
     }
 
-    suspend fun hentUtleggstrekkFraSekvensnrOgLagreAlleNye(sekvensnr: Int) {
-        skeClient
-            .hentUtleggstrekkFraSekvensnr(sekvensnr)
-            .also { logger.info { "Hentet ${it.size} utleggstrekk fra Skatt" } }
-            .let { databaseService.lagreUtleggstrekk(it) }
+    private fun sendTrekkTilOS(transaksjonOS: TransaksjonOS) {
+        runCatching {
+            mqProducer.send(transaksjonOS.documentJson)
+        }.onSuccess {
+            repositoryNy.updateTransaksjonStatus(transaksjonOS.transaksjonsID, TransaksjonsStatus.SENDT)
+        }.onFailure { exception ->
+            logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
+        }
     }
 }

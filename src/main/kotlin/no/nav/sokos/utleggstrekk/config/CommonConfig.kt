@@ -24,6 +24,13 @@ import org.slf4j.event.Level
 // TODO: Vi trenger bare én global logger.
 private val logger = KotlinLogging.logger { }
 
+val jsonConfig =
+    Json {
+        explicitNulls = false
+        encodeDefaults = true
+        prettyPrint = true
+    }
+
 @OptIn(ExperimentalSerializationApi::class) // TODO: Sjekk om denne kan fjernes
 fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
     install(CallId) {

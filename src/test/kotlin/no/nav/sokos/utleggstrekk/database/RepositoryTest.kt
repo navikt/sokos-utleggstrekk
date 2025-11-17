@@ -1,245 +1,565 @@
 package no.nav.sokos.utleggstrekk.database
 
-import java.lang.Thread.sleep
+import java.time.LocalDate
+import java.time.LocalDateTime
 
-import kotlin.time.ExperimentalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.seconds
 
-import io.kotest.core.spec.style.FunSpec
+import io.kotest.assertions.nondeterministic.eventually
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.ranges.shouldBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotliquery.queryOf
 
-import no.nav.sokos.utleggstrekk.database.TestRepositoryExtensions.clearDb
-import no.nav.sokos.utleggstrekk.database.model.TrekkPeriodeTable
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.KVITTERING_OK
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.MOTTATT
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkStatus.SENDT
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.Feilmelding
+import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
+import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.BEHANDLET
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
+import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
+import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
+import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.OSDto
+import no.nav.sokos.utleggstrekk.domene.nav.Periode
+import no.nav.sokos.utleggstrekk.domene.nav.Perioder
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
-import no.nav.sokos.utleggstrekk.service.withTransaction
-import no.nav.sokos.utleggstrekk.util.TestContainer
+import no.nav.sokos.utleggstrekk.listener.DBListener
+import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
-@OptIn(ExperimentalTime::class)
 class RepositoryTest :
-    FunSpec({
-        val testContainer = TestContainer()
-        val dataSource = testContainer.dataSource
-        val repository = Repository(testContainer.dataSource)
+    BehaviorSpec({
+        extensions(DBListener)
 
-        beforeTest {
-            dataSource.withTransaction { session ->
-                repository.clearDb(session)
-            }
-        }
+        val dummyInnrapporteringTrekk =
+            InnrapporteringTrekk(
+                aksjonskode = Aksjonskode.NY,
+                kreditorIdTss = "KreditorIdTSS",
+                kreditorTrekkId = "KreditorTrekkId",
+                kreditorsRef = "KreditorsRef",
+                debitorId = "debitorId",
+                kodeTrekkAlternativ = TrekkAlternativ.LOPM,
+                kid = "Kidnummer",
+                prioritetFomDato = LocalDate.now().toString(),
+                perioder =
+                    Perioder(
+                        listOf(
+                            Periode(
+                                periodeFomDato = "2024-01-01",
+                                periodeTomDato = "2024-01-31",
+                                sats = 5000.0,
+                            ),
+                        ),
+                    ),
+            )
 
-        fun saveUtleggsrekk(trekkpalegg: List<Trekkpaalegg>) {
-            dataSource.withTransaction { session ->
-                repository.saveAllNewUtleggstrekk(trekkpalegg, session)
-            }
-        }
+        fun lagDokumentTilOppdrag(transaksjonsId: String): DokumentTilOppdrag =
+            DokumentTilOppdrag(
+                transaksjonsId,
+                innrapporteringTrekk = dummyInnrapporteringTrekk,
+            )
 
-        fun comparePerioder(trekkpaalegg: Trekkpaalegg, perioder: List<TrekkPeriodeTable>) {
-            val dbPerioder = perioder.sortedBy { it.datoStart }
-            val trekkPerioder = trekkpaalegg.trekkstoerrelseForPeriode.sortedBy(TrekkstorrelseForPeriode::startdato)
-
-            trekkpaalegg.trekkstoerrelseForPeriode.size shouldBe dbPerioder.size
-            dbPerioder.forEachIndexed { index, dbPeriode ->
-                val periode = trekkPerioder[index]
-                dbPeriode.datoStart shouldBe periode.startdato
-                dbPeriode.datoSlutt shouldBe (
-                    periode.sluttdato
-                        ?: "9999-12-31"
-                ) // TODO: We should probably just keep the nulls.
-                dbPeriode.trekkversjon shouldBe trekkpaalegg.trekkversjon
-                dbPeriode.sekvensnummer shouldBe trekkpaalegg.sekvensnummer
-                dbPeriode.trekkidSke shouldBe trekkpaalegg.trekkid
-                if (dbPeriode.trekkAlternativ == LOPM) {
-                    periode.trekkprosent shouldBe null
-                    dbPeriode.sats shouldBe periode.trekkbeloep!!.trekkbeloep
-                }
-                if (dbPeriode.trekkAlternativ == LOPP) {
-                    periode.trekkbeloep shouldBe null
-                    dbPeriode.sats shouldBe periode.trekkprosent!!.trekkprosent
-                }
-            }
-        }
-
-        fun compareTrekk(trekkpaalegg: Trekkpaalegg, table: UtleggstrekkTable) {
-            table.trekkstatus shouldBe trekkpaalegg.trekkstatus
-            table.trekkidSke shouldBe trekkpaalegg.trekkid
-            table.saksnummer shouldBe trekkpaalegg.saksnummer
-            table.skyldner shouldBe trekkpaalegg.skyldner
-            table.opprettetSke.toInstant(TimeZone.currentSystemDefault()) shouldBe trekkpaalegg.opprettet
-            table.trekkversjon shouldBe trekkpaalegg.trekkversjon
-            table.saksnummer shouldBe trekkpaalegg.saksnummer
-            table.skyldner shouldBe trekkpaalegg.skyldner
-            table.trekkpliktig shouldBe trekkpaalegg.trekkpliktig
-
-            table.betalingsmottaker shouldBe trekkpaalegg.betalingsinformasjon.betalingsmottaker
-            table.kid shouldBe trekkpaalegg.betalingsinformasjon.kidnummer
-            table.kontonummer shouldBe trekkpaalegg.betalingsinformasjon.kontonummer
-
-            val dbPerioder = dataSource.withTransaction { session -> repository.fetchAllPerioderForTrekk(table, session) }
-            comparePerioder(trekkpaalegg, dbPerioder)
-        }
-
-        val json =
-            Json {
-                prettyPrint = true
-                isLenient = true
-                explicitNulls = false
-            }
-
-        test("Hent sekvensnummer") {
-            val sek = dataSource.withTransaction { session -> repository.fetchLastSekvensnr(session) }
-            sek shouldBe 0
-            val trekkpalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            saveUtleggsrekk(trekkpalegg)
-            dataSource.withTransaction { session -> repository.fetchLastSekvensnr(session) } shouldBe trekkpalegg.maxOf { it.sekvensnummer }
-        }
-
-        test("Eksisterer trekk") {
-            dataSource.withTransaction { session -> repository.doesTrekkExist("1", 1, 1, session) } shouldBe false
-            val trekkpalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            saveUtleggsrekk(trekkpalegg)
-            dataSource.withTransaction { session ->
-                repository.fetchLastSekvensnr(session) shouldBe trekkpalegg.maxOf { it.sekvensnummer }
-                repository.doesTrekkExist("1", 1, 1, session) shouldBe true
-                repository.doesTrekkExist("2_xx", 2, 1, session) shouldBe true
-                repository.doesTrekkExist("1", 2, 2, session) shouldBe false
-            }
-        }
-
-        test("Oppdater navtrekkstatus") {
-            val trekkpalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            saveUtleggsrekk(trekkpalegg)
-
-            val trekk =
-                dataSource
-                    .withTransaction { session ->
-                        repository.fetchTrekkNotSendt(session)
-                    }.find { it.sekvensnummer == 1 }!!
-
-            dataSource.withTransaction { session ->
-                repository.updateNavTrekkStatus(trekk.corrid, SENDT, session)
-            }
-            dataSource.withTransaction { session ->
-                val updatedTrekk = repository.findTrekkByCorrId(trekk.corrid, session)!!
-                updatedTrekk.status shouldBe SENDT
-                updatedTrekk.tidspunktSisteStatus shouldNotBe trekk.tidspunktSisteStatus
-            }
-        }
-
-        test("Oppdater trekkstatus") {
-            val trekkpalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            saveUtleggsrekk(trekkpalegg)
-            sleep(1)
-
-            val trekk =
-                dataSource
-                    .withTransaction { session -> repository.fetchTrekkNotSendt(session) }
-                    .find { it.sekvensnummer == 1 }!!
-            trekk.status shouldBe MOTTATT
-
-            dataSource.withTransaction { session ->
-                repository.updateTrekkStatusSentAndDateTimeSentOS(trekk.corrid, session)
-            }
-            dataSource.withTransaction { session ->
-                repository.fetchTrekkNotSendt(session).find { it.sekvensnummer == 1 } shouldBe null
-                val updatedTrekk = repository.findTrekkByCorrId(trekk.corrid, session)!!
-                updatedTrekk.status shouldBe SENDT
-                updatedTrekk.tidspunktSisteStatus shouldNotBe trekk.tidspunktSisteStatus
-            }
-        }
-
-        test("Oppdater kvitteringsstatus") {
-            val trekkpalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            saveUtleggsrekk(trekkpalegg)
-
-            val trekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }.find { it.sekvensnummer == 1 }!!
-            dataSource.withTransaction { session ->
-                repository.updateKvitteringStatus(
-                    trekk.corrid,
-                    KVITTERING_OK,
-                    "kvitteringLOPM", // This is the column name in the Utleggstrekk table.
-                    "navID",
-                    LOPM,
-                    session,
+        Given("Det finnes to trekk som er behandlet hvor ett er sendt.") {
+            DBListener.clearDB()
+            val dokument = resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")
+            val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(dokument).first()
+            RepositoryNy.insertTrekkFraSkatt(skalSendes)
+            val dto =
+                OSDto(
+                    transaksjonID = "SkalSendes",
+                    skalSendes.trekkid,
+                    lagDokumentTilOppdrag("SkalSendes").innrapporteringTrekk,
+                    dokument,
                 )
-            }
+            RepositoryNy.insertTransaksjonTilOs(dto)
+            RepositoryNy.insertTrekkFraSkatt(skalSendes.copy(trekkid = "SkalOgsåSendes"))
 
-            val updatedTrekk =
-                dataSource.withTransaction { session ->
-                    repository.findTrekkByCorrId(trekk.corrid, session)!!
-                }
-            trekk.kvitteringLOPM shouldNotBe updatedTrekk.kvitteringLOPM
-            trekk.tidspunktSisteStatus shouldNotBe updatedTrekk.tidspunktSisteStatus
-            updatedTrekk.status shouldBe KVITTERING_OK
-            updatedTrekk.trekkidNavLOPM shouldBe "navID"
-        }
+            val trekkSomErSendt = skalSendes.copy(trekkid = "SkalIkkeSendes")
+            RepositoryNy.insertTrekkFraSkatt(skalSendes.copy(trekkid = "SkalIkkeSendes"))
+            val dtoSomErSendt =
+                OSDto(
+                    transaksjonID = "SkalIkkeSendes",
+                    trekkSomErSendt.trekkid,
+                    lagDokumentTilOppdrag("SkalIkkeSendes").innrapporteringTrekk, // TODO: Legge inn faktisk dokument
+                    dokument,
+                )
+            RepositoryNy.insertTransaksjonTilOs(dtoSomErSendt)
+            RepositoryNy.updateTransaksjonStatus(dtoSomErSendt.transaksjonID, TransaksjonsStatus.SENDT)
 
-        test("Lagre trekk") {
-            val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("Trekk_med_to_trekkalternativ.json"))
-            saveUtleggsrekk(trekkpalegg)
-
-            val dbTrekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }
-            trekkpalegg.size shouldBe dbTrekk.size
-            for (trekk in trekkpalegg) {
-                compareTrekk(trekk, dbTrekk.find { it.sekvensnummer == trekk.sekvensnummer }!!)
+            Then("Finnes det en transaksjon som ikke er sendt") {
+                val ikkeSendt = RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt()
+                ikkeSendt.shouldHaveSize(1)
             }
         }
 
-        test("Lagre feilkoder") {
-            val kvittering = json.decodeFromString<TrekkTilOppdrag>(resourceToString("kvittering-feil.json"))
-            dataSource.withTransaction { session -> repository.saveFeilkoder(kvittering, session) }
+        Given("Vi henter perioder for trekk med én versjon") {
+            DBListener.clearDB()
+            val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+            val idtrekkpaalegg1 = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg1)
+            idtrekkpaalegg1.shouldNotBeNull()
 
-            val feilkode =
-                dataSource.withTransaction { session ->
-                    repository.findFeilkode(
-                        kvittering.dokument.transaksjonsId,
-                        session,
-                    )!!
-                }
-            feilkode.feilkodeTableId shouldBe 1L
-            feilkode.trekkIdNav shouldBe kvittering.dokument.innrapporteringTrekk.kreditorTrekkId
-            feilkode.trekkAlternativ shouldBe kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
-            feilkode.corrId shouldBe kvittering.dokument.transaksjonsId
-            feilkode.feilkode shouldBe kvittering.mmel!!.kodeMelding
-            feilkode.beskrivelse shouldBe kvittering.mmel.beskrMelding
+            val perioder: List<PeriodeFraSkatt> = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1)
+
+            perioder.shouldHaveSize(1)
+
+            val trekkpaalegg2 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk2_versjon1_to_perioder_belop.json")).first()
+            val idtrekkpaalegg2 = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg2)
+            idtrekkpaalegg2.shouldNotBeNull()
+
+            val perioder2: List<PeriodeFraSkatt> = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2)
+            perioder2.shouldHaveSize(2)
         }
 
-        test("Hent alle perioder for trekkversjon") {
+        Given("Vi henter perioder for trekk med flere versjoner") {
+            DBListener.clearDB()
+            val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+
+            val idtrekkpaalegg1: Long? = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg1)
+            idtrekkpaalegg1.shouldNotBeNull()
+
+            val trekkpaalegg2 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_skatt_Trekk1_versjon2_endret_belop.json")).first()
+            val idtrekkpaalegg2 = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg2)
+            idtrekkpaalegg2.shouldNotBeNull()
+
+            When("getPerioderForTrekkVersjon") {
+
+                Then("Skal perioder hentes kun for trekk med gitt versjon, sekvensnummer og trekkid") {
+                    val perioderVersjon1 = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg1)
+
+                    perioderVersjon1.shouldHaveSize(1)
+                    val perioderVersjon2 = RepositoryNy.getPerioderForTrekkVersjon(idtrekkpaalegg2)
+
+                    perioderVersjon2.shouldHaveSize(2)
+                }
+            }
+        }
+
+        Given("Data fra skatt skal lagres") {
+            DBListener.clearDB()
+            val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+
+            When("Trekkpålegg lagres") {
+                val id = RepositoryNy.insertTrekkFraSkatt(trekkpaalegg)
+                id.shouldNotBeNull()
+
+                eventually(duration = 1.seconds) {
+                    val lagretTrekk = getTrekkFraSkatt(id)
+                    lagretTrekk.shouldNotBeNull()
+                    Then("Skal Trekkpålegg lagres i tabellen 'fraskatt'") {
+
+                        compareTrekk(trekkpaalegg, lagretTrekk)
+                    }
+                    And("TrekkstørrelseForPeriode skal lagres i tabellen 'periOde'") {
+                        val lagretPeriode = RepositoryNy.getPerioderForTrekk(lagretTrekk)
+                        comparePerioder(trekkpaalegg.trekkstoerrelseForPeriode, lagretPeriode)
+                    }
+                    And("Betalingsinformasjon skal lagres i tabellen 'betalingsinformasjonfraskatt'") {
+                        val lagretBetalingsinformasjon = RepositoryNy.getBetalingsinformasjonForTrekk(id)
+                        lagretBetalingsinformasjon.shouldNotBeNull()
+                        compareBetalingsinformasjon(trekkpaalegg.betalingsinformasjon, lagretBetalingsinformasjon)
+                    }
+                }
+            }
+        }
+
+        Given("Feilmelding skal lagres") {
+            val kvittering = jsonConfig.decodeFromString<KvitteringFraOppdrag>(resourceToString("kvittering-feil.json"))
+            RepositoryNy.insertFeilmeldingFraOS(kvittering)
+
+            Then("Skal trekkid, trekkalternativ, corrid, feilkode og beskrivelse lagres") {
+                val feilmelding = RepositoryNy.getFeilmeldingerFraOS(kvittering.dokument.transaksjonsId)
+                feilmelding.shouldNotBeNull()
+                compareFeilmelding(kvittering, feilmelding)
+            }
+        }
+        Given("Transaksjon til OS skal lagres") {
+            val dto =
+                OSDto(
+                    transaksjonID = "123id",
+                    "Et trekk",
+                    lagDokumentTilOppdrag("TransaksjonIDa").innrapporteringTrekk,
+                    "",
+                )
+            RepositoryNy.insertTransaksjonTilOs(dto)
+
+            When("Transaksjon er lagret i tabellen 'transaksjon_os'") {
+                val transaksjonTilOs = RepositoryNy.getTransaksjonTilOs(dto.transaksjonID)
+                transaksjonTilOs.shouldNotBeNull()
+
+                Then("Skal transaksjonstatus skal være TransaksjonsStatus.IKKE_SENDT") {
+                    transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.IKKE_SENDT
+                }
+                And("KvitteringStatus skal være KvitteringStatus.IKKE_MOTTATT") {
+                    transaksjonTilOs.kvitteringStatus shouldBe KvitteringStatus.IKKE_MOTTATT
+                }
+                And("Tidspunktsendt skal være nå") {
+                    val now = dbNow()
+                    transaksjonTilOs.tidspunktSendt?.shouldBeIn(now.minusSeconds(10)..now)
+                }
+                And("Tidspunktsistestatus skal være nå") {
+                    val now = dbNow()
+                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                }
+                And("Enumverdier skal lagres korrekt") {
+                    transaksjonTilOs.aksjonskode shouldBe Aksjonskode.NY
+                    transaksjonTilOs.trekkAlternativ shouldBe TrekkAlternativ.LOPM
+                }
+            }
+
+            When("Transaksjonstatus oppdateres") {
+                RepositoryNy.updateTransaksjonStatus(dto.transaksjonID, TransaksjonsStatus.SENDT)
+                val transaksjonTilOs = RepositoryNy.getTransaksjonTilOs(dto.transaksjonID)
+                transaksjonTilOs.shouldNotBeNull()
+                Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
+
+                    transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.SENDT
+                }
+                And("Tidspunktsistestatus skal være nå") {
+                    val now = dbNow()
+                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                }
+            }
+            When("Transaksjon oppdateres med kvitteringsstatus og navtrekkid") {
+                val nyKvitteringStatus = KvitteringStatus.OK
+                val nyNavTrekkId = "123456789"
+                RepositoryNy.updateTransaksjon(dto.transaksjonID, nyKvitteringStatus, nyNavTrekkId)
+                val transaksjonTilOs = RepositoryNy.getTransaksjonTilOs(dto.transaksjonID)
+                transaksjonTilOs.shouldNotBeNull()
+
+                Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
+
+                    transaksjonTilOs.kvitteringStatus shouldBe nyKvitteringStatus
+                }
+                And("Tidspunktsistestatus skal være nå") {
+                    val now = dbNow()
+                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                }
+                And("Navtrekkid skal ikke være blank") {
+                    transaksjonTilOs.navTrekkId shouldBe nyNavTrekkId
+                }
+            }
+        }
+
+        Given("To trekk lagres") {
+            DBListener.clearDB()
+            val sekvensNummer = RepositoryNy.getLastSekvensnummer()
+            sekvensNummer shouldBe 0
+            val trekkpaalegg =
+                jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
+            trekkpaalegg.forEach { RepositoryNy.insertTrekkFraSkatt(it) }
+            Then("Skal høyeste sekvensnummer være lik høyeste sekvensnummer i data fra skatt") {
+                val newMaxSekvensNummer = RepositoryNy.getLastSekvensnummer()
+
+                newMaxSekvensNummer shouldNotBe 0
+                newMaxSekvensNummer shouldBe trekkpaalegg.maxOf { it.sekvensnummer }
+            }
+        }
+
+        Given("Det finnes eksisterende trekk") {
+            DBListener.clearDB()
+            doesTrekkExist("1", 1) shouldBe false
             val trekkpalegg =
-                json.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
-            saveUtleggsrekk(trekkpalegg)
+                jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
+            trekkpalegg.forEach { RepositoryNy.insertTrekkFraSkatt(it) }
 
-            val trekkFraSkatt = trekkpalegg.find { it.sekvensnummer == 1 }!!
+            RepositoryNy.getLastSekvensnummer() shouldBe trekkpalegg.maxOf { it.sekvensnummer }
 
-            val trekk = dataSource.withTransaction { session -> repository.fetchTrekkNotSendt(session) }.find { it.sekvensnummer == 1 }!!
-            val perioder = dataSource.withTransaction { session -> repository.fetchAllPerioderForTrekk(trekk, session) }
-            comparePerioder(trekkFraSkatt, perioder)
+            val allTrekkFraSkatt = RepositoryNy.getAllTrekkFraSkatt()
+            allTrekkFraSkatt.shouldNotBeEmpty()
+            doesTrekkExist("1", 1) shouldBe true
+            doesTrekkExist("2_xx", 1) shouldBe true
+            doesTrekkExist("1", 2) shouldBe false
         }
 
-        test("Sjekk rekkefølge på utleggstrekk") {
-            val trekkpalegg = json.decodeFromString<List<Trekkpaalegg>>(resourceToString("diverse_trekk_ut_av_sekvens.json"))
-            saveUtleggsrekk(trekkpalegg)
-            val trekkNotSent =
-                dataSource.withTransaction { session ->
-                    repository.fetchTrekkNotSendt(session)
+        Given("Det kommer inn trekk ut av rekkefølge") {
+            DBListener.clearDB()
+            val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("diverse_trekk_ut_av_sekvens.json"))
+            trekkpaalegg.forEach { RepositoryNy.insertTrekkFraSkatt(it) }
+
+            Then("Kommer i riktig rekkefølge når de hentes fra DB") {
+                val trekkNotSent: List<TrekkFraSkatt> = RepositoryNy.getTrekkFraSkattMedStatus(MOTTATT)
+                // Alle trekk skal være i rekkefølge
+                trekkNotSent.map { it.sekvensnummer }.zipWithNext().all { (a, b) -> a < b } shouldBe true
+            }
+        }
+
+        Given("To trekk finnes med status MOTTATT") {
+            DBListener.clearDB()
+            doesTrekkExist("1", 1) shouldBe false
+            val trekkpalegg =
+                jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
+            trekkpalegg.forEach { RepositoryNy.insertTrekkFraSkatt(it) }
+
+            val trekkMottatt = RepositoryNy.getTrekkFraSkattMedStatus(MOTTATT)
+
+            trekkMottatt.shouldHaveSize(2)
+            val ettTrekk = trekkMottatt.first()
+
+            When("Et trekk endrer status til BEHANDLET") {
+                RepositoryNy.updateTrekkFraSkattStatus(ettTrekk.id, BEHANDLET)
+                val behandlet = RepositoryNy.getTrekkFraSkattMedStatus(BEHANDLET)
+                behandlet.shouldHaveSize(1)
+                behandlet.first().id shouldBe ettTrekk.id
+
+                Then("Dukker det ikke opp blandt MOTTATTE trekk") {
+                    val mottatt = RepositoryNy.getTrekkFraSkattMedStatus(MOTTATT)
+                    mottatt.shouldHaveSize(1)
+                    mottatt.first().id shouldNotBe ettTrekk.id
                 }
-            // Alle trekk skal være i rekkefølge
-            trekkNotSent.map(UtleggstrekkTable::sekvensnummer).zipWithNext().all { (a, b) -> a < b } shouldBe true
+            }
+        }
+
+        Given("Det finnes transaksjoner i databasen") {
+            DBListener.clearDB()
+            DBListener.clearDB()
+            val trekkId = "TestTrekkID"
+            val transaksjonsId = "123id"
+
+            val transaksjonsId1 = "$transaksjonsId-1"
+            val transaksjonsId2 = "$transaksjonsId-2"
+            val transaksjonsId3 = "$transaksjonsId-3"
+            val dokument1 = lagDokumentTilOppdrag(transaksjonsId1)
+            val dokument2 = lagDokumentTilOppdrag(transaksjonsId2)
+            val dokument3 = lagDokumentTilOppdrag(transaksjonsId3)
+
+            val dto1 =
+                OSDto(
+                    transaksjonID = transaksjonsId1,
+                    trekkId,
+                    dokument1.innrapporteringTrekk,
+                    jsonConfig.encodeToString<DokumentTilOppdrag>(dokument1),
+                )
+            val dto2 =
+                OSDto(
+                    transaksjonID = transaksjonsId2,
+                    trekkId,
+                    dokument2.innrapporteringTrekk,
+                    jsonConfig.encodeToString<DokumentTilOppdrag>(dokument2),
+                )
+
+            val dto3 =
+                OSDto(
+                    transaksjonID = transaksjonsId3,
+                    trekkId,
+                    dokument3.innrapporteringTrekk,
+                    jsonConfig.encodeToString<DokumentTilOppdrag>(dokument3),
+                )
+            RepositoryNy.insertTransaksjonTilOs(dto1)
+            RepositoryNy.insertTransaksjonTilOs(dto2)
+            RepositoryNy.insertTransaksjonTilOs(dto3)
+
+            When("Transaksjoner hentes for TrekkID: $trekkId") {
+                val transaksjoner = RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkId)
+
+                Then("Skal transaksjonen som hentes matche transaksjonen som ble lagret") {
+                    transaksjoner.shouldHaveSize(3)
+                    val transaksjon = transaksjoner.first { it.transaksjonsID == transaksjonsId1 }
+                    transaksjon.trekkIdSke shouldBe trekkId
+                    transaksjon.transaksjonsID shouldBe dto1.transaksjonID
+                    transaksjon.kvitteringStatus shouldBe KvitteringStatus.IKKE_MOTTATT
+                    transaksjon.transaksjonStatus shouldBe TransaksjonsStatus.IKKE_SENDT
+                    transaksjon.navTrekkId shouldBe ""
+                    transaksjon.tidspunktSendt shouldBe null
+                    transaksjon.tidspunktSisteStatus?.toLocalDate() shouldBe LocalDate.now()
+                    with(dokument1.innrapporteringTrekk) {
+                        transaksjon.trekkAlternativ shouldBe kodeTrekkAlternativ
+                        transaksjon.trekktype shouldBe kodeTrekktype
+                        transaksjon.debitorId shouldBe debitorId
+                        transaksjon.kreditorsref shouldBe kreditorsRef
+                        transaksjon.aksjonskode shouldBe aksjonskode
+                        transaksjon.kreditorTrekkId shouldBe kreditorTrekkId
+                        transaksjon.kreditorIdTss shouldBe kreditorIdTss
+                        transaksjon.saldo shouldBe saldo
+                        transaksjon.kilde shouldBe kilde
+                        transaksjon.kid shouldBe kid
+                    }
+                }
+            }
+
+            When("Vi oppdaterer en transaksjonstatus") {
+                RepositoryNy.updateTransaksjonStatus(transaksjonsId3, TransaksjonsStatus.SENDT)
+
+                Then("Skal ny status settes korrekt") {
+                    val transaksjoner = RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkId)
+                    transaksjoner.filter { it.transaksjonsID == transaksjonsId3 }.shouldHaveSize(1)
+                    transaksjoner.filter { it.transaksjonStatus == TransaksjonsStatus.SENDT }.shouldHaveSize(1)
+                    transaksjoner.filter { it.transaksjonStatus == TransaksjonsStatus.IKKE_SENDT }.shouldHaveSize(2)
+                }
+            }
+            When("Vi henter transaksjoner som ikke er sendt til OS") {
+                Then("Skal transaksjonene ha transaksjon status null eller ${TransaksjonsStatus.IKKE_SENDT}") {
+                    val transaksjonerIkkeSendt = RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt()
+
+                    transaksjonerIkkeSendt.shouldHaveSize(2)
+                    transaksjonerIkkeSendt.filter { it.transaksjonStatus == TransaksjonsStatus.SENDT }.shouldHaveSize(0)
+                    transaksjonerIkkeSendt.filter { it.transaksjonStatus == TransaksjonsStatus.IKKE_SENDT }.shouldHaveSize(2)
+                }
+            }
+        }
+
+        Given("Vi henter unike TrekkAlternativ for en spesifikk TrekkID") {
+            DBListener.clearDB()
+            val trekkIdSke = "TestTrekkID"
+            val transaksjonsId1 = "id1"
+            val transaksjonsId2 = "id2"
+            // Insert transactions with distinct TrekkAlternativ
+            val dto1 =
+                OSDto(
+                    transaksjonID = transaksjonsId1,
+                    trekkIdSke,
+                    lagDokumentTilOppdrag(transaksjonsId1).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPM)).innrapporteringTrekk,
+                    "",
+                )
+            val dto2 =
+                OSDto(
+                    transaksjonID = transaksjonsId2,
+                    trekkIdSke,
+                    lagDokumentTilOppdrag(transaksjonsId2).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPP)).innrapporteringTrekk,
+                    "",
+                )
+            RepositoryNy.insertTransaksjonTilOs(dto1)
+            RepositoryNy.insertTransaksjonTilOs(dto2)
+
+            When("Når unike TrekkAlternativ verdier hentes for for TrekkID: $trekkIdSke") {
+                val alternativ = RepositoryNy.getTrekkAlternativOS(trekkIdSke)
+
+                Then("Så skal verdiene inneholde kun én LOPM og kun én LOPP") {
+                    alternativ.shouldContainExactlyInAnyOrder(TrekkAlternativ.LOPM, TrekkAlternativ.LOPP)
+                }
+            }
+        }
+
+        Given("Vi henter perioder for en spesifikk TrekkID og TrekkAlternativ") {
+            DBListener.clearDB()
+            val trekkIdSke = "TestTrekkID"
+            val alternativ = TrekkAlternativ.LOPM
+            val transaksjosID = "id1"
+
+            val perioderTilOS =
+                PeriodeTilOS(
+                    sats = 5000.0,
+                    periodeFomDato = "2024-01-01",
+                    periodeTomDato = "2024-12-31",
+                )
+
+            val dto =
+                OSDto(
+                    transaksjonID = transaksjosID,
+                    trekkIdSke,
+                    lagDokumentTilOppdrag(transaksjosID)
+                        .copy(
+                            innrapporteringTrekk =
+                                dummyInnrapporteringTrekk.copy(
+                                    kodeTrekkAlternativ = alternativ,
+                                    perioder = Perioder(listOf(perioderTilOS.asPeriode())),
+                                ),
+                        ).innrapporteringTrekk,
+                    "",
+                )
+
+            RepositoryNy.insertTransaksjonTilOs(dto)
+
+            When("Vi henter perioder for TrekkID '$trekkIdSke' og TrekkAlternativ '$alternativ'") {
+                val fetchedPerioder = RepositoryNy.getPerioderTilOs(trekkIdSke, alternativ)
+
+                Then("Skal periodene som hentes matche periodene som ble lagret") {
+                    fetchedPerioder.shouldHaveSize(1)
+                    val retrieved = fetchedPerioder.first()
+                    retrieved.sats shouldBe perioderTilOS.sats
+
+                    retrieved.periodeFomDato shouldBe perioderTilOS.periodeFomDato
+                    retrieved.periodeTomDato shouldBe perioderTilOS.periodeTomDato
+                }
+            }
+        }
+
+        Given("Vi henter betalingsinformasjon for en spesifikk TrekkID") {
+            DBListener.clearDB()
+            val trekkId = 1L
+            val trekkpaalegg1 = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+            RepositoryNy.insertTrekkFraSkatt(trekkpaalegg1) ?: 0L
+
+            val sampleBetalingsinformasjon =
+                Betalingsinformasjon(
+                    betalingsmottaker = "971648198",
+                    kidnummer = "17654202404",
+                    kontonummer = "76940512057",
+                )
+
+            When("Betalingsinformasjon hentes for TrekkID: $trekkId") {
+                val betalingsinformasjon = RepositoryNy.getBetalingsinformasjonForTrekk(trekkId)
+
+                Then("Skal betalingsinformasjonen som hentes matche den som ble lagret") {
+                    betalingsinformasjon.shouldNotBeNull()
+                    betalingsinformasjon.betalingsmottaker shouldBe sampleBetalingsinformasjon.betalingsmottaker
+                    betalingsinformasjon.kidnummer shouldBe sampleBetalingsinformasjon.kidnummer
+                    betalingsinformasjon.kontonummer shouldBe sampleBetalingsinformasjon.kontonummer
+                }
+            }
         }
     })
+
+private fun dbNow(): LocalDateTime =
+    DBListener.dataSource.withTransaction { session ->
+        session.single(queryOf("select now() as tidspunkt")) { row -> row.localDateTime("tidspunkt") }!!
+    }
+
+private fun compareTrekk(trekkpaalegg: Trekkpaalegg, lagret: TrekkFraSkatt) {
+    lagret.trekkstatus shouldBe trekkpaalegg.trekkstatus.name
+    lagret.trekkid shouldBe trekkpaalegg.trekkid
+    lagret.saksnummer shouldBe trekkpaalegg.saksnummer
+    lagret.skyldner shouldBe trekkpaalegg.skyldner
+    lagret.trekkversjon shouldBe trekkpaalegg.trekkversjon
+    lagret.saksnummer shouldBe trekkpaalegg.saksnummer
+    lagret.skyldner shouldBe trekkpaalegg.skyldner
+    lagret.trekkpliktig shouldBe trekkpaalegg.trekkpliktig
+}
+
+private fun doesTrekkExist(trekkId: String, trekkversjon: Int): Boolean = RepositoryNy.doesTrekkExist(trekkId, trekkversjon)
+
+private fun getTrekkFraSkatt(id: Long): TrekkFraSkatt = RepositoryNy.getTrekkFraSkatt(id)!!
+
+private fun compareBetalingsinformasjon(betalingsinformasjon: Betalingsinformasjon, lagret: BetalingsinformasjonFraSkatt) {
+    lagret.betalingsmottaker shouldBe betalingsinformasjon.betalingsmottaker
+    lagret.kidnummer shouldBe betalingsinformasjon.kidnummer
+    lagret.kontonummer shouldBe betalingsinformasjon.kontonummer
+}
+
+private fun comparePeriode(trekkstorrelseForPeriode: TrekkstorrelseForPeriode, lagret: PeriodeFraSkatt) {
+    lagret.startdato shouldBe trekkstorrelseForPeriode.startdato
+    lagret.sluttdato shouldBe trekkstorrelseForPeriode.sluttdato
+    lagret.trekkbeloep shouldBe trekkstorrelseForPeriode.trekkbeloep?.trekkbeloep
+    lagret.trekkprosent shouldBe trekkstorrelseForPeriode.trekkprosent?.trekkprosent
+}
+
+private fun comparePerioder(trekkstorrelseForPeriode: List<TrekkstorrelseForPeriode>, lagret: List<PeriodeFraSkatt>) {
+    lagret.size shouldBe trekkstorrelseForPeriode.size
+    trekkstorrelseForPeriode.forEach { periode ->
+        val lagretPeriode = lagret.find { it.startdato == periode.startdato }
+        lagretPeriode.shouldNotBeNull()
+        comparePeriode(periode, lagretPeriode)
+    }
+}
+
+private fun compareFeilmelding(kvittering: KvitteringFraOppdrag, feilmelding: Feilmelding) {
+    feilmelding.id shouldBe 1L
+    feilmelding.kreditorTrekkId shouldBe kvittering.dokument.innrapporteringTrekk.kreditorTrekkId
+    feilmelding.trekkAlternativ shouldBe kvittering.dokument.innrapporteringTrekk.kodeTrekkAlternativ
+    feilmelding.transaksjonsId shouldBe kvittering.dokument.transaksjonsId
+    feilmelding.feilkode shouldBe kvittering.mmel!!.kodeMelding
+    feilmelding.beskrivelse shouldBe kvittering.mmel.beskrMelding
+}

@@ -16,7 +16,7 @@
     "transaksjonsId": "0cf39d33-8b50-4694-8d70-7ff06c35e42a",
     "innrapporteringTrekk": {
       "aksjonskode": "NY",
-      "navTrekkId": null,
+      "navTrekkId": "",
       "kreditorIdTss": "971648198",
       "kreditorTrekkId": "10013M",
       "debitorId": "17880147595",

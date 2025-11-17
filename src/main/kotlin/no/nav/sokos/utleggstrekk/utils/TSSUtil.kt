@@ -12,6 +12,15 @@ enum class TSSId(
     ;
 
     companion object {
+        fun getTssId(betalingsMottaker: String, kontonummer: String) =
+            TSSId.entries
+                .firstOrNull {
+                    betalingsMottaker == it.orgnr && kontonummer == it.konto
+                }?.tssId
+                ?: throw NotImplementedError(
+                    "Kombinasjonen Orgnr=$betalingsMottaker og Konto=$kontonummer gir ingen TSSID.",
+                )
+
         fun getTSSId(trekkpaalegg: Trekkpaalegg): String =
             TSSId.entries
                 .firstOrNull {

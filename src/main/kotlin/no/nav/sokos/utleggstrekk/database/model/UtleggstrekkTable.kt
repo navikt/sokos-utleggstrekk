@@ -10,13 +10,13 @@ import kotlinx.serialization.Serializable
 import kotliquery.Row
 
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
-import no.nav.sokos.utleggstrekk.domene.nav.Document
+import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
-import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
+// TODO: Remove me
 @Serializable
 data class UtleggstrekkTable(
     val utleggstrekkTableId: Long,
@@ -60,37 +60,33 @@ data class UtleggstrekkTable(
         status = UtleggstrekkStatus.valueOf(row.string("status").uppercase()),
         kvitteringLOPM = row.stringOrNull("kvitteringLOPM"),
         kvitteringLOPP = row.stringOrNull("kvitteringLOPP"),
-        tidspunktSendtOs = row.localDateTimeOrNull("tidspunkt_sendt_os")?.toKotlinLocalDateTime(), // TODO: java localdatetime
-        tidspunktSisteStatus = row.localDateTime("tidspunkt_siste_status").toKotlinLocalDateTime(), // TODO: er dette tidspunkt for kvittering?
-        tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(), // TODO:
+        tidspunktSendtOs = row.localDateTimeOrNull("tidspunkt_sendt_os")?.toKotlinLocalDateTime(),
+        tidspunktSisteStatus = row.localDateTime("tidspunkt_siste_status").toKotlinLocalDateTime(),
+        tidspunktOpprettet = row.localDateTime("tidspunkt_opprettet").toKotlinLocalDateTime(),
     )
 
     fun toTrekkDokument(
         periodeTableList: List<TrekkPeriodeTable>,
         aksjonskode: Aksjonskode = Aksjonskode.getAksjonskodeForTrekk(this),
         trekkAlternativ: TrekkAlternativ = periodeTableList[0].trekkAlternativ,
-    ): TrekkTilOppdrag =
-        TrekkTilOppdrag(
-            Document(
-                transaksjonsId = corrid,
-                InnrapporteringTrekk(
-                    aksjonskode = aksjonskode,
-                    kreditorIdTss = betalingsmottaker,
-                    kreditorTrekkId = trekkIdWithSuffix(trekkAlternativ),
-                    debitorId = skyldner,
-                    kodeTrekkAlternativ = trekkAlternativ,
-                    kid = kid,
-                    kreditorsRef = saksnummer,
-                    kilde = "SOKOSUTLEGG",
-                    saldo = 0.0,
-                    prioritetFomDato = opprettetSke.toJavaLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
-                    perioder =
-                        Perioder(
-                            periodeTableList.map {
-                                it.toTrekkDokumentPeriode()
-                            },
-                        ),
-                ),
+    ): DokumentTilOppdrag =
+        DokumentTilOppdrag(
+            transaksjonsId = corrid,
+            InnrapporteringTrekk(
+                aksjonskode = aksjonskode,
+                kreditorIdTss = betalingsmottaker,
+                kreditorTrekkId = trekkIdWithSuffix(trekkAlternativ),
+                debitorId = skyldner,
+                kodeTrekkAlternativ = trekkAlternativ,
+                kid = kid,
+                kreditorsRef = saksnummer,
+                prioritetFomDato = opprettetSke.toJavaLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE),
+                perioder =
+                    Perioder(
+                        periodeTableList.map {
+                            it.toTrekkDokumentPeriode()
+                        },
+                    ),
             ),
         )
 }

@@ -3,9 +3,19 @@ package no.nav.sokos.utleggstrekk.domene.nav
 import kotlinx.serialization.Serializable
 
 import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
+
+// De er på samme format
+typealias KvitteringFraOppdrag = TrekkTilOppdrag
+typealias DokumentTilOppdrag = Document
+
+data class OSDto(
+    val transaksjonID: String,
+    val trekkIDSke: String,
+    val innrapporteringTrekk: InnrapporteringTrekk,
+    val documentJson: String,
+)
 
 @Serializable
 data class TrekkTilOppdrag(
@@ -35,23 +45,26 @@ data class Document(
     val innrapporteringTrekk: InnrapporteringTrekk,
 )
 
-// TODO: Vi må persistere json fra SKE som den er.
+const val KODE_TREKKTYPE = "TRK1"
+const val KILDE = "SOKOSUTLEGG"
+
 @Serializable
 data class InnrapporteringTrekk(
     val aksjonskode: Aksjonskode,
-    val navTrekkId: String? = null,
+    val navTrekkId: String = "",
     val kreditorIdTss: String,
     val kreditorTrekkId: String,
+    val kreditorsRef: String,
     val debitorId: String,
-    val kodeTrekktype: String = "TRK1",
+    val kodeTrekktype: String = KODE_TREKKTYPE,
     val kodeTrekkAlternativ: TrekkAlternativ,
     val kid: String,
-    val kreditorsRef: String,
-    val kilde: String = "SOKOSUTLEGG",
+    val kilde: String = KILDE,
     val saldo: Double = 0.0,
     val prioritetFomDato: String,
+    // val gyldigTomDato: String = LocalDate().minusDays(1).toString(),
     val gyldigTomDato: String? = null,
-    val perioder: Perioder,
+    val perioder: Perioder?,
 )
 
 @Serializable
@@ -72,46 +85,37 @@ enum class Aksjonskode(val value: String) {
     ;
 
     companion object {
-        fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode {
-            if (utleggstrekkTable.trekkstatus == AKTIV && utleggstrekkTable.trekkversjon == 1) {
-                return NY
-            } else if (utleggstrekkTable.trekkstatus == AVSLUTTET) {
-                return OPPH
+        @Deprecated("Skal slettes")
+        fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode =
+            if (utleggstrekkTable.trekkstatus == Trekkstatus.AKTIV && utleggstrekkTable.trekkversjon == 1) {
+                NY
+            } else if (utleggstrekkTable.trekkstatus == Trekkstatus.AVSLUTTET) {
+                OPPH
             } else {
-                return ENDR
+                ENDR
             }
-        }
-
-        fun getAksjonskodeFromValue(value: String?): Aksjonskode? {
-            if (value == null) {
-                return value
-            } else {
-                return Aksjonskode.valueOf(value)
-            }
-        }
     }
 }
 
 // Aksjonskoder er NY, ENDR (endring), KANS (kanseller), OPPH (opphør), ENRS (endring restsaldo).
 @Serializable
-enum class TrekkAlternativ {
-    LOPM, //   Løpende trekk månedssats
-    LOPP, //   Løpende trekk prosentsats
+enum class TrekkAlternativ(val value: String) {
+    LOPM("M"), //   Løpende trekk månedssats
+    LOPP("P"), //   Løpende trekk prosentsats
     ;
 
     val suffix = name[3]
 
     companion object {
-        fun getTrekkAlternativ(periode: TrekkstorrelseForPeriode): TrekkAlternativ {
+        fun getTrekkAlternativ(periode: TrekkstorrelseForPeriode): TrekkAlternativ =
             if (periode.trekkbeloep != null && periode.trekkprosent == null) {
-                return LOPM
+                LOPM
             } else if (periode.trekkprosent != null && periode.trekkbeloep == null) {
-                return LOPP
+                LOPP
             } else {
                 throw NotImplementedError(
                     "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode",
                 )
             }
-        }
     }
 }
