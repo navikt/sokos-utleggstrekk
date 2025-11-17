@@ -248,7 +248,7 @@ class BehandleTrekkServiceTest :
                                 )
 
                             behandleTrekkServiceNy.behandleTrekk()
-                            Then("Skall trekket bli til 1 ENDRET trekk met 1 periode") {
+                            Then("Skal trekket bli til 1 ENDRET trekk met 1 periode") {
                                 capturedOSDtos shouldHaveSize 1
 
                                 with(capturedOSDtos.first().innrapporteringTrekk) {
@@ -270,7 +270,7 @@ class BehandleTrekkServiceTest :
                             behandleTrekkServiceNy.behandleTrekk()
                             capturedOSDtos shouldHaveSize 2
 
-                            Then("Skall 1. trekk bli til 1 NYTT trekk med 1 periode og trekkalternativ LOPP") {
+                            Then("Skal 1. trekk bli til 1 NYTT trekk med 1 periode og trekkalternativ LOPP") {
                                 with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
@@ -279,7 +279,7 @@ class BehandleTrekkServiceTest :
                                 }
                             }
 
-                            Then("Skall 2. trekk bli til 1 ENDRET trekk med 1 periode med sats 0.0 og trekkalternativ LOPM") {
+                            Then("Skal 2. trekk bli til 1 ENDRET trekk med 1 periode med sats 0.0 og trekkalternativ LOPM") {
                                 with(capturedOSDtos.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
@@ -384,7 +384,7 @@ class BehandleTrekkServiceTest :
 
                             behandleTrekkServiceNy.behandleTrekk()
                             capturedOSDtos shouldHaveSize 2
-                            Then("Skall 1. trekk bli til 1 NYTT trekk med 1 periode og trekkalternativ LOPM") {
+                            Then("Skal 1. trekk bli til 1 NYTT trekk med 1 periode og trekkalternativ LOPM") {
                                 with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
@@ -393,7 +393,7 @@ class BehandleTrekkServiceTest :
                                 }
                             }
 
-                            Then("Skall 1. trekk bli til 1 ENDRET trekk med 1 periode med sats 0.0 og trekkalternativ LOPP") {
+                            Then("Skal 1. trekk bli til 1 ENDRET trekk med 1 periode med sats 0.0 og trekkalternativ LOPP") {
                                 with(capturedOSDtos.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
@@ -411,7 +411,7 @@ class BehandleTrekkServiceTest :
                                     kjenteLOPMPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                 )
 
-                            Then("Skall trekket bli til 1 ENDRET trekk met 1 periode") {
+                            Then("Skal trekket bli til 1 ENDRET trekk met 1 periode") {
                                 behandleTrekkServiceNy.behandleTrekk()
                                 capturedOSDtos shouldHaveSize 1
                                 with(capturedOSDtos.first().innrapporteringTrekk) {
