@@ -111,12 +111,12 @@ class BehandleTrekkServiceTest :
         }
 
         fun setUpBehandleTrekkServiceNy(
-            alleTrekkSomIkkeErSendt: List<TrekkFraSkatt>,
+            alleTrekkSomIkkeErBehandlet: List<TrekkFraSkatt>,
             perioderForTrekkFraSkatt: List<PeriodeFraSkatt>,
             kjenteLOPPPerioder: List<PeriodeTilOS> = emptyList(),
             kjenteLOPMPerioder: List<PeriodeTilOS> = emptyList(),
         ): BehandleTrekkServiceNy {
-            val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(alleTrekkSomIkkeErSendt.first())
+            val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(alleTrekkSomIkkeErBehandlet.first())
 
             val repositoryNy = mockk<RepositoryNy>()
             val behandleTrekkServiceNy = BehandleTrekkServiceNy(repositoryNy)
@@ -129,7 +129,7 @@ class BehandleTrekkServiceTest :
             every { repositoryNy.getOsAlternativForTrekk(any()) } returns trekkAlternativIOS
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM) } returns kjenteLOPMPerioder
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP) } returns kjenteLOPPPerioder
-            every { repositoryNy.getTrekkSomIkkeErBehandlet() } returns alleTrekkSomIkkeErSendt
+            every { repositoryNy.getTrekkSomIkkeErBehandlet() } returns alleTrekkSomIkkeErBehandlet
             every { repositoryNy.getPerioderForTrekk(any()) } returns perioderForTrekkFraSkatt
             every { repositoryNy.getBetalingsinformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
             every { repositoryNy.insertTransaksjonTilOs(capture(capturedOSDtos)) } returns Unit
@@ -141,12 +141,12 @@ class BehandleTrekkServiceTest :
 
             val trekkVersjon = 1
             val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
-            val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+            val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
             val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(trekkFraSkatt)
 
             val perioderForTrekkVersjon = listOf(lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, sats = 5000.0))
             val periode = perioderForTrekkVersjon.first()
-            val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+            val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, perioderForTrekkVersjon, emptyList())
 
             When("Trekkdokument dannes for trekk fra skatt") {
                 behandleTrekkServiceNy.behandleTrekk()
@@ -204,11 +204,11 @@ class BehandleTrekkServiceTest :
                 When("Trekket har trekkversjon 1") {
                     val trekkVersjon = 1
                     val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
-                    val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+                    val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
 
                     Then("Skal trekket bli til 1 NYTT trekk med 1 periode") {
                         val perioderForTrekkVersjon = lagPerioderForSkattLOPP(trekkFraSkatt).take(1)
-                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, perioderForTrekkVersjon, emptyList())
                         behandleTrekkServiceNy.behandleTrekk()
 
                         capturedOSDtos shouldHaveSize 1
@@ -222,11 +222,11 @@ class BehandleTrekkServiceTest :
                 When("Trekket har trekkversjon 2") {
                     val trekkVersjon = 2
                     val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
-                    val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+                    val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
                     val perioderForTrekkVersjon = lagPerioderForSkattLOPP(trekkFraSkatt).take(1)
 
                     And("Vi ikke har fått trekkversjon 1") {
-                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, perioderForTrekkVersjon, emptyList())
                         behandleTrekkServiceNy.behandleTrekk()
 
                         Then("Skal trekket bli til 1 NYTT trekk med 1 perioder") {
@@ -242,7 +242,7 @@ class BehandleTrekkServiceTest :
                         And("trekkalternativ i versjon 1 er LOPP") {
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
-                                    alleTrekkSomIkkeErSendt,
+                                    alleTrekkSomIkkeErBehandlet,
                                     perioderForTrekkVersjon,
                                     kjenteLOPPPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                 )
@@ -262,7 +262,7 @@ class BehandleTrekkServiceTest :
                             val kjenteLopmPerioder = lagPerioderForSkattLOPM(trekkFraSkatt).toKnownPeriods()
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
-                                    alleTrekkSomIkkeErSendt,
+                                    alleTrekkSomIkkeErBehandlet,
                                     perioderForTrekkVersjon,
                                     kjenteLOPMPerioder = kjenteLopmPerioder,
                                 )
@@ -295,7 +295,7 @@ class BehandleTrekkServiceTest :
                             And("Trekket har ingen periode") {
                                 val behandleTrekkServiceNy =
                                     setUpBehandleTrekkServiceNy(
-                                        alleTrekkSomIkkeErSendt = alleAvsluttetTrekkSomIkkeErSendt,
+                                        alleTrekkSomIkkeErBehandlet = alleAvsluttetTrekkSomIkkeErSendt,
                                         perioderForTrekkFraSkatt = emptyList(),
                                         kjenteLOPPPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                     )
@@ -338,11 +338,11 @@ class BehandleTrekkServiceTest :
                 When("Trekket har trekkversjon 1") {
                     val trekkVersjon = 1
                     val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
-                    val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+                    val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
 
                     Then("Skal trekket bli til 1 NYTT trekk med 1 periode") {
                         val perioderForTrekkVersjon = lagPerioderForSkattLOPM(trekkFraSkatt).take(1)
-                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, perioderForTrekkVersjon, emptyList())
                         behandleTrekkServiceNy.behandleTrekk()
 
                         capturedOSDtos shouldHaveSize 1
@@ -356,11 +356,11 @@ class BehandleTrekkServiceTest :
                 When("Trekket har trekkversjon 2") {
                     val trekkVersjon = 2
                     val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
-                    val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+                    val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
                     val perioderForTrekkVersjon = lagPerioderForSkattLOPM(trekkFraSkatt).take(1)
 
                     And("Vi ikke har fått trekkversjon 1") {
-                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                        val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, perioderForTrekkVersjon, emptyList())
                         behandleTrekkServiceNy.behandleTrekk()
 
                         Then("Skal trekket bli til 1 NYTT trekk med 1 perioder") {
@@ -377,7 +377,7 @@ class BehandleTrekkServiceTest :
                             val kjenteLoppPerioder = lagPerioderForSkattLOPP(trekkFraSkatt).toKnownPeriods()
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
-                                    alleTrekkSomIkkeErSendt,
+                                    alleTrekkSomIkkeErBehandlet,
                                     perioderForTrekkVersjon,
                                     kjenteLOPPPerioder = kjenteLoppPerioder,
                                 )
@@ -406,7 +406,7 @@ class BehandleTrekkServiceTest :
                         And("trekkalternativ i versjon 1 er LOPM") {
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
-                                    alleTrekkSomIkkeErSendt,
+                                    alleTrekkSomIkkeErBehandlet,
                                     perioderForTrekkVersjon,
                                     kjenteLOPMPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                 )
@@ -428,7 +428,7 @@ class BehandleTrekkServiceTest :
                             And("Trekket har ingen periode") {
                                 val behandleTrekkServiceNy =
                                     setUpBehandleTrekkServiceNy(
-                                        alleTrekkSomIkkeErSendt = alleAvsluttetTrekkSomIkkeErSendt,
+                                        alleTrekkSomIkkeErBehandlet = alleAvsluttetTrekkSomIkkeErSendt,
                                         perioderForTrekkFraSkatt = emptyList(),
                                         kjenteLOPMPerioder = perioderForTrekkVersjon.toKnownPeriods(),
                                     )
@@ -472,11 +472,11 @@ class BehandleTrekkServiceTest :
             And("Trekket har trekkversjon 1") {
                 val trekkVersjon = 1
                 val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
-                val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+                val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
 
                 And("Periodene i trekket har aksjonskodene LOPM og LOPP") {
                     val perioderForTrekkVersjon = lagPerioderForSkattLOPP(trekkFraSkatt).take(2) + lagPerioderForSkattLOPM(trekkFraSkatt).drop(2)
-                    val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErSendt, perioderForTrekkVersjon, emptyList())
+                    val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, perioderForTrekkVersjon, emptyList())
                     behandleTrekkServiceNy.behandleTrekk()
 
                     Then("Skal trekket bli til 2 NYE trekk") {
@@ -507,13 +507,13 @@ class BehandleTrekkServiceTest :
                 val perioderForSkattLOPP = lagPerioderForSkattLOPP(trekkFraSkatt)
 
                 And("Versjon 2 har trekkstatus AKTIV") {
-                    val alleTrekkSomIkkeErSendt = listOf(trekkFraSkatt)
+                    val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
                     And("Periodene i trekkversjon 1 har trekkalternativ LOPM") {
                         And("Periodene i versjon 2 har aksjonskodene LOPM og LOPP") {
                             val perioderForTrekkVersjon = perioderForSkattLOPM.take(1) + perioderForSkattLOPP.drop(1)
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
-                                    alleTrekkSomIkkeErSendt,
+                                    alleTrekkSomIkkeErBehandlet,
                                     perioderForTrekkVersjon,
                                     kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
                                 )
@@ -548,7 +548,7 @@ class BehandleTrekkServiceTest :
                         And("Periodene i versjon 2 har kun aksjonskode LOPP") {
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
-                                    alleTrekkSomIkkeErSendt,
+                                    alleTrekkSomIkkeErBehandlet,
                                     perioderForSkattLOPP,
                                     kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
                                 )
@@ -581,7 +581,7 @@ class BehandleTrekkServiceTest :
                         And("Periodene i versjon 2 har kun aksjonkode LOPM") {
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
-                                    alleTrekkSomIkkeErSendt,
+                                    alleTrekkSomIkkeErBehandlet,
                                     perioderForSkattLOPM,
                                     kjenteLOPMPerioder = perioderForSkattLOPM.toKnownPeriods(),
                                 )
