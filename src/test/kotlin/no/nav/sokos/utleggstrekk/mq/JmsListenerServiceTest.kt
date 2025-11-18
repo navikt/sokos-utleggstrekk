@@ -6,6 +6,9 @@ import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
 import org.apache.activemq.artemis.jms.client.ActiveMQQueue
 
 import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
@@ -14,16 +17,22 @@ import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.listener.MQListener
 import no.nav.sokos.utleggstrekk.listener.MQListener.connectionFactory
+import no.nav.sokos.utleggstrekk.service.SlackService
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 class JmsListenerServiceTest :
     BehaviorSpec({
         extensions(listOf(MQListener, DBListener))
 
+        val slackService = mockk<SlackService>()
+        every { slackService.addError(any(), any()) } returns Unit
+        coEvery { slackService.sendErrors(any()) } returns Unit
+
         val replyQueue = ActiveMQQueue("replyQueue")
 
         JmsListenerService(
             RepositoryNy,
+            slackService,
             osKvitteringQueue = replyQueue,
             connectionFactory,
         )
