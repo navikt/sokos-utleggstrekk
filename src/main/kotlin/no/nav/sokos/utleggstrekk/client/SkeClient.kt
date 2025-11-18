@@ -17,7 +17,7 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 
-private const val MAX_ANTALL = 2500
+const val MAX_ANTALL = 2500
 private const val KLIENT_ID = "NAV/0.1"
 
 private val logger = KotlinLogging.logger { }

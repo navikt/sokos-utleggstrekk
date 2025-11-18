@@ -1,5 +1,8 @@
 package no.nav.sokos.utleggstrekk.service
 
+import dager
+import etter
+import idag
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.nulls.shouldBeNull
@@ -8,14 +11,15 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
-import no.nav.sokos.utleggstrekk.database.withTransaction
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
@@ -84,10 +88,7 @@ internal class UtleggsTrekkServiceTest :
                     trekkFraSkatt.shouldNotBeNull()
 
                     withClue("Perioder skal lagres") {
-                        val perioder =
-                            DBListener.dataSource.withTransaction { session ->
-                                RepositoryNy.getPerioderForTrekkVersjon(trekkFraSkatt.id)
-                            }
+                        val perioder = RepositoryNy.getPerioderForTrekkVersjon(trekkFraSkatt.id)
                         perioder.size shouldBe 1
                         val periode = perioder.first()
                         periode.trekkprosent.shouldNotBeNull()
@@ -107,6 +108,54 @@ internal class UtleggsTrekkServiceTest :
                 Then("Skal transaksjon oppdateres") {
                     val transaksjoner = RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkpaalegg.trekkid)
                     transaksjoner.forEach { it.transaksjonStatus shouldBe TransaksjonsStatus.SENDT }
+                }
+            }
+        }
+        Given("Vi henter nye trekk fra SKE og det er 10 nye og maksantall er 4") {
+            DBListener.clearDB()
+            val mottaker = Betalingsinformasjon("tssIDSkatt", "13812738912427", "6123101233424")
+            val trekkpaalegg: List<Trekkpaalegg> =
+                (1..10).map { index ->
+                    makeTrekkpaalegg(
+                        trekkId = "ID1",
+                        sekvensnummer = index,
+                        trekkversjon = index,
+                        saksnummer = "SAK1",
+                        trekkpliktig = "123456789",
+                        skyldner = "skyldner",
+                        trekkstatus = Trekkstatus.AKTIV,
+                        mottaker = mottaker,
+                        perioder =
+                            listOf(
+                                TrekkstorrelseForPeriode(
+                                    idag etter (index * 8).dager,
+                                    idag etter (index * 8 + 5).dager,
+                                    trekkprosent = Trekkprosent(20.0),
+                                ),
+                            ),
+                    )
+                }
+            val parts = trekkpaalegg.chunked(4)
+
+            val skeClientMock =
+                mockk<SkeClient> {
+                    parts.forEach { part ->
+                        coEvery { hentUtleggstrekkFraSekvensnr(eq(part.first().sekvensnummer - 1)) } returns part
+                    }
+                }
+
+            val utleggsTrekkService =
+                UtleggsTrekkService(
+                    RepositoryNy,
+                    maxAntall = 4,
+                    skeClient = skeClientMock,
+                    mqProducer = mqProducerMock,
+                )
+
+            When("Trekk hentes") {
+                utleggsTrekkService.schedule()
+                Then("Gjøres det ${parts.size} kall mot SkeClient helt til alle er nye utleggstrekk er hentet") {
+                    coVerify(exactly = parts.size) { skeClientMock.hentUtleggstrekkFraSekvensnr(any()) }
                 }
             }
         }
