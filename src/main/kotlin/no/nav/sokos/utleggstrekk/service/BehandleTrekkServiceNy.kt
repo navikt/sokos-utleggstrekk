@@ -36,12 +36,13 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         repositoryNy.getTrekkSomIkkeErBehandlet().forEach { trekk ->
             val documents = lagTrekkDokument(trekk)
 
-            documents.forEach { document ->
-                val documentJson = jsonConfig.encodeToString<DokumentTilOppdrag>(document)
-                val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document.innrapporteringTrekk, documentJson)
-                runCatching {
-                    repositoryNy.insertTransaksjonTilOs(dto)
-                }.onSuccess { repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET) }
+            repositoryNy.withTransaction { session ->
+                documents.forEach { document ->
+                    val documentJson = jsonConfig.encodeToString<DokumentTilOppdrag>(document)
+                    val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document.innrapporteringTrekk, documentJson)
+                    repositoryNy.insertTransaksjonTilOs(dto, session)
+                    repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session = session)
+                }
             }
         }
 

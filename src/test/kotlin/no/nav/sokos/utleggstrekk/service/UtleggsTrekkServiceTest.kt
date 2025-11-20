@@ -1,8 +1,5 @@
 package no.nav.sokos.utleggstrekk.service
 
-import dager
-import etter
-import idag
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.nulls.shouldBeNull
@@ -27,6 +24,9 @@ import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
+import no.nav.sokos.utleggstrekk.util.dager
+import no.nav.sokos.utleggstrekk.util.etter
+import no.nav.sokos.utleggstrekk.util.idag
 
 internal class UtleggsTrekkServiceTest :
     BehaviorSpec({

@@ -1,12 +1,8 @@
 package no.nav.sokos.utleggstrekk.service
 
-import dager
-import etter
-import idag
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import mnd
 
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
@@ -20,6 +16,10 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
+import no.nav.sokos.utleggstrekk.util.dager
+import no.nav.sokos.utleggstrekk.util.etter
+import no.nav.sokos.utleggstrekk.util.idag
+import no.nav.sokos.utleggstrekk.util.mnd
 
 class BehandleTrekkServiceIntegrationTestNy :
     BehaviorSpec({

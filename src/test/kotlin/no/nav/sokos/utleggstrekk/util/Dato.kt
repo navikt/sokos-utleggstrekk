@@ -1,3 +1,5 @@
+package no.nav.sokos.utleggstrekk.util
+
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter

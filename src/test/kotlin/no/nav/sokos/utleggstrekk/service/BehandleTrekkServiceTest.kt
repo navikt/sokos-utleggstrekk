@@ -14,7 +14,9 @@ import io.kotest.matchers.string.shouldBeEmpty
 import io.kotest.matchers.string.shouldNotBeEmpty
 import io.mockk.clearAllMocks
 import io.mockk.every
+import io.mockk.invoke
 import io.mockk.mockk
+import kotliquery.TransactionalSession
 
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
@@ -126,14 +128,21 @@ class BehandleTrekkServiceTest :
                     if (kjenteLOPPPerioder.isNotEmpty()) add(TrekkAlternativ.LOPP)
                 }
 
+            // Mock withTransaction
+            every { repositoryNy.withTransaction<Any?>(captureLambda()) } answers {
+                // Execute the captured lambda with a session mock
+                val session = mockk<TransactionalSession>()
+                lambda<(TransactionalSession) -> Any?>().invoke(session)
+            }
+
             every { repositoryNy.getOsAlternativForTrekk(any()) } returns trekkAlternativIOS
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM) } returns kjenteLOPMPerioder
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP) } returns kjenteLOPPPerioder
             every { repositoryNy.getTrekkSomIkkeErBehandlet() } returns alleTrekkSomIkkeErBehandlet
             every { repositoryNy.getPerioderForTrekk(any()) } returns perioderForTrekkFraSkatt
             every { repositoryNy.getBetalingsinformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
-            every { repositoryNy.insertTransaksjonTilOs(capture(capturedOSDtos)) } returns Unit
-            every { repositoryNy.updateTrekkFraSkattStatus(any(), any()) } returns Unit
+            every { repositoryNy.insertTransaksjonTilOs(capture(capturedOSDtos), any()) } returns Unit
+            every { repositoryNy.updateTrekkFraSkattStatus(any(), any(), any()) } returns Unit
 
             return behandleTrekkServiceNy
         }
