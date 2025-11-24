@@ -3,6 +3,8 @@ package no.nav.sokos.utleggstrekk.service
 import java.time.LocalDate
 import java.util.UUID
 
+import kotliquery.TransactionalSession
+
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
@@ -32,9 +34,10 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
 
     fun behandleTrekk() =
         repositoryNy.getTrekkSomIkkeErBehandlet().forEach { trekk ->
-            val documents = lagTrekkDokument(trekk)
 
             repositoryNy.withTransaction { session ->
+                val documents = lagTrekkDokument(trekk, session)
+
                 documents.forEach { document ->
                     val documentJson = jsonConfig.encodeToString<DokumentTilOppdrag>(document)
                     val dto = OSDto(document.transaksjonsId, trekk.trekkid, document.innrapporteringTrekk, documentJson)
@@ -44,10 +47,10 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
             }
         }
 
-    fun lagTrekkDokument(trekk: TrekkFraSkatt): List<Document> {
+    private fun lagTrekkDokument(trekk: TrekkFraSkatt, session: TransactionalSession): List<Document> {
         // Vi trenger å vite om trekk(ene) er kjent for OS
-        val kjenteAlternativ = repositoryNy.getOsAlternativForTrekk(trekk)
-        val nyePerioderTilOS = nyePerioderTilOS(trekk)
+        val kjenteAlternativ = repositoryNy.getOsAlternativForTrekk(trekk, session)
+        val nyePerioderTilOS = nyePerioderTilOS(trekk, session)
 
         return nyePerioderTilOS.alternativ.map { alternativ ->
             lagTrekkDokument(
@@ -59,13 +62,13 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         }
     }
 
-    private fun nyePerioderTilOS(trekkFraSkatt: TrekkFraSkatt): PerioderTilOS {
+    private fun nyePerioderTilOS(trekkFraSkatt: TrekkFraSkatt, session: TransactionalSession): PerioderTilOS {
         val trekkPerioder = repositoryNy.getPerioderForTrekk(trekkFraSkatt)
         // Alternativene som finnes i dette trekket + alternativ fra dokumenter vi har sendt eller skal sende til OS
         val alternativ =
             buildSet {
                 addAll(trekkPerioder.map { it.trekkAlternativ() }.distinct())
-                addAll(repositoryNy.getOsAlternativForTrekk(trekkFraSkatt))
+                addAll(repositoryNy.getOsAlternativForTrekk(trekkFraSkatt, session))
             }
 
         // Vi henter kjente osPerioder for å se etter endringer. Bare perioder som er fortsatt gyldige og som har en sats er relevante.

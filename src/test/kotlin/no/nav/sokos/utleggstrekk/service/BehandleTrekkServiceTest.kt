@@ -133,7 +133,7 @@ class BehandleTrekkServiceTest :
                 lambda<(TransactionalSession) -> Any?>().invoke(session)
             }
 
-            every { repositoryNy.getOsAlternativForTrekk(any()) } returns trekkAlternativIOS
+            every { repositoryNy.getOsAlternativForTrekk(any(), any()) } returns trekkAlternativIOS
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM) } returns kjenteLOPMPerioder
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP) } returns kjenteLOPPPerioder
             every { repositoryNy.getTrekkSomIkkeErBehandlet() } returns alleTrekkSomIkkeErBehandlet
