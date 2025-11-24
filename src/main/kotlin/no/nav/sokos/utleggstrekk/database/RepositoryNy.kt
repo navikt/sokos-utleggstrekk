@@ -505,6 +505,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         WHERE trekk_id_ske=:trekkIdSke 
                         AND t.trekk_alternativ=:trekkAlternativ 
                         AND t.kvittering_status in ('${KvitteringStatus.IKKE_MOTTATT.name}', '${KvitteringStatus.OK.name}')
+                        ORDER BY p.id ASC 
                 """,
                     mapOf(
                         "trekkIdSke" to trekkIdSke,
