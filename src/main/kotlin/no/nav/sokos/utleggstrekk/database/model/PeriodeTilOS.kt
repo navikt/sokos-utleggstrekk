@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.database.model
 
-import java.time.LocalDate
-
 import kotliquery.Row
 
 import no.nav.sokos.utleggstrekk.domene.nav.Periode
@@ -21,12 +19,6 @@ data class PeriodeTilOS( // TODO: Kan vi klare oss med bare Periode-klassen?
         periodeFomDato = row.string("periode_fom_dato"),
         periodeTomDato = row.stringOrNull("periode_tom_dato"),
     )
-
-    fun isExpired(): Boolean =
-        when {
-            periodeTomDato == null -> false
-            else -> LocalDate.parse(periodeTomDato).isBefore(LocalDate.now())
-        }
 
     fun asPeriode() = Periode(this.periodeFomDato, this.periodeTomDato, this.sats)
 }

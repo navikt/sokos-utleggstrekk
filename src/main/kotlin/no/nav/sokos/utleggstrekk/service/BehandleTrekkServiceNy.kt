@@ -71,7 +71,8 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         // Vi henter kjente osPerioder for å se etter endringer. Bare perioder som er fortsatt gyldige og som har en sats er relevante.
         val osPerioder =
             alternativ.associateWith { alternativ ->
-                repositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, alternativ).filterNot { it.isExpired() || it.sats == 0.0 }
+                val allePerioder = repositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, alternativ)
+                allePerioder.filterNot { obsoleted(allePerioder, it) }
             }
         // De osPeriodene med sats, fortsatt gyldige, men som ikke finnes i trekkFraSkatt gjelder ikke lenger og må nulles i OS.
         val osPerioderIkkeItrekkFraSkatt =
@@ -101,66 +102,6 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
             LOPP = nyePerioderForOS[LOPP]?.toList().orEmpty(),
         )
     }
-
-    /*
-    fun lagTrekkPerioderIDB(trekkFraSkatt: TrekkFraSkatt, perioderForTrekkversjon: List<PeriodeFraSkatt>) {
-       dataSource.withTransaction { session ->
-           // if trekkversjon = 1
-           // lag dokument, return
-           val trekkAlternativer =
-               RepositoryNy.getTrekkAlternativOS(trekkFraSkatt.trekkid, session).toSet() +
-                   perioderForTrekkversjon.map { getTrekkAlternativ(it) }.toSet()
-
-           val perioderSendtTilOS = RepositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, session)
-
-           //  filtrere vekk alle perioder som allerede er sendt til OS fordi de trenger vi ikke sende på nytt
-           val nyePerioder = perioderForTrekkversjon.filterNot { periode -> perioderSendtTilOS.any { periode.sameAs(it) } }
-
-           // Hvis nytt trekk: Ikke gjør noe av dette
-
-           // Hvis endring på trekk: Hvis ikke endring på periode: Ikke gjør noe av dette
-
-           // Hvis endring på trekk og på periode:
-           // Her må vi enten alltid lage periode med 0.0, eller sjekke hva vi har sendt
-           // Hvis beløp == 0 og prosent != 0: Sette til LOPP og med prosent, OG lage periode for LOPM hvor beløp = 0
-           // Hvis beløp != 0 og prosent == 0: Sette til LOPM med beløp, OG lage periode for LOPP hvor prosent = 0
-
-           // Hvis periode fra versjon 1 mangler i versjon 2 så skal den få status SLETTET
-           val perioderSomSkalEndresIOS =
-               perioderSendtTilOS.filter { it.isExpired() }.filterNot { periode ->
-                   perioderForTrekkversjon.any { it.sameAs(periode) }
-               }
-
-           perioderSomSkalEndresIOS.forEach { periode ->
-               RepositoryNy.updatePeriodeStatus(periode, SLETTET, session)
-           }
-
-           perioderSomSkalEndresIOS.filterNot { it.status == IKKE_SENDT }.forEach { periode ->
-               // Sletting vil si å opprette ny periode i samme intervall med sats = 0
-               val nyPeriode = periode.copy(sats = 0.0, status = IKKE_SENDT)
-               RepositoryNy.insertTrekkForOS(nyPeriode, session)
-           }
-
-           nyePerioder.forEach { periode ->
-               trekkAlternativer.forEach { alternativ ->
-                   val nyPeriode =
-                       TrekkPeriodeTable(
-                           trekkPeriodeTableId = 0,
-                           trekkidSke = trekkFraSkatt.trekkid,
-                           trekkversjon = trekkFraSkatt.trekkversjon,
-                           datoStart = periode.startdato,
-                           datoSlutt = periode.sluttdato,
-                           sats = periode.satsFor(alternativ),
-                           trekkAlternativ = alternativ,
-                           kilde = periode.kildeFor(alternativ),
-                           status = IKKE_SENDT,
-                       )
-                   RepositoryNy.insertTrekkForOS(nyPeriode, session)
-               }
-           }
-       }
-    }
-     */
 
     private fun lagTrekkDokument(
         trekkFraSkatt: TrekkFraSkatt,
@@ -202,4 +143,17 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
 
         return DokumentTilOppdrag(transaksjonsID, innrapporteringTrekk)
     }
+
+    // Periode is expired if periodeFomDato < today. sats == 0.0 or there exists an overlapping period subsequent to it with sats=0.0
+    private fun obsoleted(allePerioder: List<PeriodeTilOS>, it: PeriodeTilOS) =
+        when {
+            it.sats == 0.0 -> true
+            allePerioder.any { periode ->
+                it.periodeFomDato == periode.periodeFomDato &&
+                    it.periodeTomDato == periode.periodeTomDato &&
+                    it.id < periode.id &&
+                    periode.sats == 0.0
+            } -> true
+            else -> false
+        }
 }
