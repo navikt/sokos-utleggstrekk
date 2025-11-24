@@ -1,0 +1,22 @@
+[
+  {
+    "innrapporteringTrekk": {
+      "aksjonskode": "NY",
+      "kilde": "SOKOS-UTLEGG",
+      "kreditorIdTss": "tssIDSkatt",
+      "kreditorTrekkId": "10008P",
+      "debitorId": "10108412345",
+      "kid": "6487719756",
+      "kodeTrekktype": "TRK1",
+      "kodeTrekkAlternativ": "LOPP",
+      "perioder": {
+        "periode": [
+          {
+            "periodeFomDato": "2025-10-01",
+            "sats": 32.00
+          }
+        ]
+      }
+    }
+  }
+]

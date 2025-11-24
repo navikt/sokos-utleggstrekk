@@ -1,0 +1,15 @@
+[{"innrapporteringTrekk": {
+"aksjonskode": "ENDR",
+"kilde": "SOKOS-UTLEGG",
+"kreditorIdTss": "tssIDSkatt",
+"kreditorTrekkId": "10003P",
+"debitorId": "10108412345",
+"kid":"6487719756",
+"kodeTrekktype": "TRK1",
+"kodeTrekkAlternativ": "LOPP",
+"perioder": {
+"periode": [ {
+"periodeFomDato":"2025-08-09",
+"sats":17.00 }
+]
+}}}]
