@@ -578,22 +578,20 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         return perioderTilOS.toList()
     }
 
-    fun getOsAlternativForTrekk(trekk: TrekkFraSkatt): Set<TrekkAlternativ> =
-        dataSource.withTransaction { session ->
-            session
-                .list(
-                    queryOf(
-                        """
-                        SELECT DISTINCT ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN} from  ${TransaksjonOsTable.TABLE_NAME}  WHERE ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}=:${TransaksjonOsTable.TREKK_ID_SKE_PARAM} 
-                        AND
-                        ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} NOT IN ('${KvitteringStatus.FEIL.name}', '${KvitteringStatus.UKJENT.name}')
-                        """.trimIndent(),
-                        mapOf(TransaksjonOsTable.TREKK_ID_SKE_PARAM to trekk.trekkid),
-                    ),
-                ) { row ->
-                    TrekkAlternativ.valueOf(row.string(TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN).uppercase())
-                }.toSet()
-        }
+    fun getOsAlternativForTrekk(trekk: TrekkFraSkatt, session: TransactionalSession): Set<TrekkAlternativ> =
+        session
+            .list(
+                queryOf(
+                    """
+                    SELECT DISTINCT ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN} from  ${TransaksjonOsTable.TABLE_NAME}  WHERE ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}=:${TransaksjonOsTable.TREKK_ID_SKE_PARAM} 
+                    AND
+                    ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} NOT IN ('${KvitteringStatus.FEIL.name}', '${KvitteringStatus.UKJENT.name}')
+                    """.trimIndent(),
+                    mapOf(TransaksjonOsTable.TREKK_ID_SKE_PARAM to trekk.trekkid),
+                ),
+            ) { row ->
+                TrekkAlternativ.valueOf(row.string(TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN).uppercase())
+            }.toSet()
 
     fun <A> withTransaction(operation: (TransactionalSession) -> A): A = dataSource.withTransaction(operation)
 }
