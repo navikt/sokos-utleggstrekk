@@ -1,8 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
@@ -39,7 +37,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
             repositoryNy.withTransaction { session ->
                 documents.forEach { document ->
                     val documentJson = jsonConfig.encodeToString<DokumentTilOppdrag>(document)
-                    val dto = OSDto(UUID.randomUUID().toString(), trekk.trekkid, document.innrapporteringTrekk, documentJson)
+                    val dto = OSDto(document.transaksjonsId, trekk.trekkid, document.innrapporteringTrekk, documentJson)
                     repositoryNy.insertTransaksjonTilOs(dto, session)
                     repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session = session)
                 }
@@ -186,12 +184,6 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
 
         val tssId = "kreditorIdTss"
 
-        val prioritetfomdato =
-            OffsetDateTime
-                .parse(trekkFraSkatt.opprettet, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                .toLocalDate()
-                .toString()
-
         //  val tssId = TSSId.getTssId(betalingsinformasjon.betalingsmottaker, betalingsinformasjon.kontonummer)
         val innrapporteringTrekk =
             InnrapporteringTrekk(
@@ -206,7 +198,6 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
                 debitorId = trekkFraSkatt.skyldner,
                 kid = betalingsinformasjon.kidnummer,
                 kreditorsRef = trekkFraSkatt.saksnummer,
-                prioritetFomDato = prioritetfomdato,
             )
 
         return DokumentTilOppdrag(transaksjonsID, innrapporteringTrekk)
