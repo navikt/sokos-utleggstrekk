@@ -1,23 +1,23 @@
 {
- "trekkid": "10003",
- "skyldner": "10108412345",
- "opprettet": "2025-05-05T15:00:00.00Z",
- "saksnummer": "TREKK/2025/3",
- "trekkstatus": "aktiv",
- "trekkpliktig": "123456789",
- "trekkversjon": 1,
- "sekvensnummer": 80,
- "betalingsinformasjon": {
- "kidnummer": "6487719756",
- "kontonummer": "70213997155",
- "betalingsmottaker": "971648199"
- },
- "trekkstoerrelseForPeriode": [
- {
- "startdato": "2025-06-01",
- "trekkprosent": {
- "trekkprosent": 23.0
- }
- }
- ]
+  "trekkid": "10003",
+  "skyldner": "10108412345",
+  "opprettet": "2025-05-05T15:00:00.00Z",
+  "saksnummer": "TREKK/2025/3",
+  "trekkstatus": "aktiv",
+  "trekkpliktig": "123456789",
+  "trekkversjon": 1,
+  "sekvensnummer": 80,
+  "betalingsinformasjon": {
+    "kidnummer": "6487719756",
+    "kontonummer": "70213997155",
+    "betalingsmottaker": "971648199"
+  },
+  "trekkstoerrelseForPeriode": [
+    {
+      "startdato": "2025-06-01",
+      "trekkprosent": {
+        "trekkprosent": 23.0
+      }
+    }
+  ]
 }

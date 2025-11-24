@@ -2,8 +2,9 @@
   {
     "innrapporteringTrekk": {
       "aksjonskode": "NY",
-      "kilde": "SOKOS-UTLEGG",
-      "kreditorIdTss": "tssIDSkatt",
+      "kilde": "SOKOSUTLEGG",
+      "kreditorIdTss": "kreditorIdTss",
+      "kreditorsRef": "TREKK/2025/9",
       "kreditorTrekkId": "10009P",
       "debitorId": "10108412345",
       "kid": "6487719756",

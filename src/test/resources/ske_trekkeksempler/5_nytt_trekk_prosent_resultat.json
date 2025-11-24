@@ -1,20 +1,23 @@
-{
-  "innrapporteringTrekk": {
-    "aksjonskode": "NY",
-    "kilde": "SOKOS-UTLEGG",
-    "kreditorIdTss": "tssIDSkatt",
-    "kreditorTrekkId": "10005P",
-    "debitorId": "10108412345",
-    "kid": "6487719756",
-    "kodeTrekktype": "TRK1",
-    "kodeTrekkAlternativ": "LOPP",
-    "perioder": {
-      "periode": [
-        {
-          "periodeFomDato": "2025-07-01",
-          "sats": 23.00
-        }
-      ]
+[
+  {
+    "innrapporteringTrekk": {
+      "aksjonskode": "NY",
+      "kilde": "SOKOSUTLEGG",
+      "kreditorIdTss": "kreditorIdTss",
+      "kreditorsRef": "TREKK/2025/5",
+      "kreditorTrekkId": "10005P",
+      "debitorId": "10108412345",
+      "kid": "6487719756",
+      "kodeTrekktype": "TRK1",
+      "kodeTrekkAlternativ": "LOPP",
+      "perioder": {
+        "periode": [
+          {
+            "periodeFomDato": "2025-07-01",
+            "sats": 23.00
+          }
+        ]
+      }
     }
   }
-}
+]

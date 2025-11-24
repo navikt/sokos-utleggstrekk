@@ -1,15 +1,32 @@
-[{"innrapporteringTrekk": {
-"aksjonskode": "ENDR",
-"kilde": "SOKOS-UTLEGG",
-"kreditorIdTss": "tssIDSkatt",
-"kreditorTrekkId": "10003P",
-"debitorId": "10108412345",
-"kid":"6487719756",
-"kodeTrekktype": "TRK1",
-"kodeTrekkAlternativ": "LOPP",
-"perioder": {
-"periode": [ {
-"periodeFomDato":"2025-08-09",
-"sats":17.00 }
+[
+  {
+    "innrapporteringTrekk": {
+      "aksjonskode": "ENDR",
+      "kilde": "SOKOSUTLEGG",
+      "kreditorIdTss": "kreditorIdTss",
+      "kreditorsRef": "TREKK/2025/3",
+      "kreditorTrekkId": "10003P",
+      "debitorId": "10108412345",
+      "kid": "6487719756",
+      "kodeTrekktype": "TRK1",
+      "kodeTrekkAlternativ": "LOPP",
+      "perioder": {
+        "periode": [
+          {
+            "periodeFomDato": "2025-06-01",
+            "sats": 0.0
+          },
+          {
+            "periodeFomDato": "2025-06-01",
+            "periodeTomDato": "2025-08-08",
+            "sats": 23.00
+          },
+          {
+            "periodeFomDato": "2025-08-09",
+            "sats": 17.00
+          }
+        ]
+      }
+    }
+  }
 ]
-}}}]
