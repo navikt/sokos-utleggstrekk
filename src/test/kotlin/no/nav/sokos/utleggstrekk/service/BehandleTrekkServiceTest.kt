@@ -1,8 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 import io.kotest.core.spec.style.BehaviorSpec
@@ -179,12 +177,7 @@ class BehandleTrekkServiceTest :
                         saldo shouldBe 0.0
                         navTrekkId.shouldBeEmpty()
 
-                        prioritetFomDato shouldBe
-                            Instant
-                                .parse(trekkFraSkatt.opprettet)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-                                .toString()
+                        prioritetFomDato shouldBe null
                         perioder.periode.first().periodeFomDato shouldBe periode.startdato
                         perioder.periode.first().periodeTomDato shouldBe periode.sluttdato
                     }
