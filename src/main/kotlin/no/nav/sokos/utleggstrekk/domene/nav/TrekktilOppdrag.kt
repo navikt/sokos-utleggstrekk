@@ -61,7 +61,7 @@ data class InnrapporteringTrekk(
     val kid: String,
     val kilde: String = KILDE,
     val saldo: Double = 0.0,
-    val prioritetFomDato: String,
+    val prioritetFomDato: String? = null,
     // val gyldigTomDato: String = LocalDate().minusDays(1).toString(),
     val gyldigTomDato: String? = null,
     val perioder: Perioder?,
@@ -73,7 +73,7 @@ data class Perioder(val periode: List<Periode>)
 @Serializable
 data class Periode(
     val periodeFomDato: String,
-    val periodeTomDato: String,
+    val periodeTomDato: String?,
     val sats: Double = 0.0,
 )
 
