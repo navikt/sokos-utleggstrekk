@@ -8,9 +8,9 @@ private val formatter = DateTimeFormatter.ISO_DATE
 
 val String.asDate: LocalDate get() = LocalDate.parse(this, formatter)
 
-infix fun String.etter(p: Period): String = asDate.plus(p).format(formatter)
+infix fun String.plus(p: Period): String = asDate.plus(p).format(formatter)
 
-infix fun String.tidligere(p: Period): String = asDate.minus(p).format(formatter)
+infix fun String.minus(p: Period): String = asDate.minus(p).format(formatter)
 
 val Int.dager: Period get() = Period.ofDays(this)
 val Int.mnd: Period get() = Period.ofMonths(this)

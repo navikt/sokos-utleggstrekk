@@ -151,6 +151,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
     private fun obsoleted(allePerioder: List<PeriodeTilOS>, it: PeriodeTilOS) =
         when {
             it.sats == 0.0 -> true
+            it.isExpired() -> true
             allePerioder.any { periode ->
                 it.periodeFomDato == periode.periodeFomDato &&
                     it.periodeTomDato == periode.periodeTomDato &&

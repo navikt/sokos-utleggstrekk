@@ -17,9 +17,9 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
 import no.nav.sokos.utleggstrekk.util.dager
-import no.nav.sokos.utleggstrekk.util.etter
 import no.nav.sokos.utleggstrekk.util.idag
 import no.nav.sokos.utleggstrekk.util.mnd
+import no.nav.sokos.utleggstrekk.util.plus
 
 class BehandleTrekkServiceIntegrationTestNy :
     BehaviorSpec({
@@ -49,7 +49,7 @@ class BehandleTrekkServiceIntegrationTestNy :
                     sekvensnummer = 1,
                     trekkversjon = 1,
                     trekkstatus = Trekkstatus.AKTIV,
-                    perioder = listOf(TrekkstorrelseForPeriode(idag etter 2.dager, idag etter 2.mnd, trekkprosent = Trekkprosent(20.0))),
+                    perioder = listOf(TrekkstorrelseForPeriode(idag plus 2.dager, idag plus 2.mnd, trekkprosent = Trekkprosent(20.0))),
                 )
 
             storedInDb(trekkpaalegg)
@@ -69,7 +69,7 @@ class BehandleTrekkServiceIntegrationTestNy :
             DBListener.clearDB()
             val trekkid = "trekkid1"
 
-            val trekkstorrelseForPeriode1 = TrekkstorrelseForPeriode(idag etter 2.dager, idag etter 2.mnd, trekkprosent = Trekkprosent(20.0))
+            val trekkstorrelseForPeriode1 = TrekkstorrelseForPeriode(idag plus 2.dager, idag plus 2.mnd, trekkprosent = Trekkprosent(20.0))
             val trekk1 =
                 makeTrekkpaalegg(
                     trekkid,
@@ -78,7 +78,7 @@ class BehandleTrekkServiceIntegrationTestNy :
                     perioder = listOf(trekkstorrelseForPeriode1),
                 )
 
-            val trekkstorrelseForPeriode2 = TrekkstorrelseForPeriode(idag etter 1.mnd, idag etter 3.mnd, trekkprosent = Trekkprosent(20.0))
+            val trekkstorrelseForPeriode2 = TrekkstorrelseForPeriode(idag plus 1.mnd, idag plus 3.mnd, trekkprosent = Trekkprosent(20.0))
             val trekk2 =
                 makeTrekkpaalegg(
                     trekkid,
