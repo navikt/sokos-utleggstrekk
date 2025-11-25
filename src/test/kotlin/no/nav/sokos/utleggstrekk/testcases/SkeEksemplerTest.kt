@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.testcases
 
+import java.time.LocalDate
+
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -16,9 +18,9 @@ import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
 import no.nav.sokos.utleggstrekk.util.dager
 import no.nav.sokos.utleggstrekk.util.idag
+import no.nav.sokos.utleggstrekk.util.minus
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.util.resourceToStringList
-import no.nav.sokos.utleggstrekk.util.tidligere
 
 /**
  *  Datadriven testcases using files in ske_trekkeksempler  1_foo.json -> 1_foo_result.json.  Run in order 1, 1_1, 1_2, if exists.
@@ -59,7 +61,7 @@ class SkeEksemplerTest :
                 DBListener.clearDB()
                 testFiles.forEach { filename ->
                     When("Filen '$filename' prosesseres") {
-                        val trekkpaalegg = jsonConfig.decodeFromString<Trekkpaalegg>(resourceToString("$TEST_DIR/$filename"))
+                        val trekkpaalegg = jsonConfig.decodeFromString<Trekkpaalegg>(resourceToString("$TEST_DIR/$filename").updateDates())
                         DBListener.RepositoryNy.insertTrekkFraSkatt(trekkpaalegg)
                         service.behandleTrekk()
 
@@ -70,7 +72,8 @@ class SkeEksemplerTest :
 
                             val expected =
                                 resourceToString("$TEST_DIR/${filename.resultatFil()}")
-                                    .replace("###AVSLUTNINGSDATO###", idag tidligere 1.dager) // Replace template with today-1
+                                    .updateDates()
+                                    .replace("###AVSLUTNINGSDATO###", idag minus 1.dager) // Replace template with today-1
 
                             val expectedTrekk = jsonConfig.decodeFromString<Array<DocumentUtenTransaksjonsId>>(expected).map { it.innrapporteringTrekk }
 
@@ -97,6 +100,9 @@ private fun String.subIndex(): Int {
     val parts = this.split('_')
     return parts.getOrNull(1)?.toIntOrNull() ?: 0
 }
+
+// Move all 2025 into the future to avoid the rules that skip expired periods.
+private fun String.updateDates(): String = this.replace("2025-", "${LocalDate.now().year + 1}-")
 
 //
 @Serializable

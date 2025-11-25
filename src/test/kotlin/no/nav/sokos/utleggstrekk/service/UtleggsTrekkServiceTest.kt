@@ -25,8 +25,8 @@ import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
 import no.nav.sokos.utleggstrekk.util.dager
-import no.nav.sokos.utleggstrekk.util.etter
 import no.nav.sokos.utleggstrekk.util.idag
+import no.nav.sokos.utleggstrekk.util.plus
 
 internal class UtleggsTrekkServiceTest :
     BehaviorSpec({
@@ -128,8 +128,8 @@ internal class UtleggsTrekkServiceTest :
                         perioder =
                             listOf(
                                 TrekkstorrelseForPeriode(
-                                    idag etter (index * 8).dager,
-                                    idag etter (index * 8 + 5).dager,
+                                    idag plus (index * 8).dager,
+                                    idag plus (index * 8 + 5).dager,
                                     trekkprosent = Trekkprosent(20.0),
                                 ),
                             ),
