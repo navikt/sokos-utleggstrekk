@@ -6,9 +6,14 @@ import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContainInOrder
+import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import org.apache.activemq.artemis.jms.client.ActiveMQQueue
 
 import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
@@ -79,7 +84,7 @@ class JmsListenerServiceTest :
                         trekkAfter.navTrekkId shouldBe INGEN_TREKK_ID_I_KVITTERING
                     }
                 }
-                And("Feil skal insertes i database") {
+                Then("Feil skal insertes i database") {
                     eventually(duration = 1.seconds) {
                         val feilmelding = RepositoryNy.getFeilmeldingerFraOS(transaksjon.transaksjonsID)
                         feilmelding.shouldNotBeNull()
@@ -87,6 +92,42 @@ class JmsListenerServiceTest :
                         feilmelding.beskrivelse shouldBe "Ugyldig verdi i felt: Trekktype"
                     }
                 }
+                Then("Feil skal sendes til slack") {
+                    val message = slot<String>()
+                    eventually(duration = 1.seconds) {
+                        coVerify(exactly = 1) {
+                            slackService.addError("Kvittering feil", capture(message))
+                            slackService.sendErrors("Kvittering fra oppdrag feil")
+                        }
+                        message.captured.shouldContainInOrder(
+                            "Trekk med kreditorstrekkID: 10342395",
+                            "corrid: TransaksjonsId01",
+                            "feilkode: B7XX001F",
+                            "beskrivelse: Ugyldig verdi i felt: Trekktype",
+                        )
+                    }
+                }
             }
+
+            When("Kvittering med manglende data prosesseres") {
+                val kvittering = resourceToString("mq/kvittering_uten_transaksjonsID.json")
+                jmsProducerTrekk.send(kvittering)
+                Then("Feil skal sendes til slack") {
+                    eventually(duration = 1.seconds) {
+                        coVerify(exactly = 1) {
+                            slackService.addError("Prosessering av kvitteringmelding feilet.", any())
+                            slackService.sendErrors("Kvittering fra oppdrag feil")
+                        }
+                    }
+                }
+            }
+        }
+
+        afterContainer {
+            clearMocks(slackService, answers = false)
+        }
+
+        afterSpec {
+            clearAllMocks()
         }
     })
