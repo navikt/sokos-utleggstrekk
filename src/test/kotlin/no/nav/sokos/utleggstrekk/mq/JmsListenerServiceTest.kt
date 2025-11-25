@@ -7,7 +7,6 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContainInOrder
-import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -67,6 +66,8 @@ class JmsListenerServiceTest :
                         transaksjonerAfter.shouldNotBeNull()
                         transaksjonerAfter.kvitteringStatus shouldBe KvitteringStatus.OK
                         transaksjonerAfter.navTrekkId shouldBe "navTrekkId01"
+
+                        coVerify(exactly = 1) { slackService.sendErrors("Kvittering fra oppdrag feil") }
                     }
                 }
             }
@@ -125,9 +126,5 @@ class JmsListenerServiceTest :
 
         afterContainer {
             clearMocks(slackService, answers = false)
-        }
-
-        afterSpec {
-            clearAllMocks()
         }
     })
