@@ -1,0 +1,23 @@
+[
+  {
+    "innrapporteringTrekk": {
+      "aksjonskode": "NY",
+      "kilde": "SOKOSUTLEGG",
+      "kreditorIdTss": "kreditorIdTss",
+      "kreditorsRef": "TREKK/2025/3",
+      "kreditorTrekkId": "10003P",
+      "debitorId": "10108412345",
+      "kid": "6487719756",
+      "kodeTrekktype": "TRK1",
+      "kodeTrekkAlternativ": "LOPP",
+      "perioder": {
+        "periode": [
+          {
+            "periodeFomDato": "2025-06-01",
+            "sats": 23.00
+          }
+        ]
+      }
+    }
+  }
+]

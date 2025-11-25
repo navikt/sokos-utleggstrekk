@@ -1,0 +1,16 @@
+[
+  {
+    "innrapporteringTrekk": {
+      "aksjonskode": "ENDR",
+      "kilde": "SOKOSUTLEGG",
+      "kreditorIdTss": "kreditorIdTss",
+      "kreditorsRef": "TREKK/2025/8",
+      "kreditorTrekkId": "10008P",
+      "debitorId": "10108412345",
+      "kid": "6487719756",
+      "kodeTrekktype": "TRK1",
+      "kodeTrekkAlternativ": "LOPP",
+      "gyldigTomDato": "###AVSLUTNINGSDATO###"
+    }
+  }
+]

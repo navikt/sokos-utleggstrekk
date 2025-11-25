@@ -19,7 +19,7 @@ data class PeriodeTilOS( // TODO: Kan vi klare oss med bare Periode-klassen?
         osTransaksjonId = row.long("transaksjon_os_id"),
         sats = row.double("sats"),
         periodeFomDato = row.string("periode_fom_dato"),
-        periodeTomDato = row.string("periode_tom_dato"),
+        periodeTomDato = row.stringOrNull("periode_tom_dato"),
     )
 
     fun isExpired(): Boolean =
@@ -28,7 +28,7 @@ data class PeriodeTilOS( // TODO: Kan vi klare oss med bare Periode-klassen?
             else -> LocalDate.parse(periodeTomDato).isBefore(LocalDate.now())
         }
 
-    fun asPeriode() = Periode(this.periodeFomDato, this.periodeTomDato ?: "9999-12-31", this.sats)
+    fun asPeriode() = Periode(this.periodeFomDato, this.periodeTomDato, this.sats)
 }
 
 data class PerioderTilOS(

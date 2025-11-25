@@ -1,0 +1,32 @@
+[
+  {
+    "innrapporteringTrekk": {
+      "aksjonskode": "ENDR",
+      "kilde": "SOKOSUTLEGG",
+      "kreditorIdTss": "kreditorIdTss",
+      "kreditorsRef": "TREKK/2025/6",
+      "kreditorTrekkId": "10006M",
+      "debitorId": "10108412345",
+      "kid": "6487719756",
+      "kodeTrekktype": "TRK1",
+      "kodeTrekkAlternativ": "LOPM",
+      "perioder": {
+        "periode": [
+          {
+            "periodeFomDato": "2025-10-16",
+            "sats": 0.0
+          },
+          {
+            "periodeFomDato": "2025-10-16",
+            "periodeTomDato": "2025-11-22",
+            "sats": 6000.0
+          },
+          {
+            "periodeFomDato": "2025-11-23",
+            "sats": 7000.00
+          }
+        ]
+      }
+    }
+  }
+]

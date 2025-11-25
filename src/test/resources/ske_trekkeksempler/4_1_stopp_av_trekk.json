@@ -1,0 +1,24 @@
+{
+  "trekkid": "10004",
+  "skyldner": "10108412345",
+  "opprettet": "2025-09-12T23:59:00.00Z",
+  "saksnummer": "TREKK/2025/4",
+  "trekkstatus": "avsluttet",
+  "trekkpliktig": "123456789",
+  "trekkversjon": 2,
+  "sekvensnummer": 159,
+  "betalingsinformasjon": {
+    "kidnummer": "6487719756",
+    "kontonummer": "70213997155",
+    "betalingsmottaker": "971648199"
+  },
+  "trekkstoerrelseForPeriode": [
+    {
+      "startdato": "2025-07-01",
+      "sluttdato": "2025-09-12",
+      "trekkprosent": {
+        "trekkprosent": 17.0
+      }
+    }
+  ]
+}
