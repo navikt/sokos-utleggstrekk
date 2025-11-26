@@ -50,7 +50,7 @@ class UtleggsTrekkService(
     }
 
     private fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
-        trekkpaalegg.forEach { trekk ->
+        trekkpaalegg.sortedBy { it.sekvensnummer }.forEach { trekk ->
             repositoryNy.insertTrekkFraSkatt(trekk)
         }
     }
