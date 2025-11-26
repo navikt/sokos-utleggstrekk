@@ -77,6 +77,15 @@ class SlackServiceTest :
             capturedMessages.last().info shouldBe mutableListOf("6 av samme type feil: Type 2. Sjekk avstemming")
         }
 
+        test("sendError sender igen melding når det er ingen lagret feil") {
+            coEvery { client.sendMessage(any(), any()) } returns Unit
+
+            val service = SlackService(client)
+            service.sendErrors("Slack Message Header")
+
+            coVerify(exactly = 0) { client.sendMessage(any(), any()) }
+        }
+
         afterTest {
             clearMocks(client)
         }

@@ -20,6 +20,8 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
     }
 
     suspend fun sendErrors(messageTitle: String) {
+        if (errorTracking.isEmpty()) return
+
         errorTracking.map { (type, info) ->
             if (info.size > 5) {
                 val summary = "${info.size} av samme type feil: $type. Sjekk avstemming"
