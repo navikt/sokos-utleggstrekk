@@ -33,8 +33,23 @@ spec:
     application:
       enabled: true
       allowAllUsers: true
+      claims:
+        extra:
+          - NAVident
+  accessPolicy:
+    inbound:
+      rules:
+        - application: azure-token-generator
+          namespace: nais
+          cluster: dev-gcp
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
+      external:
+        - host: okonomi-unleash-api.nav.cloud.nais.io
   ingresses:
-    - https://sokos-utleggstrekk.intern.dev.nav.no
+    - https://sokos-utleggstrekk.gcp.intern.dev.nav.no
   vault:
     enabled: true
   maskinporten:
@@ -45,6 +60,19 @@ spec:
   envFrom:
     - secret: sokos-utleggstrekk-mq
     - secret: team-best-slackbot-webhook
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_18
+        highAvailability: true
+        diskAutoresize: true
+        pointInTimeRecovery: true
+        autoBackupHour: 3
+        tier: db-custom-1-3840
+        databases:
+          - name: sokos-utleggstrekk
+            envVarPrefix: DB
+            users:
+              - name: utleggstrekk_user
 
   env:
     - name: USE_AUTHENTICATION
