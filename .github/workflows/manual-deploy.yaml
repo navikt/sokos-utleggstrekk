@@ -40,9 +40,9 @@ jobs:
       pull-requests: write
       deployments: write
     needs: [ assemble-build-push-image-dev ]
-    name: Deploy to dev-fss
+    name: Deploy to dev-gcp
     uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
     with:
-      cluster: dev-fss
+      cluster: dev-gcp
       resource: .nais/dev/naiserator-dev.yaml
       image: ${{ needs.assemble-build-push-image-dev.outputs.image }}
