@@ -41,7 +41,7 @@ class SlackServiceTest :
                 }
             }
 
-            service.sendErrors("Slack Message Header")
+            service.sendCachedErrors("Slack Message Header")
 
             coVerify(exactly = 1) { client.sendMessage("Slack Message Header", any()) }
 
@@ -66,7 +66,7 @@ class SlackServiceTest :
                 service.addError("Type 2", "Info ${it + 2}")
             }
 
-            service.sendErrors("Slack Message Header")
+            service.sendCachedErrors("Slack Message Header")
 
             coVerify(exactly = 1) { client.sendMessage("Slack Message Header", any()) }
 
@@ -75,6 +75,15 @@ class SlackServiceTest :
 
             capturedMessages.first().info shouldBe MutableList(5) { "Info ${it + 1}" }
             capturedMessages.last().info shouldBe mutableListOf("6 av samme type feil: Type 2. Sjekk avstemming")
+        }
+
+        test("sendError sender igen melding når det er ingen lagret feil") {
+            coEvery { client.sendMessage(any(), any()) } returns Unit
+
+            val service = SlackService(client)
+            service.sendCachedErrors("Slack Message Header")
+
+            coVerify(exactly = 0) { client.sendMessage(any(), any()) }
         }
 
         afterTest {
