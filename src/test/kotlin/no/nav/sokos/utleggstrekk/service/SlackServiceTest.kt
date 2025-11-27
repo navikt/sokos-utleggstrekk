@@ -41,7 +41,7 @@ class SlackServiceTest :
                 }
             }
 
-            service.sendErrors("Slack Message Header")
+            service.sendCachedErrors("Slack Message Header")
 
             coVerify(exactly = 1) { client.sendMessage("Slack Message Header", any()) }
 
@@ -66,7 +66,7 @@ class SlackServiceTest :
                 service.addError("Type 2", "Info ${it + 2}")
             }
 
-            service.sendErrors("Slack Message Header")
+            service.sendCachedErrors("Slack Message Header")
 
             coVerify(exactly = 1) { client.sendMessage("Slack Message Header", any()) }
 
@@ -81,7 +81,7 @@ class SlackServiceTest :
             coEvery { client.sendMessage(any(), any()) } returns Unit
 
             val service = SlackService(client)
-            service.sendErrors("Slack Message Header")
+            service.sendCachedErrors("Slack Message Header")
 
             coVerify(exactly = 0) { client.sendMessage(any(), any()) }
         }

@@ -30,7 +30,7 @@ class JmsListenerServiceTest :
 
         val slackService = mockk<SlackService>()
         every { slackService.addError(any(), any()) } returns Unit
-        coEvery { slackService.sendErrors(any()) } returns Unit
+        coEvery { slackService.sendCachedErrors(any()) } returns Unit
 
         val replyQueue = ActiveMQQueue("replyQueue")
 
@@ -67,7 +67,8 @@ class JmsListenerServiceTest :
                         transaksjonerAfter.kvitteringStatus shouldBe KvitteringStatus.OK
                         transaksjonerAfter.navTrekkId shouldBe "navTrekkId01"
 
-                        coVerify(exactly = 1) { slackService.sendErrors("Kvittering fra oppdrag feil") }
+                        coVerify(exactly = 0) { slackService.addError(any(), any()) }
+                        coVerify(exactly = 1) { slackService.sendCachedErrors("Kvittering fra oppdrag feil") }
                     }
                 }
             }
@@ -98,7 +99,7 @@ class JmsListenerServiceTest :
                     eventually(duration = 1.seconds) {
                         coVerify(exactly = 1) {
                             slackService.addError("Kvittering feil", capture(message))
-                            slackService.sendErrors("Kvittering fra oppdrag feil")
+                            slackService.sendCachedErrors("Kvittering fra oppdrag feil")
                         }
                         message.captured.shouldContainInOrder(
                             "Trekk med kreditorstrekkID: 10342395",
@@ -117,7 +118,7 @@ class JmsListenerServiceTest :
                     eventually(duration = 1.seconds) {
                         coVerify(exactly = 1) {
                             slackService.addError("Prosessering av kvitteringmelding feilet.", any())
-                            slackService.sendErrors("Kvittering fra oppdrag feil")
+                            slackService.sendCachedErrors("Kvittering fra oppdrag feil")
                         }
                     }
                 }

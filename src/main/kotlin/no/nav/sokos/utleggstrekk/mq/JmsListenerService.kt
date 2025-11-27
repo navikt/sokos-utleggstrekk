@@ -54,7 +54,7 @@ class JmsListenerService(
         }
 
         CoroutineScope(SupervisorJob() + Default).launch {
-            slackService.sendErrors("Kvittering fra oppdrag feil")
+            slackService.sendCachedErrors("Kvittering fra oppdrag feil")
         }
     }
 

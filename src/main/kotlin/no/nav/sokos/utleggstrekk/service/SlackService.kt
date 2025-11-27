@@ -10,6 +10,11 @@ data class ErrorMessage(
 class SlackService(private val slackClient: SlackClient = SlackClient()) {
     val errorTracking = mutableListOf<ErrorMessage>()
 
+    /**
+     * Locally cache errors to be sent to Slack
+     * @param header: Error name/short description of the problem
+     * @param message: More detailed description of the error
+     */
     fun addError(header: String, message: String) {
         val error = errorTracking.find { it.type == header }
         if (error != null) {
@@ -19,7 +24,11 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
         }
     }
 
-    suspend fun sendErrors(messageTitle: String) {
+    /**
+     * Send the messages that have been cached using [addError] to Slack.
+     * @param messageTitle: Header for the Slack message
+     */
+    suspend fun sendCachedErrors(messageTitle: String) {
         if (errorTracking.isEmpty()) return
 
         errorTracking.map { (type, info) ->
