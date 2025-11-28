@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-    </appender>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -12,36 +10,45 @@
             </pattern>
         </encoder>
     </appender>
-<!-- TODO: Fikse logging se på sokos-ske-krav -->
 
-<!--    <appender name="secureLog" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
-<!--        <file>/secure-logs/secure.log</file>-->
-<!--        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">-->
-<!--            <fileNamePattern>/secure-logs/secure.log.%i</fileNamePattern>-->
-<!--            <minIndex>1</minIndex>-->
-<!--            <maxIndex>1</maxIndex>-->
-<!--        </rollingPolicy>-->
-<!--        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">-->
-<!--            <maxFileSize>50MB</maxFileSize>-->
-<!--        </triggeringPolicy>-->
-<!--        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>-->
-<!--    </appender>-->
+    <!--
+     The "team-logs" and "default-json" appenders are intended to be mutually exclusive;
+     no single log call should end up appending to both of them.
+     To ensure this, "team-logs" will only accept log calls that use the "TEAM_LOGS" marker,
+     while "default-json" will only accept calls *without* that marker.
+    -->
+    <appender name="team-logs" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>team-logs.nais-system:5170</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"google_cloud_project":"${GOOGLE_CLOUD_PROJECT}","nais_namespace_name":"${NAIS_NAMESPACE}","nais_pod_name":"${HOSTNAME}","nais_container_name":"${NAIS_APP_NAME}"}
+            </customFields>
+            <includeContext>false</includeContext>
+        </encoder>
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>TEAM_LOGS</marker>
+            </evaluator>
+            <OnMatch>ACCEPT</OnMatch>
+            <OnMismatch>DENY</OnMismatch>
+        </filter>
+    </appender>
 
-<!--    <if condition='isDefined("NAIS_CLUSTER_NAME")'>-->
-<!--        <then>-->
-<!--            <logger name="secureLogger" level="DEBUG" additivity="false">-->
-<!--                <appender-ref ref="${LOG_APPENDER:-secureLog}"/>-->
-<!--            </logger>-->
-<!--            <logger name="validationLogger" level="WARN" additivity="false">-->
-<!--                <appender-ref ref="${LOG_APPENDER:-secureLog}"/>-->
-<!--            </logger>-->
-<!--        </then>-->
-<!--    </if>-->
+    <appender name="default-json" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
+                <marker>TEAM_LOGS</marker>
+            </evaluator>
+            <OnMatch>DENY</OnMatch>
+            <OnMismatch>ACCEPT</OnMismatch>
+        </filter>
+    </appender>
 
     <if condition='isDefined("NAIS_CLUSTER_NAME")'>
         <then>
             <root level="INFO">
-                <appender-ref ref="CONSOLE"/>
+                <appender-ref ref="${LOG_APPENDER:-default-json}"/>
+                <appender-ref ref="${LOG_APPENDER:-team-logs}"/>
             </root>
         </then>
         <else>
@@ -52,6 +59,8 @@
     </if>
 
     <logger name="no.nav.sokos.utleggstrekk" level="INFO"/>
+
+    <!-- Trenger vi fortsatt disse? -->
     <logger name="org.flywaydb.core.FlywayExecutor" level="WARN" additivity="false"/>
     <logger name="org.flywaydb.core.internal.command.DbValidate" level="WARN" additivity="false"/>
     <logger name="org.flywaydb.core.internal.command.DbMigrate" level="WARN" additivity="false"/>
@@ -61,6 +70,4 @@
     <logger name="no.nav.vault.jdbc.hikaricp.VaultUtil" level="WARN" additivity="false"/>
     <logger name="no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil" level="WARN" additivity="false"/>
     <logger name="no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil" level="WARN" additivity="false"/>
-
-
 </configuration>
