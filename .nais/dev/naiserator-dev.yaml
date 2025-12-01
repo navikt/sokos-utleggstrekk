@@ -72,6 +72,8 @@ spec:
         tier: db-custom-1-3840
         databases:
           - name: sokos-utleggstrekk
+            users:
+              - name: sokos-utleggstrekk-user
             envVarPrefix: POSTGRES
   env:
     - name: USE_AUTHENTICATION
