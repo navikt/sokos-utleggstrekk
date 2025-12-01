@@ -42,12 +42,17 @@ spec:
         - application: azure-token-generator
           namespace: nais
           cluster: dev-gcp
+      external:
+        - host: mqls02.preprod.local
+
     outbound:
       rules:
         - application: logging
           namespace: nais-system
       external:
         - host: okonomi-unleash-api.nav.cloud.nais.io
+        - host: mqls02.preprod.local
+        - host: api-test.sits.no
   ingresses:
     - https://sokos-utleggstrekk.gcp.intern.dev.nav.no
   vault:
@@ -75,18 +80,10 @@ spec:
   env:
     - name: USE_AUTHENTICATION
       value: "false"
-    - name: JDK_JAVA_OPTIONS
-      value: -XX:MaxRAMPercentage=75 $(JAVA_PROXY_OPTIONS)
     - name: SKE_REST_URL
       value: https://api-test.sits.no/api/trekkpaalegg/v1
-    - name: POSTGRES_HOST
-      value: b27dbvl035.preprod.local
-    - name: POSTGRES_PORT
-      value: "5432"
     - name: POSTGRES_NAME
       value: sokos-utleggstrekk
-    - name: VAULT_MOUNTPATH
-      value: postgresql/preprod-fss/
     - name: LOG_APPENDER
       value: CONSOLE
     - name: MQ_HOSTNAME
