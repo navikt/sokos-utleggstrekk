@@ -30,7 +30,7 @@ val prometheusVersion = "1.16.0"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "11.17.1"
+val flywayVersion = "11.18.0"
 val postgresqlVersion = "42.7.8"
 val kotliqueryVersion = "1.9.1"
 
@@ -42,7 +42,7 @@ val kotlinLoggingVersion = "3.0.5"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.0.5"
+val kotestVersion = "6.0.7"
 val mockkVersion = "1.14.6"
 val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.3"
