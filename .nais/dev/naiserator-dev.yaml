@@ -42,8 +42,6 @@ spec:
         - application: azure-token-generator
           namespace: nais
           cluster: dev-gcp
-      external:
-        - host: mqls02.preprod.local
 
     outbound:
       rules:
