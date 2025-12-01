@@ -33,6 +33,11 @@ spec:
     application:
       enabled: true
       allowAllUsers: true
+  accessPolicy:
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
   ingresses:
     - https://sokos-utleggstrekk.intern.dev.nav.no
   vault:
@@ -53,6 +58,8 @@ spec:
       value: -XX:MaxRAMPercentage=75 $(JAVA_PROXY_OPTIONS)
     - name: SKE_REST_URL
       value: https://api-test.sits.no/api/trekkpaalegg/v1
+
+      # Postgres
     - name: POSTGRES_HOST
       value: b27dbvl035.preprod.local
     - name: POSTGRES_PORT
@@ -61,8 +68,8 @@ spec:
       value: sokos-utleggstrekk
     - name: VAULT_MOUNTPATH
       value: postgresql/preprod-fss/
-    - name: LOG_APPENDER
-      value: CONSOLE
+
+    # MQ
     - name: MQ_HOSTNAME
       value: mqls02.preprod.local
     - name: MQ_PORT
@@ -75,6 +82,3 @@ spec:
       value: QA.Q1_231.OB04_TREKK_FRASKATT_JSON
     - name: MQ_REPLYQUEUE_NAME
       value: QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING
-
-
-

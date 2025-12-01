@@ -18,9 +18,14 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
 import mu.KotlinLogging
+import org.slf4j.Marker
+import org.slf4j.MarkerFactory
 import org.slf4j.event.Level
 
 private val logger = KotlinLogging.logger { }
+
+// Add this marker to the logger when sending logs with secrets
+val TEAM_LOGS_MARKER: Marker = MarkerFactory.getMarker("TEAM_LOGS")
 
 val jsonConfig =
     Json {
