@@ -59,7 +59,6 @@ spec:
         - name: skatteetaten:trekkpaalegg
   envFrom:
     - secret: sokos-utleggstrekk-secrets
-    - secret: team-best-slackbot-webhook
   gcp:
     sqlInstances:
       - type: POSTGRES_18
