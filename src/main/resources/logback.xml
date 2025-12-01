@@ -59,15 +59,4 @@
     </if>
 
     <logger name="no.nav.sokos.utleggstrekk" level="INFO"/>
-
-    <!-- Trenger vi fortsatt disse? -->
-    <logger name="org.flywaydb.core.FlywayExecutor" level="WARN" additivity="false"/>
-    <logger name="org.flywaydb.core.internal.command.DbValidate" level="WARN" additivity="false"/>
-    <logger name="org.flywaydb.core.internal.command.DbMigrate" level="WARN" additivity="false"/>
-    <logger name="com.zaxxer.hikari.HikariDataSource" level="WARN" additivity="false"/>
-    <logger name="io.micrometer.core.instrument.push.PushMeterRegistry" level="WARN" additivity="false"/>
-    <logger name="io.micrometer.prometheusmetrics.PrometheusMeterRegistry" level="WARN" additivity="false"/>
-    <logger name="no.nav.vault.jdbc.hikaricp.VaultUtil" level="WARN" additivity="false"/>
-    <logger name="no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil" level="WARN" additivity="false"/>
-    <logger name="no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil" level="WARN" additivity="false"/>
 </configuration>
