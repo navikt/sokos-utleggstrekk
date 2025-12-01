@@ -58,7 +58,7 @@ spec:
       consumes:
         - name: skatteetaten:trekkpaalegg
   envFrom:
-    - secret: sokos-utleggstrekk-mq
+    - secret: sokos-utleggstrekk-secrets
     - secret: team-best-slackbot-webhook
   gcp:
     sqlInstances:
@@ -73,7 +73,6 @@ spec:
             envVarPrefix: DB
             users:
               - name: utleggstrekk_user
-
   env:
     - name: USE_AUTHENTICATION
       value: "false"
