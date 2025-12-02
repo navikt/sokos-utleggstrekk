@@ -51,14 +51,14 @@ object PostgresDataSource {
             dataSource =
                 PGSimpleDataSource().apply {
                     if (PropertiesConfig.isLocal) {
-                        user = postgresConfig.username
                         password = postgresConfig.password
-                        serverNames = arrayOf(postgresConfig.host)
-                        databaseName = postgresConfig.name
                         portNumbers = intArrayOf(postgresConfig.port.toInt())
                     } else {
                         jdbcUrl = postgresConfig.jdbcUrl
                     }
+                    serverNames = arrayOf(postgresConfig.host)
+                    user = postgresConfig.username
+                    databaseName = postgresConfig.name
                     connectionTimeout = Duration.ofSeconds(10).toMillis()
                     maxLifetime = Duration.ofMinutes(30).toMillis()
                     initializationFailTimeout = Duration.ofMinutes(30).toMillis()
