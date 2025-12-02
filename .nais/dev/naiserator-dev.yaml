@@ -1,5 +1,5 @@
 apiVersion: "nais.io/v1alpha1"
-kind: "Job"
+kind: "Application"
 metadata:
   name: sokos-utleggstrekk
   namespace: okonomi
