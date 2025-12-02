@@ -74,6 +74,8 @@ spec:
           - name: sokos-utleggstrekk
             envVarPrefix: POSTGRES
   env:
+    - name: APPLICATION_PROFILE
+      value: DEV
     - name: USE_AUTHENTICATION
       value: "false"
     - name: SKE_REST_URL
