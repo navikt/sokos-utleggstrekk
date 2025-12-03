@@ -49,13 +49,17 @@ object PostgresDataSource {
             isAutoCommit = false
             dataSource =
                 PGSimpleDataSource().apply {
+                    logger.info("******************* LOGGING")
+                    logger.info("******************* local? " + PropertiesConfig.isLocal)
                     if (PropertiesConfig.isLocal) {
                         password = postgresConfig.password
                         portNumbers = intArrayOf(postgresConfig.port.toInt())
+                        serverNames = arrayOf(postgresConfig.host)
                     } else {
+                        logger.info("******************* JDBC URL USED")
+
                         jdbcUrl = postgresConfig.jdbcUrl
                     }
-                    serverNames = arrayOf(postgresConfig.host)
                     user = postgresConfig.username
                     databaseName = postgresConfig.name
                     connectionTimeout = Duration.ofSeconds(10).toMillis()
