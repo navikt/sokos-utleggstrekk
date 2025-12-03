@@ -15,7 +15,7 @@ class TestContainer {
     private val container =
         PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
             withReuse(false)
-            withUsername(properties.adminUser)
+            withUsername(properties.user)
             start()
         }
 
@@ -30,7 +30,7 @@ class TestContainer {
         Flyway
             .configure()
             .dataSource(dataSource)
-            .initSql("""SET ROLE "${PropertiesConfig.PostgresConfig.adminUser}"""")
+            .initSql("""SET ROLE "${PropertiesConfig.PostgresConfig.user}"""")
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
             .load()

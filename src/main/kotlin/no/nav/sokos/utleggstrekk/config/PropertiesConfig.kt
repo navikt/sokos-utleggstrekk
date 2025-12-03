@@ -90,8 +90,7 @@ object PropertiesConfig {
         val password: String = getOrEmpty("POSTGRES_PASSWORD").trim()
         val jdbcUrl: String = getOrEmpty("POSTGRES_JDBC_URL")
         val vaultMountPath: String = getOrEmpty("VAULT_MOUNTPATH")
-        val adminUser = "$name-admin"
-        val user = "$name-user"
+        val user = getOrEmpty("POSTGRES_USERNAME")
     }
 
     data class MQProperties(

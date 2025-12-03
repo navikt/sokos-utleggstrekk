@@ -16,12 +16,12 @@ object PostgresDataSource {
         dataSource()
     }
 
-    fun migrate(dataSource: HikariDataSource = dataSource(role = PropertiesConfig.PostgresConfig.adminUser)) {
+    fun migrate(dataSource: HikariDataSource = dataSource(role = PropertiesConfig.PostgresConfig.user)) {
         logger.info { "Flyway migration" }
         Flyway
             .configure()
             .dataSource(dataSource)
-            .initSql("""SET ROLE "${ PropertiesConfig.PostgresConfig.adminUser}"""")
+            .initSql("""SET ROLE "${ PropertiesConfig.PostgresConfig.user}"""")
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
             .load()
