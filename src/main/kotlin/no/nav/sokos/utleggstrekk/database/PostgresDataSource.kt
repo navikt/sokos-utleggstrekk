@@ -47,25 +47,22 @@ object PostgresDataSource {
             maximumPoolSize = 5
             minimumIdle = 1
             isAutoCommit = false
-            dataSource =
-                PGSimpleDataSource().apply {
-                    logger.info("******************* LOGGING")
-                    logger.info("******************* local? " + PropertiesConfig.isLocal)
-                    if (PropertiesConfig.isLocal) {
+
+            if (PropertiesConfig.isLocal) {
+                dataSource =
+                    PGSimpleDataSource().apply {
                         password = postgresConfig.password
                         portNumbers = intArrayOf(postgresConfig.port.toInt())
                         serverNames = arrayOf(postgresConfig.host)
-                    } else {
-                        logger.info("******************* JDBC URL USED")
-
-                        jdbcUrl = postgresConfig.jdbcUrl
+                        user = postgresConfig.username
+                        databaseName = postgresConfig.name
                     }
-                    user = postgresConfig.username
-                    databaseName = postgresConfig.name
-                    connectionTimeout = Duration.ofSeconds(10).toMillis()
-                    maxLifetime = Duration.ofMinutes(30).toMillis()
-                    initializationFailTimeout = Duration.ofMinutes(30).toMillis()
-                }
+            } else {
+                jdbcUrl = postgresConfig.jdbcUrl
+            }
+            connectionTimeout = Duration.ofSeconds(10).toMillis()
+            maxLifetime = Duration.ofMinutes(30).toMillis()
+            initializationFailTimeout = Duration.ofMinutes(30).toMillis()
         }
     }
 }
