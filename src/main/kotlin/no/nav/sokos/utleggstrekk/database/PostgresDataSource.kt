@@ -9,7 +9,6 @@ import org.flywaydb.core.Flyway
 import org.postgresql.ds.PGSimpleDataSource
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil.createHikariDataSourceWithVaultIntegration
 
 object PostgresDataSource {
     private val logger = KotlinLogging.logger {}
@@ -32,15 +31,15 @@ object PostgresDataSource {
     }
 
     private fun dataSource(hikariConfig: HikariConfig = hikariConfig(), role: String = PropertiesConfig.PostgresConfig.user): HikariDataSource =
-        if (PropertiesConfig.isLocal) {
-            HikariDataSource(hikariConfig)
-        } else {
-            createHikariDataSourceWithVaultIntegration(
-                hikariConfig,
-                PropertiesConfig.PostgresConfig.vaultMountPath,
-                role,
-            )
-        }
+//        if (PropertiesConfig.isLocal) {
+        HikariDataSource(hikariConfig)
+    //       } else {
+    //           createHikariDataSourceWithVaultIntegration(
+    //               hikariConfig,
+    //               PropertiesConfig.PostgresConfig.vaultMountPath,
+    //               role,
+    //           )
+    //       }
 
     private fun hikariConfig(): HikariConfig {
         val postgresConfig = PropertiesConfig.PostgresConfig
