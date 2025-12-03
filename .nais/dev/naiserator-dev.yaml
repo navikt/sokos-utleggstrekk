@@ -42,7 +42,6 @@ spec:
         - application: azure-token-generator
           namespace: nais
           cluster: dev-gcp
-
     outbound:
       rules:
         - application: logging
@@ -50,6 +49,8 @@ spec:
       external:
         - host: okonomi-unleash-api.nav.cloud.nais.io
         - host: mqls02.preprod.local
+          ports:
+            - port: 1413
         - host: api-test.sits.no
   ingresses:
     - https://sokos-utleggstrekk.gcp.intern.dev.nav.no
