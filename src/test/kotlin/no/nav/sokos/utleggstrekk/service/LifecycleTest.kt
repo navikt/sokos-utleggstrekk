@@ -12,8 +12,8 @@ import io.kotest.matchers.string.shouldEndWith
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
-import no.nav.sokos.utleggstrekk.domene.nav.DokumentTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.util.resourceToString
@@ -138,10 +138,10 @@ internal class LifecycleTest :
                 val perioderFraSkatt = repository.getPerioderForTrekkVersjon(trekkFraSkatt!!.id)
                 val betalingsInformasjon = repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
                 val osdok: TransaksjonOS = trekkSomSkalSendes.first()
-                val document = jsonConfig.decodeFromString<DokumentTilOppdrag>(osdok.documentJson)
+                val trekkTilOppdrag = jsonConfig.decodeFromString<TrekkTilOppdrag>(osdok.documentJson)
 
                 withClue("osDokumentet skal ha samme info som i trekk og perioder") {
-                    with(document.innrapporteringTrekk) {
+                    with(trekkTilOppdrag.dokument.innrapporteringTrekk) {
                         kreditorTrekkId shouldEndWith TrekkAlternativ.LOPM.suffix.toString()
                         kid shouldBe betalingsInformasjon!!.kidnummer
                         kodeTrekkAlternativ shouldBe perioderFraSkatt.first().trekkAlternativ()
