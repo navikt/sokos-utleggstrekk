@@ -39,7 +39,7 @@ object PostgresDataSource {
             minimumIdle = 1
             isAutoCommit = false
 
-            if (PropertiesConfig.isLocal || postgresConfig.jdbcUrl.isEmpty()) {
+            if (PropertiesConfig.isLocal && postgresConfig.jdbcUrl.isEmpty()) {
                 dataSource =
                     PGSimpleDataSource().apply {
                         password = postgresConfig.password
