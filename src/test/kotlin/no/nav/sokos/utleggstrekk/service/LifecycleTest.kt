@@ -1,5 +1,8 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.time.Instant
+import java.time.temporal.ChronoUnit.DAYS
+
 import kotlinx.serialization.json.Json
 
 import io.kotest.assertions.withClue
@@ -7,11 +10,17 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldEndWith
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
+import no.nav.sokos.utleggstrekk.domene.nav.Document
+import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.Mmel
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -146,6 +155,66 @@ internal class LifecycleTest :
                         kid shouldBe betalingsInformasjon!!.kidnummer
                         kodeTrekkAlternativ shouldBe perioderFraSkatt.first().trekkAlternativ()
                     }
+                }
+            }
+        }
+        Given("Vi har tre utleggstrekk som har blitt sendt til og kvittert for av os") {
+            DBListener.clearDB()
+            val sevenMonthsAgo = Instant.now().minus(7 * 30, DAYS).toString()
+            val fiveMonthsAgo = Instant.now().minus(5 * 30, DAYS).toString()
+
+            val trekkpaalegg =
+                jsonConfig.decodeFromString<Array<Trekkpaalegg>>(
+                    resourceToString("lifecycleTestData/gamleTrekk.json")
+                        .replace("###OPPRETTETGAMMEL###", sevenMonthsAgo)
+                        .replace("###OPPRETTETNY###", fiveMonthsAgo),
+                )
+
+            trekkpaalegg.forEach(repository::insertTrekkFraSkatt)
+
+            val service = BehandleTrekkServiceNy(DBListener.RepositoryNy)
+            val idToTrekkId = repository.getTrekkSomIkkeErBehandlet().associate { it.id to it.trekkid }
+            service.behandleTrekk()
+
+            val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
+            ikkeSendt.forEach { repository.updateTransaksjonStatus(it.transaksjonsID, TransaksjonsStatus.SENDT) }
+            val skalSlettes1 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorTrekkId == "gammelv1" }!!
+            repository.updateTransaksjon(skalSlettes1.transaksjonsID, KvitteringStatus.OK, "navid1")
+            val skalSlettes2 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorTrekkId == "gammelv1" }!!
+            repository.updateTransaksjon(skalSlettes2.transaksjonsID, KvitteringStatus.FEIL, "navid1")
+            val kvittering =
+                KvitteringFraOppdrag(
+                    jsonConfig.decodeFromString<Document>(skalSlettes2.documentJson),
+                    mmel =
+                        Mmel(
+                            kodeMelding = "B720005F",
+                            alvorlighetsgrad = "08",
+                            beskrMelding = "Personen finnes ikke i PDL eller noe",
+                        ),
+                )
+            val skalIkkeSlettes = ikkeSendt.filterNot { it.trekkIdSke == "1" }
+
+            skalIkkeSlettes.forEach { tilOs ->
+                repository.updateTransaksjon(tilOs.transaksjonsID, KvitteringStatus.OK, "navid" + tilOs.trekkIdSke)
+            }
+
+            When("To trekk er eldre enn seks måneder, et av dem har trekkstatus avsluttet (1) og det tredje er yngre enn seks måneder") {
+                Then("Skal alle versjoner av trekk 1 slettes under opprydding men ikke de to andre") {
+                    repository.deleteOldData()
+
+                    repository.getTrekkFraSkatt("1", 1) shouldBe null
+                    repository.getTrekkFraSkatt("1", 2) shouldBe null
+                    repository.getTransaksjonTilOs(skalSlettes1.transaksjonsID) shouldBe null
+                    repository.getTransaksjonTilOs(skalSlettes2.transaksjonsID) shouldBe null
+                    repository.getFeilmeldingerFraOS(skalSlettes2.transaksjonsID) shouldBe null
+
+                    idToTrekkId.filterValues { it == "1" }.forEach { (key, _) ->
+                        repository.getPerioderForTrekkVersjon(key) shouldBe emptyList()
+                        repository.getBetalingsinformasjonForTrekk(key) shouldBe null
+                    }
+
+                    repository.getTrekkFraSkatt("2", 1) shouldNotBe null
+                    repository.getTrekkFraSkatt("3", 1) shouldNotBe null
                 }
             }
         }

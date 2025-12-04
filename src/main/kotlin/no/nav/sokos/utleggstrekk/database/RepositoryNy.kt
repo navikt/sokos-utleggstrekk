@@ -1,11 +1,14 @@
 package no.nav.sokos.utleggstrekk.database
 
+import java.time.LocalDateTime
+
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Session
 import kotliquery.TransactionalSession
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
+import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
@@ -22,7 +25,17 @@ import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
+private val logger = KotlinLogging.logger { }
+
 class RepositoryNy(private val dataSource: HikariDataSource) {
+    fun deleteOldData() {
+        // TODO: Fixme
+        val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
+        var fraskattDeleted = 0
+        var transaksjonOsDeleted = 0
+        logger.info("Slettet $fraskattDeleted trekkversjoner fra Skatt og $transaksjonOsDeleted fra transaksjon_os")
+    }
+
     fun doesTrekkExist(trekkId: String, trekkversjon: Int): Boolean =
         dataSource.withTransaction { session ->
             session.single(
