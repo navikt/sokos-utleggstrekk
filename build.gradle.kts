@@ -30,7 +30,7 @@ val prometheusVersion = "1.16.0"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "11.17.1"
+val flywayVersion = "11.18.0"
 val postgresqlVersion = "42.7.8"
 val kotliqueryVersion = "1.9.1"
 
