@@ -21,7 +21,7 @@ object PostgresDataSource {
         Flyway
             .configure()
             .dataSource(dataSource)
-            .initSql("""SET ROLE "${ PropertiesConfig.PostgresConfig.user}"""")
+            .initSql("""SET ROLE "${PropertiesConfig.PostgresConfig.user}"""")
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
             .load()
@@ -30,16 +30,7 @@ object PostgresDataSource {
         logger.info { "Migration finished" }
     }
 
-    private fun dataSource(hikariConfig: HikariConfig = hikariConfig(), role: String = PropertiesConfig.PostgresConfig.user): HikariDataSource =
-//        if (PropertiesConfig.isLocal) {
-        HikariDataSource(hikariConfig)
-    //       } else {
-    //           createHikariDataSourceWithVaultIntegration(
-    //               hikariConfig,
-    //               PropertiesConfig.PostgresConfig.vaultMountPath,
-    //               role,
-    //           )
-    //       }
+    private fun dataSource(hikariConfig: HikariConfig = hikariConfig(), role: String = PropertiesConfig.PostgresConfig.user): HikariDataSource = HikariDataSource(hikariConfig)
 
     private fun hikariConfig(): HikariConfig {
         val postgresConfig = PropertiesConfig.PostgresConfig
@@ -48,7 +39,7 @@ object PostgresDataSource {
             minimumIdle = 1
             isAutoCommit = false
 
-            if (PropertiesConfig.isLocal) {
+            if (PropertiesConfig.isLocal || postgresConfig.jdbcUrl.isEmpty()) {
                 dataSource =
                     PGSimpleDataSource().apply {
                         password = postgresConfig.password
