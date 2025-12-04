@@ -12,6 +12,7 @@ import io.ktor.server.routing.routing
 import no.nav.sokos.utleggstrekk.api.internalNaisRoutes
 import no.nav.sokos.utleggstrekk.api.utleggstrekkApi
 import no.nav.sokos.utleggstrekk.config.AzureConfiguration
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
@@ -31,9 +32,9 @@ private fun Application.module() {
         utleggstrekkApi(UtleggsTrekkService())
     }
 
-//    if (!PropertiesConfig.isLocal) {
-    PostgresDataSource.migrate()
-//    }
+    if (!PropertiesConfig.isLocal) {
+        PostgresDataSource.migrate()
+    }
 }
 
 fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
