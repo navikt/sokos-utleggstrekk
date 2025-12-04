@@ -13,6 +13,7 @@ import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
@@ -67,8 +68,8 @@ class SkeEksemplerTest :
 
                         Then("Produseres resultatet i '${filename.resultatFil()}'") {
                             val transaksjoner = DBListener.RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt()
-                            val dokumenter = transaksjoner.map { jsonConfig.decodeFromString<Document>(it.documentJson) }
-                            val trekk = dokumenter.map { it.innrapporteringTrekk }
+                            val dokumenter = transaksjoner.map { jsonConfig.decodeFromString<TrekkTilOppdrag>(it.documentJson) }
+                            val trekk = dokumenter.map { it.dokument.innrapporteringTrekk }
 
                             val expected =
                                 resourceToString("$TEST_DIR/${filename.resultatFil()}")
@@ -86,7 +87,7 @@ class SkeEksemplerTest :
                             }
 
                             // Vi later som vi har fått kvittering fra OS
-                            dokumenter.forEach { simulerOkFraOS(it) }
+                            dokumenter.forEach { simulerOkFraOS(it.dokument) }
                         }
                     }
                 }

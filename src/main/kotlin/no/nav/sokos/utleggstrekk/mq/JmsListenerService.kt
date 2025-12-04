@@ -1,5 +1,10 @@
 package no.nav.sokos.utleggstrekk.mq
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import jakarta.jms.ConnectionFactory
@@ -15,9 +20,11 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
+import no.nav.sokos.utleggstrekk.service.SlackService
 
 class JmsListenerService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
+    private val slackService: SlackService = SlackService(),
     val osKvitteringQueue: Queue =
         MQQueue(PropertiesConfig.MQProperties().replyQueueName).apply {
             targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
@@ -41,7 +48,13 @@ class JmsListenerService(
             processReceipt(receipt)
             message.acknowledge()
         } catch (exception: Exception) {
-            logger.error(exception) { "Prosessering av kvitteringmelding feilet. ${message.jmsMessageID}" }
+            val header = "Prosessering av kvitteringmelding feilet."
+            logger.error(exception) { "$header ${message.jmsMessageID}" }
+            slackService.addError(header, message.jmsMessageID)
+        }
+
+        CoroutineScope(SupervisorJob() + Default).launch {
+            slackService.sendCachedErrors("Kvittering fra oppdrag feil")
         }
     }
 
@@ -55,18 +68,17 @@ class JmsListenerService(
         )
 
         if (kvitteringStatus == KvitteringStatus.FEIL) {
-            // TODO: Slackmelding
             repositoryNy.insertFeilmeldingFraOS(receipt)
             logError(receipt)
         }
     }
 
     private fun logError(receipt: KvitteringFraOppdrag) {
-        logger.info(
+        val message =
             "Trekk med kreditorstrekkID: ${receipt.dokument.innrapporteringTrekk.kreditorTrekkId}, " +
-                "corrid: ${receipt.dokument.transaksjonsId} har feilkode: ${receipt.mmel?.kodeMelding} og beskrivelse: ${receipt.mmel?.beskrMelding}",
-        )
+                "corrid: ${receipt.dokument.transaksjonsId} har feilkode: ${receipt.mmel?.kodeMelding} og beskrivelse: ${receipt.mmel?.beskrMelding}"
 
-        // TODO sjekke/vurdere om det skal sendes melding til slack og evt utføre det.
+        logger.info(message)
+        slackService.addError("Kvittering feil", message)
     }
 }
