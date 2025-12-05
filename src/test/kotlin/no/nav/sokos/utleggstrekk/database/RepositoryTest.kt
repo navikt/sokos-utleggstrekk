@@ -178,6 +178,31 @@ class RepositoryTest :
 
         Given("Feilmelding skal lagres") {
             val kvittering = jsonConfig.decodeFromString<KvitteringFraOppdrag>(resourceToString("kvittering-feil.json"))
+            // Dummy transaksjon for å tilfredstille constraint.
+            RepositoryNy.insertTransaksjonTilOs(
+                OSDto(
+                    "0cf39d33-8b50-4694-8d70-7ff06c35e42a",
+                    trekkIDSke = "10013",
+                    InnrapporteringTrekk(
+                        Aksjonskode.NY,
+                        "navtrekkid",
+                        "tss",
+                        "1",
+                        "1",
+                        "1",
+                        "TRK1",
+                        TrekkAlternativ.LOPM,
+                        "kid",
+                        "SOKOSUTLEGG",
+                        1.0,
+                        null,
+                        null,
+                        null,
+                    ),
+                    "fakedokument",
+                ),
+            )
+
             RepositoryNy.insertFeilmeldingFraOS(kvittering)
 
             Then("Skal trekkid, trekkalternativ, corrid, feilkode og beskrivelse lagres") {

@@ -12,13 +12,14 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldEndWith
+import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
-import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.Mmel
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -160,17 +161,21 @@ internal class LifecycleTest :
         }
         Given("Vi har tre utleggstrekk som har blitt sendt til og kvittert for av os") {
             DBListener.clearDB()
-            val sevenMonthsAgo = Instant.now().minus(7 * 30, DAYS).toString()
-            val fiveMonthsAgo = Instant.now().minus(5 * 30, DAYS).toString()
+            val sevenMonthsAgo = Instant.now().minus(7 * 30, DAYS)
+            val fiveMonthsAgo = Instant.now().minus(5 * 30, DAYS)
 
             val trekkpaalegg =
                 jsonConfig.decodeFromString<Array<Trekkpaalegg>>(
                     resourceToString("lifecycleTestData/gamleTrekk.json")
-                        .replace("###OPPRETTETGAMMEL###", sevenMonthsAgo)
-                        .replace("###OPPRETTETNY###", fiveMonthsAgo),
+                        .replace("###OPPRETTETGAMMEL###", sevenMonthsAgo.toString())
+                        .replace("###OPPRETTETNY###", fiveMonthsAgo.toString()),
                 )
 
             trekkpaalegg.forEach(repository::insertTrekkFraSkatt)
+            repository.fakeTidspunktOpprettet("1", 1, sevenMonthsAgo)
+            repository.fakeTidspunktOpprettet("1", 2, sevenMonthsAgo)
+            repository.fakeTidspunktOpprettet("2", 1, sevenMonthsAgo)
+            repository.fakeTidspunktOpprettet("3", 1, fiveMonthsAgo)
 
             val service = BehandleTrekkServiceNy(DBListener.RepositoryNy)
             val idToTrekkId = repository.getTrekkSomIkkeErBehandlet().associate { it.id to it.trekkid }
@@ -178,13 +183,15 @@ internal class LifecycleTest :
 
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
             ikkeSendt.forEach { repository.updateTransaksjonStatus(it.transaksjonsID, TransaksjonsStatus.SENDT) }
-            val skalSlettes1 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorTrekkId == "gammelv1" }!!
+
+            val skalSlettes1 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv1" }!!
             repository.updateTransaksjon(skalSlettes1.transaksjonsID, KvitteringStatus.OK, "navid1")
-            val skalSlettes2 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorTrekkId == "gammelv1" }!!
+            val skalSlettes2 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv2" }!!
             repository.updateTransaksjon(skalSlettes2.transaksjonsID, KvitteringStatus.FEIL, "navid1")
+
             val kvittering =
                 KvitteringFraOppdrag(
-                    jsonConfig.decodeFromString<Document>(skalSlettes2.documentJson),
+                    jsonConfig.decodeFromString<TrekkTilOppdrag>(skalSlettes2.documentJson).dokument,
                     mmel =
                         Mmel(
                             kodeMelding = "B720005F",
@@ -192,8 +199,9 @@ internal class LifecycleTest :
                             beskrMelding = "Personen finnes ikke i PDL eller noe",
                         ),
                 )
-            val skalIkkeSlettes = ikkeSendt.filterNot { it.trekkIdSke == "1" }
+            repository.insertFeilmeldingFraOS(kvittering)
 
+            val skalIkkeSlettes = ikkeSendt.filterNot { it.trekkIdSke == "1" }
             skalIkkeSlettes.forEach { tilOs ->
                 repository.updateTransaksjon(tilOs.transaksjonsID, KvitteringStatus.OK, "navid" + tilOs.trekkIdSke)
             }
@@ -215,7 +223,20 @@ internal class LifecycleTest :
 
                     repository.getTrekkFraSkatt("2", 1) shouldNotBe null
                     repository.getTrekkFraSkatt("3", 1) shouldNotBe null
+
+                    repository.getFeilmeldingerFraOS(skalSlettes2.transaksjonsID) shouldBe null
                 }
             }
         }
     })
+
+private fun RepositoryNy.fakeTidspunktOpprettet(trekkid: String, trekkversjon: Int, instant: Instant) {
+    withTransaction { session ->
+        session.update(
+            queryOf(
+                "UPDATE fraskatt SET tidspunkt_opprettet=:tidspunkt WHERE trekkid=:trekkid AND trekkversjon=:trekkversjon",
+                mapOf("tidspunkt" to instant, "trekkid" to trekkid, "trekkversjon" to trekkversjon),
+            ),
+        ) shouldBe 1
+    }
+}

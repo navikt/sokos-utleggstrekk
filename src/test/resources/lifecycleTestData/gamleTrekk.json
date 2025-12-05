@@ -49,7 +49,7 @@
   },
   {
     "trekkid": "2",
-    "trekkversjon": 2,
+    "trekkversjon": 1,
     "sekvensnummer": 3,
     "opprettet": "###OPPRETTETGAMMEL###",
     "saksnummer": "gammel",
@@ -74,7 +74,7 @@
   {
     "trekkid": "3",
     "trekkversjon": 1,
-    "sekvensnummer": 2,
+    "sekvensnummer": 4,
     "opprettet": "###OPPRETTETNY###",
     "saksnummer": "ikkegammel",
     "trekkpliktig": "889640782",

@@ -24,16 +24,49 @@ import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 private val logger = KotlinLogging.logger { }
 
 class RepositoryNy(private val dataSource: HikariDataSource) {
     fun deleteOldData() {
-        // TODO: Fixme
         val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
-        var fraskattDeleted = 0
-        var transaksjonOsDeleted = 0
-        logger.info("Slettet $fraskattDeleted trekkversjoner fra Skatt og $transaksjonOsDeleted fra transaksjon_os")
+
+        dataSource.withTransaction { session ->
+            val expiredFraskatt =
+                """
+                WITH expired_fraskatt AS (
+                    SELECT DISTINCT trekkid 
+                        FROM fraskatt 
+                        WHERE tidspunkt_opprettet<:threshold 
+                            AND trekkstatus=:trekkstatus
+                )
+                """.trimIndent()
+            val parameters = mapOf("threshold" to sixMonthsAgo, "trekkstatus" to Trekkstatus.AVSLUTTET.name)
+
+            val transaksjonOsDeleted =
+                session.update(
+                    queryOf(
+                        """
+                        $expiredFraskatt
+                        DELETE FROM transaksjon_os t USING expired_fraskatt ef WHERE t.trekk_id_ske = ef.trekkid
+                        """.trimIndent(),
+                        parameters,
+                    ),
+                )
+
+            val fraskattDeleted =
+                session.update(
+                    queryOf(
+                        """
+                        $expiredFraskatt
+                        DELETE FROM fraskatt f USING expired_fraskatt ef WHERE f.trekkid = ef.trekkid
+                        """.trimIndent(),
+                        parameters,
+                    ),
+                )
+            logger.info("Slettet $fraskattDeleted trekkversjoner fra Skatt og $transaksjonOsDeleted fra transaksjon_os")
+        }
     }
 
     fun doesTrekkExist(trekkId: String, trekkversjon: Int): Boolean =
