@@ -338,6 +338,27 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         }
     }
 
+    fun updateTransaksjonSendt(transaksjonId: String) {
+        dataSource.withTransaction { session ->
+            session.update(
+                queryOf(
+                    """
+                    UPDATE  ${TransaksjonOsTable.TABLE_NAME}  
+                    SET 
+                    ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}=:${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
+                    ${TransaksjonOsTable.TIDSPUNKT_SISTE_STATUS_COLUMN}=NOW(),
+                    ${TransaksjonOsTable.TIDSPUNKT_SENDT_COLUMN}=NOW()
+                    WHERE ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}=:${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM}
+                    """.trimIndent(),
+                    mapOf(
+                        TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to TransaksjonsStatus.SENDT.name,
+                        TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to transaksjonId,
+                    ),
+                ),
+            )
+        }
+    }
+
     fun updateTransaksjonStatus(transaksjonId: String, transaksjonStatus: TransaksjonsStatus) {
         dataSource.withTransaction { session ->
             session.update(
