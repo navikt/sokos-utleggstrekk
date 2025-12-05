@@ -190,7 +190,7 @@ class BehandleTrekkServiceTest :
                 Then("Skal datoer formatteres på yyyy-mm-dd format") {
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                     innrapporteringTrekk.perioder!!.periode.forEach {
-                        LocalDate.parse(it.periodeTomDato!!, dateFormatter).format(dateFormatter) shouldBe it.periodeTomDato
+                        if (it.periodeTomDato != null) LocalDate.parse(it.periodeTomDato, dateFormatter).format(dateFormatter) shouldBe it.periodeTomDato
                         LocalDate.parse(it.periodeFomDato, dateFormatter).format(dateFormatter) shouldBe it.periodeFomDato
                     }
                 }

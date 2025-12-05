@@ -21,7 +21,7 @@ object DBListener : TestListener {
     private val container =
         PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
             withReuse(false)
-            withUsername(PropertiesConfig.PostgresConfig.adminUser)
+            withUsername(PropertiesConfig.PostgresConfig.user)
             waitingFor(Wait.defaultWaitStrategy())
             start()
         }

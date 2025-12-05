@@ -24,6 +24,7 @@ object PropertiesConfig {
             "POSTGRES_HOST" to "dev-pg.intern.nav.no",
             "POSTGRES_PORT" to "5432",
             "POSTGRES_NAME" to "sokos-utleggstrekk",
+            "POSTGRES_USERNAME" to "sokos-utleggstrekk",
             "SKE_REST_URL" to "https://api-test.sits.no/api/trekkpaalegg/v1",
             "USE_AUTHENTICATION" to "false",
             "MQ_HOSTNAME" to "10.53.17.118",
@@ -88,9 +89,8 @@ object PropertiesConfig {
         val name: String = getOrEmpty("POSTGRES_NAME")
         val username: String = getOrEmpty("POSTGRES_USERNAME").trim()
         val password: String = getOrEmpty("POSTGRES_PASSWORD").trim()
-        val vaultMountPath: String = getOrEmpty("VAULT_MOUNTPATH")
-        val adminUser = "$name-admin"
-        val user = "$name-user"
+        val jdbcUrl: String = getOrEmpty("POSTGRES_JDBC_URL")
+        val user = getOrEmpty("POSTGRES_USERNAME")
     }
 
     data class MQProperties(
