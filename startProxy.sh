@@ -6,6 +6,8 @@ if [ -s "$HOME/.config/gcloud/application_default_credentials.json" ]; then
    if [ $? -gt 0 ]; then
       gcloud auth login
    fi
+   nais postgres prepare sokos-utleggstrekk
+   nais postgres grant sokos-utleggstrekk
 else
    gcloud auth login --update-adc
 fi
@@ -13,7 +15,5 @@ fi
 if nc -z localhost 5432 2>/dev/null; then
     echo "proxy already running"
 else
-    nais postgres prepare sokos-utleggstrekk
-    nais postgres grant sokos-utleggstrekk
     nais postgres proxy sokos-utleggstrekk
 fi
