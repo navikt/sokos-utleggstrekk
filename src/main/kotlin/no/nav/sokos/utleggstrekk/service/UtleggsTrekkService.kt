@@ -41,6 +41,7 @@ class UtleggsTrekkService(
         logger.info(marker = TEAM_LOGS_MARKER) {
             "Alle nye utleggstrekk er lagget."
         }
+        repositoryNy.deleteOldData()
     }
 
     private suspend fun lagreAlleNyeUtleggstrekk() {
