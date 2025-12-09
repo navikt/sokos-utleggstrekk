@@ -9,6 +9,7 @@ typealias DokumentTilOppdrag = Document
 data class OSDto(
     val transaksjonID: String,
     val trekkIDSke: String,
+    val trekkversjon: Int,
     val innrapporteringTrekk: InnrapporteringTrekk,
     val documentJson: String,
 )

@@ -641,7 +641,7 @@ class BehandleTrekkServiceTest :
                                 behandleTrekkServiceNy.behandleTrekk()
                                 capturedOSDtos shouldHaveSize 2
 
-                                capturedOSDtos.forEach { (_, _, innrapporteringTrekk, _) ->
+                                capturedOSDtos.forEach { (_, _, _, innrapporteringTrekk, _) ->
                                     innrapporteringTrekk.aksjonskode shouldBe Aksjonskode.ENDR
                                     innrapporteringTrekk.gyldigTomDato shouldBe gyldigTomDatoAvslutt
                                     innrapporteringTrekk.perioder.shouldBeNull()

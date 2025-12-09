@@ -40,7 +40,14 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
 
                 documents.forEach { document ->
                     val documentJson = jsonConfig.encodeToString<TrekkTilOppdrag>(document)
-                    val dto = OSDto(document.dokument.transaksjonsId, trekk.trekkid, document.dokument.innrapporteringTrekk, documentJson)
+                    val dto =
+                        OSDto(
+                            document.dokument.transaksjonsId,
+                            trekk.trekkid,
+                            trekkversjon = trekk.trekkversjon,
+                            document.dokument.innrapporteringTrekk,
+                            documentJson,
+                        )
                     repositoryNy.insertTransaksjonTilOs(dto, session)
                     repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session = session)
                 }

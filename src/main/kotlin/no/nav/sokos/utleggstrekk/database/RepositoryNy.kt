@@ -212,6 +212,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         const val TRANSAKSJONS_ID_PARAM = "transaksjonsId"
         const val TRANSAKSJON_STATUS_PARAM = "transaksjonStatus"
         const val TREKK_ID_SKE_PARAM = "trekkIdSke"
+        const val TREKKVERSJON_PARAM = "trekkversjon"
         const val KVITTERING_STATUS_PARAM = "kvitteringStatus"
         const val AKSJONSKODE_PARAM = "aksjonskode"
         const val KREDITOR_ID_TSS_PARAM = "kreditorIdTss"
@@ -262,6 +263,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                           ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}, 
                            ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}, 
                            ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}, 
+                           ${TransaksjonOsTable.TREKKVERSJON_COLUMN}, 
                            ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}, 
                            ${TransaksjonOsTable.AKSJONSKODE_COLUMN}, 
                            ${TransaksjonOsTable.KREDITOR_ID_TSS_COLUMN}, 
@@ -279,6 +281,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                           :${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM},
                           :${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
                           :${TransaksjonOsTable.TREKK_ID_SKE_PARAM},
+                          :${TransaksjonOsTable.TREKKVERSJON_PARAM},
                           :${TransaksjonOsTable.KVITTERING_STATUS_PARAM},
                           :${TransaksjonOsTable.AKSJONSKODE_PARAM},
                           :${TransaksjonOsTable.KREDITOR_ID_TSS_PARAM},
@@ -298,6 +301,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to dto.transaksjonID,
                         TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to TransaksjonsStatus.IKKE_SENDT.name,
                         TransaksjonOsTable.TREKK_ID_SKE_PARAM to dto.trekkIDSke,
+                        TransaksjonOsTable.TREKKVERSJON_PARAM to dto.trekkversjon,
                         TransaksjonOsTable.KVITTERING_STATUS_PARAM to KvitteringStatus.IKKE_MOTTATT.name,
                         TransaksjonOsTable.AKSJONSKODE_PARAM to dto.innrapporteringTrekk.aksjonskode.name,
                         TransaksjonOsTable.KREDITOR_ID_TSS_PARAM to dto.innrapporteringTrekk.kreditorIdTss,
