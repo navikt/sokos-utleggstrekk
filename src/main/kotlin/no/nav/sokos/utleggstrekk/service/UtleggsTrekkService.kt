@@ -56,6 +56,7 @@ class UtleggsTrekkService(
             processTrekkpaalegg(nyeUtleggsTrekk)
             val duration = System.currentTimeMillis() - time
             if (nyeUtleggsTrekk.size > 0) {
+                // Sekunder per tusen, men fordi duration er millsekunder trenger vi ikke dele igjen.
                 Metrics.tidBruktPaaLagringAvUtleggstrekk.set(duration / (nyeUtleggsTrekk.size.toDouble()))
             }
         } while (nyeUtleggsTrekk.size >= maxAntall)
