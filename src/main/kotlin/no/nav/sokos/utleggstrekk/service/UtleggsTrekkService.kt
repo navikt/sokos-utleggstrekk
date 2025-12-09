@@ -55,7 +55,9 @@ class UtleggsTrekkService(
             val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
             processTrekkpaalegg(nyeUtleggsTrekk)
             val duration = System.currentTimeMillis() - time
-            Metrics.tidBruktPaaLagringAvUtleggstrekk.set(duration / (nyeUtleggsTrekk.size.toDouble()))
+            if (nyeUtleggsTrekk.size > 0) {
+                Metrics.tidBruktPaaLagringAvUtleggstrekk.set(duration / (nyeUtleggsTrekk.size.toDouble()))
+            }
         } while (nyeUtleggsTrekk.size >= maxAntall)
     }
 
