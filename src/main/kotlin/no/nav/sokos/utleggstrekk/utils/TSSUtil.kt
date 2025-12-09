@@ -1,6 +1,5 @@
 package no.nav.sokos.utleggstrekk.utils
 
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 
 enum class TSSId(
@@ -28,15 +27,6 @@ enum class TSSId(
                 }?.tssId
                 ?: throw NotImplementedError(
                     "Kombinasjonen Orgnr=${trekkpaalegg.betalingsinformasjon.betalingsmottaker} og KOnto=${trekkpaalegg.betalingsinformasjon.kontonummer} gir ingen TSSID.",
-                )
-
-        fun getTSSId(trekkpaalegg: UtleggstrekkTable): String =
-            TSSId.entries
-                .firstOrNull {
-                    trekkpaalegg.betalingsmottaker == it.orgnr && trekkpaalegg.kontonummer == it.konto
-                }?.tssId
-                ?: throw NotImplementedError(
-                    "Kombinasjonen Orgnr=${trekkpaalegg.betalingsmottaker} og Konto=${trekkpaalegg.kontonummer} gir ingen TSSID.",
                 )
     }
 }
