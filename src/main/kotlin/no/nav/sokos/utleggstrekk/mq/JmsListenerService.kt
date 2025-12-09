@@ -20,6 +20,8 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
+import no.nav.sokos.utleggstrekk.metrics.Metrics.trekkAvvistAvOs
+import no.nav.sokos.utleggstrekk.metrics.Metrics.trekkKvittertForAvOS
 import no.nav.sokos.utleggstrekk.service.SlackService
 
 class JmsListenerService(
@@ -70,6 +72,9 @@ class JmsListenerService(
         if (kvitteringStatus == KvitteringStatus.FEIL) {
             repositoryNy.insertFeilmeldingFraOS(receipt)
             logError(receipt)
+            trekkAvvistAvOs.inc()
+        } else {
+            trekkKvittertForAvOS.inc()
         }
     }
 

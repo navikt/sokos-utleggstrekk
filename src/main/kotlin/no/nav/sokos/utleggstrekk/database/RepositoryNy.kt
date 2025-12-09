@@ -230,6 +230,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         const val TRANSAKSJONS_ID_COLUMN = "transaksjons_id"
         const val TRANSAKSJON_STATUS_COLUMN = "transaksjon_status"
         const val TREKK_ID_SKE_COLUMN = "trekk_id_ske"
+        const val TREKKVERSJON_COLUMN = "trekkversjon"
         const val KVITTERING_STATUS_COLUMN = "kvittering_status"
         const val TIDSPUNKT_SENDT_COLUMN = "tidspunkt_sendt"
         const val TIDSPUNKT_SISTE_STATUS_COLUMN = "tidspunkt_siste_status"
@@ -641,6 +642,39 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             }.toSet()
 
     fun <A> withTransaction(operation: (TransactionalSession) -> A): A = dataSource.withTransaction(operation)
+
+    fun countUtleggstrekk(): Map<Trekkstatus, Long> =
+        dataSource.withTransaction { session ->
+            session
+                .list(
+                    queryOf(
+                        """
+                        SELECT trekkstatus, COUNT(*) as count
+                            FROM (SELECT DISTINCT ON (trekkid) trekkid, trekkstatus 
+                                FROM fraskatt ORDER BY trekkid, trekkversjon DESC) 
+                            t GROUP BY trekkstatus
+                        """.trimIndent(),
+                    ),
+                ) { row -> Trekkstatus.valueOf(row.string("trekkstatus")) to row.long("count") }
+                .toMap()
+        }
+
+    fun countKvitterteTrekkTilOS(): Map<TrekkAlternativ, Long> =
+        dataSource.withTransaction { session ->
+            session
+                .list(
+                    queryOf(
+                        """
+                        SELECT trekk_alternativ, COUNT(*) as count
+                            FROM (SELECT DISTINCT ON (trekk_id_ske) trekk_id_ske, trekk_alternativ 
+                                FROM transaksjon_os WHERE kvittering_status=:kvitteringStatus ORDER BY trekk_id_ske, trekkversjon DESC)  
+                            t GROUP BY trekk_alternativ
+                        """.trimIndent(),
+                        mapOf("kvitteringStatus" to KvitteringStatus.OK.name),
+                    ),
+                ) { row -> TrekkAlternativ.valueOf(row.string("trekk_alternativ")) to row.long("count") }
+                .toMap()
+        }
 }
 
 fun <A> HikariDataSource.withTransaction(operation: (TransactionalSession) -> A): A =

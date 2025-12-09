@@ -8,6 +8,7 @@ import jakarta.jms.Queue
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.MQConfig
+import no.nav.sokos.utleggstrekk.metrics.Metrics.trekkSendtTilOs
 
 class JmsProducerService(
     private val targetQueue: Queue,
@@ -28,6 +29,7 @@ class JmsProducerService(
         try {
             producer.send(targetQueue, message)
             jmsContext.commit()
+            trekkSendtTilOs.inc()
         } catch (exception: Exception) {
             logger.error(exception) { "MQ-transaksjon feilet. ${message.jmsMessageID}" }
             jmsContext.rollback()
