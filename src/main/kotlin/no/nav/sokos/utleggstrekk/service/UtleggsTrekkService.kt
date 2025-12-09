@@ -86,7 +86,7 @@ class UtleggsTrekkService(
         runCatching {
             mqProducer.send(transaksjonOS.documentJson)
         }.onSuccess {
-            repositoryNy.updateTransaksjonStatus(transaksjonOS.transaksjonsID, TransaksjonsStatus.SENDT)
+            repositoryNy.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
             logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
         }
