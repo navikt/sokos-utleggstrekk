@@ -11,7 +11,6 @@ import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
-import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
@@ -66,7 +65,7 @@ class UtleggsTrekkService(
         runCatching {
             mqProducer.send(transaksjonOS.documentJson)
         }.onSuccess {
-            repositoryNy.updateTransaksjonStatus(transaksjonOS.transaksjonsID, TransaksjonsStatus.SENDT)
+            repositoryNy.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
             logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
         }

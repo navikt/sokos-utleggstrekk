@@ -10,7 +10,6 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
-import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
@@ -43,7 +42,7 @@ class SkeEksemplerTest :
 
         // Flags transaction_os as SENT and OKed.
         fun simulerOkFraOS(document: Document) {
-            DBListener.RepositoryNy.updateTransaksjonStatus(document.transaksjonsId, TransaksjonsStatus.SENDT)
+            DBListener.RepositoryNy.updateTransaksjonSendt(document.transaksjonsId)
             DBListener.RepositoryNy.updateTransaksjon(
                 document.transaksjonsId,
                 KvitteringStatus.OK,
