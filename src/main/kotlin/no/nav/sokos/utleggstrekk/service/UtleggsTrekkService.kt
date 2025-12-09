@@ -20,6 +20,7 @@ import no.nav.sokos.utleggstrekk.metrics.Metrics.set
 import no.nav.sokos.utleggstrekk.metrics.Metrics.utleggstrekkFraSkatt
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
+import no.nav.sokos.utleggstrekk.utils.DurationUtil.durationOf
 
 class UtleggsTrekkService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
@@ -92,17 +93,16 @@ class UtleggsTrekkService(
     }
 
     private fun calulateMetrics() {
-        val start = System.currentTimeMillis()
+        val duration =
+            durationOf {
+                val utleggstrekkCounts = repositoryNy.countUtleggstrekk()
+                Metrics.utleggstrekkAktive.set(utleggstrekkCounts[Trekkstatus.AKTIV] ?: 0)
+                Metrics.utleggstrekkAvsluttede.set(utleggstrekkCounts[Trekkstatus.AVSLUTTET] ?: 0)
 
-        val utleggstrekkCounts = repositoryNy.countUtleggstrekk()
-        Metrics.utleggstrekkAktive.set(utleggstrekkCounts[Trekkstatus.AKTIV] ?: 0)
-        Metrics.utleggstrekkAvsluttede.set(utleggstrekkCounts[Trekkstatus.AVSLUTTET] ?: 0)
-
-        val kvitterteTrekk = repositoryNy.countKvitterteTrekkTilOS()
-        Metrics.aktiveTrekkKvittert.labelValues("prosenttrekk").set(kvitterteTrekk[TrekkAlternativ.LOPP] ?: 0)
-        Metrics.aktiveTrekkKvittert.labelValues("beløpstrekk").set(kvitterteTrekk[TrekkAlternativ.LOPM] ?: 0)
-
-        val duration = System.currentTimeMillis() - start
+                val kvitterteTrekk = repositoryNy.countKvitterteTrekkTilOS()
+                Metrics.aktiveTrekkKvittert.labelValues("prosenttrekk").set(kvitterteTrekk[TrekkAlternativ.LOPP] ?: 0)
+                Metrics.aktiveTrekkKvittert.labelValues("beløpstrekk").set(kvitterteTrekk[TrekkAlternativ.LOPM] ?: 0)
+            }
         Metrics.tidBruktMetrics.set(duration / 1000.0)
     }
 }
