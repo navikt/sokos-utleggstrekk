@@ -11,7 +11,6 @@ import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
-import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
