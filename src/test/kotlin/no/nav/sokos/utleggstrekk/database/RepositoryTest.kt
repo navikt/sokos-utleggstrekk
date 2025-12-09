@@ -17,6 +17,9 @@ import io.kotest.matchers.shouldNotBe
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.RepositoryNy.TransaksjonOsTable.TIDSPUNKT_SENDT_COLUMN
+import no.nav.sokos.utleggstrekk.database.RepositoryNy.TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN
+import no.nav.sokos.utleggstrekk.database.RepositoryNy.TransaksjonOsTable.TRANSAKSJONS_ID_PARAM
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
@@ -100,11 +103,21 @@ class RepositoryTest :
                     dokument,
                 )
             RepositoryNy.insertTransaksjonTilOs(dtoSomErSendt)
-            RepositoryNy.updateTransaksjonStatus(dtoSomErSendt.transaksjonID, TransaksjonsStatus.SENDT)
+            RepositoryNy.updateTransaksjonSendt(dtoSomErSendt.transaksjonID)
 
             Then("Finnes det en transaksjon som ikke er sendt") {
                 val ikkeSendt = RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt()
                 ikkeSendt.shouldHaveSize(1)
+            }
+            Then("Den sendte transaksjonen har fått oppdatert tidspunkt") {
+                RepositoryNy.withTransaction { session ->
+                    session.list(
+                        queryOf(
+                            "SELECT $TIDSPUNKT_SENDT_COLUMN FROM transaksjon_os WHERE $TRANSAKSJONS_ID_COLUMN=:transaksjonId",
+                            mapOf(TRANSAKSJONS_ID_PARAM to dtoSomErSendt.transaksjonID),
+                        ),
+                    ) { row -> row.localDateTime(TIDSPUNKT_SENDT_COLUMN) } shouldNotBe null
+                }
             }
         }
 
@@ -250,7 +263,7 @@ class RepositoryTest :
             }
 
             When("Transaksjonstatus oppdateres") {
-                RepositoryNy.updateTransaksjonStatus(dto.transaksjonID, TransaksjonsStatus.SENDT)
+                RepositoryNy.updateTransaksjonSendt(dto.transaksjonID)
                 val transaksjonTilOs = RepositoryNy.getTransaksjonTilOs(dto.transaksjonID)
                 transaksjonTilOs.shouldNotBeNull()
                 Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
@@ -423,7 +436,7 @@ class RepositoryTest :
             }
 
             When("Vi oppdaterer en transaksjonstatus") {
-                RepositoryNy.updateTransaksjonStatus(transaksjonsId3, TransaksjonsStatus.SENDT)
+                RepositoryNy.updateTransaksjonSendt(transaksjonsId3)
 
                 Then("Skal ny status settes korrekt") {
                     val transaksjoner = RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkId)

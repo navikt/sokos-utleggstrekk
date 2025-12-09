@@ -19,7 +19,6 @@ import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
-import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.Mmel
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -182,7 +181,7 @@ internal class LifecycleTest :
             service.behandleTrekk()
 
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
-            ikkeSendt.forEach { repository.updateTransaksjonStatus(it.transaksjonsID, TransaksjonsStatus.SENDT) }
+            ikkeSendt.forEach { repository.updateTransaksjonSendt(it.transaksjonsID) }
 
             val skalSlettes1 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv1" }!!
             repository.updateTransaksjon(skalSlettes1.transaksjonsID, KvitteringStatus.OK, "navid1")
