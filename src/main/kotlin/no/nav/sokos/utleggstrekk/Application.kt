@@ -1,5 +1,9 @@
 package no.nav.sokos.utleggstrekk
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.ApplicationStopped
@@ -15,6 +19,7 @@ import no.nav.sokos.utleggstrekk.config.AzureConfiguration
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
+import no.nav.sokos.utleggstrekk.domene.nav.scheduling.UtleggstrekkScheduler
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 
 fun main() {
@@ -24,17 +29,22 @@ fun main() {
 private fun Application.module() {
     val applicationState = ApplicationState()
     val azureConfiguration = AzureConfiguration()
+    val utleggsTrekkService = UtleggsTrekkService()
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     commonConfig(azureConfiguration)
     applicationLifecycleConfig(applicationState)
     routing {
         internalNaisRoutes(applicationState)
-        utleggstrekkApi(UtleggsTrekkService())
+        utleggstrekkApi(utleggsTrekkService)
     }
 
     if (!PropertiesConfig.isLocal) {
         PostgresDataSource.migrate()
     }
+
+    val minutes = (PropertiesConfig.getOrNull("SCHEDULER_MINUTES") ?: "55").toInt()
+    UtleggstrekkScheduler(appScope).scheduleHourlyAt(minutes) { utleggsTrekkService.schedule() }
 }
 
 fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
