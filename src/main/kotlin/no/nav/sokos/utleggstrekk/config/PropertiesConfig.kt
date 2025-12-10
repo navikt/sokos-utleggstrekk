@@ -65,6 +65,8 @@ object PropertiesConfig {
 
     fun getOrEmpty(key: String): String = config.getOrElse(Key(key, stringType), "")
 
+    fun getOrNull(key: String): String? = config.getOrElse(Key(key, stringType), null)
+
     data class Configuration(
         val naisAppName: String = get("NAIS_APP_NAME"),
         val profile: Profile = Profile.valueOf(get("APPLICATION_PROFILE")),
