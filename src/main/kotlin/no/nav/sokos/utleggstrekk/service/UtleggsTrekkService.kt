@@ -11,9 +11,15 @@ import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
+import no.nav.sokos.utleggstrekk.metrics.Metrics
+import no.nav.sokos.utleggstrekk.metrics.Metrics.set
+import no.nav.sokos.utleggstrekk.metrics.Metrics.utleggstrekkFraSkatt
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
+import no.nav.sokos.utleggstrekk.utils.DurationUtil.durationOf
 
 class UtleggsTrekkService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
@@ -35,18 +41,24 @@ class UtleggsTrekkService(
         lagreAlleNyeUtleggstrekk()
         BehandleTrekkServiceNy(repositoryNy).behandleTrekk()
         repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
-
         // TODO: Fjerne når vi bekreftet at secure logger funker
         logger.info(marker = TEAM_LOGS_MARKER) {
-            "Alle nye utleggstrekk er lagget."
+            "Alle nye utleggstrekk er lagret."
         }
         repositoryNy.deleteOldData()
+        calulateMetrics()
     }
 
     private suspend fun lagreAlleNyeUtleggstrekk() {
         do {
+            val time = System.currentTimeMillis()
             val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
             processTrekkpaalegg(nyeUtleggsTrekk)
+            val duration = System.currentTimeMillis() - time
+            if (nyeUtleggsTrekk.size > 0) {
+                // Sekunder per tusen, men fordi duration er millsekunder trenger vi ikke dele igjen.
+                Metrics.tidBruktPaaLagringAvUtleggstrekk.set(duration / (nyeUtleggsTrekk.size.toDouble()))
+            }
         } while (nyeUtleggsTrekk.size >= maxAntall)
     }
 
@@ -56,8 +68,16 @@ class UtleggsTrekkService(
     }
 
     private fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
+        // Sortert for at vi ikke skal hoppe over noen i sekvens dersom vi feiler før alle er lagret.
         trekkpaalegg.sortedBy { it.sekvensnummer }.forEach { trekk ->
-            repositoryNy.insertTrekkFraSkatt(trekk)
+            try {
+                repositoryNy.insertTrekkFraSkatt(trekk)
+                utleggstrekkFraSkatt.inc()
+            } catch (e: Exception) {
+                logger.error("Kunne ikke lagre trekkpåleg sekvens #${trekk.sekvensnummer} ", e)
+                // Kaster exception videre fordi vi ønsker å avslutte henting og lagring selv om MAX_ANTALL ikke er nådd
+                throw e
+            }
         }
     }
 
@@ -69,5 +89,19 @@ class UtleggsTrekkService(
         }.onFailure { exception ->
             logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
         }
+    }
+
+    private fun calulateMetrics() {
+        val duration =
+            durationOf {
+                val utleggstrekkCounts = repositoryNy.countUtleggstrekk()
+                Metrics.utleggstrekkAktive.set(utleggstrekkCounts[Trekkstatus.AKTIV] ?: 0)
+                Metrics.utleggstrekkAvsluttede.set(utleggstrekkCounts[Trekkstatus.AVSLUTTET] ?: 0)
+
+                val kvitterteTrekk = repositoryNy.countKvitterteTrekkTilOS()
+                Metrics.aktiveTrekkKvittert.labelValues("prosenttrekk").set(kvitterteTrekk[TrekkAlternativ.LOPP] ?: 0)
+                Metrics.aktiveTrekkKvittert.labelValues("beløpstrekk").set(kvitterteTrekk[TrekkAlternativ.LOPM] ?: 0)
+            }
+        Metrics.tidBruktMetrics.set(duration / 1000.0)
     }
 }

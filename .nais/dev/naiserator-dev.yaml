@@ -54,6 +54,13 @@ spec:
         - host: api-test.sits.no
   ingresses:
     - https://sokos-utleggstrekk.intern.dev.nav.no
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   vault:
     enabled: true
   maskinporten:

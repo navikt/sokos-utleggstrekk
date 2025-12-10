@@ -2,10 +2,6 @@ package no.nav.sokos.utleggstrekk.domene.nav
 
 import kotlinx.serialization.Serializable
 
-import no.nav.sokos.utleggstrekk.database.model.UtleggstrekkTable
-import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
-import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
-
 // De er på samme format
 typealias KvitteringFraOppdrag = TrekkTilOppdrag
 typealias DokumentTilOppdrag = Document
@@ -13,6 +9,7 @@ typealias DokumentTilOppdrag = Document
 data class OSDto(
     val transaksjonID: String,
     val trekkIDSke: String,
+    val trekkversjon: Int,
     val innrapporteringTrekk: InnrapporteringTrekk,
     val documentJson: String,
 )
@@ -82,19 +79,6 @@ enum class Aksjonskode(val value: String) {
     NY("NY"),
     ENDR("ENDR"),
     OPPH("OPPH"),
-    ;
-
-    companion object {
-        @Deprecated("Skal slettes")
-        fun getAksjonskodeForTrekk(utleggstrekkTable: UtleggstrekkTable): Aksjonskode =
-            if (utleggstrekkTable.trekkstatus == Trekkstatus.AKTIV && utleggstrekkTable.trekkversjon == 1) {
-                NY
-            } else if (utleggstrekkTable.trekkstatus == Trekkstatus.AVSLUTTET) {
-                OPPH
-            } else {
-                ENDR
-            }
-    }
 }
 
 // Aksjonskoder er NY, ENDR (endring), KANS (kanseller), OPPH (opphør), ENRS (endring restsaldo).
@@ -105,17 +89,4 @@ enum class TrekkAlternativ(val value: String) {
     ;
 
     val suffix = name[3]
-
-    companion object {
-        fun getTrekkAlternativ(periode: TrekkstorrelseForPeriode): TrekkAlternativ =
-            if (periode.trekkbeloep != null && periode.trekkprosent == null) {
-                LOPM
-            } else if (periode.trekkprosent != null && periode.trekkbeloep == null) {
-                LOPP
-            } else {
-                throw NotImplementedError(
-                    "Begge felter fra skatt, beløp og prosent, er null eller utfylt, Trekkalternativ kan ikke fylles ut. Kun et av den er gyldige for en periode",
-                )
-            }
-    }
 }

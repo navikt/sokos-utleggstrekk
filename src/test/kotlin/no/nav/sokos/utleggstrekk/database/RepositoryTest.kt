@@ -85,6 +85,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = "SkalSendes",
                     skalSendes.trekkid,
+                    trekkversjon = 1,
                     lagDokumentTilOppdrag("SkalSendes").innrapporteringTrekk,
                     dokument,
                 )
@@ -97,6 +98,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = "SkalIkkeSendes",
                     trekkSomErSendt.trekkid,
+                    trekkversjon = 1,
                     lagDokumentTilOppdrag("SkalIkkeSendes").innrapporteringTrekk, // TODO: Legge inn faktisk dokument
                     dokument,
                 )
@@ -196,6 +198,7 @@ class RepositoryTest :
                 OSDto(
                     "0cf39d33-8b50-4694-8d70-7ff06c35e42a",
                     trekkIDSke = "10013",
+                    trekkversjon = 1,
                     InnrapporteringTrekk(
                         Aksjonskode.NY,
                         "navtrekkid",
@@ -229,6 +232,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = "123id",
                     "Et trekk",
+                    trekkversjon = 1,
                     lagDokumentTilOppdrag("TransaksjonIDa").innrapporteringTrekk,
                     "",
                 )
@@ -378,6 +382,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = transaksjonsId1,
                     trekkId,
+                    trekkversjon = 1,
                     dokument1.innrapporteringTrekk,
                     jsonConfig.encodeToString<DokumentTilOppdrag>(dokument1),
                 )
@@ -385,6 +390,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = transaksjonsId2,
                     trekkId,
+                    trekkversjon = 1,
                     dokument2.innrapporteringTrekk,
                     jsonConfig.encodeToString<DokumentTilOppdrag>(dokument2),
                 )
@@ -393,6 +399,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = transaksjonsId3,
                     trekkId,
+                    trekkversjon = 1,
                     dokument3.innrapporteringTrekk,
                     jsonConfig.encodeToString<DokumentTilOppdrag>(dokument3),
                 )
@@ -459,6 +466,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = transaksjonsId1,
                     trekkIdSke,
+                    trekkversjon = 1,
                     lagDokumentTilOppdrag(transaksjonsId1).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPM)).innrapporteringTrekk,
                     "",
                 )
@@ -466,6 +474,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = transaksjonsId2,
                     trekkIdSke,
+                    trekkversjon = 1,
                     lagDokumentTilOppdrag(transaksjonsId2).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPP)).innrapporteringTrekk,
                     "",
                 )
@@ -498,6 +507,7 @@ class RepositoryTest :
                 OSDto(
                     transaksjonID = transaksjosID,
                     trekkIdSke,
+                    trekkversjon = 1,
                     lagDokumentTilOppdrag(transaksjosID)
                         .copy(
                             innrapporteringTrekk =
