@@ -11,92 +11,83 @@ const val METRICS_NAMESPACE = "sokos_utleggstrekk"
 object Metrics {
     val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
 
-    val appStateRunningFalse: Counter =
+    val utleggstrekkFraSkatt =
+        counter(
+            "${METRICS_NAMESPACE}_utleggstrekk_fra_skatt",
+            "Antall trekkversjoner mottatt fra skatt",
+        )
+
+    val trekkSendtTilOs =
+        counter(
+            "trekk_sendt_til_os",
+            "Antall trekk sendt til os",
+        )
+
+    val trekkKvittertForAvOS =
+        counter(
+            "trekk_kvittert_for_av_os",
+            "Antall trekk oppdragssystemet har kvittert OK for",
+        )
+
+    val trekkAvvistAvOs =
+        counter(
+            "trekk_avvist_av_os",
+            "Antall trekk Oppdragssystemet har avvist",
+        )
+
+    val aktiveTrekkKvittert =
+        gauge(
+            "antall_aktive_trekk_kvittert_av_OS",
+            "Antallet aktive trekk kvittert for av OS",
+            "trekkalternativ",
+        )
+
+    val utleggstrekkAktive =
+        gauge(
+            "utleggstrekk_fra_skatt_aktive",
+            "Antall aktive utleggstrekk",
+        )
+
+    val utleggstrekkAvsluttede =
+        gauge(
+            "_utleggstrekk_fra_skatt_avsluttet",
+            "Antall avsluttede utleggstrekk",
+        )
+
+    val tidBruktPaaLagringAvUtleggstrekk =
+        gauge(
+            "tid_brukt_paa_lagring_av_utleggstrekk",
+            "Tiden det tar å lagre utleggstrekk per 1000",
+        )
+
+    val tidBruktMetrics =
+        gauge(
+            "tid_brukt_paa_metrikker",
+            "Sekunder brukt på å beregne metrikker",
+        )
+
+    fun counter(name: String, helpText: String): Counter =
         Counter
             .builder()
-            .name("app_state_running_false")
-            .help("app state running changed to false")
+            .name("${METRICS_NAMESPACE}_$name")
+            .help(helpText)
             .withoutExemplars()
             .register(registry.prometheusRegistry)
 
-    val appStateReadyFalse: Counter =
-        Counter
-            .builder()
-            .name("app_state_ready_false")
-            .help("app state ready changed to false")
-            .withoutExemplars()
-            .register(registry.prometheusRegistry)
-
-    val utleggstrekkFraSkatt: Counter =
-        Counter
-            .builder()
-            .name("${METRICS_NAMESPACE}_utleggstrekk_fra_skatt")
-            .help("Antall trekkversjoner mottatt fra skatt")
-            .withoutExemplars()
-            .register(registry.prometheusRegistry)
-
-    val trekkSendtTilOs: Counter =
-        Counter
-            .builder()
-            .name("${METRICS_NAMESPACE}_trekk_sendt_til_os")
-            .help("Antall trekk sendt til os")
-            .withoutExemplars()
-            .register(registry.prometheusRegistry)
-
-    val trekkKvittertForAvOS: Counter =
-        Counter
-            .builder()
-            .name("${METRICS_NAMESPACE}_trekk_kvittert_for_av_os")
-            .help("Antall trekk oppdragssystemet har kvittert OK for")
-            .withoutExemplars()
-            .register(registry.prometheusRegistry)
-
-    val trekkAvvistAvOs: Counter =
-        Counter
-            .builder()
-            .name("${METRICS_NAMESPACE}_trekk_avvist_av_os")
-            .help("Antall trekk Oppdragssystemet har avvist")
-            .withoutExemplars()
-            .register(registry.prometheusRegistry)
-
-    val aktiveTrekkKvittert: Gauge =
+    fun gauge(name: String, helpText: String): Gauge =
         Gauge
             .builder()
-            .name("${METRICS_NAMESPACE}_antall_aktive_trekk_kvittert_av_OS")
-            .help("Antallet aktive trekk kvittert for av OS")
-            .labelNames("trekkalternativ")
+            .name("${METRICS_NAMESPACE}_$name")
+            .help(helpText)
             .withoutExemplars()
             .register(registry.prometheusRegistry)
 
-    val utleggstrekkAktive: Gauge =
+    fun gauge(name: String, helpText: String, labelNames: String): Gauge =
         Gauge
             .builder()
-            .name("${METRICS_NAMESPACE}_utleggstrekk_fra_skatt_aktive")
-            .help("Antall aktive utleggstrekk")
-            .withoutExemplars()
-            .register(registry.prometheusRegistry)
-
-    val utleggstrekkAvsluttede: Gauge =
-        Gauge
-            .builder()
-            .name("${METRICS_NAMESPACE}_utleggstrekk_fra_skatt_avsluttet")
-            .help("Antall avsluttede utleggstrekk")
-            .withoutExemplars()
-            .register(registry.prometheusRegistry)
-
-    val tidBruktPaaLagringAvUtleggstrekk: Gauge =
-        Gauge
-            .builder()
-            .name("${METRICS_NAMESPACE}_tid_brukt_på_lagring_av_utleggstrekk")
-            .help("Tiden det tar å lagre utleggstrekk per 1000")
-            .withoutExemplars()
-            .register(registry.prometheusRegistry)
-
-    val tidBruktMetrics: Gauge =
-        Gauge
-            .builder()
-            .name("${METRICS_NAMESPACE}_tid_brukt_på_metrikker")
-            .help("Sekunder brukt på å beregne metrikker")
+            .labelNames(labelNames)
+            .name("${METRICS_NAMESPACE}_$name")
+            .help(helpText)
             .withoutExemplars()
             .register(registry.prometheusRegistry)
 
