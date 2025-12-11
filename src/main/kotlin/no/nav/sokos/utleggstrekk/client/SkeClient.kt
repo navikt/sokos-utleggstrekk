@@ -50,7 +50,7 @@ class SkeClient(
                 if (status.isClientError() || status.isServerError()) {
                     slackService.addError("HTTP error", "Kunne ikke få trekk for sekvensnummer=$sekvensnr: $status")
                 }
-            }?.toTrekkpaalegg() ?: emptyList()
+            }?.toTrekkpaalegg(sekvensnr) ?: emptyList()
 
     private suspend fun commonHeaders(): HeadersBuilder.() -> Unit {
         val token = tokenProvider.getAccessToken()
@@ -61,11 +61,16 @@ class SkeClient(
         }
     }
 
-    private suspend fun HttpResponse.toTrekkpaalegg() =
+    private suspend fun HttpResponse.toTrekkpaalegg(sekvensnr: Int? = null) =
         try {
-            body<List<Trekkpaalegg>>()
+            body<List<Trekkpaalegg>>().also {
+                if (it.isEmpty()) {
+                    slackService.addError("Manglende data", "Fikk ingen data for sekvensnummer=$sekvensnr")
+                }
+            }
         } catch (e: JsonConvertException) {
             logger.error { "Feil i konvertering av response: ${e.message}" }
+            slackService.addError("Trekk konvertering error", "Feil i konvertering av response for sekvensnummer=$sekvensnr: ${e.message}")
             emptyList()
         }
 }
