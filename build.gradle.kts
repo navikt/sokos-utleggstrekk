@@ -42,7 +42,7 @@ val kotlinLoggingVersion = "3.0.5"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.0.5"
+val kotestVersion = "6.0.7"
 val mockkVersion = "1.14.6"
 val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.3"
