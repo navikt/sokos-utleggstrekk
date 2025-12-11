@@ -9,6 +9,7 @@ on:
       - '.gitignore'
       - '.editorconfig'
       - 'setupLocalEnvironment.sh'
+      - '.scripts'
       - 'dokumentasjon/**'
       - '.github/workflows/chainguard-digestabot.yaml'
       - '.github/workflows/codeql-trivy-scan.yaml'
