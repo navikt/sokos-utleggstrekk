@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.service
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 import kotliquery.TransactionalSession
@@ -30,8 +31,7 @@ const val KODE_TREKKTYPE = "TRK1"
 const val KILDE = "SOKOSUTLEGG"
 
 class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource)) {
-    // Ting er allerede lagret i databasen når vi kommer hit
-
+    // TODO: Bør være private
     fun behandleTrekk() =
         repositoryNy.getTrekkSomIkkeErBehandlet().forEach { trekk ->
 
@@ -49,22 +49,48 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
                             documentJson,
                         )
                     repositoryNy.insertTransaksjonTilOs(dto, session)
-                    repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session = session)
+                    repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session)
                 }
             }
         }
+
+    private fun mapNewFomTom(periode: PeriodeTilOS): PeriodeTilOS {
+        val nyTom =
+            periode.periodeTomDato?.let {
+                val originalTom = LocalDate.parse(periode.periodeTomDato, DateTimeFormatter.ISO_DATE)
+                originalTom.withDayOfMonth(originalTom.lengthOfMonth())
+            }
+        val originalFom = LocalDate.parse(periode.periodeFomDato, DateTimeFormatter.ISO_DATE)
+        val nyFom = originalFom.withDayOfMonth(1)
+
+        return periode.copy(periodeFomDato = nyFom.toString(), periodeTomDato = nyTom?.toString())
+    }
 
     private fun lagTrekkDokument(trekk: TrekkFraSkatt, session: TransactionalSession): List<TrekkTilOppdrag> {
         // Vi trenger å vite om trekk(ene) er kjent for OS
         val kjenteAlternativ = repositoryNy.getOsAlternativForTrekk(trekk, session)
         val nyePerioderTilOS = nyePerioderTilOS(trekk, session)
 
+        // Hvor bør dette ligge?
+        // Endre sa det alltid skal settes til den siste dagen, uavhengig om det er en tidligere periode eller inneværende eller fremtidig
+        val nyLOPM =
+            nyePerioderTilOS.LOPM
+                .map { periode ->
+                    mapNewFomTom(periode)
+                }.ifEmpty { nyePerioderTilOS.LOPM }
+        val nyLOPP =
+            nyePerioderTilOS.LOPP
+                .map { periode ->
+                    mapNewFomTom(periode)
+                }.ifEmpty { nyePerioderTilOS.LOPP }
+
+        val periodeTilOS = nyePerioderTilOS.copy(LOPM = nyLOPM, LOPP = nyLOPP)
         return nyePerioderTilOS.alternativ.map { alternativ ->
             lagTrekkDokument(
                 trekkFraSkatt = trekk,
                 trekkalternativ = alternativ,
                 aksjonskode = if (kjenteAlternativ.contains(alternativ)) ENDR else NY,
-                perioderTilOS = if (trekk.trekkstatus == AVSLUTTET.name) emptyList() else nyePerioderTilOS[alternativ],
+                perioderTilOS = if (trekk.trekkstatus == AVSLUTTET.name) emptyList() else periodeTilOS[alternativ],
             )
         }
     }
@@ -130,7 +156,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         val perioder = Perioder(perioderTilOS.map { it.asPeriode() }).takeUnless { it.periode.isEmpty() }
 
         val transaksjonsID = UUID.randomUUID().toString()
-        val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().minusDays(1).toString() else null
+        val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().toString() else null
         val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
 
         val tssId = "80000423362" // TODO: Hent TSS med validering!

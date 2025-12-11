@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldBeEmpty
@@ -25,6 +26,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
+import no.nav.sokos.utleggstrekk.util.asDate
 import no.nav.sokos.utleggstrekk.util.dager
 import no.nav.sokos.utleggstrekk.util.idag
 import no.nav.sokos.utleggstrekk.util.mnd
@@ -39,80 +41,7 @@ class BehandleTrekkServiceTest :
             clearAllMocks()
         }
 
-        val gyldigTomDatoAvslutt = LocalDate.now().minusDays(1).toString()
-
-        fun lagTestTrekkFraSkatt(trekkVersjon: Int = 1): TrekkFraSkatt {
-            val tabellEntryId = 1L
-            val trekkVersjon = trekkVersjon
-            val sekvensnummer = 1
-            val trekkId = "2a"
-            val opprettet = "2024-06-16T13:33:05.672Z"
-            val saksnummer = "Test_Beløp1"
-            val trekkpliktig = "12345678901"
-            val skyldner = "10987654321"
-            val trekkstatus = Trekkstatus.AKTIV.name
-
-            return TrekkFraSkatt(
-                id = tabellEntryId,
-                trekkid = trekkId,
-                sekvensnummer = sekvensnummer,
-                trekkversjon = trekkVersjon,
-                opprettet = opprettet,
-                saksnummer = saksnummer,
-                trekkpliktig = trekkpliktig,
-                skyldner = skyldner,
-                trekkstatus = trekkstatus,
-            )
-        }
-
-        fun lagPeriodeForTrekkFraSkatt(
-            trekkFraSkatt: TrekkFraSkatt,
-            trekkAlternativ: TrekkAlternativ,
-            startDato: String = idag,
-            sluttDato: String = idag plus 3.mnd, // "2025-03-31",
-            sats: Double,
-        ): PeriodeFraSkatt {
-            val tabellEntryId = 1L
-            val fraSkattId = trekkFraSkatt.id
-            val trekkIdSke = trekkFraSkatt.trekkid
-            val startDato = startDato
-            val sluttDato = sluttDato
-            val trekkBelop = if (trekkAlternativ == TrekkAlternativ.LOPM) sats else null
-            val trekkProsent = if (trekkAlternativ == TrekkAlternativ.LOPP) sats else null
-            return PeriodeFraSkatt(tabellEntryId, fraSkattId, trekkIdSke, startDato, sluttDato, trekkBelop, trekkProsent)
-        }
-
-        fun lagPerioderForSkattLOPP(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> {
-            val perioderEn = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPP, idag, idag plus 3.mnd, 20.0)
-            val perioderTo = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPP, idag plus 3.mnd plus 1.dager, idag plus 5.mnd, 15.0)
-            val perioderTre = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPP, idag plus 5.mnd plus 1.dager, idag plus 7.mnd, 10.0)
-
-            return listOf(perioderEn, perioderTo, perioderTre)
-        }
-
-        fun lagPerioderForSkattLOPM(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> {
-            val perioderEn = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, idag, idag plus 3.mnd, 3000.0)
-            val perioderTo = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, idag plus 3.mnd plus 1.dager, idag plus 5.mnd, 2000.0)
-            val perioderTre = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, idag plus 5.mnd plus 1.dager, idag plus 7.mnd, 1000.0)
-
-            return listOf(perioderEn, perioderTo, perioderTre)
-        }
-
-        fun List<PeriodeFraSkatt>.toKnownPeriods() =
-            map {
-                PeriodeTilOS(
-                    sats = it.trekkprosent ?: it.trekkbeloep ?: 0.0,
-                    periodeFomDato = it.startdato,
-                    periodeTomDato = it.sluttdato,
-                )
-            }
-
-        fun lagBetalingsinformasjonForTrekkFraSkatt(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt {
-            val betalingsmottaker = "971648198"
-            val kidnummer = "17654202404"
-            val kontonummer = "76940512057"
-            return BetalingsinformasjonFraSkatt(1L, trekkFraSkatt.id, betalingsmottaker, kidnummer, kontonummer)
-        }
+        val gyldigTomDatoAvslutt = LocalDate.now().toString()
 
         fun setUpBehandleTrekkServiceNy(
             alleTrekkSomIkkeErBehandlet: List<TrekkFraSkatt>,
@@ -182,8 +111,24 @@ class BehandleTrekkServiceTest :
                         navTrekkId.shouldBeEmpty()
 
                         prioritetFomDato shouldBe null
-                        perioder.periode.first().periodeFomDato shouldBe periode.startdato
-                        perioder.periode.first().periodeTomDato shouldBe periode.sluttdato
+                        with(perioder.periode.first()) {
+                            val periodeFomAsDate = periodeFomDato.asDate
+                            val startDatoAsDate = periode.startdato.asDate
+
+                            periodeFomAsDate.year shouldBe startDatoAsDate.year
+                            periodeFomAsDate.monthValue shouldBe startDatoAsDate.monthValue
+                            periodeFomAsDate.dayOfMonth shouldBe 1
+
+                            periode.sluttdato?.let {
+                                periodeTomDato.shouldNotBeNull()
+                                val periodeTomAsDate = periodeTomDato.asDate
+                                val sluttDatoAsDate = periode.sluttdato.asDate
+
+                                periodeTomAsDate.year shouldBe sluttDatoAsDate.year
+                                periodeTomAsDate.monthValue shouldBe sluttDatoAsDate.monthValue
+                                periodeTomAsDate.dayOfMonth shouldBe sluttDatoAsDate.lengthOfMonth()
+                            }
+                        }
                     }
                 }
 
@@ -472,6 +417,71 @@ class BehandleTrekkServiceTest :
                     }
                 }
             }
+
+            val today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE).asDate
+
+            And("Sluttdato ikke er siste dato i måneden") {
+                val trekkVersjon = 1
+                val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
+                val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
+                val dateWithWrongSluttDato = if (today.dayOfMonth == today.lengthOfMonth()) today.minusDays(1) else today
+                val perioderForTrekk = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, sluttDato = dateWithWrongSluttDato.toString())
+
+                Then("Skal tom dato settes til siste dato i måneden") {
+
+                    val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, listOf(perioderForTrekk), emptyList())
+                    behandleTrekkServiceNy.behandleTrekk()
+
+                    capturedOSDtos shouldHaveSize 1
+                    with(capturedOSDtos.first().innrapporteringTrekk) {
+                        perioder!!.periode shouldHaveSize 1
+                        val periodeTom = perioder.periode.first().periodeTomDato!!
+                        println("original: $dateWithWrongSluttDato")
+                        println(periodeTom)
+                        LocalDate.parse(periodeTom).dayOfMonth shouldBe dateWithWrongSluttDato.lengthOfMonth()
+                    }
+                }
+            }
+            And("Perioden ikke har sluttdato") {
+                Then("Skal ikke tom-dato settes") {
+                    val trekkVersjon = 1
+                    val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
+                    val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
+
+                    val perioderForTrekk = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, sluttDato = null)
+
+                    val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, listOf(perioderForTrekk), emptyList())
+                    behandleTrekkServiceNy.behandleTrekk()
+
+                    capturedOSDtos shouldHaveSize 1
+                    with(capturedOSDtos.first().innrapporteringTrekk) {
+                        perioder!!.periode shouldHaveSize 1
+                        perioder.periode.first().periodeTomDato shouldBe null
+                    }
+                }
+            }
+            And("Perioden startdato ikke er første dato i måneden") {
+                val trekkVersjon = 1
+                val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
+                val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
+                val dateWithWrongStartDato = if (today.dayOfMonth == 1) today.plusDays(1) else today
+                val perioderForTrekk = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, startDato = dateWithWrongStartDato.toString())
+
+                Then("Skal fom-dato settes til den første i måneden") {
+
+                    val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, listOf(perioderForTrekk), emptyList())
+                    behandleTrekkServiceNy.behandleTrekk()
+
+                    capturedOSDtos shouldHaveSize 1
+                    with(capturedOSDtos.first().innrapporteringTrekk) {
+                        perioder!!.periode shouldHaveSize 1
+                        val periodeFom = perioder.periode.first().periodeFomDato
+                        println("original: $dateWithWrongStartDato")
+                        println(periodeFom)
+                        LocalDate.parse(periodeFom).dayOfMonth shouldBe 1
+                    }
+                }
+            }
         }
 
         Given("Et mottatt trekk har 3 perioder") {
@@ -693,3 +703,76 @@ class BehandleTrekkServiceTest :
             }
         }
     })
+
+private fun lagTestTrekkFraSkatt(trekkVersjon: Int = 1): TrekkFraSkatt {
+    val tabellEntryId = 1L
+    val trekkVersjon = trekkVersjon
+    val sekvensnummer = 1
+    val trekkId = "2a"
+    val opprettet = "2024-06-16T13:33:05.672Z"
+    val saksnummer = "Test_Beløp1"
+    val trekkpliktig = "12345678901"
+    val skyldner = "10987654321"
+    val trekkstatus = Trekkstatus.AKTIV.name
+
+    return TrekkFraSkatt(
+        id = tabellEntryId,
+        trekkid = trekkId,
+        sekvensnummer = sekvensnummer,
+        trekkversjon = trekkVersjon,
+        opprettet = opprettet,
+        saksnummer = saksnummer,
+        trekkpliktig = trekkpliktig,
+        skyldner = skyldner,
+        trekkstatus = trekkstatus,
+    )
+}
+
+private fun lagPeriodeForTrekkFraSkatt(
+    trekkFraSkatt: TrekkFraSkatt,
+    trekkAlternativ: TrekkAlternativ = TrekkAlternativ.LOPM,
+    startDato: String = idag,
+    sluttDato: String? = idag plus 3.mnd, // "2025-03-31",
+    sats: Double = 3000.0,
+): PeriodeFraSkatt {
+    val tabellEntryId = 1L
+    val fraSkattId = trekkFraSkatt.id
+    val trekkIdSke = trekkFraSkatt.trekkid
+    val startDato = startDato
+    val sluttDato = sluttDato
+    val trekkBelop = if (trekkAlternativ == TrekkAlternativ.LOPM) sats else null
+    val trekkProsent = if (trekkAlternativ == TrekkAlternativ.LOPP) sats else null
+    return PeriodeFraSkatt(tabellEntryId, fraSkattId, trekkIdSke, startDato, sluttDato, trekkBelop, trekkProsent)
+}
+
+private fun lagPerioderForSkattLOPP(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> {
+    val perioderEn = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPP, idag, idag plus 3.mnd, 20.0)
+    val perioderTo = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPP, idag plus 3.mnd plus 1.dager, idag plus 5.mnd, 15.0)
+    val perioderTre = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPP, idag plus 5.mnd plus 1.dager, idag plus 7.mnd, 10.0)
+
+    return listOf(perioderEn, perioderTo, perioderTre)
+}
+
+private fun lagPerioderForSkattLOPM(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> {
+    val perioderEn = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, idag, idag plus 3.mnd, 3000.0)
+    val perioderTo = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, idag plus 3.mnd plus 1.dager, idag plus 5.mnd, 2000.0)
+    val perioderTre = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, idag plus 5.mnd plus 1.dager, idag plus 7.mnd, 1000.0)
+
+    return listOf(perioderEn, perioderTo, perioderTre)
+}
+
+private fun List<PeriodeFraSkatt>.toKnownPeriods() =
+    map {
+        PeriodeTilOS(
+            sats = it.trekkprosent ?: it.trekkbeloep ?: 0.0,
+            periodeFomDato = it.startdato,
+            periodeTomDato = it.sluttdato,
+        )
+    }
+
+private fun lagBetalingsinformasjonForTrekkFraSkatt(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt {
+    val betalingsmottaker = "971648198"
+    val kidnummer = "17654202404"
+    val kontonummer = "76940512057"
+    return BetalingsinformasjonFraSkatt(1L, trekkFraSkatt.id, betalingsmottaker, kidnummer, kontonummer)
+}

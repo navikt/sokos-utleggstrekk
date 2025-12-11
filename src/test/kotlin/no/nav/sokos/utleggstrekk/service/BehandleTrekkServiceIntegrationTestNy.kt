@@ -2,6 +2,7 @@ package no.nav.sokos.utleggstrekk.service
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
@@ -16,6 +17,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
+import no.nav.sokos.utleggstrekk.util.asDate
 import no.nav.sokos.utleggstrekk.util.dager
 import no.nav.sokos.utleggstrekk.util.idag
 import no.nav.sokos.utleggstrekk.util.mnd
@@ -120,8 +122,21 @@ class BehandleTrekkServiceIntegrationTestNy :
                             it.first()
                         }
 
-                    nullPeriode.periodeFomDato shouldBe trekkstorrelseForPeriode1.startdato
-                    nullPeriode.periodeTomDato shouldBe trekkstorrelseForPeriode1.sluttdato!!
+                    val fomDatoAsDate = nullPeriode.periodeFomDato.asDate
+                    val startDatoAsDate = trekkstorrelseForPeriode1.startdato.asDate
+                    fomDatoAsDate.year shouldBe startDatoAsDate.year
+                    fomDatoAsDate.monthValue shouldBe startDatoAsDate.monthValue
+                    fomDatoAsDate.dayOfMonth shouldBe 1
+
+                    nullPeriode.periodeTomDato?.let {
+                        val tomDatoAsDate = it.asDate
+                        trekkstorrelseForPeriode1.sluttdato.shouldNotBeNull()
+
+                        val sluttDatoAsDate = trekkstorrelseForPeriode1.sluttdato.asDate
+                        tomDatoAsDate.year shouldBe sluttDatoAsDate.year
+                        tomDatoAsDate.monthValue shouldBe sluttDatoAsDate.monthValue
+                        tomDatoAsDate.dayOfMonth shouldBe sluttDatoAsDate.lengthOfMonth()
+                    }
 
                     val gjeldendePeriode =
                         ikkeSendt.perioder.filter { it.sats != 0.0 }.let {
@@ -129,9 +144,23 @@ class BehandleTrekkServiceIntegrationTestNy :
                             it.first()
                         }
 
-                    gjeldendePeriode.periodeFomDato shouldBe trekkstorrelseForPeriode2.startdato
-                    gjeldendePeriode.periodeTomDato shouldBe trekkstorrelseForPeriode2.sluttdato!!
                     gjeldendePeriode.sats shouldBe trekkstorrelseForPeriode2.trekkprosent?.trekkprosent!!
+
+                    val gjeldendePeriodefomDatoAsDate = gjeldendePeriode.periodeFomDato.asDate
+                    val gjeldendePeriodestartDatoAsDate = trekkstorrelseForPeriode2.startdato.asDate
+                    gjeldendePeriodefomDatoAsDate.year shouldBe gjeldendePeriodestartDatoAsDate.year
+                    gjeldendePeriodefomDatoAsDate.monthValue shouldBe gjeldendePeriodestartDatoAsDate.monthValue
+                    gjeldendePeriodefomDatoAsDate.dayOfMonth shouldBe 1
+
+                    gjeldendePeriode.periodeTomDato?.let {
+                        val gjeldendePeriodetomDatoAsDate = it.asDate
+                        trekkstorrelseForPeriode2.sluttdato.shouldNotBeNull()
+
+                        val gjeldendePeriodesluttDatoAsDate = trekkstorrelseForPeriode2.sluttdato.asDate
+                        gjeldendePeriodetomDatoAsDate.year shouldBe gjeldendePeriodesluttDatoAsDate.year
+                        gjeldendePeriodetomDatoAsDate.monthValue shouldBe gjeldendePeriodesluttDatoAsDate.monthValue
+                        gjeldendePeriodetomDatoAsDate.dayOfMonth shouldBe gjeldendePeriodesluttDatoAsDate.lengthOfMonth()
+                    }
                 }
             }
         }
