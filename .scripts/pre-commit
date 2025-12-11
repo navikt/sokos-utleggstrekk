@@ -1,80 +1,92 @@
 #!/bin/bash
-echo "*********************************************************"
-echo      "Running git pre-commit hook. Running Ktlint... "
-echo "*********************************************************"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+LINE_WIDTH=59
+
+center() {
+  local input="$1"
+  local pad=$(( (LINE_WIDTH - ${#input}) / 2 ))
+  printf "%*s%s%*s\n" "$pad" "" "$input" "$pad" ""
+}
+
+echo -e "${GREEN}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+center "Running git pre-commit hook.."
+echo -e "${GREEN}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
 echo ""
 
-# Gather the staged files - to make sure changes are saved only for these files.
+# Check if defaults.properties is in .gitignore
+if ! grep -qxF 'defaults.properties' .gitignore; then
+    echo -e "${RED}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+    center "ERROR: 'defaults.properties' is NOT in .gitignore!"
+    center "Please add it to .gitignore before committing."
+    echo -e "${RED}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+    exit 1
+fi
+
+# Prevent committing defaults.properties (add/modify only)
+if git diff --cached --name-status | grep -E '^[AM]\s+defaults\.properties$'; then
+    echo -e "${RED}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+    center "ERROR: 'defaults.properties' must NOT be committed!"
+    echo -e "${RED}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+    git reset HEAD defaults.properties
+    exit 1
+fi
+
 stagedFiles=$(git diff --staged --name-only)
 
 # Run ktlintCheck
 ./gradlew ktlintCheck
-
 ktlintCheckStatus=$?
 
 if [ "$ktlintCheckStatus" = 0 ] ; then
     echo ""
-    echo "*********************************************************"
-    echo "       ********************************************      "
-    echo "              Ktlint - no violations found"
-    echo "       ********************************************      "
-    echo "*********************************************************"
+    echo -e "${GREEN}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+    center "Ktlint - no violations found"
+    echo -e "${GREEN}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
     echo ""
 
-    # Add staged file changes to git
     for file in $stagedFiles; do
       if test -f "$file"; then
         git add $file
       fi
     done
-    #Exit
     exit 0
 else
     echo ""
-    echo "*********************************************************"
-    echo "       ********************************************      "
-    echo                  "Ktlint - found violations"
-    echo              "Running ktlintFormat to fix issues..."
-    echo "       ********************************************      "
-    echo "*********************************************************"
+    echo -e "${YELLOW}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+    center "Ktlint - found violations"
+    center "Running ktlintFormat to fix issues..."
+    echo -e "${YELLOW}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
     echo ""
 
-    # Run ktlintFormat
     ./gradlew ktlintFormat
-
-    # Run ktlintCheck again to verify if issues are fixed
     ./gradlew ktlintCheck
-
     ktlintCheckStatus=$?
 
     if [ "$ktlintCheckStatus" = 0 ] ; then
         echo ""
-        echo "*********************************************************"
-        echo "       ********************************************      "
-        echo                    "Ktlint - issues fixed"
-        echo "       ********************************************      "
-        echo "*********************************************************"
+        echo -e "${GREEN}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+        center "Ktlint - issues fixed"
+        echo -e "${GREEN}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
         echo ""
 
-        # Add staged file changes to git
         for file in $stagedFiles; do
           if test -f "$file"; then
             git add $file
           fi
         done
-        #Exit
         exit 0
     else
         echo ""
-        echo "*********************************************************"
-        echo "       ********************************************      "
-        echo        "Ktlint - found violations it could not fix."
-        echo        "Fix the issues before trying to commit again."
-        echo "       ********************************************      "
-        echo "*********************************************************"
+        echo -e "${RED}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
+        center "Ktlint - found violations it could not fix."
+        center "Fix the issues before trying to commit again."
+        echo -e "${RED}$(printf '%*s' "$LINE_WIDTH" '' | tr ' ' '*')${NC}"
         echo ""
-
-        #Exit
         exit 1
     fi
 fi

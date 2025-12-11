@@ -11,6 +11,7 @@ on:
       - '.gitignore'
       - '.editorconfig'
       - 'setupLocalEnvironment.sh'
+      - '.scripts'
       - 'dokumentasjon/**'
       - '.github/workflows/build-pr.yaml'
       - '.github/workflows/chainguard-digestabot.yaml'
