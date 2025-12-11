@@ -16,6 +16,10 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
+import no.nav.sokos.utleggstrekk.service.SlackService
+import no.nav.sokos.utleggstrekk.utils.handleError
+import no.nav.sokos.utleggstrekk.utils.isClientError
+import no.nav.sokos.utleggstrekk.utils.isServerError
 
 const val MAX_ANTALL = 2500
 private const val KLIENT_ID = "NAV/0.1"
@@ -24,6 +28,7 @@ private val logger = KotlinLogging.logger { }
 
 class SkeClient(
     private val client: HttpClient = httpClient,
+    private val slackService: SlackService = SlackService(),
     private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), client),
 ) {
     val basePath = PropertiesConfig.SKEConfig().skeRestUrl
@@ -41,7 +46,11 @@ class SkeClient(
             .get {
                 url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
                 headers(commonHeaders())
-            }.toTrekkpaalegg()
+            }.handleError { status ->
+                if (status.isClientError() || status.isServerError()) {
+                    slackService.addError("HTTP error", "Kunne ikke få trekk for sekvensnummer=$sekvensnr: $status")
+                }
+            }?.toTrekkpaalegg() ?: emptyList()
 
     private suspend fun commonHeaders(): HeadersBuilder.() -> Unit {
         val token = tokenProvider.getAccessToken()
