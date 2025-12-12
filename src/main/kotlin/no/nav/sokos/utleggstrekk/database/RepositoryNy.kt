@@ -690,10 +690,14 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 .list(
                     queryOf(
                         """
-                        SELECT trekk_alternativ, COUNT(*) as count
-                            FROM (SELECT DISTINCT ON (trekk_id_ske) trekk_id_ske, trekk_alternativ 
-                                FROM transaksjon_os WHERE kvittering_status=:kvitteringStatus ORDER BY trekk_id_ske, trekkversjon DESC)  
-                            t GROUP BY trekk_alternativ
+                        SELECT trekk_alternativ, COUNT(*) AS count
+                            FROM ( 
+                                SELECT DISTINCT ON (t.trekk_id_ske) t.trekk_id_ske, t.trekk_alternativ FROM transaksjon_os t                                                                                                                                             
+                                    WHERE t.kvittering_status = 'OK' AND NOT EXISTS (                                                                                                                                                      
+                                        SELECT 1 FROM transaksjon_os t2 
+                                            WHERE t2.trekk_id_ske = t.trekk_id_ske AND t2.gyldig_tom_dato IS NOT NULL
+                                    ) ORDER BY t.trekk_id_ske, t.trekkversjon DESC
+                            ) t GROUP BY trekk_alternativ
                         """.trimIndent(),
                         mapOf("kvitteringStatus" to KvitteringStatus.OK.name),
                     ),
