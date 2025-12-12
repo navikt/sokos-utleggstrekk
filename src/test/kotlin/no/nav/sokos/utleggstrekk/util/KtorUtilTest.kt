@@ -3,12 +3,9 @@ package no.nav.sokos.utleggstrekk.util
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpStatusCode
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 
-import no.nav.sokos.utleggstrekk.utils.handleError
 import no.nav.sokos.utleggstrekk.utils.isClientError
 import no.nav.sokos.utleggstrekk.utils.isServerError
 import no.nav.sokos.utleggstrekk.utils.isSuccessful
@@ -48,27 +45,5 @@ class KtorUtilTest :
             response.status.isServerError() shouldBe true
             response.status.isServerError() shouldBe true
             response.status.isServerError() shouldBe false
-        }
-
-        context("handleError") {
-            test("Skal returnere samme response hvis den var successful") {
-                val response =
-                    mockk<HttpResponse> {
-                        every { status.value } returns 200
-                    }
-
-                response.handleError {} shouldBe response
-            }
-
-            test("Skal returnere null hvis response var ikke successful") {
-                val response =
-                    mockk<HttpResponse> {
-                        every { status } returns HttpStatusCode.NotFound
-                    }
-                val errorHandling = mockk<suspend (HttpStatusCode) -> Unit>(relaxed = true)
-
-                response.handleError(errorHandling) shouldBe null
-                coVerify(exactly = 1) { errorHandling(HttpStatusCode.NotFound) }
-            }
         }
     })

@@ -14,12 +14,13 @@ import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.service.SlackService
-import no.nav.sokos.utleggstrekk.utils.handleError
 import no.nav.sokos.utleggstrekk.utils.isClientError
 import no.nav.sokos.utleggstrekk.utils.isServerError
+import no.nav.sokos.utleggstrekk.utils.isSuccessful
 
 const val MAX_ANTALL = 2500
 private const val KLIENT_ID = "NAV/0.1"
@@ -46,11 +47,8 @@ class SkeClient(
             .get {
                 url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
                 headers(commonHeaders())
-            }.handleError { status ->
-                if (status.isClientError() || status.isServerError()) {
-                    slackService.addError("HTTP error", "Kunne ikke få trekk for sekvensnummer=$sekvensnr: $status")
-                }
-            }?.toTrekkpaalegg(sekvensnr) ?: emptyList()
+            }.handleError(sekvensnr)
+            ?.toTrekkpaalegg(sekvensnr) ?: emptyList()
 
     private suspend fun commonHeaders(): HeadersBuilder.() -> Unit {
         val token = tokenProvider.getAccessToken()
@@ -59,6 +57,16 @@ class SkeClient(
             append("Korrelasjonsid", UUID.randomUUID().toString()) // TODO: Hvis dette skal være noe poeng må den tas vare på et sted!
             append(HttpHeaders.Authorization, "Bearer $token")
         }
+    }
+
+    private suspend fun HttpResponse.handleError(sekvensnr: Int): HttpResponse? {
+        if (isSuccessful()) return this
+
+        if (status.isClientError() || status.isServerError()) {
+            val errorMessage = body<SkeErrorMessage>()
+            slackService.addError("$status", "Kunne ikke få trekk for sekvensnr=$sekvensnr: ${errorMessage.description()}")
+        }
+        return null
     }
 
     private suspend fun HttpResponse.toTrekkpaalegg(sekvensnr: Int? = null) =
@@ -70,7 +78,7 @@ class SkeClient(
             }
         } catch (e: JsonConvertException) {
             logger.error { "Feil i konvertering av response: ${e.message}" }
-            slackService.addError("Trekk konvertering error", "Feil i konvertering av response for sekvensnummer=$sekvensnr: ${e.message}")
+            slackService.addError("JsonConvertException", "Feil i konvertering av response: ${e.message}")
             emptyList()
         }
 }

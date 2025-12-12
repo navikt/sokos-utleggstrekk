@@ -8,11 +8,3 @@ fun HttpResponse.isSuccessful() = status.value in 200..299
 fun HttpStatusCode.isClientError() = value in 400..499
 
 fun HttpStatusCode.isServerError() = value in 500..599
-
-suspend fun HttpResponse.handleError(errorHandling: suspend (status: HttpStatusCode) -> Unit): HttpResponse? =
-    if (!isSuccessful()) {
-        errorHandling(status)
-        null
-    } else {
-        this
-    }
