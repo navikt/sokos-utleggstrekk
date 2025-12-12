@@ -9,8 +9,10 @@ import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.ServerReady
 import io.ktor.server.application.log
+import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.routing
 
 import no.nav.sokos.utleggstrekk.api.internalNaisRoutes
@@ -21,6 +23,8 @@ import no.nav.sokos.utleggstrekk.config.commonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.domene.nav.scheduling.UtleggstrekkScheduler
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
+
+const val AUTHENTICATION_NAME = "azureAd"
 
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::module).start(true)
@@ -36,7 +40,9 @@ private fun Application.module() {
     applicationLifecycleConfig(applicationState)
     routing {
         internalNaisRoutes(applicationState)
-        utleggstrekkApi(utleggsTrekkService)
+        authenticate(azureConfiguration.useAuthentication, AUTHENTICATION_NAME) {
+            utleggstrekkApi(utleggsTrekkService)
+        }
     }
 
     if (!PropertiesConfig.isLocal) {
@@ -50,6 +56,10 @@ private fun Application.module() {
     } else {
         log.info("Property SCHEDULER_ACTIVE is '$schedulerActive'. Scheduler is not running.")
     }
+}
+
+fun Route.authenticate(useAuthentication: Boolean, authenticationProviderId: String? = null, block: Route.() -> Unit) {
+    if (useAuthentication) authenticate(authenticationProviderId) { block() } else block()
 }
 
 fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
