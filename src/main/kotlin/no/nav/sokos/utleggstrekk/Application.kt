@@ -45,10 +45,11 @@ private fun Application.module() {
 
     utleggsTrekkService.calulateMetrics()
 
-    var schedulerActive = PropertiesConfig.getOrEmpty("SCHEDULER_ACTIVE")
+    val schedulerActive = PropertiesConfig.getOrEmpty("SCHEDULER_ACTIVE")
     if (schedulerActive == "true") {
         val minutes = (PropertiesConfig.getOrNull("SCHEDULER_MINUTES") ?: "55").toInt()
         UtleggstrekkScheduler(appScope).scheduleHourlyAt(minutes) { utleggsTrekkService.schedule() }
+        UtleggstrekkScheduler(appScope).scheduleDailyAt(hour = 8, minute = 0) { }
     } else {
         log.info("Property SCHEDULER_ACTIVE is '$schedulerActive'. Scheduler is not running.")
     }

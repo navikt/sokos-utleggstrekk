@@ -19,12 +19,22 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
 
     fun scheduleHourlyAt(minute: Int, second: Int = 0, task: suspend () -> Unit) {
         logger.info("Scheduler started on the hour at HH:${minute.twoPad()}:${second.twoPad()}")
-        scheduleNext(minute, second, task)
+        scheduleNext(hour = 0, minute, second, task)
     }
 
-    private fun scheduleNext(minute: Int, second: Int, task: suspend () -> Unit) {
+    fun scheduleDailyAt(hour: Int, minute: Int = 0, task: suspend () -> Unit) {
+        logger.info("Scheduler started at ${hour.twoPad()}:${minute.twoPad()}:SS")
+        scheduleNext(hour, minute, 0, task)
+    }
+
+    private fun scheduleNext(
+        hour: Int,
+        minute: Int,
+        second: Int,
+        task: suspend () -> Unit,
+    ) {
         val now = LocalDateTime.now()
-        var next = now.withMinute(minute).withSecond(second)
+        var next = now.withHour(hour).withMinute(minute).withSecond(second)
 
         if (!next.isAfter(now)) {
             next = next.plusHours(1)
@@ -40,7 +50,7 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
                     } catch (e: Exception) {
                         logger.error("Scheduled job failed: ", e)
                     } finally {
-                        scheduleNext(minute, second, task) // chain to next run
+                        scheduleNext(hour, minute, second, task) // chain to next run
                     }
                 }
             }, delay, TimeUnit.MILLISECONDS)
