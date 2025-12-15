@@ -25,6 +25,7 @@ object PropertiesConfig {
             "POSTGRES_PORT" to "5432",
             "POSTGRES_NAME" to "sokos-utleggstrekk",
             "POSTGRES_USERNAME" to "sokos-utleggstrekk",
+            "NAIS_POD_NAME" to "local-no-pod",
             "SKE_REST_URL" to "https://api-test.sits.no/api/trekkpaalegg/v1",
             "USE_AUTHENTICATION" to "false",
             "MQ_HOSTNAME" to "10.53.17.118",
@@ -69,6 +70,7 @@ object PropertiesConfig {
 
     data class Configuration(
         val naisAppName: String = get("NAIS_APP_NAME"),
+        val naisPodName: String = get("NAIS_POD_NAME"),
         val profile: Profile = Profile.valueOf(get("APPLICATION_PROFILE")),
     )
 
@@ -106,4 +108,10 @@ object PropertiesConfig {
         val password: String = get("MQ_PASSWORD"),
         val userAuth: Boolean = true,
     )
+
+    data object UnleashProperties {
+        val unleashAPI = getOrEmpty("UNLEASH_SERVER_API_URL")
+        val apiKey = getOrEmpty("UNLEASH_SERVER_API_TOKEN")
+        val environment = getOrEmpty("UNLEASH_SERVER_API_ENV")
+    }
 }
