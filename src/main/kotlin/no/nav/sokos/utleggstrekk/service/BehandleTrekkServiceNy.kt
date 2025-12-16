@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.service
 
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 import kotliquery.TransactionalSession
@@ -9,6 +10,7 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.PerioderTilOS
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
@@ -53,6 +55,18 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
                 }
             }
         }
+
+    private fun mapNewFomTom(periode: PeriodeFraSkatt): PeriodeFraSkatt {
+        val nyTom =
+            periode.sluttdato?.let {
+                val originalTom = LocalDate.parse(periode.sluttdato, DateTimeFormatter.ISO_DATE)
+                originalTom.withDayOfMonth(originalTom.lengthOfMonth())
+            }
+        val originalFom = LocalDate.parse(periode.startdato, DateTimeFormatter.ISO_DATE)
+        val nyFom = originalFom.withDayOfMonth(1)
+
+        return periode.copy(startdato = nyFom.toString(), sluttdato = nyTom?.toString())
+    }
 
     private fun lagTrekkDokument(trekk: TrekkFraSkatt, session: TransactionalSession): List<TrekkTilOppdrag> {
         // Vi trenger å vite om trekk(ene) er kjent for OS
@@ -102,7 +116,8 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         // for hver periode ikke kjent for OS, for hvert aktuelle trekkalternativ, lager vi en ny periode.
         nyePerioder.forEach { periode ->
             alternativ.forEach { alternativ ->
-                nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = periode.startdato, periodeTomDato = periode.sluttdato))
+                val mappedPeriode = mapNewFomTom(periode)
+                nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = mappedPeriode.startdato, periodeTomDato = mappedPeriode.sluttdato))
             }
         }
 
