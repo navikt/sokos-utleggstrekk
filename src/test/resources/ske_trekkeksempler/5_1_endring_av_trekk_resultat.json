@@ -3,7 +3,7 @@
     "innrapporteringTrekk": {
       "aksjonskode": "ENDR",
       "kilde": "SOKOSUTLEGG",
-      "kreditorIdTss": "80000423362",
+      "kreditorIdTss": "80000427901",
       "kreditorsRef": "TREKK/2025/5",
       "kreditorTrekkId": "10005P",
       "debitorId": "10108412345",
@@ -33,7 +33,7 @@
     "innrapporteringTrekk": {
       "aksjonskode": "NY",
       "kilde": "SOKOSUTLEGG",
-      "kreditorIdTss": "80000423362",
+      "kreditorIdTss": "80000427901",
       "kreditorsRef": "TREKK/2025/5",
       "kreditorTrekkId": "10005M",
       "debitorId": "10108412345",

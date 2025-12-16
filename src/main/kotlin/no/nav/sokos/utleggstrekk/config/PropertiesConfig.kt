@@ -33,6 +33,9 @@ object PropertiesConfig {
             "MQ_CHANNEL" to "Q1_UTLEGGSTREKK",
             "MQ_QUEUE_NAME" to "QA.Q1_231.OB04_TREKK_FRASKATT_JSON",
             "MQ_REPLYQUEUE_NAME" to "QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING",
+            "SKE_ORGNR" to "971648198",
+            "SKE_KONTONR" to "76940512057",
+            "SKE_TSSID" to "80000427901",
         )
 
     private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))
@@ -40,17 +43,22 @@ object PropertiesConfig {
 
     private val config =
         when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME")) {
-            "dev-fss" ->
+            "dev-fss" -> {
                 ConfigurationProperties.systemProperties() overriding EnvironmentVariables() overriding devProperties overriding
                     defaultProperties
-            "prod-fss" ->
+            }
+
+            "prod-fss" -> {
                 ConfigurationProperties.systemProperties() overriding EnvironmentVariables() overriding prodProperties overriding
                     defaultProperties
-            else ->
+            }
+
+            else -> {
                 ConfigurationProperties.systemProperties() overriding EnvironmentVariables() overriding
                     ConfigurationProperties.fromOptionalFile(
                         File("defaults.properties"),
                     ) overriding localDevProperties overriding defaultProperties
+            }
         }
 
     enum class Profile {
@@ -83,7 +91,12 @@ object PropertiesConfig {
         val url: String = get("SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL").trim()
     }
 
-    data class SKEConfig(val skeRestUrl: String = getOrEmpty("SKE_REST_URL"))
+    data class SKEConfig(
+        val skeRestUrl: String = getOrEmpty("SKE_REST_URL"),
+        val skeOrgNr: String = getOrEmpty("SKE_ORGNR"),
+        val skeKontoNr: String = getOrEmpty("SKE_KONTONR"),
+        val skeTSSId: String = getOrEmpty("SKE_TSSID"),
+    )
 
     data object PostgresConfig {
         val host: String = getOrEmpty("POSTGRES_HOST")

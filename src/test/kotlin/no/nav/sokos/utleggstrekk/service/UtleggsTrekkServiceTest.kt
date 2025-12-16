@@ -41,7 +41,7 @@ internal class UtleggsTrekkServiceTest :
             }
 
         Given("Vi henter ett trekk fra SKE") {
-            val mottaker = Betalingsinformasjon("tssIDSkatt", "13812738912427", "6123101233424")
+            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648198", kidnummer = "13812738912427", kontonummer = "76940512057")
             val trekkPeriode =
                 TrekkstorrelseForPeriode(
                     "2026-02-02",
@@ -115,7 +115,7 @@ internal class UtleggsTrekkServiceTest :
         }
         Given("Vi henter nye trekk fra SKE og det er 10 nye og maksantall er 4") {
             DBListener.clearDB()
-            val mottaker = Betalingsinformasjon("tssIDSkatt", "13812738912427", "6123101233424")
+            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648198", kidnummer = "13812738912427", kontonummer = "76940512057")
             val trekkpaalegg: List<Trekkpaalegg> =
                 (1..10).map { index ->
                     makeTrekkpaalegg(

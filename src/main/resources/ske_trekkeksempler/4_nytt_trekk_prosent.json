@@ -1,12 +1,12 @@
 {
-  "trekkid": "10010",
-  "skyldner": "10108412345",
-  "opprettet": "2025-08-26T15:00:00.00Z",
-  "saksnummer": "TREKK/2025/10",
+  "trekkid": "10000004",
+  "skyldner": "14476825645",
+  "opprettet": "2025-06-01T15:00:00.00Z",
+  "saksnummer": "TREKK/2025/4",
   "trekkstatus": "aktiv",
   "trekkpliktig": "123456789",
   "trekkversjon": 1,
-  "sekvensnummer": 551,
+  "sekvensnummer": 142,
   "betalingsinformasjon": {
     "kidnummer": "6487719756",
     "kontonummer": "76940512057",
@@ -14,9 +14,9 @@
   },
   "trekkstoerrelseForPeriode": [
     {
-      "startdato": "2025-10-01",
-      "trekkbeloep": {
-        "trekkbeloep": 3000
+      "startdato": "2025-07-01",
+      "trekkprosent": {
+        "trekkprosent": 17.0
       }
     }
   ]
