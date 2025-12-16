@@ -13,7 +13,7 @@ object Metrics {
 
     val utleggstrekkFraSkatt =
         counter(
-            "${METRICS_NAMESPACE}_utleggstrekk_fra_skatt",
+            "utleggstrekk_fra_skatt",
             "Antall trekkversjoner mottatt fra skatt",
         )
 
