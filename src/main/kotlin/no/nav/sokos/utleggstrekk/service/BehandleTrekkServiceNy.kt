@@ -130,7 +130,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         val perioder = Perioder(perioderTilOS.map { it.asPeriode() }).takeUnless { it.periode.isEmpty() }
 
         val transaksjonsID = UUID.randomUUID().toString()
-        val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().minusDays(1).toString() else null
+        val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().toString() else null
         val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
 
         val tssId = TssIdResolver.resolve(betalingsinformasjon)

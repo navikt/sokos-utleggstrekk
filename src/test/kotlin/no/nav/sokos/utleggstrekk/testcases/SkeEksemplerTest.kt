@@ -16,9 +16,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
-import no.nav.sokos.utleggstrekk.util.dager
 import no.nav.sokos.utleggstrekk.util.idag
-import no.nav.sokos.utleggstrekk.util.minus
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.util.resourceToStringList
 
@@ -73,7 +71,7 @@ class SkeEksemplerTest :
                             val expected =
                                 resourceToString("$TEST_DIR/${filename.resultatFil()}")
                                     .updateDates()
-                                    .replace("###AVSLUTNINGSDATO###", idag minus 1.dager) // Replace template with today-1
+                                    .replace("###AVSLUTNINGSDATO###", idag) // Replace template with today
 
                             val expectedTrekk = jsonConfig.decodeFromString<Array<DocumentUtenTransaksjonsId>>(expected).map { it.innrapporteringTrekk }
 

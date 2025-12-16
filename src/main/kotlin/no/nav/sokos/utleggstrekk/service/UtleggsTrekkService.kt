@@ -24,6 +24,7 @@ import no.nav.sokos.utleggstrekk.utils.DurationUtil.durationOf
 class UtleggsTrekkService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
     private val skeClient: SkeClient = SkeClient(),
+    private val slackService: SlackService = SlackService(),
     private val maxAntall: Int = MAX_ANTALL,
     private val mqProducer: JmsProducerService =
         JmsProducerService(
@@ -47,6 +48,7 @@ class UtleggsTrekkService(
         }
         repositoryNy.deleteOldData()
         calulateMetrics()
+        slackService.sendCachedErrors("Trekk henting feil")
     }
 
     private suspend fun lagreAlleNyeUtleggstrekk() {
@@ -91,7 +93,7 @@ class UtleggsTrekkService(
         }
     }
 
-    private fun calulateMetrics() {
+    fun calulateMetrics() {
         val duration =
             durationOf {
                 val utleggstrekkCounts = repositoryNy.countUtleggstrekk()
