@@ -1,0 +1,20 @@
+name: Deploy Unleash
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/unleash.yaml'
+      - '.nais/dev/unleash-dev.yaml'
+
+jobs:
+  deploy-dev:
+    permissions:
+      id-token: write
+      contents: read
+    name: Deploy to dev-gcp
+    uses: navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@main
+    with:
+      cluster: dev-gcp
+      resource: .nais/dev/unleash-dev.yaml
