@@ -41,7 +41,7 @@ internal class UtleggsTrekkServiceTest :
             }
 
         Given("Vi henter ett trekk fra SKE") {
-            val mottaker = Betalingsinformasjon("tssIDSkatt", "13812738912427", "6123101233424")
+            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648198", kidnummer = "13812738912427", kontonummer = "76940512057")
             val trekkPeriode =
                 TrekkstorrelseForPeriode(
                     "2026-02-02",
@@ -65,11 +65,13 @@ internal class UtleggsTrekkServiceTest :
                 mockk<SkeClient> {
                     coEvery { hentUtleggstrekkFraSekvensnr(any()) } returns listOf(trekkpaalegg)
                 }
+            val slackService = mockk<SlackService>(relaxUnitFun = true)
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     RepositoryNy,
                     skeClient = skeClientMock,
+                    slackService = slackService,
                     mqProducer = mqProducerMock,
                 )
 
@@ -113,7 +115,7 @@ internal class UtleggsTrekkServiceTest :
         }
         Given("Vi henter nye trekk fra SKE og det er 10 nye og maksantall er 4") {
             DBListener.clearDB()
-            val mottaker = Betalingsinformasjon("tssIDSkatt", "13812738912427", "6123101233424")
+            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648198", kidnummer = "13812738912427", kontonummer = "76940512057")
             val trekkpaalegg: List<Trekkpaalegg> =
                 (1..10).map { index ->
                     makeTrekkpaalegg(
@@ -143,12 +145,14 @@ internal class UtleggsTrekkServiceTest :
                         coEvery { hentUtleggstrekkFraSekvensnr(eq(part.first().sekvensnummer - 1)) } returns part
                     }
                 }
+            val slackService = mockk<SlackService>(relaxUnitFun = true)
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     RepositoryNy,
-                    maxAntall = 4,
                     skeClient = skeClientMock,
+                    slackService = slackService,
+                    maxAntall = 4,
                     mqProducer = mqProducerMock,
                 )
 
@@ -157,6 +161,25 @@ internal class UtleggsTrekkServiceTest :
                 Then("Gjøres det ${parts.size} kall mot SkeClient helt til alle er nye utleggstrekk er hentet") {
                     coVerify(exactly = parts.size) { skeClientMock.hentUtleggstrekkFraSekvensnr(any()) }
                 }
+            }
+        }
+
+        Given("Vi henter trekk fra SKE") {
+            Then("Vi sender alarmer til slack hvis det stod en feil") {
+                val slackService =
+                    mockk<SlackService> {
+                        coEvery { sendCachedErrors(any()) } returns Unit
+                    }
+                val utleggsTrekkService =
+                    UtleggsTrekkService(
+                        repositoryNy = mockk(relaxed = true),
+                        skeClient = mockk(relaxed = true),
+                        slackService = slackService,
+                        mqProducer = mqProducerMock,
+                    )
+
+                utleggsTrekkService.schedule()
+                coVerify(exactly = 1) { slackService.sendCachedErrors("Trekk henting feil") }
             }
         }
     })

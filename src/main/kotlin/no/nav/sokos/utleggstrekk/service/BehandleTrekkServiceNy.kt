@@ -27,6 +27,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
+import no.nav.sokos.utleggstrekk.utils.TssIdResolver
 
 const val KODE_TREKKTYPE = "TRK1"
 const val KILDE = "SOKOSUTLEGG"
@@ -147,8 +148,8 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().toString() else null
         val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
 
-        val tssId = "80000423362" // TODO: Hent TSS med validering!
-        //  val tssId = TSSId.getTssId(betalingsinformasjon.betalingsmottaker, betalingsinformasjon.kontonummer)
+        val tssId = TssIdResolver.resolve(betalingsinformasjon)
+
         val innrapporteringTrekk =
             InnrapporteringTrekk(
                 aksjonskode = aksjonskode,
