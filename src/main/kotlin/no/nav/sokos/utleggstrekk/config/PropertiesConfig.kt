@@ -35,7 +35,6 @@ object PropertiesConfig {
             "MQ_REPLYQUEUE_NAME" to "QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING",
             "SKE_ORGNR" to "971648198",
             "SKE_KONTONR" to "76940512057",
-            "SKE_KONTONR" to "76940512057",
             "SKE_TSSID" to "80000427901",
         )
 
