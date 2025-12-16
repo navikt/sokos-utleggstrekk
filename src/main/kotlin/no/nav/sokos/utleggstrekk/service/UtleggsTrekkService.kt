@@ -19,6 +19,7 @@ import no.nav.sokos.utleggstrekk.metrics.Metrics.set
 import no.nav.sokos.utleggstrekk.metrics.Metrics.utleggstrekkFraSkatt
 import no.nav.sokos.utleggstrekk.mq.JmsListenerService
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
+import no.nav.sokos.utleggstrekk.unleash.UnleashIntegration
 import no.nav.sokos.utleggstrekk.utils.DurationUtil.durationOf
 
 class UtleggsTrekkService(
@@ -36,12 +37,18 @@ class UtleggsTrekkService(
         ),
 ) {
     private val logger = KotlinLogging.logger { }
+    private val featureToggles = UnleashIntegration()
 
-    // Eksempel funksjon som kalles i schedulering
     suspend fun schedule() {
-        lagreAlleNyeUtleggstrekk()
-        BehandleTrekkServiceNy(repositoryNy).behandleTrekk()
-        repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
+        if (featureToggles.isHentFraSKEEnabled()) {
+            lagreAlleNyeUtleggstrekk()
+        }
+        if (featureToggles.isProsesserUtleggstrekkEnabled()) {
+            BehandleTrekkServiceNy(repositoryNy).behandleTrekk()
+        }
+        if (featureToggles.isSendTilOSEnabled()) {
+            repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
+        }
         // TODO: Fjerne når vi bekreftet at secure logger funker
         logger.info(marker = TEAM_LOGS_MARKER) {
             "Alle nye utleggstrekk er lagret."

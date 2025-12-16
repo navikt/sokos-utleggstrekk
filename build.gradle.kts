@@ -27,6 +27,7 @@ val nimbusVersion = "10.6"
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.16.0"
+val unleashedVersion = "11.1.1"
 
 // DB
 val hikaricpVersion = "7.0.2"
@@ -82,6 +83,9 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinxDatetimeVersion")
     implementation("com.natpryce:konfig:$konfigVersion")
+
+    // Feature switches
+    implementation("io.getunleash:unleash-client-java:$unleashedVersion")
 
     // Security
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
