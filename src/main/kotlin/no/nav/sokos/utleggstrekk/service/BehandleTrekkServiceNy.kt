@@ -10,6 +10,7 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.PerioderTilOS
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
@@ -54,16 +55,16 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
             }
         }
 
-    private fun mapNewFomTom(periode: PeriodeTilOS): PeriodeTilOS {
+    private fun mapNewFomTom(periode: PeriodeFraSkatt): PeriodeFraSkatt {
         val nyTom =
-            periode.periodeTomDato?.let {
-                val originalTom = LocalDate.parse(periode.periodeTomDato, DateTimeFormatter.ISO_DATE)
+            periode.sluttdato?.let {
+                val originalTom = LocalDate.parse(periode.sluttdato, DateTimeFormatter.ISO_DATE)
                 originalTom.withDayOfMonth(originalTom.lengthOfMonth())
             }
-        val originalFom = LocalDate.parse(periode.periodeFomDato, DateTimeFormatter.ISO_DATE)
+        val originalFom = LocalDate.parse(periode.startdato, DateTimeFormatter.ISO_DATE)
         val nyFom = originalFom.withDayOfMonth(1)
 
-        return periode.copy(periodeFomDato = nyFom.toString(), periodeTomDato = nyTom?.toString())
+        return periode.copy(startdato = nyFom.toString(), sluttdato = nyTom?.toString())
     }
 
     private fun lagTrekkDokument(trekk: TrekkFraSkatt, session: TransactionalSession): List<TrekkTilOppdrag> {
@@ -71,26 +72,12 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         val kjenteAlternativ = repositoryNy.getOsAlternativForTrekk(trekk, session)
         val nyePerioderTilOS = nyePerioderTilOS(trekk, session)
 
-        // Hvor bør dette ligge?
-        // Endre sa det alltid skal settes til den siste dagen, uavhengig om det er en tidligere periode eller inneværende eller fremtidig
-        val nyLOPM =
-            nyePerioderTilOS.LOPM
-                .map { periode ->
-                    mapNewFomTom(periode)
-                }.ifEmpty { nyePerioderTilOS.LOPM }
-        val nyLOPP =
-            nyePerioderTilOS.LOPP
-                .map { periode ->
-                    mapNewFomTom(periode)
-                }.ifEmpty { nyePerioderTilOS.LOPP }
-
-        val periodeTilOS = nyePerioderTilOS.copy(LOPM = nyLOPM, LOPP = nyLOPP)
         return nyePerioderTilOS.alternativ.map { alternativ ->
             lagTrekkDokument(
                 trekkFraSkatt = trekk,
                 trekkalternativ = alternativ,
                 aksjonskode = if (kjenteAlternativ.contains(alternativ)) ENDR else NY,
-                perioderTilOS = if (trekk.trekkstatus == AVSLUTTET.name) emptyList() else periodeTilOS[alternativ],
+                perioderTilOS = if (trekk.trekkstatus == AVSLUTTET.name) emptyList() else nyePerioderTilOS[alternativ],
             )
         }
     }
@@ -128,7 +115,8 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         // for hver periode ikke kjent for OS, for hvert aktuelle trekkalternativ, lager vi en ny periode.
         nyePerioder.forEach { periode ->
             alternativ.forEach { alternativ ->
-                nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = periode.startdato, periodeTomDato = periode.sluttdato))
+                val mappedPeriode = mapNewFomTom(periode)
+                nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = mappedPeriode.startdato, periodeTomDato = mappedPeriode.sluttdato))
             }
         }
 
