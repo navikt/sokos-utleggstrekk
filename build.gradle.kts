@@ -77,7 +77,7 @@ dependencies {
     runtimeOnly("org.codehaus.janino:janino:$janinoVersion")
 
     // metrics
-    implementation("io.ktor:ktor-server-metrics-micrometer:$ktorVersion")
+    implementation("io.ktor:ktor-server-metrics-micrometer-jvm:$ktorVersion")
     implementation("io.micrometer:micrometer-registry-prometheus:$prometheusVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:$kotlinxDatetimeVersion")
