@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
@@ -41,7 +42,7 @@ class BehandleTrekkServiceIntegrationTestNy :
             storedInDbAndBehandlet(trekk)
             val transaksjoner = repository.getTransaksjonerTilOsSomIkkeErSendt()
             transaksjoner.size shouldBe 1
-            repository.updateTransaksjonStatus(transaksjoner.first().transaksjonsID, TransaksjonsStatus.SENDT)
+            repository.updateTransaksjonSendt(transaksjoner.first().transaksjonsID)
         }
 
         Given("Det finnes ett trekk i databasen med trekkstatus AKTIV, status MOTTATT som har én periode med prosenttrekk") {
@@ -105,6 +106,7 @@ class BehandleTrekkServiceIntegrationTestNy :
 
                     sendt.trekkAlternativ shouldBe TrekkAlternativ.LOPP
                     sendt.aksjonskode shouldBe Aksjonskode.NY
+                    sendt.tidspunktSendt shouldNotBe null
 
                     val ikkeSendt =
                         transaksjonerTilOS.filter { it.transaksjonStatus == TransaksjonsStatus.IKKE_SENDT }.let {
