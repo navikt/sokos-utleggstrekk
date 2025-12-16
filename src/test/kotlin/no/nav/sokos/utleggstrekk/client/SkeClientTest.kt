@@ -151,13 +151,7 @@ class SkeClientTest :
 
                 val errorMsg = slot<() -> Any?>()
                 every { logger.error(capture(errorMsg)) } just runs
-
-                println("************************!!!!!! ")
-
                 val trekkListe = skeClient.hentAlleUtleggstrekk()
-
-                println("************************!!!!!! " + trekkListe)
-
                 trekkListe shouldBe emptyList()
                 verify(exactly = 1) { logger.error(any<() -> Unit>()) }
                 errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av response"

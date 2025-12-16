@@ -93,7 +93,7 @@ class UtleggsTrekkService(
         }
     }
 
-    private fun calulateMetrics() {
+    fun calulateMetrics() {
         val duration =
             durationOf {
                 val utleggstrekkCounts = repositoryNy.countUtleggstrekk()
