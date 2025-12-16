@@ -686,7 +686,7 @@ class BehandleTrekkServiceTest :
                                 )
 
                             behandleTrekkServiceNy.behandleTrekk()
-                            Then("Skal trekket bli til 2 ENDRET trekk uten perioder og gyldigTomDato dagens -1") {
+                            Then("Skal trekket bli til 2 ENDRET trekk uten perioder og gyldigTomDato skal settes til i dag") {
                                 capturedOSDtos shouldHaveSize 2
 
                                 capturedOSDtos.forEach { oSDto ->
