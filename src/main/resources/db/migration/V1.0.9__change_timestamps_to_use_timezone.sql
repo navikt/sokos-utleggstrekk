@@ -9,9 +9,6 @@ ALTER TABLE feilkoder
 ALTER TABLE feilmelding
     ALTER COLUMN tidspunkt_opprettet TYPE timestamptz;
 
-ALTER TABLE flyway_schema_history
-    ALTER COLUMN installed_on TYPE timestamptz;
-
 ALTER TABLE fraskatt
     ALTER COLUMN tidspunkt_opprettet TYPE timestamptz;
 
