@@ -17,6 +17,7 @@ on:
       - '.github/workflows/chainguard-digestabot.yaml'
       - '.github/workflows/codeql-trivy-scan.yaml'
       - '.github/workflows/manual-deploy.yaml'
+      - '.github/workflows/unleash.yaml'
       - '.github/dependabot.yaml'
 
 env:
