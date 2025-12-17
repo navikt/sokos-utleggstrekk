@@ -19,8 +19,6 @@ jobs:
       contents: read
     name: Run tests
     uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@main
-    with:
-      java-version: '25'
 
   assemble-build-push-image-dev:
     permissions:
@@ -34,7 +32,6 @@ jobs:
       image-suffix: 'dev'
       image-tag: 'snapshot'
       dockerfile: './.nais/dev/Dockerfile'
-      java-version: '25'
 
   deploy-dev:
     permissions:
