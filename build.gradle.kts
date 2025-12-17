@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
-    kotlin("jvm") version "2.2.21"
-    kotlin("plugin.serialization") version "2.2.21"
+    kotlin("jvm") version "2.3.0"
+    kotlin("plugin.serialization") version "2.3.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
     id("org.jetbrains.kotlinx.kover") version "0.9.3"
 
@@ -26,7 +26,7 @@ val nimbusVersion = "10.6"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
-val prometheusVersion = "1.16.0"
+val prometheusVersion = "1.16.1"
 val unleashedVersion = "11.1.1"
 
 // DB
@@ -114,6 +114,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("commons-net:commons-net:$commonsVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
+    testImplementation("net.bytebuddy:byte-buddy:1.18.2") // TEMP: Needed for mockk 1.14.6 with java25. Remove when Mockk is updated and bytebuddy is no longer needed.
     testImplementation("org.apache.activemq:artemis-jakarta-server:$activemqVersion")
 }
 
@@ -131,7 +132,7 @@ sourceSets {
 
 kotlin {
     jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 
@@ -157,7 +158,7 @@ tasks {
     }
 
     withType<Wrapper> {
-        gradleVersion = "9.1.0"
+        gradleVersion = "9.2.1"
     }
 
     ("build") {
