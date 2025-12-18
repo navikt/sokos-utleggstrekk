@@ -43,7 +43,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 )
                 """.trimIndent()
             val parameters = mapOf("threshold" to sixMonthsAgo, "trekkstatus" to Trekkstatus.AVSLUTTET.name)
-
             val transaksjonOsDeleted =
                 session.update(
                     queryOf(
@@ -54,7 +53,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         parameters,
                     ),
                 )
-
             val fraskattDeleted =
                 session.update(
                     queryOf(
@@ -89,7 +87,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
 
     fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg): Long? =
         dataSource.withTransaction { session ->
-
             val fraSkattId =
                 session.updateAndReturnGeneratedKey(
                     queryOf(
@@ -226,7 +223,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         const val DOKUMENT_JSON_PARAM = "dokumentJson"
         const val PRIORITET_FOM_DATO_PARAM = "prioritetFomDato"
         const val GYLDIG_TOM_DATO_PARAM = "gyldigTomDato"
-
         const val NAV_TREKK_ID_COLUMN = "nav_trekk_id"
         const val TRANSAKSJONS_ID_COLUMN = "transaksjons_id"
         const val TRANSAKSJON_STATUS_COLUMN = "transaksjon_status"
@@ -245,7 +241,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         const val KID_COLUMN = "kid"
         const val KILDE_COLUMN = "kilde"
         const val SALDO_COLUMN = "saldo"
-
         const val PRIORITET_FOM_DATO_COLUMN = "prioritet_fom_dato"
         const val GYLDIG_TOM_DATO_COLUMN = "gyldig_tom_dato"
         const val DOKUMENT_JSON_COLUMN = "dokument_json"
@@ -626,6 +621,24 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                     """
                     SELECT * FROM  ${TransaksjonOsTable.TABLE_NAME} WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} IS null OR ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}  = '${TransaksjonsStatus.IKKE_SENDT.name}'
                         ORDER BY id ASC
+                    """.trimIndent(),
+                ),
+            ) { row ->
+                val transaksjonId = row.long("id")
+                val perioderTilOS = getPerioderForTransaksjon(transaksjonId, session)
+
+                TransaksjonOS(row, perioderTilOS)
+            }
+        }
+
+    fun getTransakjonerTilOsSomManglerKvittering(): List<TransaksjonOS> =
+        dataSource.withTransaction { session ->
+            session.list(
+                queryOf(
+                    """
+                    SELECT * FROM ${TransaksjonOsTable.TABLE_NAME}
+                    WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} = '${TransaksjonsStatus.SENDT}'
+                    AND ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.IKKE_MOTTATT}'
                     """.trimIndent(),
                 ),
             ) { row ->
