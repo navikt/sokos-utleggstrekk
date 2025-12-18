@@ -1,5 +1,9 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle.SHORT
+
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import mu.KotlinLogging
@@ -98,6 +102,20 @@ class UtleggsTrekkService(
         }.onFailure { exception ->
             logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
         }
+    }
+
+    suspend fun reportMissingKvittering() {
+        val yesterday = LocalDateTime.now().minusDays(1)
+        val formatter = DateTimeFormatter.ofLocalizedDateTime(SHORT)
+        repositoryNy
+            .getTransakjonerTilOsSomManglerKvittering()
+            .filter { it.tidspunktSendt?.isBefore(yesterday) == true }
+            .forEach {
+                val header = "TransaksjonID ${it.transaksjonsID} mangler kvitteringen"
+                val message = "TransaksjonID ${it.transaksjonsID} ble sendt ${it.tidspunktSendt?.format(formatter)} men vi har ikke mottatt kvitteringen."
+                slackService.addError(header, message)
+            }
+        slackService.sendCachedErrors("Kvittering fra oppdrag uteblir")
     }
 
     fun calculateMetrics() {
