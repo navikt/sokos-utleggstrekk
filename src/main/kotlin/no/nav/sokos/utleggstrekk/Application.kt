@@ -43,7 +43,7 @@ private fun Application.module() {
         PostgresDataSource.migrate()
     }
 
-    utleggsTrekkService.calulateMetrics()
+    utleggsTrekkService.calculateMetrics()
 
     val schedulerActive = PropertiesConfig.getOrEmpty("SCHEDULER_ACTIVE")
     if (schedulerActive == "true") {

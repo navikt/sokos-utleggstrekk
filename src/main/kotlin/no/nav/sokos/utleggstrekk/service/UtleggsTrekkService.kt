@@ -54,7 +54,7 @@ class UtleggsTrekkService(
             "Alle nye utleggstrekk er lagret."
         }
         repositoryNy.deleteOldData()
-        calulateMetrics()
+        calculateMetrics()
         slackService.sendCachedErrors("Trekk henting feil")
     }
 
@@ -100,7 +100,7 @@ class UtleggsTrekkService(
         }
     }
 
-    fun calulateMetrics() {
+    fun calculateMetrics() {
         val duration =
             durationOf {
                 val utleggstrekkCounts = repositoryNy.countUtleggstrekk()
