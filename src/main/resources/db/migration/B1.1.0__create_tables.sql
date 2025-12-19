@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS fraskatt_status;
 CREATE TABLE fraskatt_status
 (
     id              BIGSERIAL   PRIMARY KEY,
-    fraskatt_id     BIGSERIAL   NOT NULL,
+    fraskatt_id     BIGSERIAL   NOT NULL REFERENCES fraskatt(id) ON DELETE CASCADE,
     status          TEXT        NOT NULL,
     tidspunkt_satt  timestamptz NOT NULL DEFAULT NOW()
 );
