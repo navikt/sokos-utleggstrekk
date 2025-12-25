@@ -27,16 +27,16 @@ val nimbusVersion = "10.6"
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.16.1"
-val unleashedVersion = "11.2.0"
+val unleashedVersion = "11.2.1"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "11.19.0"
+val flywayVersion = "11.19.1"
 val postgresqlVersion = "42.7.8"
 val kotliqueryVersion = "1.9.1"
 
 // Logging
-val logbackVersion = "1.5.21"
+val logbackVersion = "1.5.22"
 val logstashVersion = "9.0"
 val kotlinLoggingVersion = "3.0.5"
 
@@ -46,11 +46,11 @@ val gsonVersion = "2.13.2"
 val kotestVersion = "6.0.7"
 val mockkVersion = "1.14.7"
 val commonsVersion = "3.12.0"
-val testContainerVersion = "1.21.3"
+val testContainerVersion = "1.21.4"
 val activemqVersion = "2.44.0"
 val kotestTestContainerExtensionVersion = "2.0.2"
 val janinoVersion = "3.1.12"
-val ibmMqVersion = "9.4.4.0"
+val ibmMqVersion = "9.4.4.1"
 
 dependencies {
     // Ktor Server
