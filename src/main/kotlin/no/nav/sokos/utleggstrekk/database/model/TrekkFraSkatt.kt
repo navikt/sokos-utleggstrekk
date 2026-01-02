@@ -6,15 +6,6 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPM
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 
-const val SOKOS_KILDE = "SOKOS-UTLEGGSTREKK"
-const val SKATT_KILDE = "SKATTEETATEN"
-
-data class FraSkattStatus(
-    val id: Long,
-    val fraSkattID: Long,
-    val status: SkattTrekkStatus,
-)
-
 data class TrekkFraSkatt(
     val id: Long,
     val trekkid: String,
@@ -63,13 +54,6 @@ data class PeriodeFraSkatt(
             trekkbeloep ?: 0.0
         } else {
             trekkprosent ?: 0.0
-        }
-
-    fun kildeFor(alternativ: TrekkAlternativ): String =
-        if (alternativ == LOPM && trekkbeloep != null) {
-            SKATT_KILDE
-        } else {
-            SOKOS_KILDE
         }
 
     fun trekkAlternativ(): TrekkAlternativ =
