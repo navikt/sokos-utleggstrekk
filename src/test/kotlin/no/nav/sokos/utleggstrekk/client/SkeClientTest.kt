@@ -3,6 +3,7 @@ package no.nav.sokos.utleggstrekk.client
 import kotlin.time.ExperimentalTime
 import kotlinx.serialization.json.Json
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
@@ -228,11 +229,7 @@ class SkeClientTest :
                 val slackMessage = slot<String>()
                 every { slackService.addError(any(), capture(slackMessage)) } returns Unit
 
-                println("************************!!!!!! ")
-
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
-
-                println("************************!!!!!! $trekkListe")
 
                 trekkListe shouldBe emptyList()
                 verify(exactly = 1) {
@@ -328,6 +325,33 @@ class SkeClientTest :
 
                 alarmHeaders.last() shouldBe "500 Internal Server Error"
                 messages.last() shouldContain ".+sekvensnr=2.+KB-001.+KorrelasjonsId.+".toRegex()
+            }
+        }
+        context(name = "Feil i json-struktur") {
+            test("String for tall id") {
+                val mockedResponse = resourceToString("trekkMedFeil/stringForTall.json")
+                val engine =
+                    MockEngine {
+                        respond(content = mockedResponse, headers = headers)
+                    }
+                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
+                val ex =
+                    shouldThrow<Exception> {
+                        val trekkListe = skeClient.hentAlleUtleggstrekk()
+                    }
+            }
+            test("Beløp og prosent i samme periode") {
+                val mockedResponse = resourceToString("trekkMedFeil/belopOgProsent.json")
+                val engine =
+                    MockEngine {
+                        respond(content = mockedResponse, headers = headers)
+                    }
+                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
+                val ex =
+                    shouldThrow<Exception> {
+                        val trekkListe = skeClient.hentAlleUtleggstrekk()
+                        println(trekkListe.first().trekkstoerrelseForPeriode.first())
+                    }
             }
         }
 
