@@ -31,12 +31,12 @@ val unleashedVersion = "11.2.1"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "11.19.1"
+val flywayVersion = "11.20.0"
 val postgresqlVersion = "42.7.8"
 val kotliqueryVersion = "1.9.1"
 
 // Logging
-val logbackVersion = "1.5.22"
+val logbackVersion = "1.5.23"
 val logstashVersion = "9.0"
 val kotlinLoggingVersion = "3.0.5"
 
