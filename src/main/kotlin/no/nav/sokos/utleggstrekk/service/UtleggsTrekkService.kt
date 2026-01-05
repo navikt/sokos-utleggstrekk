@@ -68,7 +68,7 @@ class UtleggsTrekkService(
             val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
             processTrekkpaalegg(nyeUtleggsTrekk)
             val duration = System.currentTimeMillis() - time
-            if (nyeUtleggsTrekk.size > 0) {
+            if (nyeUtleggsTrekk.isNotEmpty()) {
                 // Sekunder per tusen, men fordi duration er millsekunder trenger vi ikke dele igjen.
                 Metrics.tidBruktPaaLagringAvUtleggstrekk.set(duration / (nyeUtleggsTrekk.size.toDouble()))
             }
@@ -111,7 +111,7 @@ class UtleggsTrekkService(
             .getTransakjonerTilOsSomManglerKvittering()
             .filter { it.tidspunktSendt?.isBefore(yesterday) == true }
             .forEach {
-                val header = "TransaksjonID ${it.transaksjonsID} mangler kvitteringen"
+                val header = "TransaksjonID mangler kvitteringen"
                 val message = "TransaksjonID ${it.transaksjonsID} ble sendt ${it.tidspunktSendt?.format(formatter)} men vi har ikke mottatt kvitteringen."
                 slackService.addError(header, message)
             }
