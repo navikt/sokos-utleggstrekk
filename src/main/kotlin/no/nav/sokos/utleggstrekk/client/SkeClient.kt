@@ -8,6 +8,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.JsonConvertException
@@ -18,6 +19,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.service.SlackService
+import no.nav.sokos.utleggstrekk.utils.Validation.validateString
 import no.nav.sokos.utleggstrekk.utils.isClientError
 import no.nav.sokos.utleggstrekk.utils.isServerError
 import no.nav.sokos.utleggstrekk.utils.isSuccessful
@@ -71,6 +73,7 @@ class SkeClient(
 
     private suspend fun HttpResponse.toTrekkpaalegg(sekvensnr: Int? = null) =
         try {
+            bodyAsText().validateString(true)
             body<List<Trekkpaalegg>>().also {
                 if (it.isEmpty()) {
                     slackService.addError("Manglende data", "Fikk ingen data for sekvensnummer=$sekvensnr")

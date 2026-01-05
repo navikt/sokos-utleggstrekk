@@ -8,12 +8,16 @@ import no.nav.sokos.utleggstrekk.client.MAX_ANTALL
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
+import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.validate
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
+import no.nav.sokos.utleggstrekk.domene.ske.validate
 import no.nav.sokos.utleggstrekk.metrics.Metrics
 import no.nav.sokos.utleggstrekk.metrics.Metrics.set
 import no.nav.sokos.utleggstrekk.metrics.Metrics.utleggstrekkFraSkatt
@@ -80,6 +84,7 @@ class UtleggsTrekkService(
         // Sortert for at vi ikke skal hoppe over noen i sekvens dersom vi feiler før alle er lagret.
         trekkpaalegg.sortedBy { it.sekvensnummer }.forEach { trekk ->
             try {
+                trekk.validate()
                 repositoryNy.insertTrekkFraSkatt(trekk)
                 utleggstrekkFraSkatt.inc()
             } catch (e: Exception) {
@@ -92,6 +97,7 @@ class UtleggsTrekkService(
 
     private fun sendTrekkTilOS(transaksjonOS: TransaksjonOS) {
         runCatching {
+            jsonConfig.decodeFromString<TrekkTilOppdrag>(transaksjonOS.documentJson).validate()
             mqProducer.send(transaksjonOS.documentJson)
         }.onSuccess {
             repositoryNy.updateTransaksjonSendt(transaksjonOS.transaksjonsID)

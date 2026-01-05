@@ -24,9 +24,32 @@ object Validation {
             false
         }
 
-    fun String.isSafeText() =
+    fun String.isSafeText(allowNewlines: Boolean = false): Boolean =
         this.none { ch ->
-            val c = ch.code
-            ch == '\uFFFD' || (c in 0x00..0x1F) || c == 0x7f || c in 0x80..0x9f || Character.getType(ch) == Character.FORMAT.toInt()
+            when {
+                ch == '\uFFFD' -> true
+                ch.code in 0x00..0x1F -> !(allowNewlines && (ch == '\n' || ch == '\r' || ch == '\t'))
+                ch.code == 0x7F -> true
+                ch.code in 0x90..0x9F -> true
+                Character.getType(ch) == Character.FORMAT.toInt() -> true
+                else -> false
+            }
         }
+
+    fun String.validateString(allowNewLines: Boolean = false) {
+        if (!isSafeText(allowNewLines)) throw IllegalArgumentException("Malformed string data")
+    }
+
+    fun String.isUuidV4(): Boolean {
+        if (length != 36) return false
+        val hex = "0123456789abcdefABCDEF"
+        for (i in indices) {
+            val c = this[i]
+            when (i) {
+                8, 13, 18, 23 -> if (c != '-') return false
+                else -> if (c !in hex) return false
+            }
+        }
+        return true
+    }
 }

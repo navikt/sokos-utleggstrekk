@@ -123,7 +123,7 @@ fun Document.validate() {
 
 fun InnrapporteringTrekk.validate() {
     require(navTrekkId.isSafeText()) { "navTrekkId har ugyldige tegn" }
-    require(kreditorIdTss.length <= 11) { "kreditorIdTss er ugydlig" }
+    require(kreditorIdTss.length <= 11 && kreditorIdTss.isNumber()) { "kreditorIdTss er ugydlig" }
     require(kreditorTrekkId.length <= 35 && kreditorTrekkId.isSafeText()) { "kreditorTrekkId er ugyldig" }
     require(kreditorsRef.length <= 30 && kreditorsRef.isSafeText()) { "kreditorsRef er ugyldig" }
     require(debitorId.length == 11 && debitorId.isNumber()) { "debitorId er ugyldig" }
@@ -142,6 +142,7 @@ fun Perioder.validate() {
 
 fun Periode.validate() {
     require(periodeFomDato.isDate()) { "periodeFomDato er ugyldig" }
+    require(sats >= 0) { "sats er ugyldig" }
     if (periodeTomDato != null) {
         val fom = LocalDate.parse(periodeFomDato)
         val tom = LocalDate.parse(periodeTomDato)

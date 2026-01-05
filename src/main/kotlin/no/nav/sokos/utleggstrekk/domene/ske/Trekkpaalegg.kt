@@ -63,7 +63,7 @@ data class Betalingsinformasjon(
 
 fun Trekkpaalegg.validate() {
     try {
-        require(trekkid.isSafeText()) { "trekkid har ugyldige tegn" }
+        require(trekkid.length > 0 && trekkid.isSafeText()) { "trekkid har ugyldige tegn" }
         require(saksnummer.isSafeText()) { "saksnummer har ugyldige tegn" }
         require(trekkversjon > 0) { "trekkversjon har ulovlig verdi " }
         require(sekvensnummer > 0) { "sekvensnummer har ulovlig verdi" }
