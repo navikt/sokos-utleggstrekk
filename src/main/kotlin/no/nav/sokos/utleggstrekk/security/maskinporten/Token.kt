@@ -1,29 +1,31 @@
-@file:OptIn(ExperimentalTime::class)
+package no.nav.sokos.skattekort.security
 
-package no.nav.sokos.utleggstrekk.security.maskinporten
+import com.auth0.jwt.JWT
+import io.ktor.http.HttpHeaders
+import io.ktor.server.application.ApplicationCall
 
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.plus
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+const val JWT_CLAIM_NAVIDENT = "NAVident"
 
-@Serializable
-data class Token(
-    @SerialName("access_token")
-    val accessToken: String,
-    @SerialName("expires_in")
-    val expiresIn: Long,
+object AuthToken {
+    fun getSaksbehandler(call: ApplicationCall): Saksbehandler {
+        val oboToken =
+            call.request.headers[HttpHeaders.Authorization]?.removePrefix("Bearer ")
+                ?: throw UnauthorizedException("Could not get token from request header")
+
+        val navIdent = getNAVIdentFromToken(oboToken)
+        return Saksbehandler(navIdent)
+    }
+
+    private fun getNAVIdentFromToken(token: String): String {
+        val decodedJWT = JWT.decode(token)
+        return decodedJWT.claims[JWT_CLAIM_NAVIDENT]?.asString()
+            ?: throw UnauthorizedException("Missing NAVident in private claims")
+    }
+}
+
+data class Saksbehandler(
+    val ident: String,
+    val roller: List<String> = emptyList(),
 )
 
-data class AccessToken(
-    val accessToken: String,
-    val expiresAt: Instant,
-) {
-    constructor(token: Token) : this(
-        accessToken = token.accessToken,
-        expiresAt = Clock.System.now().plus(token.expiresIn, DateTimeUnit.SECOND),
-    )
-}
+class UnauthorizedException(override val message: String) : RuntimeException(message)

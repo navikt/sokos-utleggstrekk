@@ -16,6 +16,7 @@ object PropertiesConfig {
             mapOf(
                 "NAIS_APP_NAME" to "sokos-utleggstrekk",
                 "NAIS_NAMESPACE" to "okonomi",
+                "AZURE_APP_PROVIDER_NAME" to "azureAd",
             ),
         )
     private val localDevProperties =
