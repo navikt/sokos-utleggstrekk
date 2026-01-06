@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.time.LocalDateTime
+
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.nulls.shouldBeNull
@@ -12,8 +14,11 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
+import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
@@ -69,7 +74,7 @@ internal class UtleggsTrekkServiceTest :
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    RepositoryNy,
+                    RepositoryNy, // TODO: Mock repository i stedet? Tilkobling med databasen er testet i RepositoryTest.
                     skeClient = skeClientMock,
                     slackService = slackService,
                     mqProducer = mqProducerMock,
@@ -180,6 +185,44 @@ internal class UtleggsTrekkServiceTest :
 
                 utleggsTrekkService.schedule()
                 coVerify(exactly = 1) { slackService.sendCachedErrors("Trekk henting feil") }
+            }
+        }
+
+        Given("Vi henter transaksjoner til OS som mangler kvittering") {
+            val now = LocalDateTime.now()
+            val oldDate = now.minusDays(2)
+
+            val mockTransaksjonOS =
+                mockk<TransaksjonOS> {
+                    every { transaksjonsID } returnsMany listOf("1", "2")
+                    every { tidspunktSendt } returnsMany listOf(now, oldDate)
+                }
+
+            val repositoryNy =
+                mockk<RepositoryNy> {
+                    every { getTransakjonerTilOsSomManglerKvittering() } returns List(2) { mockTransaksjonOS }
+                }
+
+            val slackService =
+                mockk<SlackService> {
+                    every { addError(any(), any()) } returns Unit
+                    coEvery { sendCachedErrors(any()) } returns Unit
+                }
+
+            val utleggsTrekkService =
+                UtleggsTrekkService(
+                    repositoryNy,
+                    skeClient = mockk(),
+                    slackService = slackService,
+                    mqProducer = mqProducerMock,
+                )
+
+            When("Transaksjonen ble sendt for mer enn en døgn siden") {
+                utleggsTrekkService.reportMissingKvittering()
+                Then("Vi sender alarmer på slack") {
+                    verify(exactly = 1) { slackService.addError(any(), any()) }
+                    coVerify(exactly = 1) { slackService.sendCachedErrors(any()) }
+                }
             }
         }
     })

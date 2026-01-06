@@ -294,6 +294,13 @@ class RepositoryTest :
                     transaksjonTilOs.navTrekkId shouldBe nyNavTrekkId
                 }
             }
+            When("transaksjonstatus er SENDT og kvitteringsstatus er IKKE_MOTTAT") {
+                RepositoryNy.updateTransaksjonSendt(dto.transaksjonID)
+                Then("getTransakjonerTilOsSomManglerKvittering skal ikke være null") {
+                    val transaksjonTilOs = RepositoryNy.getTransakjonerTilOsSomManglerKvittering()
+                    transaksjonTilOs.shouldNotBeNull()
+                }
+            }
         }
 
         Given("To trekk lagres") {

@@ -1,5 +1,9 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle.SHORT
+
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import mu.KotlinLogging
@@ -54,7 +58,7 @@ class UtleggsTrekkService(
             "Alle nye utleggstrekk er lagret."
         }
         repositoryNy.deleteOldData()
-        calulateMetrics()
+        calculateMetrics()
         slackService.sendCachedErrors("Trekk henting feil")
     }
 
@@ -64,7 +68,7 @@ class UtleggsTrekkService(
             val nyeUtleggsTrekk: List<Trekkpaalegg> = hentUtleggsTrekk()
             processTrekkpaalegg(nyeUtleggsTrekk)
             val duration = System.currentTimeMillis() - time
-            if (nyeUtleggsTrekk.size > 0) {
+            if (nyeUtleggsTrekk.isNotEmpty()) {
                 // Sekunder per tusen, men fordi duration er millsekunder trenger vi ikke dele igjen.
                 Metrics.tidBruktPaaLagringAvUtleggstrekk.set(duration / (nyeUtleggsTrekk.size.toDouble()))
             }
@@ -100,7 +104,21 @@ class UtleggsTrekkService(
         }
     }
 
-    fun calulateMetrics() {
+    suspend fun reportMissingKvittering() {
+        val yesterday = LocalDateTime.now().minusDays(1)
+        val formatter = DateTimeFormatter.ofLocalizedDateTime(SHORT)
+        repositoryNy
+            .getTransakjonerTilOsSomManglerKvittering()
+            .filter { it.tidspunktSendt?.isBefore(yesterday) == true }
+            .forEach {
+                val header = "TransaksjonID mangler kvitteringen"
+                val message = "TransaksjonID ${it.transaksjonsID} ble sendt ${it.tidspunktSendt?.format(formatter)} men vi har ikke mottatt kvitteringen."
+                slackService.addError(header, message)
+            }
+        slackService.sendCachedErrors("Kvittering fra oppdrag uteblir")
+    }
+
+    fun calculateMetrics() {
         val duration =
             durationOf {
                 val utleggstrekkCounts = repositoryNy.countUtleggstrekk()
