@@ -1,0 +1,33 @@
+{
+  "mmel": {
+    "systemId": "231-OPPD",
+    "kodeMelding": "B725007F",
+    "alvorlighetsgrad": "08",
+    "beskrMelding": "Personen finnes ikke i PDL: 10108412345",
+    "programId": "K231B720",
+    "sectionNavn": "CA15-FEIL-I-FELTER"
+  },
+  "dokument": {
+    "transaksjonsId": "TransaksjonsId01",
+    "innrapporteringTrekk": {
+      "aksjonskode": "NY",
+      "kilde": "SOKOS-UTLEGG",
+      "navTrekkId": "",
+      "kreditorIdTss": "80000427901",
+      "kreditorTrekkId": "10342395",
+      "debitorId": "19074639472",
+      "kid":"17654202404",
+      "kreditorsRef":"SAK1",
+      "kodeTrekktype": "KRED",
+      "kodeTrekkAlternativ": "LOPM",
+      "prioritetFomDato":"2024-06-16",
+      "perioder": {
+        "periode": [ {
+          "periodeFomDato":"2023-06-13",
+          "periodeTomDato":"2024-11-30",
+          "sats":5000.00 }
+        ]
+      }
+    }
+  }
+}

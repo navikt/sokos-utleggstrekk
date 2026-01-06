@@ -79,9 +79,12 @@ class JmsListenerService(
     }
 
     private fun logError(receipt: KvitteringFraOppdrag) {
+        val personnalNumberMatcher = Regex("\\d{11}")
+        val errorDescription = receipt.mmel?.beskrMelding?.replace(personnalNumberMatcher, "[fødselsnummer]")
+
         val message =
             "Trekk med kreditorstrekkID: ${receipt.dokument.innrapporteringTrekk.kreditorTrekkId}, " +
-                "corrid: ${receipt.dokument.transaksjonsId} har feilkode: ${receipt.mmel?.kodeMelding} og beskrivelse: ${receipt.mmel?.beskrMelding}"
+                "corrid: ${receipt.dokument.transaksjonsId} har feilkode: ${receipt.mmel?.kodeMelding} og beskrivelse: $errorDescription"
 
         logger.info(message)
         slackService.addError("Kvittering feil", message)
