@@ -74,39 +74,61 @@ class JmsListenerServiceTest :
             }
 
             When("Ikke OK Kvittering prosesseres") {
+                And("feil beskrivelsen inneholder ikke fødselsnummer") {
+                    val kvittering = resourceToString("mq/trekk_med_kvittering_ikke_ok/trekk1_ikke_ok_kvittering.json")
+                    jmsProducerTrekk.send(kvittering)
 
-                val kvittering = resourceToString("mq/trekk_med_kvittering_ikke_ok/trekk1_ikke_ok_kvittering.json")
-                jmsProducerTrekk.send(kvittering)
-
-                Then("Skal trekk oppdateres med status ${KvitteringStatus.FEIL}") {
-                    eventually(duration = 1.seconds) {
-                        val trekkAfter = RepositoryNy.getTransaksjonTilOs(transaksjon.transaksjonsID)
-                        trekkAfter.shouldNotBeNull()
-                        trekkAfter.kvitteringStatus shouldBe KvitteringStatus.FEIL
-                        trekkAfter.navTrekkId shouldBe INGEN_TREKK_ID_I_KVITTERING
-                    }
-                }
-                Then("Feil skal insertes i database") {
-                    eventually(duration = 1.seconds) {
-                        val feilmelding = RepositoryNy.getFeilmeldingerFraOS(transaksjon.transaksjonsID)
-                        feilmelding.shouldNotBeNull()
-                        feilmelding.feilkode shouldBe "B7XX001F"
-                        feilmelding.beskrivelse shouldBe "Ugyldig verdi i felt: Trekktype"
-                    }
-                }
-                Then("Feil skal sendes til slack") {
-                    val message = slot<String>()
-                    eventually(duration = 1.seconds) {
-                        coVerify(exactly = 1) {
-                            slackService.addError("Kvittering feil", capture(message))
-                            slackService.sendCachedErrors("Kvittering fra oppdrag feil")
+                    Then("Skal trekk oppdateres med status ${KvitteringStatus.FEIL}") {
+                        eventually(duration = 1.seconds) {
+                            val trekkAfter = RepositoryNy.getTransaksjonTilOs(transaksjon.transaksjonsID)
+                            trekkAfter.shouldNotBeNull()
+                            trekkAfter.kvitteringStatus shouldBe KvitteringStatus.FEIL
+                            trekkAfter.navTrekkId shouldBe INGEN_TREKK_ID_I_KVITTERING
                         }
-                        message.captured.shouldContainInOrder(
-                            "Trekk med kreditorstrekkID: 10342395",
-                            "corrid: TransaksjonsId01",
-                            "feilkode: B7XX001F",
-                            "beskrivelse: Ugyldig verdi i felt: Trekktype",
-                        )
+                    }
+                    Then("Feil skal insertes i database") {
+                        eventually(duration = 1.seconds) {
+                            val feilmelding = RepositoryNy.getFeilmeldingerFraOS(transaksjon.transaksjonsID)
+                            feilmelding.shouldNotBeNull()
+                            feilmelding.feilkode shouldBe "B7XX001F"
+                            feilmelding.beskrivelse shouldBe "Ugyldig verdi i felt: Trekktype"
+                        }
+                    }
+                    Then("Feil skal sendes til slack") {
+                        val message = slot<String>()
+                        eventually(duration = 1.seconds) {
+                            coVerify(exactly = 1) {
+                                slackService.addError("Kvittering feil", capture(message))
+                                slackService.sendCachedErrors("Kvittering fra oppdrag feil")
+                            }
+                            message.captured.shouldContainInOrder(
+                                "Trekk med kreditorstrekkID: 10342395",
+                                "corrid: TransaksjonsId01",
+                                "feilkode: B7XX001F",
+                                "beskrivelse: Ugyldig verdi i felt: Trekktype",
+                            )
+                        }
+                    }
+                }
+
+                And("feil beskrivelsen inneholder fødselsnummer") {
+                    val kvittering = resourceToString("mq/trekk_med_kvittering_ikke_ok/trekk2_ikke_ok_kvittering.json")
+                    jmsProducerTrekk.send(kvittering)
+
+                    Then("Feil skal sendes til slack uten fødselsnummer") {
+                        val message = slot<String>()
+                        eventually(duration = 1.seconds) {
+                            coVerify(exactly = 1) {
+                                slackService.addError("Kvittering feil", capture(message))
+                                slackService.sendCachedErrors("Kvittering fra oppdrag feil")
+                            }
+                            message.captured.shouldContainInOrder(
+                                "Trekk med kreditorstrekkID: 10342395",
+                                "corrid: TransaksjonsId01",
+                                "feilkode: B725007F",
+                                "beskrivelse: Personen finnes ikke i PDL: [fødselsnummer]",
+                            )
+                        }
                     }
                 }
             }
