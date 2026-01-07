@@ -61,7 +61,7 @@ internal class UtleggsTrekkServiceTest :
                     trekkversjon = 1,
                     saksnummer = "SAK1",
                     trekkpliktig = "123456789",
-                    skyldner = "skyldner",
+                    skyldner = "12345678901",
                     trekkstatus = Trekkstatus.AKTIV,
                     mottaker = mottaker,
                     perioder = listOf(trekkPeriode),
@@ -129,7 +129,7 @@ internal class UtleggsTrekkServiceTest :
                         trekkversjon = index,
                         saksnummer = "SAK1",
                         trekkpliktig = "123456789",
-                        skyldner = "skyldner",
+                        skyldner = "12345678901",
                         trekkstatus = Trekkstatus.AKTIV,
                         mottaker = mottaker,
                         perioder =

@@ -28,6 +28,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ.LOPP
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AVSLUTTET
 import no.nav.sokos.utleggstrekk.utils.TssIdResolver
+import no.nav.sokos.utleggstrekk.utils.Validation.isUuidV4
 
 const val KODE_TREKKTYPE = "TRK1"
 const val KILDE = "SOKOSUTLEGG"
@@ -146,7 +147,13 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
 
         val transaksjonsID = UUID.randomUUID().toString()
         val gyldigTomDato = if (trekkFraSkatt.trekkstatus == AVSLUTTET.name) LocalDate.now().toString() else null
-        val nyTrekkId = "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
+        val nyTrekkId =
+            when {
+                trekkFraSkatt.trekkid.isUuidV4() -> "${trekkFraSkatt.trekkid.replace("-", "")}${trekkalternativ.value}"
+                trekkFraSkatt.trekkid.length > 34 -> "${trekkFraSkatt.trekkid.substring(0, 34)}${trekkalternativ.value}"
+                else -> "${trekkFraSkatt.trekkid}${trekkalternativ.value}"
+            }
+        val kreditorsRef = if (trekkFraSkatt.saksnummer.length > 30) trekkFraSkatt.saksnummer.substring(0, 30) else trekkFraSkatt.saksnummer
 
         val tssId = TssIdResolver.resolve(betalingsinformasjon)
 
@@ -162,7 +169,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
                 perioder = perioder,
                 debitorId = trekkFraSkatt.skyldner,
                 kid = betalingsinformasjon.kidnummer,
-                kreditorsRef = trekkFraSkatt.saksnummer,
+                kreditorsRef = kreditorsRef,
             )
 
         return TrekkTilOppdrag(DokumentTilOppdrag(transaksjonsID, innrapporteringTrekk))

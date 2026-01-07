@@ -1,0 +1,23 @@
+{
+  "trekkid": "fe0d1de1-9840-4480-9382-3dbad27e9002",
+  "skyldner": "10108412345",
+  "opprettet": "2025-08-09T15:00:00.00Z",
+  "saksnummer": "TREKK/2025/1",
+  "trekkstatus": "aktiv",
+  "trekkpliktig": "123456789",
+  "trekkversjon": 1,
+  "sekvensnummer": 38,
+  "betalingsinformasjon": {
+    "kidnummer": "6487719756",
+    "kontonummer": "76940512057",
+    "betalingsmottaker": "971648198"
+  },
+  "trekkstoerrelseForPeriode": [
+    {
+      "startdato": "2025-09-01",
+      "trekkprosent": {
+        "trekkprosent": 17.0
+      }
+    }
+  ]
+}

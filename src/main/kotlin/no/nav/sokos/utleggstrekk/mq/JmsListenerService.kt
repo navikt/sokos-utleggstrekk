@@ -20,9 +20,11 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
+import no.nav.sokos.utleggstrekk.domene.nav.validate
 import no.nav.sokos.utleggstrekk.metrics.Metrics.trekkAvvistAvOs
 import no.nav.sokos.utleggstrekk.metrics.Metrics.trekkKvittertForAvOS
 import no.nav.sokos.utleggstrekk.service.SlackService
+import no.nav.sokos.utleggstrekk.utils.Validation.validateString
 
 class JmsListenerService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
@@ -46,7 +48,9 @@ class JmsListenerService(
     private fun onReceipt(message: Message) {
         val jmsMessage = message.getBody(String::class.java)
         try {
+            jmsMessage.validateString(true)
             val receipt = jsonConfig.decodeFromString<KvitteringFraOppdrag>(jmsMessage)
+            receipt.validate()
             processReceipt(receipt)
             message.acknowledge()
         } catch (exception: Exception) {
