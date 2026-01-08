@@ -5,22 +5,30 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationStarted
-import io.ktor.server.application.ApplicationStopped
-import io.ktor.server.application.ServerReady
 import io.ktor.server.application.log
+import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.config.getAs
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 
+import no.nav.sokos.utleggstrekk.config.ApplicationProperties
+import no.nav.sokos.utleggstrekk.config.ApplicationState
 import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
+import no.nav.sokos.utleggstrekk.config.applicationLifecycleConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
+import no.nav.sokos.utleggstrekk.config.mergeWithEnv
 import no.nav.sokos.utleggstrekk.config.routingConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.scheduling.UtleggstrekkScheduler
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 
 fun main() {
-    embeddedServer(Netty, port = 8080, module = Application::moduleOld).start(true)
+    embeddedServer(Netty, port = 8080, module = Application::module).start(true)
+}
+
+private fun Application.module(appConfig: ApplicationConfig = environment.config.mergeWithEnv()) {
+    val applicationProperties = appConfig.property("application").getAs<ApplicationProperties>()
+    println("LAO10: ${applicationProperties.profile} | ${applicationProperties.appName}")
 }
 
 private fun Application.moduleOld() {
@@ -47,26 +55,3 @@ private fun Application.moduleOld() {
         log.info("Property SCHEDULER_ACTIVE is '$schedulerActive'. Scheduler is not running.")
     }
 }
-
-fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
-    monitor.subscribe(ApplicationStarted) {
-        applicationState.alive = true
-        it.log.info("Application is started")
-    }
-
-    monitor.subscribe(ServerReady) {
-        applicationState.ready = true
-        it.log.info("Server is ready")
-    }
-
-    monitor.subscribe(ApplicationStopped) {
-        applicationState.alive = false
-        applicationState.ready = false
-        it.log.info("Application is stopped")
-    }
-}
-
-class ApplicationState(
-    var ready: Boolean = false,
-    var alive: Boolean = false,
-)
