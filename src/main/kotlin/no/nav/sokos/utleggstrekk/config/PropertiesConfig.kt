@@ -7,13 +7,21 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.HoconApplicationConfig
 import io.ktor.server.config.withFallback
 
+enum class Profile {
+    LOCAL,
+    TEST,
+    PROD,
+}
+
 @Serializable
 data class ApplicationProperties(
-    val profile: String,
+    val profile: Profile,
     val appName: String,
     val namespace: String,
     val configuration: AppConfig,
-)
+) {
+    val isLocal = profile == Profile.LOCAL
+}
 
 @Serializable
 data class AppConfig(val security: SecurityProperties)
