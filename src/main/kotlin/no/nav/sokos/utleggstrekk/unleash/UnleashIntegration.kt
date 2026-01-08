@@ -5,13 +5,13 @@ import io.getunleash.FakeUnleash
 import io.getunleash.Unleash
 import io.getunleash.util.UnleashConfig
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig.Configuration
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig.UnleashProperties
+import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
+import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld.Configuration
+import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld.UnleashProperties
 
 open class UnleashIntegration {
     private var unleashClient: Unleash
-    val unleashIsEnabled = PropertiesConfig.Configuration().unleashEnabled
+    val unleashIsEnabled = Configuration().unleashEnabled
 
     // Kill switcher:
     fun isHentFraSKEEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.hent-fra-ske.enabled", unleashIsEnabled)
@@ -21,7 +21,7 @@ open class UnleashIntegration {
     fun isProsesserUtleggstrekkEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.prosesser-utleggstrekk.enabled", unleashIsEnabled)
 
     init {
-        if (Configuration().profile == PropertiesConfig.Profile.LOCAL) {
+        if (Configuration().profile == PropertiesConfigOld.Profile.LOCAL) {
             unleashClient = FakeUnleash()
         } else {
             val config: UnleashConfig =

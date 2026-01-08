@@ -11,7 +11,7 @@ import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.withTransaction
@@ -21,7 +21,7 @@ object DBListener : TestListener {
     private val container =
         PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
             withReuse(false)
-            withUsername(PropertiesConfig.PostgresConfig.user)
+            withUsername(PropertiesConfigOld.PostgresConfig.user)
             waitingFor(Wait.defaultWaitStrategy())
             start()
         }

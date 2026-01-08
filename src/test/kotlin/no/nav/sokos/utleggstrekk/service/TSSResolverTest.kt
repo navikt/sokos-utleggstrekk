@@ -17,7 +17,7 @@ import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.utils.TssIdResolver
 
@@ -34,11 +34,11 @@ class TSSResolverTest :
             val tssId =
                 TssIdResolver.resolve(
                     mockk<BetalingsinformasjonFraSkatt>(relaxed = true) {
-                        every { betalingsmottaker } returns PropertiesConfig.SKEConfig().skeOrgNr
-                        every { kontonummer } returns PropertiesConfig.SKEConfig().skeKontoNr
+                        every { betalingsmottaker } returns PropertiesConfigOld.SKEConfig().skeOrgNr
+                        every { kontonummer } returns PropertiesConfigOld.SKEConfig().skeKontoNr
                     },
                 )
-            tssId shouldBe PropertiesConfig.SKEConfig().skeTSSId
+            tssId shouldBe PropertiesConfigOld.SKEConfig().skeTSSId
         }
 
         test("hvis vi spør med feil orgid skal vi få NotImplementedError exception og sende en varsel") {

@@ -8,7 +8,7 @@ import mu.KotlinLogging
 import org.flywaydb.core.Flyway
 import org.postgresql.ds.PGSimpleDataSource
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
 
 object PostgresDataSource {
     private val logger = KotlinLogging.logger {}
@@ -16,12 +16,12 @@ object PostgresDataSource {
         dataSource()
     }
 
-    fun migrate(dataSource: HikariDataSource = dataSource(role = PropertiesConfig.PostgresConfig.user)) {
+    fun migrate(dataSource: HikariDataSource = dataSource(role = PropertiesConfigOld.PostgresConfig.user)) {
         logger.info { "Flyway migration" }
         Flyway
             .configure()
             .dataSource(dataSource)
-            .initSql("""SET ROLE "${PropertiesConfig.PostgresConfig.user}"""")
+            .initSql("""SET ROLE "${PropertiesConfigOld.PostgresConfig.user}"""")
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
             .load()
@@ -30,16 +30,16 @@ object PostgresDataSource {
         logger.info { "Migration finished" }
     }
 
-    private fun dataSource(hikariConfig: HikariConfig = hikariConfig(), role: String = PropertiesConfig.PostgresConfig.user): HikariDataSource = HikariDataSource(hikariConfig)
+    private fun dataSource(hikariConfig: HikariConfig = hikariConfig(), role: String = PropertiesConfigOld.PostgresConfig.user): HikariDataSource = HikariDataSource(hikariConfig)
 
     private fun hikariConfig(): HikariConfig {
-        val postgresConfig = PropertiesConfig.PostgresConfig
+        val postgresConfig = PropertiesConfigOld.PostgresConfig
         return HikariConfig().apply {
             maximumPoolSize = 5
             minimumIdle = 1
             isAutoCommit = false
 
-            if (PropertiesConfig.isLocal && postgresConfig.jdbcUrl.isEmpty()) {
+            if (PropertiesConfigOld.isLocal && postgresConfig.jdbcUrl.isEmpty()) {
                 dataSource =
                     PGSimpleDataSource().apply {
                         password = postgresConfig.password

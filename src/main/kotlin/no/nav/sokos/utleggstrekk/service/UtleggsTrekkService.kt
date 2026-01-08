@@ -10,7 +10,7 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.MAX_ANTALL
 import no.nav.sokos.utleggstrekk.client.SkeClient
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
@@ -38,7 +38,7 @@ class UtleggsTrekkService(
     private val mqProducer: JmsProducerService =
         JmsProducerService(
             targetQueue =
-                MQQueue(PropertiesConfig.MQProperties().queueName).apply {
+                MQQueue(PropertiesConfigOld.MQProperties().queueName).apply {
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 },
             replyQueue = JmsListenerService(repositoryNy).osKvitteringQueue,

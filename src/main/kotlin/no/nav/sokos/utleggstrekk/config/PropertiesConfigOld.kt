@@ -10,7 +10,7 @@ import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 import com.nimbusds.jose.jwk.RSAKey
 
-object PropertiesConfig {
+object PropertiesConfigOld {
     private val defaultProperties =
         ConfigurationMap(
             mapOf(
