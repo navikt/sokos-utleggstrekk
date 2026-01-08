@@ -34,8 +34,7 @@ val jsonConfig =
         prettyPrint = true
     }
 
-// TODO: Bytte navn. Dette er ikke "common".
-@OptIn(ExperimentalSerializationApi::class) // TODO: Sjekk om denne kan fjernes
+@OptIn(ExperimentalSerializationApi::class)
 fun Application.commonConfig() {
     install(CallLogging) {
         logger = no.nav.sokos.utleggstrekk.config.logger

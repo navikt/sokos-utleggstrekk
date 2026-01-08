@@ -28,7 +28,11 @@ fun main() {
 
 private fun Application.module(appConfig: ApplicationConfig = environment.config.mergeWithEnv()) {
     val applicationProperties = appConfig.property("application").getAs<ApplicationProperties>()
-    println("LAO10: ${applicationProperties.profile} | ${applicationProperties.appName}")
+    val applicationState = ApplicationState()
+
+    applicationLifecycleConfig(applicationState)
+    commonConfig()
+    routingConfig(applicationState)
 }
 
 private fun Application.moduleOld() {
