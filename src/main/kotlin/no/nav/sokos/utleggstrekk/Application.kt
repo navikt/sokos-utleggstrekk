@@ -29,10 +29,26 @@ fun main() {
 private fun Application.module(appConfig: ApplicationConfig = environment.config.mergeWithEnv()) {
     val applicationProperties = appConfig.property("application").getAs<ApplicationProperties>()
     val applicationState = ApplicationState()
+    val utleggsTrekkService = UtleggsTrekkService()
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     applicationLifecycleConfig(applicationState)
     commonConfig()
     routingConfig(applicationState)
+
+    if (!applicationProperties.isLocal) {
+        PostgresDataSource.migrate()
+    }
+
+    utleggsTrekkService.calculateMetrics()
+
+    val schedulerProperties = applicationProperties.configuration.scheduler
+    if (schedulerProperties.isActive) {
+        UtleggstrekkScheduler(appScope).scheduleHourlyAt(schedulerProperties.minutes) { utleggsTrekkService.schedule() }
+        UtleggstrekkScheduler(appScope).scheduleDailyAt(hour = 8, minute = 0) { utleggsTrekkService.reportMissingKvittering() }
+    } else {
+        log.info("Property SCHEDULER_ACTIVE is false. Scheduler is not running.")
+    }
 }
 
 private fun Application.moduleOld() {

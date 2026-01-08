@@ -20,11 +20,22 @@ data class ApplicationProperties(
     val namespace: String,
     val configuration: AppConfig,
 ) {
-    val isLocal = profile == Profile.LOCAL
+    // TODO: use correct isLocal
+//    val isLocal = profile == Profile.LOCAL
+    val isLocal = profile == Profile.TEST
 }
 
 @Serializable
-data class AppConfig(val security: SecurityProperties)
+data class AppConfig(
+    val scheduler: SchedulerProperties = SchedulerProperties(),
+    val security: SecurityProperties,
+)
+
+@Serializable
+data class SchedulerProperties(
+    val isActive: Boolean = false,
+    val minutes: Int = 55,
+)
 
 @Serializable
 data class SecurityProperties(val azure: AzureAdProperties)
