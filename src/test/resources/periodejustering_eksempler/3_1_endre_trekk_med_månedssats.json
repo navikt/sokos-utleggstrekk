@@ -1,0 +1,30 @@
+{
+  "trekkid": "ca175d60-7cba-4874-adcb-63e025bfba65",
+  "skyldner": "16507500866",
+  "opprettet": "2025-12-5T15:00:00.00Z",
+  "saksnummer": "TREKK/2025/3",
+  "trekkstatus": "aktiv",
+  "trekkpliktig": "123456789",
+  "trekkversjon": 2,
+  "sekvensnummer": 2,
+  "betalingsinformasjon": {
+    "kidnummer": "6487719756",
+    "kontonummer": "76940512057",
+    "betalingsmottaker": "971648198"
+  },
+  "trekkstoerrelseForPeriode": [
+    {
+      "startdato": "2025-11-15",
+      "sluttdato": "2025-12-04",
+      "trekkbeloep": {
+        "trekkbeloep": 1000.0
+      }
+    },
+    {
+      "startdato": "2025-12-05",
+      "trekkbeloep": {
+        "trekkbeloep": 2000.0
+      }
+    }
+  ]
+}

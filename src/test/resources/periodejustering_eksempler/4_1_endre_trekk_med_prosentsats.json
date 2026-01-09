@@ -1,0 +1,30 @@
+{
+  "trekkid": "6dd817d0-8b66-4e6a-bd55-39906a27a927",
+  "skyldner": "16507500866",
+  "opprettet": "2025-12-05T15:00:00.00Z",
+  "saksnummer": "TREKK/2025/4",
+  "trekkstatus": "aktiv",
+  "trekkpliktig": "123456789",
+  "trekkversjon": 2,
+  "sekvensnummer": 2,
+  "betalingsinformasjon": {
+    "kidnummer": "6487719756",
+    "kontonummer": "76940512057",
+    "betalingsmottaker": "971648198"
+  },
+  "trekkstoerrelseForPeriode": [
+    {
+      "startdato": "2025-11-15",
+      "sluttdato": "2025-12-04",
+      "trekkprosent": {
+        "trekkprosent": 10.0
+      }
+    },
+    {
+      "startdato": "2025-12-05",
+      "trekkprosent": {
+        "trekkprosent": 20.0
+      }
+    }
+  ]
+}
