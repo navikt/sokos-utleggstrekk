@@ -22,6 +22,7 @@ import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.mapNewFomTom
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -308,7 +309,7 @@ class BehandleTrekkServiceTest :
                     val trekkVersjon = 2
                     val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
                     val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
-                    val perioderForTrekkVersjon = lagPerioderForSkattLOPM(trekkFraSkatt).take(1)
+                    val perioderForTrekkVersjon = lagPerioderForSkattLOPM(trekkFraSkatt).drop(1).take(1)
 
                     And("Vi ikke har fått trekkversjon 1") {
                         val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, perioderForTrekkVersjon, emptyList())
@@ -329,14 +330,14 @@ class BehandleTrekkServiceTest :
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
                                     alleTrekkSomIkkeErBehandlet,
-                                    perioderForTrekkVersjon + lagPerioderForSkattLOPP(trekkFraSkatt).take(1),
+                                    lagPerioderForSkattLOPP(trekkFraSkatt).take(1) + perioderForTrekkVersjon,
                                     kjenteLOPPPerioder = kjenteLoppPerioder,
                                 )
 
                             behandleTrekkServiceNy.behandleTrekk()
                             capturedOSDtos shouldHaveSize 2
                             Then("Skal første trekk bli til 1 NYTT trekk med 1 periode og trekkalternativ LOPM") {
-                                with(capturedOSDtos.first().innrapporteringTrekk) {
+                                with(capturedOSDtos.last().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.NY
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
                                     perioder!!.periode shouldHaveSize 1
@@ -345,7 +346,7 @@ class BehandleTrekkServiceTest :
                             }
 
                             Then("Skal andre trekk bli til 1 ENDRET trekk med 1 periode med sats 0.0 og trekkalternativ LOPP") {
-                                with(capturedOSDtos.last().innrapporteringTrekk) {
+                                with(capturedOSDtos.first().innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
                                     perioder!!.periode shouldHaveSize 1
@@ -436,8 +437,6 @@ class BehandleTrekkServiceTest :
                     with(capturedOSDtos.first().innrapporteringTrekk) {
                         perioder!!.periode shouldHaveSize 1
                         val periodeTom = perioder.periode.first().periodeTomDato!!
-                        println("original: $dateWithWrongSluttDato")
-                        println(periodeTom)
                         LocalDate.parse(periodeTom).dayOfMonth shouldBe dateWithWrongSluttDato.lengthOfMonth()
                     }
                 }
@@ -476,8 +475,6 @@ class BehandleTrekkServiceTest :
                     with(capturedOSDtos.first().innrapporteringTrekk) {
                         perioder!!.periode shouldHaveSize 1
                         val periodeFom = perioder.periode.first().periodeFomDato
-                        println("original: $dateWithWrongStartDato")
-                        println(periodeFom)
                         LocalDate.parse(periodeFom).dayOfMonth shouldBe 1
                     }
                 }
@@ -526,38 +523,36 @@ class BehandleTrekkServiceTest :
                     val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
                     And("Periodene i trekkversjon 1 har trekkalternativ LOPM") {
                         And("Periodene i versjon 2 har aksjonskodene LOPM og LOPP") {
-                            val perioderForTrekkVersjon = perioderForSkattLOPM + perioderForSkattLOPP.drop(1)
+
+                            val perioderForTrekkVersjon = perioderForSkattLOPM.drop(1).take(1) + perioderForSkattLOPP.drop(2).take(1)
                             val behandleTrekkServiceNy =
                                 setUpBehandleTrekkServiceNy(
                                     alleTrekkSomIkkeErBehandlet,
                                     perioderForTrekkVersjon,
-                                    kjenteLOPMPerioder = perioderForSkattLOPM.drop(1).toKnownPeriods(),
+                                    kjenteLOPMPerioder = perioderForSkattLOPM.take(1).toKnownPeriods(),
                                 )
 
                             behandleTrekkServiceNy.behandleTrekk()
                             capturedOSDtos shouldHaveSize 2
-                            Then("Skal første trekk bli til 1 ENDRET trekk med trekkalternative LOPM og 3 perioder") {
-                                with(capturedOSDtos.first().innrapporteringTrekk) {
+                            Then("Skal første trekk bli til 1 ENDRET trekk med trekkalternativ LOPM og 3 perioder") {
+                                with(capturedOSDtos.find { it.innrapporteringTrekk.aksjonskode == Aksjonskode.ENDR }!!.innrapporteringTrekk) {
                                     aksjonskode shouldBe Aksjonskode.ENDR
                                     kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPM
-
-                                    val periodene = perioder!!.periode
-                                    periodene shouldHaveSize 3
-                                    periodene[0].sats shouldBe 3000.0
-                                    periodene[1].sats shouldBe 0.0
-                                    periodene[2].sats shouldBe 0.0
-                                }
-                            }
-                            Then("Skal andre trekk bli til 1 NYTT trekk med trekkalternative LOPP og 3 perioder") {
-                                with(capturedOSDtos.last().innrapporteringTrekk) {
-                                    aksjonskode shouldBe Aksjonskode.NY
-                                    kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
-
                                     val periodene = perioder!!.periode
                                     periodene shouldHaveSize 3
                                     periodene[0].sats shouldBe 0.0
-                                    periodene[1].sats shouldBe 15.0
-                                    periodene[2].sats shouldBe 10.0
+                                    periodene[1].sats shouldBe 2000.0
+                                    periodene[2].sats shouldBe 0.0
+                                }
+                            }
+                            Then("Skal andre trekk bli til 1 NYTT trekk med trekkalternative LOPP og 2 perioder") {
+                                with(capturedOSDtos.find { it.innrapporteringTrekk.aksjonskode == Aksjonskode.NY }!!.innrapporteringTrekk) {
+                                    aksjonskode shouldBe Aksjonskode.NY
+                                    kodeTrekkAlternativ shouldBe TrekkAlternativ.LOPP
+                                    val periodene = perioder!!.periode
+                                    periodene shouldHaveSize 2
+                                    periodene[0].sats shouldBe 0.0
+                                    periodene[1].sats shouldBe 10.0
                                 }
                             }
                         }
@@ -750,7 +745,7 @@ private fun lagPerioderForSkattLOPP(trekkFraSkatt: TrekkFraSkatt): List<PeriodeF
     val perioderTo = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPP, idag plus 3.mnd plus 1.dager, idag plus 5.mnd, 15.0)
     val perioderTre = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPP, idag plus 5.mnd plus 1.dager, idag plus 7.mnd, 10.0)
 
-    return listOf(perioderEn, perioderTo, perioderTre)
+    return listOf(perioderEn, perioderTo, perioderTre).mapNewFomTom()
 }
 
 private fun lagPerioderForSkattLOPM(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> {
@@ -758,7 +753,7 @@ private fun lagPerioderForSkattLOPM(trekkFraSkatt: TrekkFraSkatt): List<PeriodeF
     val perioderTo = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, idag plus 3.mnd plus 1.dager, idag plus 5.mnd, 2000.0)
     val perioderTre = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, TrekkAlternativ.LOPM, idag plus 5.mnd plus 1.dager, idag plus 7.mnd, 1000.0)
 
-    return listOf(perioderEn, perioderTo, perioderTre)
+    return listOf(perioderEn, perioderTo, perioderTre).mapNewFomTom()
 }
 
 private fun List<PeriodeFraSkatt>.toKnownPeriods() =
