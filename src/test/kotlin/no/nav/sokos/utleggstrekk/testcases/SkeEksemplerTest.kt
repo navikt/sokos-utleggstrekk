@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.testcases
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -13,7 +12,6 @@ import io.kotest.matchers.shouldBe
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
-import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
@@ -25,7 +23,6 @@ import no.nav.sokos.utleggstrekk.util.resourceToStringList
 /**
  *  Datadriven testcases using files in ske_trekkeksempler  1_foo.json -> 1_foo_result.json.  Run in order 1, 1_1, 1_2, if exists.
  */
-const val TEST_DIR = "ske_trekkeksempler"
 
 class SkeEksemplerTest :
     BehaviorSpec({
@@ -62,15 +59,7 @@ class SkeEksemplerTest :
                 testFiles.forEach { filename ->
                     When("Filen '$filename' prosesseres") {
                         val trekkpaalegg = jsonConfig.decodeFromString<Trekkpaalegg>(resourceToString("$TEST_DIR/$filename").updateYear())
-                        val updatedPeriode =
-                            trekkpaalegg.trekkstoerrelseForPeriode.map { trekkstorrelseForPeriode ->
-                                trekkstorrelseForPeriode.copy(
-                                    startdato = trekkstorrelseForPeriode.startdato.updateStartDato(),
-                                    sluttdato = trekkstorrelseForPeriode.sluttdato?.updateSluttDato(),
-                                )
-                            }
-
-                        DBListener.RepositoryNy.insertTrekkFraSkatt(trekkpaalegg.copy(trekkstoerrelseForPeriode = updatedPeriode))
+                        DBListener.RepositoryNy.insertTrekkFraSkatt(trekkpaalegg)
                         service.behandleTrekk()
 
                         Then("Produseres resultatet i '${filename.resultatFil()}'") {
@@ -84,25 +73,9 @@ class SkeEksemplerTest :
                                     .replace("###AVSLUTNINGSDATO###", idag) // Replace template with today
 
                             val expectedTrekk =
-                                jsonConfig.decodeFromString<Array<DocumentUtenTransaksjonsId>>(expected).map { dokument ->
-                                    val trekk = dokument.innrapporteringTrekk
-                                    val nyePerioder =
-                                        trekk.perioder?.let {
-                                            Perioder(
-                                                it.periode.map { periode ->
-                                                    periode.copy(
-                                                        periodeFomDato = periode.periodeFomDato.updateStartDato(),
-                                                        periodeTomDato = periode.periodeTomDato?.updateSluttDato(),
-                                                    )
-                                                },
-                                            )
-                                        }
+                                jsonConfig.decodeFromString<Array<DocumentUtenTransaksjonsId>>(expected).map { dokument -> dokument.innrapporteringTrekk }
 
-                                    //
-                                    trekk.copy(perioder = nyePerioder)
-                                }
-
-                            withClue("Antall trekk til OS forventes å være ${expectedTrekk.size}") {
+                            withClue("Antall trekk til OS forventes å være ${expectedTrekk.size} $trekk forskjellig fra $expectedTrekk") {
                                 trekk.size shouldBe expectedTrekk.size
                             }
 
@@ -117,7 +90,11 @@ class SkeEksemplerTest :
                 }
             }
         }
-    })
+    }) {
+    companion object {
+        const val TEST_DIR = "ske_trekkeksempler"
+    }
+}
 
 private fun String.resultatFil() = replace(".json", "_resultat.json")
 
@@ -128,10 +105,6 @@ private fun String.subIndex(): Int {
 
 // Move all 2025 into the future to avoid the rules that skip expired periods.
 private fun String.updateYear(): String = replace("2025-", "${LocalDate.now().year + 1}-")
-
-private fun String.updateStartDato(): String = LocalDate.parse(this, DateTimeFormatter.ISO_DATE).withDayOfMonth(1).toString()
-
-private fun String.updateSluttDato(): String = LocalDate.parse(this, DateTimeFormatter.ISO_DATE).run { withDayOfMonth(lengthOfMonth()) }.toString()
 
 //
 @Serializable
