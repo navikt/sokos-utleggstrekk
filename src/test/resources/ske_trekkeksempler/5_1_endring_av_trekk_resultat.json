@@ -18,11 +18,11 @@
           },
           {
             "periodeFomDato": "2025-07-01",
-            "periodeTomDato": "2025-08-09",
+            "periodeTomDato": "2025-07-31",
             "sats": 23.0
           },
           {
-            "periodeFomDato": "2025-08-10",
+            "periodeFomDato": "2025-08-01",
             "sats": 0.0
           }
         ]
@@ -44,11 +44,11 @@
         "periode": [
           {
             "periodeFomDato": "2025-07-01",
-            "periodeTomDato": "2025-08-09",
+            "periodeTomDato": "2025-07-31",
             "sats": 0.0
           },
           {
-            "periodeFomDato": "2025-08-10",
+            "periodeFomDato": "2025-08-01",
             "sats": 4400.00
           }
         ]

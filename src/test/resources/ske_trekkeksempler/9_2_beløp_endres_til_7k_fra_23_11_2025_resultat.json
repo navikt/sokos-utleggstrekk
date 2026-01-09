@@ -13,16 +13,16 @@
       "perioder": {
         "periode": [
           {
-            "periodeFomDato": "2025-10-16",
+            "periodeFomDato": "2025-10-01",
             "sats": 0.0
           },
           {
-            "periodeFomDato": "2025-10-16",
-            "periodeTomDato": "2025-11-22",
+            "periodeFomDato": "2025-10-01",
+            "periodeTomDato": "2025-10-30",
             "sats": 6000.0
           },
           {
-            "periodeFomDato": "2025-11-23",
+            "periodeFomDato": "2025-11-01",
             "sats": 7000.00
           }
         ]

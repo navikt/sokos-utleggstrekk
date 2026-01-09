@@ -18,11 +18,6 @@
           },
           {
             "periodeFomDato": "2025-10-01",
-            "periodeTomDato": "2025-10-15",
-            "sats": 8000.0
-          },
-          {
-            "periodeFomDato": "2025-10-16",
             "sats": 6000.0
           }
         ]
