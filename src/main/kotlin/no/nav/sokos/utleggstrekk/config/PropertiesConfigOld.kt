@@ -95,11 +95,11 @@ object PropertiesConfigOld {
         val systemBrukerClaim: String = getOrEmpty("MASKINPORTEN_SYSTEMBRUKER_CLAIM"),
     )
 
+/*
     data object SlackConfig {
         val url: String = get("SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL").trim()
     }
 
-/*
     data class SKEConfig(
         val skeRestUrl: String = getOrEmpty("SKE_REST_URL"),
         val skeOrgNr: String = getOrEmpty("SKE_ORGNR"),
