@@ -1,5 +1,8 @@
 package no.nav.sokos.utleggstrekk.database.model
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
 import kotliquery.Row
 
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -88,4 +91,31 @@ data class BetalingsinformasjonFraSkatt(
 enum class SkattTrekkStatus {
     MOTTATT,
     BEHANDLET,
+}
+
+fun List<PeriodeFraSkatt>.mapNewFomTom(): List<PeriodeFraSkatt> {
+    val justertePerioder = mutableListOf<PeriodeFraSkatt>()
+    var maxTom: LocalDate? = null
+    val reversed = sortedByDescending { it.startdato }
+
+    for (periode in reversed) {
+        val justertTom =
+            periode.sluttdato?.let {
+                val originalTom = LocalDate.parse(periode.sluttdato, DateTimeFormatter.ISO_DATE)
+                originalTom.withDayOfMonth(originalTom.lengthOfMonth())
+            }
+
+        val nyTom = if (maxTom != null && (justertTom == null || justertTom.isAfter(maxTom))) maxTom else justertTom
+        val originalFom = LocalDate.parse(periode.startdato, DateTimeFormatter.ISO_DATE)
+        val nyFom = originalFom.withDayOfMonth(1)
+        if (maxTom == null || nyFom.isBefore(maxTom)) {
+            maxTom = nyFom.minusDays(1)
+            justertePerioder.addFirst(
+                periode.copy(startdato = nyFom.toString(), sluttdato = nyTom?.toString()),
+            )
+        } else {
+            continue
+        }
+    }
+    return justertePerioder.toList()
 }
