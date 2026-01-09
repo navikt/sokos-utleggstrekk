@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.domene.ske
 
+import java.time.LocalDate
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -87,5 +89,8 @@ fun TrekkstorrelseForPeriode.validate() {
     if (trekkprosent != null) require(trekkprosent.trekkprosent in 0.0..100.0) { "Trekkprosent har ulovlig verdi" }
     if (trekkbeloep != null) require(trekkbeloep.trekkbeloep >= 0.0) { "Trekkbeloep ulovlig verdi" }
     require(startdato.isDate()) { "Startdato har ulovlig verdi" }
-    if (sluttdato != null) require(sluttdato.isDate()) { "Sluttdato har ulovlig verdi" }
+    if (sluttdato != null) {
+        require(sluttdato.isDate()) { "Sluttdato har ulovlig verdi" }
+        require(LocalDate.parse(startdato).isBefore(LocalDate.parse(sluttdato))) { "Sluttdato må være etter startdato" }
+    }
 }
