@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 import kotliquery.TransactionalSession
@@ -10,11 +9,11 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
-import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.PerioderTilOS
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.model.mapNewFomTom
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.ENDR
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode.NY
@@ -57,18 +56,6 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
             }
         }
 
-    private fun mapNewFomTom(periode: PeriodeFraSkatt): PeriodeFraSkatt {
-        val nyTom =
-            periode.sluttdato?.let {
-                val originalTom = LocalDate.parse(periode.sluttdato, DateTimeFormatter.ISO_DATE)
-                originalTom.withDayOfMonth(originalTom.lengthOfMonth())
-            }
-        val originalFom = LocalDate.parse(periode.startdato, DateTimeFormatter.ISO_DATE)
-        val nyFom = originalFom.withDayOfMonth(1)
-
-        return periode.copy(startdato = nyFom.toString(), sluttdato = nyTom?.toString())
-    }
-
     private fun lagTrekkDokument(trekk: TrekkFraSkatt, session: TransactionalSession): List<TrekkTilOppdrag> {
         // Vi trenger å vite om trekk(ene) er kjent for OS
         val kjenteAlternativ = repositoryNy.getOsAlternativForTrekk(trekk, session)
@@ -85,7 +72,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
     }
 
     private fun nyePerioderTilOS(trekkFraSkatt: TrekkFraSkatt, session: TransactionalSession): PerioderTilOS {
-        val trekkPerioder = repositoryNy.getPerioderForTrekk(trekkFraSkatt)
+        val trekkPerioder = repositoryNy.getPerioderForTrekk(trekkFraSkatt).mapNewFomTom()
         // Alternativene som finnes i dette trekket + alternativ fra dokumenter vi har sendt eller skal sende til OS
         val alternativ =
             buildSet {
@@ -117,8 +104,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         // for hver periode ikke kjent for OS, for hvert aktuelle trekkalternativ, lager vi en ny periode.
         nyePerioder.forEach { periode ->
             alternativ.forEach { alternativ ->
-                val mappedPeriode = mapNewFomTom(periode)
-                nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = mappedPeriode.startdato, periodeTomDato = mappedPeriode.sluttdato))
+                nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = periode.startdato, periodeTomDato = periode.sluttdato))
             }
         }
 
