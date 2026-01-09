@@ -1,17 +1,26 @@
 package no.nav.sokos.utleggstrekk
 
 import io.ktor.server.config.ApplicationConfig
-import io.ktor.server.config.ApplicationConfigValue
+import io.ktor.server.config.getAs
+
+import no.nav.sokos.utleggstrekk.config.ApplicationProperties
+import no.nav.sokos.utleggstrekk.config.SkeConfig
 
 object AppSettings {
     lateinit var config: ApplicationConfig
         private set
+
+    val applicationProperties by lazy {
+        config.property("application").getAs<ApplicationProperties>()
+    }
+
+    val skeConfig by lazy {
+        config.property("skeConfig").getAs<SkeConfig>()
+    }
 
     fun load(applicationConfig: ApplicationConfig) {
         if (!::config.isInitialized) {
             config = applicationConfig
         }
     }
-
-    fun property(name: String): ApplicationConfigValue = config.property(name)
 }

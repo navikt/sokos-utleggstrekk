@@ -8,6 +8,7 @@ import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.ktor.server.config.ApplicationConfig
 import io.mockk.clearAllMocks
 import io.mockk.coVerify
 import io.mockk.every
@@ -17,7 +18,8 @@ import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
+import no.nav.sokos.utleggstrekk.AppSettings
+import no.nav.sokos.utleggstrekk.AppSettings.skeConfig
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.utils.TssIdResolver
 
@@ -26,19 +28,20 @@ class TSSResolverTest :
         val slackService = mockk<SlackService>(relaxUnitFun = true)
 
         beforeSpec {
-            mockkObject(SlackService.Companion)
+            mockkObject(SlackService.Companion, AppSettings)
             every { SlackService.instance } returns slackService
+            every { AppSettings.config } returns ApplicationConfig("application-test.conf")
         }
 
         test("hvis vi spør med korrekt ornr og konto skal vi få TSS id") {
             val tssId =
                 TssIdResolver.resolve(
                     mockk<BetalingsinformasjonFraSkatt>(relaxed = true) {
-                        every { betalingsmottaker } returns PropertiesConfigOld.SKEConfig().skeOrgNr
-                        every { kontonummer } returns PropertiesConfigOld.SKEConfig().skeKontoNr
+                        every { betalingsmottaker } returns skeConfig.skeOrgNr
+                        every { kontonummer } returns skeConfig.skeKontoNr
                     },
                 )
-            tssId shouldBe PropertiesConfigOld.SKEConfig().skeTSSId
+            tssId shouldBe skeConfig.skeTSSId
         }
 
         test("hvis vi spør med feil orgid skal vi få NotImplementedError exception og sende en varsel") {
@@ -73,6 +76,6 @@ class TSSResolverTest :
 
         afterSpec {
             clearAllMocks()
-            unmockkObject(SlackService.Companion)
+            unmockkObject(SlackService.Companion, AppSettings)
         }
     })

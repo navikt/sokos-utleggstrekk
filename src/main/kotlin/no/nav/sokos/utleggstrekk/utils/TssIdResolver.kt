@@ -5,12 +5,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
+import no.nav.sokos.utleggstrekk.AppSettings
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.service.SlackService
 
 object TssIdResolver {
-    val config = PropertiesConfigOld.SKEConfig()
+    val config = AppSettings.skeConfig
 
     fun resolve(betalingsinformasjonFraSkatt: BetalingsinformasjonFraSkatt) =
         if (betalingsinformasjonFraSkatt.betalingsmottaker == config.skeOrgNr && betalingsinformasjonFraSkatt.kontonummer == config.skeKontoNr) {

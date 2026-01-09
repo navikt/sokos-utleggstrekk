@@ -22,6 +22,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.config.ApplicationConfig
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -36,6 +37,7 @@ import io.mockk.verify
 import mu.KLogger
 import mu.KotlinLogging
 
+import no.nav.sokos.utleggstrekk.AppSettings
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
@@ -101,8 +103,9 @@ class SkeClientTest :
             )
 
         beforeSpec {
-            mockkObject(KotlinLogging)
+            mockkObject(KotlinLogging, AppSettings)
             every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
+            every { AppSettings.config } returns ApplicationConfig("application-test.conf")
         }
 
         context("hentAlleUtleggstrekk") {
@@ -361,7 +364,7 @@ class SkeClientTest :
 
         afterSpec {
             clearAllMocks()
-            unmockkObject(KotlinLogging)
+            unmockkObject(KotlinLogging, AppSettings)
         }
     })
 

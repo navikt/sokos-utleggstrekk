@@ -99,12 +99,14 @@ object PropertiesConfigOld {
         val url: String = get("SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL").trim()
     }
 
+/*
     data class SKEConfig(
         val skeRestUrl: String = getOrEmpty("SKE_REST_URL"),
         val skeOrgNr: String = getOrEmpty("SKE_ORGNR"),
         val skeKontoNr: String = getOrEmpty("SKE_KONTONR"),
         val skeTSSId: String = getOrEmpty("SKE_TSSID"),
     )
+*/
 
     data object PostgresConfig {
         val host: String = getOrEmpty("POSTGRES_HOST")

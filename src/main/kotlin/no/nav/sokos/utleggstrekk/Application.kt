@@ -6,11 +6,10 @@ import kotlinx.coroutines.SupervisorJob
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.log
-import io.ktor.server.config.getAs
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 
-import no.nav.sokos.utleggstrekk.config.ApplicationProperties
+import no.nav.sokos.utleggstrekk.AppSettings.applicationProperties
 import no.nav.sokos.utleggstrekk.config.ApplicationState
 import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
 import no.nav.sokos.utleggstrekk.config.applicationLifecycleConfig
@@ -28,7 +27,6 @@ fun main() {
 private fun Application.module() {
     AppSettings.load(environment.config.mergeWithEnv())
 
-    val applicationProperties = AppSettings.property("application").getAs<ApplicationProperties>()
     val applicationState = ApplicationState()
     val utleggsTrekkService = UtleggsTrekkService()
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

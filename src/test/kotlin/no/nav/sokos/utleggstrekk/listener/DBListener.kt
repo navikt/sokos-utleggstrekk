@@ -4,6 +4,11 @@ import com.zaxxer.hikari.HikariDataSource
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.spec.Spec
 import io.kotest.extensions.testcontainers.toDataSource
+import io.ktor.server.config.ApplicationConfig
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotliquery.queryOf
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
@@ -11,6 +16,7 @@ import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
+import no.nav.sokos.utleggstrekk.AppSettings
 import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
@@ -39,6 +45,12 @@ object DBListener : TestListener {
 
     val RepositoryNy = RepositoryNy(dataSource)
 
+    override suspend fun beforeSpec(spec: Spec) {
+        super.beforeSpec(spec)
+        mockkObject(AppSettings)
+        every { AppSettings.config } returns ApplicationConfig("application-test.conf")
+    }
+
     fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
 
     fun clearDB() {
@@ -57,5 +69,7 @@ object DBListener : TestListener {
 
     override suspend fun afterSpec(spec: Spec) {
         clearDB()
+        clearAllMocks()
+        unmockkObject(AppSettings)
     }
 }
