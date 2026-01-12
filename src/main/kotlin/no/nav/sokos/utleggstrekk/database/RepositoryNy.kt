@@ -534,7 +534,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             session.list(
                 queryOf(
                     """
-                    SELECT * FROM periode p WHERE fraskatt_id=:fraSkattId 
+                    SELECT * FROM periode p WHERE fraskatt_id=:fraSkattId ORDER BY p.dato_start ASC
                     """.trimIndent(),
                     mapOf(
                         "fraSkattId" to fraSkattId,

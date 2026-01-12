@@ -10,7 +10,7 @@
     "transaksjonsId": "20425974",
     "innrapporteringTrekk": {
       "aksjonskode": "NY",
-      "kilde": "SOKOS-UTLEGG",
+      "kilde": "SOKOSUTLEGG",
       "navTrekkId": "12345",
       "kreditorIdTss": "80000427901",
       "kreditorTrekkId": "10342395",

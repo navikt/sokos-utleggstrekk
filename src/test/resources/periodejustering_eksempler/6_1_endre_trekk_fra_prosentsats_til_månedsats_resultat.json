@@ -4,25 +4,25 @@
       "aksjonskode": "ENDR",
       "kilde": "SOKOSUTLEGG",
       "kreditorIdTss": "80000427901",
-      "kreditorsRef": "TREKK/2025/5",
-      "kreditorTrekkId": "10005P",
-      "debitorId": "10108412345",
+      "kreditorsRef": "TREKK/2025/6/61",
+      "kreditorTrekkId": "1e4db56e58ab4b40950d7f8026cc6a39P",
+      "debitorId": "16507500866",
       "kid": "6487719756",
       "kodeTrekktype": "TRK1",
       "kodeTrekkAlternativ": "LOPP",
       "perioder": {
         "periode": [
           {
-            "periodeFomDato": "2025-07-01",
+            "periodeFomDato": "2025-11-01",
             "sats": 0.0
           },
           {
-            "periodeFomDato": "2025-07-01",
-            "periodeTomDato": "2025-07-31",
-            "sats": 23.0
+            "periodeFomDato": "2025-11-01",
+            "periodeTomDato": "2025-11-30",
+            "sats": 10.0
           },
           {
-            "periodeFomDato": "2025-08-01",
+            "periodeFomDato": "2025-12-01",
             "sats": 0.0
           }
         ]
@@ -34,22 +34,22 @@
       "aksjonskode": "NY",
       "kilde": "SOKOSUTLEGG",
       "kreditorIdTss": "80000427901",
-      "kreditorsRef": "TREKK/2025/5",
-      "kreditorTrekkId": "10005M",
-      "debitorId": "10108412345",
+      "kreditorsRef": "TREKK/2025/6/61",
+      "kreditorTrekkId": "1e4db56e58ab4b40950d7f8026cc6a39M",
+      "debitorId": "16507500866",
       "kid": "6487719756",
       "kodeTrekktype": "TRK1",
       "kodeTrekkAlternativ": "LOPM",
       "perioder": {
         "periode": [
           {
-            "periodeFomDato": "2025-07-01",
-            "periodeTomDato": "2025-07-31",
+            "periodeFomDato": "2025-11-01",
+            "periodeTomDato": "2025-11-30",
             "sats": 0.0
           },
           {
-            "periodeFomDato": "2025-08-01",
-            "sats": 4400.00
+            "periodeFomDato": "2025-12-01",
+            "sats": 1000.0
           }
         ]
       }
