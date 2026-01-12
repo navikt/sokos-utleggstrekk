@@ -127,11 +127,11 @@ object PropertiesConfigOld {
         val password: String = get("MQ_PASSWORD"),
         val userAuth: Boolean = true,
     )
-*/
 
     data object UnleashProperties {
         val unleashAPI = getOrEmpty("UNLEASH_SERVER_API_URL")
         val apiKey = getOrEmpty("UNLEASH_SERVER_API_TOKEN")
         val environment = getOrEmpty("UNLEASH_SERVER_API_ENV")
     }
+ */
 }

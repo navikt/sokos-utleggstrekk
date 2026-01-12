@@ -5,13 +5,12 @@ import io.getunleash.FakeUnleash
 import io.getunleash.Unleash
 import io.getunleash.util.UnleashConfig
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
-import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld.Configuration
-import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld.UnleashProperties
+import no.nav.sokos.utleggstrekk.AppSettings.applicationProperties
+import no.nav.sokos.utleggstrekk.AppSettings.unleashProperties
 
 open class UnleashIntegration {
     private var unleashClient: Unleash
-    val unleashIsEnabled = Configuration().unleashEnabled
+    val unleashIsEnabled = unleashProperties.enabled
 
     // Kill switcher:
     fun isHentFraSKEEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.hent-fra-ske.enabled", unleashIsEnabled)
@@ -21,17 +20,17 @@ open class UnleashIntegration {
     fun isProsesserUtleggstrekkEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.prosesser-utleggstrekk.enabled", unleashIsEnabled)
 
     init {
-        if (Configuration().profile == PropertiesConfigOld.Profile.LOCAL) {
+        if (applicationProperties.isLocal) {
             unleashClient = FakeUnleash()
         } else {
             val config: UnleashConfig =
                 UnleashConfig
                     .builder()
-                    .appName(Configuration().naisAppName)
-                    .instanceId(Configuration().naisPodName)
-                    .unleashAPI(UnleashProperties.unleashAPI + "/api/")
-                    .apiKey(UnleashProperties.apiKey)
-                    .environment(UnleashProperties.environment)
+                    .appName(applicationProperties.appName)
+                    .instanceId(applicationProperties.naisPodName)
+                    .unleashAPI(unleashProperties.unleashApi + "/api/")
+                    .apiKey(unleashProperties.apiKey)
+                    .environment(unleashProperties.environment)
                     .synchronousFetchOnInitialisation(true)
                     .build()
             unleashClient = DefaultUnleash(config)

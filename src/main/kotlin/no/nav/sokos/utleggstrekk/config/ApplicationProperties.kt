@@ -18,6 +18,7 @@ data class ApplicationProperties(
     val profile: Profile,
     val appName: String,
     val namespace: String,
+    val naisPodName: String,
     val configuration: AppConfig,
 ) {
     // TODO: use correct isLocal

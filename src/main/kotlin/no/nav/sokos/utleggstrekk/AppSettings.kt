@@ -9,6 +9,7 @@ import no.nav.sokos.utleggstrekk.config.MaskinportenClientConfig
 import no.nav.sokos.utleggstrekk.config.PostgresConfig
 import no.nav.sokos.utleggstrekk.config.SkeConfig
 import no.nav.sokos.utleggstrekk.config.SlackConfig
+import no.nav.sokos.utleggstrekk.config.UnleashProperties
 
 object AppSettings {
     lateinit var config: ApplicationConfig
@@ -36,6 +37,10 @@ object AppSettings {
 
     val slackConfig by lazy {
         config.property("slackConfig").getAs<SlackConfig>()
+    }
+
+    val unleashProperties by lazy {
+        config.property("unleashProperties").getAs<UnleashProperties>()
     }
 
     fun load(applicationConfig: ApplicationConfig) {
