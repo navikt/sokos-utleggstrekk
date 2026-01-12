@@ -117,6 +117,7 @@ object PropertiesConfigOld {
         val user = getOrEmpty("POSTGRES_USERNAME")
     }
 
+/*
     data class MQProperties(
         val hostname: String = get("MQ_HOSTNAME"),
         val port: Int = get("MQ_PORT").toInt(),
@@ -128,6 +129,7 @@ object PropertiesConfigOld {
         val password: String = get("MQ_PASSWORD"),
         val userAuth: Boolean = true,
     )
+*/
 
     data object UnleashProperties {
         val unleashAPI = getOrEmpty("UNLEASH_SERVER_API_URL")

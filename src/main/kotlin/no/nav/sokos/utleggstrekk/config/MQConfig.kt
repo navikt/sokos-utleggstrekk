@@ -5,10 +5,12 @@ import com.ibm.mq.jakarta.jms.MQConnectionFactory
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import jakarta.jms.ConnectionFactory
 
+import no.nav.sokos.utleggstrekk.AppSettings
+
 private const val UTF_8_WITH_PUA = 1208
 
 object MQConfig {
-    fun connectionFactory(properties: PropertiesConfigOld.MQProperties = PropertiesConfigOld.MQProperties()): ConnectionFactory =
+    fun connectionFactory(properties: MQProperties = AppSettings.mqProperties): ConnectionFactory =
         MQConnectionFactory().apply {
             transportType = WMQConstants.WMQ_CM_CLIENT
             hostName = properties.hostname

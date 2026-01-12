@@ -4,6 +4,7 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.getAs
 
 import no.nav.sokos.utleggstrekk.config.ApplicationProperties
+import no.nav.sokos.utleggstrekk.config.MQProperties
 import no.nav.sokos.utleggstrekk.config.MaskinportenClientConfig
 import no.nav.sokos.utleggstrekk.config.SkeConfig
 import no.nav.sokos.utleggstrekk.config.SlackConfig
@@ -16,12 +17,16 @@ object AppSettings {
         config.property("application").getAs<ApplicationProperties>()
     }
 
+    val skeConfig by lazy {
+        config.property("skeConfig").getAs<SkeConfig>()
+    }
+
     val maskinportenClientConfig by lazy {
         config.property("maskinportenClientConfig").getAs<MaskinportenClientConfig>()
     }
 
-    val skeConfig by lazy {
-        config.property("skeConfig").getAs<SkeConfig>()
+    val mqProperties by lazy {
+        config.property("mqProperties").getAs<MQProperties>()
     }
 
     val slackConfig by lazy {
