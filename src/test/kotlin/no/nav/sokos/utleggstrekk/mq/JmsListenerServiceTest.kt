@@ -34,17 +34,19 @@ class JmsListenerServiceTest :
 
         val replyQueue = ActiveMQQueue("replyQueue")
 
-        JmsListenerService(
-            RepositoryNy,
-            slackService,
-            osKvitteringQueue = replyQueue,
-            connectionFactory,
-        )
-
         val jmsProducerTrekk: JmsProducerService by lazy {
             JmsProducerService(
                 targetQueue = replyQueue,
                 replyQueue = replyQueue,
+                connectionFactory,
+            )
+        }
+
+        beforeSpec {
+            JmsListenerService(
+                RepositoryNy,
+                slackService,
+                osKvitteringQueue = replyQueue,
                 connectionFactory,
             )
         }

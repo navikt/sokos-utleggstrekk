@@ -10,6 +10,7 @@ data class MaskinportenClientConfig(
     val wellKnownUrl: String,
     val scopes: String,
     val rsaKeyString: String,
+    val systemBrukerClaim: String,
 ) {
     val rsaKey: RSAKey? by lazy {
         RSAKey.parse(rsaKeyString)

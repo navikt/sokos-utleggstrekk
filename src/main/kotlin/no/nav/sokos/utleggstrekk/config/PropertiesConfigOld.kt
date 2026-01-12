@@ -105,7 +105,6 @@ object PropertiesConfigOld {
         val skeKontoNr: String = getOrEmpty("SKE_KONTONR"),
         val skeTSSId: String = getOrEmpty("SKE_TSSID"),
     )
-*/
 
     data object PostgresConfig {
         val host: String = getOrEmpty("POSTGRES_HOST")
@@ -117,7 +116,6 @@ object PropertiesConfigOld {
         val user = getOrEmpty("POSTGRES_USERNAME")
     }
 
-/*
     data class MQProperties(
         val hostname: String = get("MQ_HOSTNAME"),
         val port: Int = get("MQ_PORT").toInt(),

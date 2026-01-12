@@ -6,10 +6,10 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 /*
+TODO: trenger vi fortsatt å ha denne?
 *  HVIS trekk har status avsluttet:
 * Vi sender OPPH til OS
 * OG vi skal sende  datogyldigtom = dagens dato minus 1
@@ -18,7 +18,7 @@ class FagCaser :
     BehaviorSpec({
 
         extensions(DBListener)
-        val behandleTrekkService = BehandleTrekkServiceNy(RepositoryNy)
+//        val behandleTrekkService = BehandleTrekkServiceNy(RepositoryNy)
 
         Given("Nytt trekk (som ikke endres)") {
             val skalSendes: Trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()

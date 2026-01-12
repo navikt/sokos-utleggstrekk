@@ -35,7 +35,9 @@ class SkeEksemplerTest :
                 prettyPrint = true
             }
 
-        val service = BehandleTrekkServiceNy(DBListener.RepositoryNy)
+        val service by lazy {
+            BehandleTrekkServiceNy(DBListener.RepositoryNy)
+        }
 
         // Flags transaction_os as SENT and OKed.
         fun simulerOkFraOS(document: Document) {

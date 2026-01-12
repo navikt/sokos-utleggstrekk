@@ -17,20 +17,21 @@ import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
 import no.nav.sokos.utleggstrekk.AppSettings
-import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
+import no.nav.sokos.utleggstrekk.AppSettings.postgresConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.withTransaction
 
 object DBListener : TestListener {
     private val dockerImageName = "postgres:latest"
-    private val container =
+    private val container by lazy {
         PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
             withReuse(false)
-            withUsername(PropertiesConfigOld.PostgresConfig.user)
+            withUsername(postgresConfig.user)
             waitingFor(Wait.defaultWaitStrategy())
             start()
         }
+    }
 
     val dataSource: HikariDataSource by lazy {
         container
@@ -38,12 +39,14 @@ object DBListener : TestListener {
                 maximumPoolSize = 100
                 minimumIdle = 1
                 isAutoCommit = false
+            }.apply {
+                PostgresDataSource.migrate(this)
             }
-    }.apply {
-        PostgresDataSource.migrate(container.toDataSource())
     }
 
-    val RepositoryNy = RepositoryNy(dataSource)
+    val RepositoryNy by lazy {
+        RepositoryNy(dataSource)
+    }
 
     override suspend fun beforeSpec(spec: Spec) {
         super.beforeSpec(spec)
