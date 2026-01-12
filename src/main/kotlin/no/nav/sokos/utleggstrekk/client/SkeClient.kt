@@ -15,7 +15,6 @@ import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.AppSettings
-import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
 import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
@@ -33,7 +32,7 @@ private val logger = KotlinLogging.logger { }
 class SkeClient(
     private val client: HttpClient = httpClient,
     private val slackService: SlackService = SlackService.instance,
-    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfigOld.MaskinportenClientConfig(), client),
+    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(AppSettings.maskinportenClientConfig, client),
 ) {
     val basePath = AppSettings.skeConfig.skeRestUrl
 

@@ -8,7 +8,6 @@ import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
-import com.nimbusds.jose.jwk.RSAKey
 
 object PropertiesConfigOld {
     private val defaultProperties =
@@ -87,6 +86,7 @@ object PropertiesConfigOld {
         val unleashEnabled: Boolean = get("UNLEASHED_DEFAULT_IS_ENABLED").toBoolean(),
     )
 
+/*
     data class MaskinportenClientConfig(
         val clientId: String = getOrEmpty("MASKINPORTEN_CLIENT_ID"),
         val wellKnownUrl: String = getOrEmpty("MASKINPORTEN_WELL_KNOWN_URL"),
@@ -95,7 +95,6 @@ object PropertiesConfigOld {
         val systemBrukerClaim: String = getOrEmpty("MASKINPORTEN_SYSTEMBRUKER_CLAIM"),
     )
 
-/*
     data object SlackConfig {
         val url: String = get("SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL").trim()
     }
