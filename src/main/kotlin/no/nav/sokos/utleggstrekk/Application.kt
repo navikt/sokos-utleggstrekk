@@ -9,22 +9,15 @@ import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.ServerReady
 import io.ktor.server.application.log
-import io.ktor.server.auth.authenticate
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.routing
 
-import no.nav.sokos.utleggstrekk.api.internalNaisRoutes
-import no.nav.sokos.utleggstrekk.api.utleggstrekkApi
-import no.nav.sokos.utleggstrekk.config.AzureConfiguration
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
+import no.nav.sokos.utleggstrekk.config.routingConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.domene.nav.scheduling.UtleggstrekkScheduler
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
-
-const val AUTHENTICATION_NAME = "azureAd"
 
 fun main() {
     embeddedServer(Netty, port = 8080, module = Application::module).start(true)
@@ -32,19 +25,12 @@ fun main() {
 
 private fun Application.module() {
     val applicationState = ApplicationState()
-    val azureConfiguration = AzureConfiguration()
     val utleggsTrekkService = UtleggsTrekkService()
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    commonConfig(azureConfiguration)
+    commonConfig()
     applicationLifecycleConfig(applicationState)
-    routing {
-        internalNaisRoutes(applicationState)
-        authenticate(azureConfiguration.useAuthentication, AUTHENTICATION_NAME) {
-            utleggstrekkApi(utleggsTrekkService)
-        }
-    }
-
+    routingConfig(applicationState)
     if (!PropertiesConfig.isLocal) {
         PostgresDataSource.migrate()
     }
@@ -59,10 +45,6 @@ private fun Application.module() {
     } else {
         log.info("Property SCHEDULER_ACTIVE is '$schedulerActive'. Scheduler is not running.")
     }
-}
-
-fun Route.authenticate(useAuthentication: Boolean, authenticationProviderId: String? = null, block: Route.() -> Unit) {
-    if (useAuthentication) authenticate(authenticationProviderId) { block() } else block()
 }
 
 fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {

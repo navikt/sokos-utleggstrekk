@@ -92,6 +92,11 @@ object PropertiesConfig {
         val scopes: String = getOrEmpty("MASKINPORTEN_SCOPES"),
     )
 
+    class AzureAdProperties(
+        val clientId: String = getOrEmpty("AZURE_APP_CLIENT_ID"),
+        val wellKnownUrl: String = getOrEmpty("AZURE_APP_WELL_KNOWN_URL"),
+    )
+
     data object SlackConfig {
         val url: String = get("SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL").trim()
     }
