@@ -9,9 +9,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
@@ -44,7 +41,7 @@ val jsonConfig =
 
 // TODO: Bytte navn. Dette er ikke "common".
 @OptIn(ExperimentalSerializationApi::class) // TODO: Sjekk om denne kan fjernes
-fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
+fun Application.commonConfig() {
     install(CallId) {
         header(HttpHeaders.XCorrelationId)
         generate { UUID.randomUUID().toString() }
@@ -69,22 +66,6 @@ fun Application.commonConfig(azureConfiguration: AzureConfiguration) {
         )
     }
 
-    install(Authentication) {
-        jwt {
-            verifier(azureConfiguration.azureAd.jwkProvider, azureConfiguration.azureAd.openIdConfiguration.issuer)
-            realm = azureConfiguration.appName
-            validate { cred ->
-                try {
-                    requireNotNull(cred.payload.audience) { "Ikke gyldig Token, mangler audience" }
-                    require(cred.payload.audience.contains(azureConfiguration.azureAd.clientId)) { "Ikke gyldig Token, ikke gyldig audienceclaim" }
-                    JWTPrincipal(cred.payload)
-                } catch (e: Exception) {
-                    logger.warn(e.message)
-                    null
-                }
-            }
-        }
-    }
     install(MicrometerMetrics) {
         registry = Metrics.registry
         meterBinders =
