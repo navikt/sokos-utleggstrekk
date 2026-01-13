@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/unleash.yaml'
       - '.nais/dev/unleash-dev.yaml'
+      - '.nais/dev/unleash-prod.yaml'
 
 jobs:
   deploy-dev:
@@ -18,3 +19,13 @@ jobs:
     with:
       cluster: dev-gcp
       resource: .nais/dev/unleash-dev.yaml
+
+  deploy-prod:
+    permissions:
+      id-token: write
+      contents: read
+    name: Deploy to prod-gcp
+    uses: navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@main
+    with:
+      cluster: prod-gcp
+      resource: .nais/prod/unleash-prod.yaml
