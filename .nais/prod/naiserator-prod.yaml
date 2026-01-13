@@ -100,15 +100,15 @@ spec:
     - name: MQ_HOSTNAME
       value: mpls02.adeo.no
     - name: MQ_PORT
-      value: "1413"
+      value: "1414"
     - name: MQ_QUEUE_MANAGER_NAME
       value: MPLS02
     - name: MQ_CHANNEL
-      value: Q1_UTLEGGSTREKK
+      value: P_UTLEGGSTREKK
     - name: MQ_QUEUE_NAME
-      value: QA.Q1_231.OB04_TREKK_FRASKATT_JSON
+      value: QA.P231.OB04_TREKK_FRASKATT_JSON
     - name: MQ_REPLYQUEUE_NAME
-      value: QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING
+      value: QA.P_SOKOS_UTLEGGSTREKK.KVITTERING
     - name: SCHEDULER_MINUTES
       value: "45"
     - name: UNLEASHED_DEFAULT_IS_ENABLED
