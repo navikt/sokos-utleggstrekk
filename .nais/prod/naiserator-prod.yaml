@@ -112,4 +112,4 @@ spec:
     - name: SCHEDULER_MINUTES
       value: "45"
     - name: UNLEASHED_DEFAULT_IS_ENABLED
-      value: false
+      value: "false"
