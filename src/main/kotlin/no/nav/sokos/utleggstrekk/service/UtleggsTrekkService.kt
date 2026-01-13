@@ -8,9 +8,9 @@ import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import mu.KotlinLogging
 
-import no.nav.sokos.utleggstrekk.AppSettings
 import no.nav.sokos.utleggstrekk.client.MAX_ANTALL
 import no.nav.sokos.utleggstrekk.client.SkeClient
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
@@ -38,7 +38,7 @@ class UtleggsTrekkService(
     private val mqProducer: JmsProducerService =
         JmsProducerService(
             targetQueue =
-                MQQueue(AppSettings.mqProperties.queueName).apply {
+                MQQueue(PropertiesConfig.mqProperties.queueName).apply {
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 },
             replyQueue = JmsListenerService(repositoryNy).osKvitteringQueue,

@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UnleashProperties(
-    val unleashApi: String,
-    val apiKey: String,
-    val environment: String,
+    val unleashApi: String = "",
+    val apiKey: String = "",
+    val environment: String = "",
     val enabled: Boolean,
 )

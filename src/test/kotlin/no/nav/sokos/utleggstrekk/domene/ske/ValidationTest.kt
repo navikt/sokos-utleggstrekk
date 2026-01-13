@@ -4,7 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 
-import no.nav.sokos.utleggstrekk.AppSettings
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.Periode
@@ -32,7 +32,7 @@ class ValidationTest :
             InnrapporteringTrekk(
                 aksjonskode = Aksjonskode.NY,
                 navTrekkId = "1234",
-                kreditorIdTss = AppSettings.skeConfig.skeTSSId,
+                kreditorIdTss = PropertiesConfig.skeConfig.skeTSSId,
                 kreditorTrekkId = "fe0d1de19840448093823dbad27e9002P",
                 kreditorsRef = "UTLEGG/2025/678",
                 debitorId = "10987654321",

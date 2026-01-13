@@ -1,23 +1,24 @@
-package no.nav.sokos.utleggstrekk
+package no.nav.sokos.utleggstrekk.config
 
+import com.typesafe.config.ConfigFactory
 import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.config.HoconApplicationConfig
 import io.ktor.server.config.getAs
+import io.ktor.server.config.withFallback
 
-import no.nav.sokos.utleggstrekk.config.ApplicationProperties
-import no.nav.sokos.utleggstrekk.config.MQProperties
-import no.nav.sokos.utleggstrekk.config.MaskinportenClientConfig
-import no.nav.sokos.utleggstrekk.config.PostgresConfig
-import no.nav.sokos.utleggstrekk.config.SkeConfig
-import no.nav.sokos.utleggstrekk.config.SlackConfig
-import no.nav.sokos.utleggstrekk.config.UnleashProperties
-
-object AppSettings {
+object PropertiesConfig {
     lateinit var config: ApplicationConfig
         private set
 
     val applicationProperties by lazy {
         config.property("application").getAs<ApplicationProperties>()
     }
+
+    val isLocal: Boolean
+        get() = applicationProperties.isLocal
+
+    val isTest: Boolean
+        get() = applicationProperties.isTest
 
     val skeConfig by lazy {
         config.property("skeConfig").getAs<SkeConfig>()
@@ -49,3 +50,17 @@ object AppSettings {
         }
     }
 }
+
+fun ApplicationConfig.mergeWithEnv(): ApplicationConfig {
+    val hoconConfig = HoconApplicationConfig(ConfigFactory.load())
+    val environment =
+        (System.getenv("CLUSTER_NAME") ?: System.getProperty("CLUSTER_NAME"))
+            ?.lowercase()
+            ?.substringBefore("-")
+            ?: propertyOrNull("ktor.environment")?.getString()
+            ?: "local"
+    val environmentConfig = ApplicationConfig("application-$environment.conf")
+    return this overriding environmentConfig overriding hoconConfig
+}
+
+infix fun ApplicationConfig.overriding(other: ApplicationConfig): ApplicationConfig = this.withFallback(other)

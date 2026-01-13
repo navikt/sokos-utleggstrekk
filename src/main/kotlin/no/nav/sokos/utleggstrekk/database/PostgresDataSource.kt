@@ -8,8 +8,8 @@ import mu.KotlinLogging
 import org.flywaydb.core.Flyway
 import org.postgresql.ds.PGSimpleDataSource
 
-import no.nav.sokos.utleggstrekk.AppSettings.postgresConfig
-import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.postgresConfig
 
 object PostgresDataSource {
     private val logger = KotlinLogging.logger {}
@@ -39,7 +39,7 @@ object PostgresDataSource {
             minimumIdle = 1
             isAutoCommit = false
 
-            if (PropertiesConfigOld.isLocal && postgresConfig.jdbcUrl.isEmpty()) {
+            if (PropertiesConfig.isLocal && postgresConfig.jdbcUrl.isEmpty()) {
                 dataSource =
                     PGSimpleDataSource().apply {
                         password = postgresConfig.password

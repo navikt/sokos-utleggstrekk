@@ -37,7 +37,7 @@ import io.mockk.verify
 import mu.KLogger
 import mu.KotlinLogging
 
-import no.nav.sokos.utleggstrekk.AppSettings
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
@@ -103,9 +103,9 @@ class SkeClientTest :
             )
 
         beforeSpec {
-            mockkObject(KotlinLogging, AppSettings)
+            mockkObject(KotlinLogging, PropertiesConfig)
             every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
-            every { AppSettings.config } returns ApplicationConfig("application-test.conf")
+            every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
         }
 
         context("hentAlleUtleggstrekk") {
@@ -364,7 +364,7 @@ class SkeClientTest :
 
         afterSpec {
             clearAllMocks()
-            unmockkObject(KotlinLogging, AppSettings)
+            unmockkObject(KotlinLogging, PropertiesConfig)
         }
     })
 

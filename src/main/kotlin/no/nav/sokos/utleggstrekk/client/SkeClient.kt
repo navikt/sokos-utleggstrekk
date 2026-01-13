@@ -14,7 +14,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 
-import no.nav.sokos.utleggstrekk.AppSettings
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
@@ -32,9 +32,9 @@ private val logger = KotlinLogging.logger { }
 class SkeClient(
     private val client: HttpClient = httpClient,
     private val slackService: SlackService = SlackService.instance,
-    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(AppSettings.maskinportenClientConfig, client),
+    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.maskinportenClientConfig, client),
 ) {
-    val basePath = AppSettings.skeConfig.skeRestUrl
+    val basePath = PropertiesConfig.skeConfig.skeRestUrl
 
     // TODO: skal ikke brukes
     suspend fun hentAlleUtleggstrekk(): List<Trekkpaalegg> =

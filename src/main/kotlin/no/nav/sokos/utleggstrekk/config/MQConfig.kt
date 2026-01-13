@@ -5,12 +5,10 @@ import com.ibm.mq.jakarta.jms.MQConnectionFactory
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import jakarta.jms.ConnectionFactory
 
-import no.nav.sokos.utleggstrekk.AppSettings
-
 private const val UTF_8_WITH_PUA = 1208
 
 object MQConfig {
-    fun connectionFactory(properties: MQProperties = AppSettings.mqProperties): ConnectionFactory =
+    fun connectionFactory(properties: MQProperties = PropertiesConfig.mqProperties): ConnectionFactory =
         MQConnectionFactory().apply {
             transportType = WMQConstants.WMQ_CM_CLIENT
             hostName = properties.hostname
@@ -19,7 +17,7 @@ object MQConfig {
             queueManager = properties.mqQueueManagerName
             targetClientMatching = true
             clientReconnectOptions = WMQConstants.WMQ_CLIENT_RECONNECT_Q_MGR
-            setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, PropertiesConfigOld.Configuration().naisAppName)
+            setStringProperty(WMQConstants.WMQ_APPLICATIONNAME, PropertiesConfig.applicationProperties.appName)
             setIntProperty(WMQConstants.JMS_IBM_ENCODING, MQConstants.MQENC_NATIVE)
             setIntProperty(WMQConstants.JMS_IBM_CHARACTER_SET, UTF_8_WITH_PUA)
 

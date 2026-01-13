@@ -16,8 +16,8 @@ import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
-import no.nav.sokos.utleggstrekk.AppSettings
-import no.nav.sokos.utleggstrekk.AppSettings.postgresConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.postgresConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.withTransaction
@@ -50,8 +50,9 @@ object DBListener : TestListener {
 
     override suspend fun beforeSpec(spec: Spec) {
         super.beforeSpec(spec)
-        mockkObject(AppSettings)
-        every { AppSettings.config } returns ApplicationConfig("application-test.conf")
+
+        mockkObject(PropertiesConfig)
+        every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
     }
 
     fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
@@ -73,6 +74,6 @@ object DBListener : TestListener {
     override suspend fun afterSpec(spec: Spec) {
         clearDB()
         clearAllMocks()
-        unmockkObject(AppSettings)
+        unmockkObject(PropertiesConfig)
     }
 }

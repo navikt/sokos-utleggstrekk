@@ -2,13 +2,9 @@ package no.nav.sokos.utleggstrekk.config
 
 import kotlinx.serialization.Serializable
 
-import com.typesafe.config.ConfigFactory
-import io.ktor.server.config.ApplicationConfig
-import io.ktor.server.config.HoconApplicationConfig
-import io.ktor.server.config.withFallback
-
 enum class Profile {
     LOCAL,
+    DEV,
     TEST,
     PROD,
 }
@@ -21,9 +17,8 @@ data class ApplicationProperties(
     val naisPodName: String,
     val configuration: AppConfig,
 ) {
-    // TODO: use correct isLocal
-//    val isLocal = profile == Profile.LOCAL
-    val isLocal = profile == Profile.TEST
+    val isLocal = profile == Profile.LOCAL
+    val isTest = profile == Profile.TEST
 }
 
 @Serializable
@@ -46,17 +41,3 @@ data class AzureAdProperties(
     val clientId: String,
     val wellKnownUrl: String,
 )
-
-fun ApplicationConfig.mergeWithEnv(): ApplicationConfig {
-    val hoconConfig = HoconApplicationConfig(ConfigFactory.load())
-    val environment =
-        (System.getenv("CLUSTER_NAME") ?: System.getProperty("CLUSTER_NAME"))
-            ?.lowercase()
-            ?.substringBefore("-")
-            ?: propertyOrNull("ktor.environment")?.getString()
-            ?: "test"
-    val environmentConfig = ApplicationConfig("application-$environment.conf")
-    return this overriding environmentConfig overriding hoconConfig
-}
-
-infix fun ApplicationConfig.overriding(other: ApplicationConfig): ApplicationConfig = this.withFallback(other)

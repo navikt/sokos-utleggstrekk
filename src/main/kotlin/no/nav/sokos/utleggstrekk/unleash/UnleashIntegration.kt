@@ -5,8 +5,9 @@ import io.getunleash.FakeUnleash
 import io.getunleash.Unleash
 import io.getunleash.util.UnleashConfig
 
-import no.nav.sokos.utleggstrekk.AppSettings.applicationProperties
-import no.nav.sokos.utleggstrekk.AppSettings.unleashProperties
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.applicationProperties
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.unleashProperties
 
 open class UnleashIntegration {
     private var unleashClient: Unleash
@@ -20,7 +21,7 @@ open class UnleashIntegration {
     fun isProsesserUtleggstrekkEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.prosesser-utleggstrekk.enabled", unleashIsEnabled)
 
     init {
-        if (applicationProperties.isLocal) {
+        if (PropertiesConfig.isLocal || PropertiesConfig.isTest) {
             unleashClient = FakeUnleash()
         } else {
             val config: UnleashConfig =

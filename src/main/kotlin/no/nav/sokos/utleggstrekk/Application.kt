@@ -9,8 +9,9 @@ import io.ktor.server.application.log
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 
-import no.nav.sokos.utleggstrekk.AppSettings.applicationProperties
 import no.nav.sokos.utleggstrekk.config.ApplicationState
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.applicationProperties
 import no.nav.sokos.utleggstrekk.config.PropertiesConfigOld
 import no.nav.sokos.utleggstrekk.config.applicationLifecycleConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
@@ -25,7 +26,7 @@ fun main() {
 }
 
 private fun Application.module() {
-    AppSettings.load(environment.config.mergeWithEnv())
+    PropertiesConfig.load(environment.config.mergeWithEnv())
 
     val applicationState = ApplicationState()
     val utleggsTrekkService = UtleggsTrekkService()
@@ -35,7 +36,7 @@ private fun Application.module() {
     commonConfig()
     routingConfig(applicationState)
 
-    if (!applicationProperties.isLocal) {
+    if (!PropertiesConfig.isLocal) {
         PostgresDataSource.migrate()
     }
 
@@ -60,7 +61,7 @@ private fun Application.moduleOld() {
     applicationLifecycleConfig(applicationState)
     routingConfig(applicationState)
 
-    if (!PropertiesConfigOld.isLocal) {
+    if (!PropertiesConfig.isLocal) {
         PostgresDataSource.migrate()
     }
 

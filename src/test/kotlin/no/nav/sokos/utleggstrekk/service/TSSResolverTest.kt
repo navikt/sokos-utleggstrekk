@@ -18,8 +18,8 @@ import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
 
-import no.nav.sokos.utleggstrekk.AppSettings
-import no.nav.sokos.utleggstrekk.AppSettings.skeConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.skeConfig
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.utils.TssIdResolver
 
@@ -28,9 +28,9 @@ class TSSResolverTest :
         val slackService = mockk<SlackService>(relaxUnitFun = true)
 
         beforeSpec {
-            mockkObject(SlackService.Companion, AppSettings)
+            mockkObject(SlackService.Companion, PropertiesConfig)
             every { SlackService.instance } returns slackService
-            every { AppSettings.config } returns ApplicationConfig("application-test.conf")
+            every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
         }
 
         test("hvis vi spør med korrekt ornr og konto skal vi få TSS id") {
@@ -76,6 +76,6 @@ class TSSResolverTest :
 
         afterSpec {
             clearAllMocks()
-            unmockkObject(SlackService.Companion, AppSettings)
+            unmockkObject(SlackService.Companion, PropertiesConfig)
         }
     })

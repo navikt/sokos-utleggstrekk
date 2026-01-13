@@ -13,8 +13,8 @@ import jakarta.jms.Message
 import jakarta.jms.Queue
 import mu.KotlinLogging
 
-import no.nav.sokos.utleggstrekk.AppSettings
 import no.nav.sokos.utleggstrekk.config.MQConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
@@ -30,7 +30,7 @@ class JmsListenerService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
     private val slackService: SlackService = SlackService.instance,
     val osKvitteringQueue: Queue =
-        MQQueue(AppSettings.mqProperties.replyQueueName).apply {
+        MQQueue(PropertiesConfig.mqProperties.replyQueueName).apply {
             targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
         },
     connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),
