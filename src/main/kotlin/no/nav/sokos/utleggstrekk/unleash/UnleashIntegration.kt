@@ -11,13 +11,14 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig.UnleashProperties
 
 open class UnleashIntegration {
     private var unleashClient: Unleash
+    val unleashIsEnabled = PropertiesConfig.Configuration().unleashEnabled
 
     // Kill switcher:
-    fun isHentFraSKEEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.hent-fra-ske.enabled", false)
+    fun isHentFraSKEEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.hent-fra-ske.enabled", unleashIsEnabled)
 
-    fun isSendTilOSEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.send-til-os.enabled", false)
+    fun isSendTilOSEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.send-til-os.enabled", unleashIsEnabled)
 
-    fun isProsesserUtleggstrekkEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.prosesser-utleggstrekk.enabled", false)
+    fun isProsesserUtleggstrekkEnabled(): Boolean = unleashClient.isEnabled("sokos-utleggstrekk.prosesser-utleggstrekk.enabled", unleashIsEnabled)
 
     init {
         if (Configuration().profile == PropertiesConfig.Profile.LOCAL) {
