@@ -45,7 +45,7 @@ spec:
         - host: okonomi-unleash-api.nav.cloud.nais.io
         - host: mpls02.adeo.no
           ports:
-            - port: 1413
+            - port: 1414
         - host: api.skatteetaten.no
   ingresses:
     - https://sokos-utleggstrekk.intern.nav.no
