@@ -38,6 +38,7 @@ object PropertiesConfig {
             "SKE_ORGNR" to "971648198",
             "SKE_KONTONR" to "76940512057",
             "SKE_TSSID" to "80000427901",
+            "UNLEASHED_DEFAULT_IS_ENABLED" to "true",
         )
 
     private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))
@@ -81,6 +82,7 @@ object PropertiesConfig {
         val naisAppName: String = get("NAIS_APP_NAME"),
         val naisPodName: String = get("NAIS_POD_NAME"),
         val profile: Profile = Profile.valueOf(get("APPLICATION_PROFILE")),
+        val unleashEnabled: Boolean = get("UNLEASHED_DEFAULT_IS_ENABLED").toBoolean(),
     )
 
     data class MaskinportenClientConfig(

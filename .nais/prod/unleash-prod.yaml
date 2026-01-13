@@ -1,0 +1,17 @@
+apiVersion: unleash.nais.io/v1
+kind: ApiToken
+metadata:
+  name: sokos-utleggstrekk
+  namespace: okonomi
+  labels:
+    team: okonomi
+spec:
+  unleashInstance:
+    apiVersion: unleash.nais.io/v1
+    kind: RemoteUnleash
+    name: okonomi
+  secretName: sokos-utleggstrekk-unleash-api-token
+
+  # Specify which environment the API token should be created for.
+  # Can be one of: development, or production.
+  environment: production

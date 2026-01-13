@@ -37,23 +37,18 @@ spec:
         extra:
           - NAVident
   accessPolicy:
-    inbound:
-      rules:
-        - application: azure-token-generator
-          namespace: nais
-          cluster: dev-gcp
     outbound:
       rules:
         - application: logging
           namespace: nais-system
       external:
         - host: okonomi-unleash-api.nav.cloud.nais.io
-        - host: mqls02.preprod.local
+        - host: mpls02.adeo.no
           ports:
             - port: 1413
-        - host: api-test.sits.no
+        - host: api.skatteetaten.no
   ingresses:
-    - https://sokos-utleggstrekk.intern.dev.nav.no
+    - https://sokos-utleggstrekk.intern.nav.no
   prometheus:
     enabled: true
     path: /internal/metrics
@@ -78,32 +73,43 @@ spec:
         diskAutoresize: true
         pointInTimeRecovery: true
         autoBackupHour: 3
-        tier: db-f1-micro
+        tier: db-custom-1-3840
         databases:
           - name: sokos-utleggstrekk
             envVarPrefix: POSTGRES
+        flags:
+          - name: "cloudsql.enable_pgaudit"
+            value: "on"
+          - name: "pgaudit.log"
+            value: "write,ddl,role"
+          - name: "pgaudit.log_parameter"
+            value: "on"
+          - name: "cloudsql.logical_decoding"
+            value: "on"
   env:
     - name: APPLICATION_PROFILE
-      value: DEV
+      value: PROD
     - name: USE_AUTHENTICATION
       value: "true"
     - name: SKE_REST_URL
-      value: https://api-test.sits.no/api/trekkpaalegg/v1
+      value: https://api.skatteetaten.no/api/trekkpaalegg/v1
     - name: POSTGRES_NAME
       value: sokos-utleggstrekk
     - name: LOG_APPENDER
       value: CONSOLE
     - name: MQ_HOSTNAME
-      value: mqls02.preprod.local
+      value: mpls02.adeo.no
     - name: MQ_PORT
       value: "1413"
     - name: MQ_QUEUE_MANAGER_NAME
-      value: MQLS02
+      value: MPLS02
     - name: MQ_CHANNEL
       value: Q1_UTLEGGSTREKK
     - name: MQ_QUEUE_NAME
       value: QA.Q1_231.OB04_TREKK_FRASKATT_JSON
     - name: MQ_REPLYQUEUE_NAME
       value: QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING
+    - name: SCHEDULER_MINUTES
+      value: "45"
     - name: UNLEASHED_DEFAULT_IS_ENABLED
-      value: true
+      value: false
