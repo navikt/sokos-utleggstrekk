@@ -15,29 +15,14 @@ data class ApplicationProperties(
     val appName: String,
     val namespace: String,
     val naisPodName: String,
-    val configuration: AppConfig,
+    val scheduler: SchedulerProperties = SchedulerProperties(),
 ) {
     val isLocal = profile == Profile.LOCAL
     val isTest = profile == Profile.TEST
 }
 
 @Serializable
-data class AppConfig(
-    val scheduler: SchedulerProperties = SchedulerProperties(),
-    val security: SecurityProperties,
-)
-
-@Serializable
 data class SchedulerProperties(
     val isActive: Boolean = false,
     val minutes: Int = 45,
-)
-
-@Serializable
-data class SecurityProperties(val azure: AzureAdProperties)
-
-@Serializable
-data class AzureAdProperties(
-    val clientId: String,
-    val wellKnownUrl: String,
 )

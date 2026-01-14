@@ -41,7 +41,7 @@ private fun Application.module() {
 
     utleggsTrekkService.calculateMetrics()
 
-    val schedulerProperties = applicationProperties.configuration.scheduler
+    val schedulerProperties = applicationProperties.scheduler
     if (schedulerProperties.isActive) {
         UtleggstrekkScheduler(appScope).scheduleHourlyAt(schedulerProperties.minutes) { utleggsTrekkService.schedule() }
         UtleggstrekkScheduler(appScope).scheduleDailyAt(hour = 8, minute = 0) { utleggsTrekkService.reportMissingKvittering() }

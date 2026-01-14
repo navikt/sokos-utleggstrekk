@@ -72,15 +72,4 @@ object PropertiesConfigOld {
     }
 
     operator fun get(key: String): String = config[Key(key, stringType)]
-
-    fun getOrEmpty(key: String): String = config.getOrElse(Key(key, stringType), "")
-
-    fun getOrNull(key: String): String? = config.getOrElse(Key(key, stringType), null)
-
-    data class Configuration(
-        val naisAppName: String = get("NAIS_APP_NAME"),
-        val naisPodName: String = get("NAIS_POD_NAME"),
-        val profile: Profile = Profile.valueOf(get("APPLICATION_PROFILE")),
-        val unleashEnabled: Boolean = get("UNLEASHED_DEFAULT_IS_ENABLED").toBoolean(),
-    )
 }
