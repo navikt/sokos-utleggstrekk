@@ -30,7 +30,7 @@ data class AppConfig(
 @Serializable
 data class SchedulerProperties(
     val isActive: Boolean = false,
-    val minutes: Int = 55,
+    val minutes: Int = 45,
 )
 
 @Serializable
