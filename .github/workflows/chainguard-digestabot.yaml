@@ -6,9 +6,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  check-chainguard-digests:
+  chainguard-digests-update:
     permissions:
       contents: write
       pull-requests: write
       id-token: write
+    name: Chainguard digests update
     uses: navikt/mob-gha-workflows/.github/workflows/chainguard-digestabot.yaml@main
