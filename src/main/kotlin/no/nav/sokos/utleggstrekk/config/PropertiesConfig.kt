@@ -39,6 +39,7 @@ object PropertiesConfig {
             "SKE_KONTONR" to "76940512057",
             "SKE_TSSID" to "80000427901",
             "UNLEASHED_DEFAULT_IS_ENABLED" to "true",
+            "SCHEDULER_ACTIVE" to "true",
         )
 
     private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))
