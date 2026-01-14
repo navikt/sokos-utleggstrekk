@@ -48,6 +48,7 @@ class UtleggsTrekkService(
     private val featureToggles = UnleashIntegration()
 
     suspend fun schedule() {
+        logger.info("Schedule started")
         if (featureToggles.isHentFraSKEEnabled()) {
             lagreAlleNyeUtleggstrekk()
         }
