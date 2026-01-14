@@ -109,6 +109,8 @@ spec:
       value: QA.P231.OB04_TREKK_FRASKATT_JSON
     - name: MQ_REPLYQUEUE_NAME
       value: QA.P_SOKOS_UTLEGGSTREKK.KVITTERING
+    - name: SCHEDULER_ACTIVE
+      value: "true"
     - name: SCHEDULER_MINUTES
       value: "45"
     - name: UNLEASHED_DEFAULT_IS_ENABLED
