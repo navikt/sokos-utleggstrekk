@@ -1,18 +1,15 @@
 package no.nav.sokos.utleggstrekk.config
 
-import java.util.UUID
-
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
-import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
-import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.request.path
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
@@ -40,10 +37,11 @@ val jsonConfig =
 // TODO: Bytte navn. Dette er ikke "common".
 @OptIn(ExperimentalSerializationApi::class) // TODO: Sjekk om denne kan fjernes
 fun Application.commonConfig() {
-    install(CallId) {
-        header(HttpHeaders.XCorrelationId)
-        generate { UUID.randomUUID().toString() }
-        verify { it.isNotEmpty() }
+    install(CallLogging) {
+        logger = no.nav.sokos.utleggstrekk.config.logger
+        level = Level.INFO
+        filter { call -> call.request.path().startsWith("/api") }
+        disableDefaultColors()
     }
     install(CallLogging) {
         logger = no.nav.sokos.utleggstrekk.config.logger
