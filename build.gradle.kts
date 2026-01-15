@@ -39,6 +39,7 @@ val kotliqueryVersion = "1.9.1"
 val logbackVersion = "1.5.23"
 val logstashVersion = "9.0"
 val kotlinLoggingVersion = "3.0.5"
+val janinoVersion = "3.1.12"
 
 val gsonVersion = "2.13.2"
 
@@ -49,7 +50,6 @@ val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.4"
 val activemqVersion = "2.44.0"
 val kotestTestContainerExtensionVersion = "2.0.2"
-val janinoVersion = "3.1.12"
 val ibmMqVersion = "9.4.4.1"
 
 dependencies {
@@ -71,11 +71,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
 
     // Logging
-    implementation("ch.qos.logback:logback-core:$logbackVersion")
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
-    implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+    implementation("io.github.microutils:kotlin-logging-jvm:$kotlinLoggingVersion")
     runtimeOnly("org.codehaus.janino:janino:$janinoVersion")
+    runtimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
+    runtimeOnly("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
 
     // metrics
     implementation("io.ktor:ktor-server-metrics-micrometer-jvm:$ktorVersion")
