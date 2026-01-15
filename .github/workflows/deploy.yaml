@@ -24,34 +24,39 @@ env:
   TZ: Europe/Oslo
 
 jobs:
-  run-application-tests:
+  build-and-test:
     permissions:
-      contents: read
-    name: Run application tests
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-run-test.yaml@main
+      contents: write
+    name: Build and test
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-test-app.yaml@main
+    with:
+      upload-artifact: true
+      generate-dependency-graph: true
 
-  assemble-build-push-image-dev:
+  build-push-image-dev:
     permissions:
       contents: read
       id-token: write
-    needs: [ run-application-tests ]
-    name: Assemble application & build/push dev image
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@main
+    needs: [build-and-test]
+    name: Build push dev image
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-push-image.yaml@main
     secrets: inherit
     with:
-      image-suffix: 'dev'
-      dockerfile: './.nais/dev/Dockerfile'
+      image-suffix: "dev"
+      dockerfile: "./.nais/dev/Dockerfile"
+      use-artifact: true
 
-  assemble-build-push-image-prod:
-     permissions:
-       contents: write
-       id-token: write
-     needs: [ run-application-tests ]
-     name: Assemble application & build/push prod image
-     uses: navikt/mob-gha-workflows/.github/workflows/gradle-assemble-build-push-image.yaml@main
-     secrets: inherit
-     with:
-       dockerfile: './.nais/prod/Dockerfile'
+  build-push-image-prod:
+    permissions:
+      contents: read
+      id-token: write
+    needs: [build-and-test]
+    name: Build push prod image
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-push-image.yaml@main
+    secrets: inherit
+    with:
+      dockerfile: "./.nais/prod/Dockerfile"
+      use-artifact: true
 
   deploy-dev:
     permissions:
@@ -59,24 +64,24 @@ jobs:
       id-token: write
       pull-requests: write
       deployments: write
-    needs: [ assemble-build-push-image-dev ]
+    needs: [build-push-image-dev]
     name: Deploy to dev-gcp
     uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
     with:
       cluster: dev-gcp
       resource: .nais/dev/naiserator-dev.yaml
-      image: ${{ needs.assemble-build-push-image-dev.outputs.image }}
+      image: ${{ needs.build-push-image-dev.outputs.image }}
 
   deploy-prod:
-     permissions:
-       contents: read
-       id-token: write
-       pull-requests: write
-       deployments: write
-     needs: [ assemble-build-push-image-prod, deploy-dev ]
-     name: Deploy to prod-gcp
-     uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
-     with:
-       cluster: prod-gcp
-       resource: .nais/prod/naiserator-prod.yaml
-       image: ${{ needs.assemble-build-push-image-prod.outputs.image }}
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+      deployments: write
+    needs: [build-push-image-prod, deploy-dev]
+    name: Deploy to prod-gcp
+    uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
+    with:
+      cluster: prod-gcp
+      resource: .nais/prod/naiserator-prod.yaml
+      image: ${{ needs.build-push-image-prod.outputs.image }}
