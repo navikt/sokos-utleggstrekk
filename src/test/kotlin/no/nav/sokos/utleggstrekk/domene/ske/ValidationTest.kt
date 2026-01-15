@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.Periode
@@ -24,14 +25,14 @@ class ValidationTest :
                 skyldner = "10987654321",
                 Trekkstatus.AKTIV,
                 trekkstoerrelseForPeriode = listOf(TrekkstorrelseForPeriode("2026-02-23", null, Trekkbeloep(2000.0), null)),
-                betalingsinformasjon = Betalingsinformasjon("971648198", "17274826482648264826482", "76940512057"),
+                betalingsinformasjon = Betalingsinformasjon("971648199", "17274826482648264826482", "70213997155"),
             )
 
         val utleggstrekk =
             InnrapporteringTrekk(
                 aksjonskode = Aksjonskode.NY,
                 navTrekkId = "1234",
-                kreditorIdTss = "80000427901",
+                kreditorIdTss = PropertiesConfig.SKEConfig().skeTSSId,
                 kreditorTrekkId = "fe0d1de19840448093823dbad27e9002P",
                 kreditorsRef = "UTLEGG/2025/678",
                 debitorId = "10987654321",

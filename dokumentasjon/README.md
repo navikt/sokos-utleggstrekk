@@ -57,7 +57,7 @@ Hver time trigges UtleggsTrekkService.schedule() på minuttet konfigurert i __SC
 |     Property |                                      Default |                                                            Forklaring |       Kilde |
 |-------------:|---------------------------------------------:|----------------------------------------------------------------------:|------------:|  
 | SKE_REST_URL | https://api-test.sits.no/api/trekkpaalegg/v1 |                          Endepunkt for å hente trekk fra Skatteetaten | NAIS Secret |
-|    SKE_ORGNR |                                    971648198 |                Skatteetatens orgnummer. Brukes til å mappe til TSS ID | NAIS Secret |
+|    SKE_ORGNR |                                    971648199 |                Skatteetatens orgnummer. Brukes til å mappe til TSS ID | NAIS Secret |
 |    SKE_TTSID |                                              | TTS id. Brukes til å identifisere Skatteetaten i trekkene til Oppdrag | NAIS Secret |
 |  SKE_KONTONR |                                              |                  Skatteetatens kontonummer trekket skal utbetales til | NAIS Secret |
 
