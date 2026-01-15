@@ -11,10 +11,8 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
-import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.request.path
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
@@ -48,9 +46,8 @@ fun Application.commonConfig() {
         verify { it.isNotEmpty() }
     }
     install(CallLogging) {
+        logger = no.nav.sokos.utleggstrekk.config.logger
         level = Level.INFO
-        callIdMdc(HttpHeaders.XCorrelationId)
-        filter { call -> call.request.path().startsWith("/utleggstrekk") }
         disableDefaultColors()
     }
     // TODO: flytt til et object
