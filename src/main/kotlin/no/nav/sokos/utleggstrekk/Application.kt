@@ -16,7 +16,7 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
 import no.nav.sokos.utleggstrekk.config.routingConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
-import no.nav.sokos.utleggstrekk.domene.nav.scheduling.UtleggstrekkScheduler
+import no.nav.sokos.utleggstrekk.scheduling.UtleggstrekkScheduler
 import no.nav.sokos.utleggstrekk.service.UtleggsTrekkService
 
 fun main() {
