@@ -31,7 +31,7 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
     suspend fun sendCachedErrors(messageTitle: String) {
         if (errorTracking.isEmpty()) return
 
-        errorTracking.map { (type, info) ->
+        errorTracking.forEach { (type, info) ->
             if (info.size > 5) {
                 val summary = "${info.size} av samme type feil: $type. Sjekk avstemming"
                 info.clear()
@@ -41,5 +41,9 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
 
         slackClient.sendMessage(messageTitle, errorTracking.toList())
         errorTracking.clear()
+    }
+
+    companion object {
+        val instance: SlackService by lazy { SlackService() }
     }
 }

@@ -1,4 +1,4 @@
-package no.nav.sokos.utleggstrekk.domene.nav.scheduling
+package no.nav.sokos.utleggstrekk.scheduling
 
 import java.time.Duration
 import java.time.LocalDateTime
@@ -10,6 +10,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 import mu.KotlinLogging
+
+import no.nav.sokos.utleggstrekk.service.SlackService
 
 private val logger = KotlinLogging.logger { }
 
@@ -73,6 +75,8 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
                         task()
                     } catch (e: Exception) {
                         logger.error("Scheduled job failed: ", e)
+                        SlackService.instance.addError("Scheduled job failed", "Scheduled job failed: ${e.message}")
+                        SlackService.instance.sendCachedErrors("Scheduled job failed")
                     } finally {
                         scheduleNext(hour, minute, second, name = name, task) // chain to next run
                     }
