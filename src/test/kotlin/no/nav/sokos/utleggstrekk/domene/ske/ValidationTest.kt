@@ -24,7 +24,7 @@ class ValidationTest :
                 skyldner = "10987654321",
                 Trekkstatus.AKTIV,
                 trekkstoerrelseForPeriode = listOf(TrekkstorrelseForPeriode("2026-02-23", null, Trekkbeloep(2000.0), null)),
-                betalingsinformasjon = Betalingsinformasjon("971648198", "17274826482648264826482", "76940512057"),
+                betalingsinformasjon = Betalingsinformasjon("971648199", "17274826482648264826482", "70213997155"),
             )
 
         val utleggstrekk =

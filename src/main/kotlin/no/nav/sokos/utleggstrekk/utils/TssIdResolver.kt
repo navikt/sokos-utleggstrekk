@@ -10,6 +10,7 @@ object TssIdResolver {
         if (betalingsinformasjonFraSkatt.betalingsmottaker == config.skeOrgNr && betalingsinformasjonFraSkatt.kontonummer == config.skeKontoNr) {
             config.skeTSSId
         } else {
+            // TODO: Her burde det være alarm
             throw IllegalArgumentException(
                 "Kombinasjonen Orgnr=${betalingsinformasjonFraSkatt.betalingsmottaker} og Konto=${betalingsinformasjonFraSkatt.kontonummer} gir ingen TSSID.",
             )
