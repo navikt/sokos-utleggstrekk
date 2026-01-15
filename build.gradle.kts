@@ -36,7 +36,7 @@ val postgresqlVersion = "42.7.8"
 val kotliqueryVersion = "1.9.1"
 
 // Logging
-val logbackVersion = "1.5.23"
+val logbackVersion = "1.5.24"
 val logstashVersion = "9.0"
 val kotlinLoggingVersion = "3.0.5"
 val janinoVersion = "3.1.12"

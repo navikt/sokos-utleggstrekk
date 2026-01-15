@@ -28,7 +28,7 @@ import no.nav.sokos.utleggstrekk.utils.Validation.validateString
 
 class JmsListenerService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
-    private val slackService: SlackService = SlackService(),
+    private val slackService: SlackService = SlackService.instance,
     val osKvitteringQueue: Queue =
         MQQueue(PropertiesConfig.MQProperties().replyQueueName).apply {
             targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ

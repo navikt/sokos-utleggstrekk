@@ -31,7 +31,7 @@ private val logger = KotlinLogging.logger { }
 
 class SkeClient(
     private val client: HttpClient = httpClient,
-    private val slackService: SlackService = SlackService(),
+    private val slackService: SlackService = SlackService.instance,
     private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), client),
 ) {
     val basePath = PropertiesConfig.SKEConfig().skeRestUrl
