@@ -43,11 +43,6 @@ fun Application.commonConfig() {
         filter { call -> call.request.path().startsWith("/api") }
         disableDefaultColors()
     }
-    install(CallLogging) {
-        logger = no.nav.sokos.utleggstrekk.config.logger
-        level = Level.INFO
-        disableDefaultColors()
-    }
     // TODO: flytt til et object
     install(ContentNegotiation) {
         json(
