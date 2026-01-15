@@ -94,9 +94,9 @@ class SkeClientTest :
                     ),
                 betalingsinformasjon =
                     Betalingsinformasjon(
-                        betalingsmottaker = "971648198",
+                        betalingsmottaker = "971648199",
                         kidnummer = "17654202404",
-                        kontonummer = "76940512057",
+                        kontonummer = "70213997155",
                     ),
             )
 

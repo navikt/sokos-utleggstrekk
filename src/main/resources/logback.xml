@@ -1,12 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
     <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>
-                %green(%d) [%X{X-Correlation-ID}] %cyan([%-5.5t]) %boldCyan(%0.-5p) %yellow(%logger{36})
-                %cyan(:) %m%n
+                %green(%d{HH:mm:ss}) %cyan([%-5.5t]) %boldCyan(%0.-5p) %yellow(%logger{36}) %cyan(%class.%M) : %m%n
             </pattern>
         </encoder>
     </appender>

@@ -19,6 +19,8 @@ jobs:
       contents: read
     name: Build and test
     uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-test-app.yaml@main
+    with:
+      upload-artifact: true
 
   build-push-image-dev:
     permissions:

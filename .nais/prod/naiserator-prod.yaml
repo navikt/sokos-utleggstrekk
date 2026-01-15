@@ -95,8 +95,6 @@ spec:
       value: https://api.skatteetaten.no/api/trekkpaalegg/v1
     - name: POSTGRES_NAME
       value: sokos-utleggstrekk
-    - name: LOG_APPENDER
-      value: CONSOLE
     - name: MQ_HOSTNAME
       value: mpls02.adeo.no
     - name: MQ_PORT
