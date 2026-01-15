@@ -17,16 +17,17 @@ Hver time trigges UtleggsTrekkService.schedule() på minuttet konfigurert i __SC
 
 #### Applikasjon
 
-|                             Property |            Default |                                                                        Forklaring |           Kilde |
-|-------------------------------------:|-------------------:|----------------------------------------------------------------------------------:|----------------:|
-|                        NAIS_APP_NAME | sokos-utleggstrekk |                                                           Navnet på applikasjonen |            NAIS |
-|                       NAIS_NAMESPACE |            okonomi |                                                               Navnet på namespace |            NAIS |
-|              AZURE_APP_PROVIDER_NAME |            azureAd |                                                               Autentiseringskilde |                 |
-|                      SCEDULER_ACTIVE |                    |                                    Hvis true blir applikasjonen trigget hver time | naiserator.yaml |
-|                     SCEDULER_MINUTES |                 45 | Regulerer hvilket minutt på timen jobben starter med å hente data fra Skattetaten |                 |
-|                   USE_AUTHENTICATION |              false |                          Skrur av og på autentisering på sokos-utleggstrekk APIet |                 |
-| SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL |                    |                                             Webhook for å sende alarmer til Slack |     NAIS secret |
-|         UNLEASHED_DEFAULT_IS_ENABLED |                    |                                          Bestemmer defaultverdi til Unleash flagg |                 |
+|                             Property |            Default |                                                                                  Forklaring |           Kilde |
+|-------------------------------------:|-------------------:|--------------------------------------------------------------------------------------------:|----------------:|
+|                        NAIS_APP_NAME | sokos-utleggstrekk |                                                                     Navnet på applikasjonen |            NAIS |
+|                       NAIS_NAMESPACE |            okonomi |                                                                         Navnet på namespace |            NAIS |
+|              AZURE_APP_PROVIDER_NAME |            azureAd |                                                                         Autentiseringskilde |                 |
+|                      SCEDULER_ACTIVE |                    |                                              Hvis true blir applikasjonen trigget hver time | naiserator.yaml |
+|                     SCEDULER_MINUTES |                 45 |           Regulerer hvilket minutt på timen jobben starter med å hente data fra Skattetaten |                 |
+|                   USE_AUTHENTICATION |              false |                                    Skrur av og på autentisering på sokos-utleggstrekk APIet |                 |
+| SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL |                    |                                                       Webhook for å sende alarmer til Slack |     NAIS secret |
+|         UNLEASHED_DEFAULT_IS_ENABLED |                    |                                                    Bestemmer defaultverdi til Unleash flagg |                 |
+|      MASKINPORTEN_SYSTEMBRUKER_CLAIM |                    |                    Organisasjonsnummer i claim for å skape token knyttet til systembrukeren | naiserator.yaml |
 
 #### Databaseoppkobling
 

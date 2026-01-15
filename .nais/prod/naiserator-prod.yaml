@@ -115,3 +115,5 @@ spec:
       value: "45"
     - name: UNLEASHED_DEFAULT_IS_ENABLED
       value: "false"
+    - name: MASKINPORTEN_SYSTEMBRUKER_CLAIM
+      value: "995277670"

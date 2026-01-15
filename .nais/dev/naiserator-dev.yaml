@@ -107,3 +107,5 @@ spec:
       value: QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING
     - name: UNLEASHED_DEFAULT_IS_ENABLED
       value: "true"
+    - name: MASKINPORTEN_SYSTEMBRUKER_CLAIM
+      value: "312978083"

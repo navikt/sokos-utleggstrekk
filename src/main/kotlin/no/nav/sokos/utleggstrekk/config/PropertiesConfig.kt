@@ -40,6 +40,7 @@ object PropertiesConfig {
             "SKE_TSSID" to "80000427901",
             "UNLEASHED_DEFAULT_IS_ENABLED" to "true",
             "SCHEDULER_ACTIVE" to "true",
+            "MASKINPORTEN_SYSTEMBRUKER_CLAIM" to "312978083",
         )
 
     private val devProperties = ConfigurationMap(mapOf("APPLICATION_PROFILE" to Profile.DEV.toString()))
@@ -91,6 +92,7 @@ object PropertiesConfig {
         val wellKnownUrl: String = getOrEmpty("MASKINPORTEN_WELL_KNOWN_URL"),
         val rsaKey: RSAKey? = RSAKey.parse(getOrEmpty("MASKINPORTEN_CLIENT_JWK")),
         val scopes: String = getOrEmpty("MASKINPORTEN_SCOPES"),
+        val systemBrukerClaim: String = getOrEmpty("MASKINPORTEN_SYSTEMBRUKER_CLAIM"),
     )
 
     class AzureAdProperties(
