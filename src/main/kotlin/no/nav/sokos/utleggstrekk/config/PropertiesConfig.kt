@@ -36,6 +36,8 @@ object PropertiesConfig {
             "MQ_QUEUE_NAME" to "QA.Q1_231.OB04_TREKK_FRASKATT_JSON",
             "MQ_REPLYQUEUE_NAME" to "QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING",
             "UNLEASHED_DEFAULT_IS_ENABLED" to "true",
+            "SCHEDULER_ACTIVE" to "true",
+            "MASKINPORTEN_SYSTEMBRUKER_CLAIM" to "312978083",
             "SKE_ORGNR" to "971648199",
             "SKE_KONTONR" to "70213997155",
             "SKE_TSSID" to "80000423362",
@@ -90,6 +92,7 @@ object PropertiesConfig {
         val wellKnownUrl: String = getOrEmpty("MASKINPORTEN_WELL_KNOWN_URL"),
         val rsaKey: RSAKey? = RSAKey.parse(getOrEmpty("MASKINPORTEN_CLIENT_JWK")),
         val scopes: String = getOrEmpty("MASKINPORTEN_SCOPES"),
+        val systemBrukerClaim: String = getOrEmpty("MASKINPORTEN_SYSTEMBRUKER_CLAIM"),
     )
 
     data object SlackConfig {

@@ -13,8 +13,12 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
+import com.nimbusds.jose.JOSEObjectType
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.JWSHeader
+import com.nimbusds.jose.crypto.RSASSASigner
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.submitForm
@@ -34,7 +38,8 @@ class MaskinportenAccessTokenClient(
 
     private val timeLimit = 1.minutes
 
-    @Volatile private var cachedToken: AccessToken? = null
+    @Volatile
+    private var cachedToken: AccessToken? = null
 
     suspend fun getAccessToken(): String =
         mutex.withLock {
@@ -50,7 +55,8 @@ class MaskinportenAccessTokenClient(
 
     private suspend fun getMaskinportenToken(): AccessToken {
         val openIdConfiguration = getOpenIdConfiguration()
-        val jwtAssertion = createJwtAssertion(openIdConfiguration.issuer)
+        val jwtAssertion = createJwtAssertion(openIdConfiguration.issuer, getSystembrukerClaim(maskinportenConfig.systemBrukerClaim))
+
         val response =
             client
                 .submitForm(
@@ -78,17 +84,26 @@ class MaskinportenAccessTokenClient(
             throw exception
         }
 
-    private fun createJwtAssertion(issuer: String): String =
-        JWT
-            .create()
-            .withIssuer(maskinportenConfig.clientId)
-            .withAudience(issuer)
-            .withClaim("scope", maskinportenConfig.scopes)
-            .withExpiresAt(Date.from(Instant.now().plusSeconds(timeLimit.inWholeSeconds)))
-            .withIssuedAt(Date())
-            .withKeyId(maskinportenConfig.rsaKey?.keyID)
-            .withJWTId(UUID.randomUUID().toString())
-            .sign(Algorithm.RSA256(null, maskinportenConfig.rsaKey?.toRSAPrivateKey()))
+    private fun createJwtAssertion(audience: String, additionalClaims: Map<String, Any> = emptyMap()): String =
+        SignedJWT(
+            JWSHeader
+                .Builder(JWSAlgorithm.RS256)
+                .keyID(maskinportenConfig.rsaKey?.keyID)
+                .type(JOSEObjectType.JWT)
+                .build(),
+            JWTClaimsSet
+                .Builder()
+                .issuer(maskinportenConfig.clientId)
+                .audience(audience)
+                .issueTime(Date.from(Instant.now()))
+                .expirationTime(Date.from(Instant.now().plusSeconds(timeLimit.inWholeSeconds)))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("scope", maskinportenConfig.scopes)
+                .apply { additionalClaims.forEach { (key, value) -> claim(key, value) } }
+                .build(),
+        ).apply {
+            sign(RSASSASigner(maskinportenConfig.rsaKey?.toRSAPrivateKey()))
+        }.serialize()
 
     private data class AccessToken(
         val token: String,
@@ -97,6 +112,21 @@ class MaskinportenAccessTokenClient(
         constructor(maskinportenTokenResponse: MaskinportenTokenResponse) :
             this(maskinportenTokenResponse.accessToken, Instant.now().plusSeconds(maskinportenTokenResponse.expiresIn))
     }
+
+    private fun getSystembrukerClaim(orgNr: String) =
+        mapOf(
+            "authorization_details" to
+                listOf(
+                    mapOf(
+                        "type" to "urn:altinn:systemuser",
+                        "systemuser_org" to
+                            mapOf(
+                                "authority" to "iso6523-actorid-upis",
+                                "ID" to "0192:$orgNr",
+                            ),
+                    ),
+                ),
+        )
 
     @Serializable
     private data class MaskinportenTokenResponse(

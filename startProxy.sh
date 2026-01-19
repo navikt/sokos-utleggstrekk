@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034
 ADC_FILE="$HOME/.config/gcloud/application_default_credentials.json"
 
 if ! gcloud auth application-default print-access-token >/dev/null 2>&1; then
@@ -15,7 +16,7 @@ if ! gcloud auth print-identity-token >/dev/null 2>&1; then
 fi
 
 if nc -z localhost 5432 2>/dev/null; then
-    echo "proxy already running"
+    echo "Port 5432 is busy!"
 else
     nais postgres proxy sokos-utleggstrekk
 fi
