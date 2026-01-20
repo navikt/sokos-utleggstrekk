@@ -74,4 +74,16 @@ Det er tre feature toggles i [Unleash](https://okonomi-unleash-web.iap.nav.cloud
 * sokos-utleggstrekk.prosesser-utleggstrekk.enabled
 * sokos-utleggstrekk.send-til-os.enabled
 
+## Systembruker i Maskinporten
+En installasjon i NAVs NAIS-platforme får tildelt en Maskinporten-bruker som tilhører NAVs hovedorganisasjonssnummer (889640782). 
+Dette er ikke riktig organisasjonsnummer å bruke for å hente trekkpålegg. Det vil gi oss trekkpåleggene til NAV-ansatte. Vi trenger å hente 
+trekkpåleggene for NAVs brukere, og må derfor bruke organisasjonsnummeret til NAV Økonomilinjen (995277670)
+
+For å få til dette er vi nødt til å bruke en __systembruker__. Dette gjøres ved å først registrere et __system__ i [Digdir](https://docs.altinn.studio/nb/api/authentication/systemuserapi/systemregister/create/)
+Registrere Maskinporten __ClientID__ til sokos-utleggstrekk i denne samt registrerere ressursen "ske-informasjon-om-trekkpaalegg" som er det som gir tilgang til utleggstrekk.
+Deretter må noen med tilstrekkelige rettigheter på vegne av Økonomilinja opprette en systemtilgang i Altinn.
+
+Dette kun til etteretning, for dette skal allerede ha blitt gjort. Systemet vedlikeholdes av en NAIS jobb [sokos-systembruker-vedlikehold](https://github.com/navikt/sokos-systembruker-vedlikehold/tree/main)
+Se også [Skatteetatens dokumentasjon](https://skatteetaten.github.io/api-dokumentasjon/om/systembruker) og [Utbetalingsseksjonsens confluence](https://confluence.adeo.no/spaces/TOB/pages/739049218/Maskinporten+og+system+users) 
+
 ## [Datamodell](datamodell/README.md)
