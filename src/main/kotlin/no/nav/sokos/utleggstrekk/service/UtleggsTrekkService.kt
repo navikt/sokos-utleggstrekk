@@ -12,7 +12,6 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.MAX_ANTALL
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
@@ -59,10 +58,6 @@ class UtleggsTrekkService(
         }
         if (featureToggles.isSendTilOSEnabled()) {
             repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
-        }
-        // TODO: Fjerne når vi bekreftet at secure logger funker
-        logger.info(marker = TEAM_LOGS_MARKER) {
-            "Alle nye utleggstrekk er lagret."
         }
         repositoryNy.deleteOldData()
         calculateMetrics()
