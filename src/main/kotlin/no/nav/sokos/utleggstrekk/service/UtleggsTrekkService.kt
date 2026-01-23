@@ -102,7 +102,8 @@ class UtleggsTrekkService(
                 repositoryNy.insertTrekkFraSkatt(trekk, status)
                 utleggstrekkFraSkatt.inc()
             } catch (e: Exception) {
-                logger.error("Kunne ikke lagre trekkpålegg sekvens #${trekk.sekvensnummer} ", e)
+                logger.error("Kunne ikke lagre trekkpålegg sekvens #${trekk.sekvensnummer} ")
+                logger.error(TEAM_LOGS_MARKER, "Kunne ikke lagre trekkpålegg sekvens #${trekk.sekvensnummer} ", e)
                 // Kaster exception videre fordi vi ønsker å avslutte henting og lagring selv om MAX_ANTALL ikke er nådd
                 throw e
             }
