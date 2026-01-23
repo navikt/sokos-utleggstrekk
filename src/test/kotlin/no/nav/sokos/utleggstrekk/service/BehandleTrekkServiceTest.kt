@@ -15,12 +15,14 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.invoke
 import io.mockk.mockk
+import io.mockk.slot
 import kotliquery.TransactionalSession
 
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.mapNewFomTom
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
@@ -70,7 +72,14 @@ class BehandleTrekkServiceTest :
             every { repositoryNy.getOsAlternativForTrekk(any(), any()) } returns trekkAlternativIOS
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM) } returns kjenteLOPMPerioder
             every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP) } returns kjenteLOPPPerioder
-            every { repositoryNy.getTrekkSomIkkeErBehandlet() } returns alleTrekkSomIkkeErBehandlet
+            every { repositoryNy.getTrekkIdTilTrekkSomSkalBehandles() } returns alleTrekkSomIkkeErBehandlet.map { it.id }
+            val trekkIdSlot = slot<Long>()
+            every { repositoryNy.getTrekkFraSkatt(capture(trekkIdSlot), any()) } answers {
+                alleTrekkSomIkkeErBehandlet.first { it.id == trekkIdSlot.captured }
+            }
+            every { repositoryNy.getSkattTrekkStatus(capture(trekkIdSlot), any()) } answers {
+                SkattTrekkStatus.MOTTATT
+            }
             every { repositoryNy.getPerioderForTrekk(any()) } returns perioderForTrekkFraSkatt
             every { repositoryNy.getBetalingsinformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
             every { repositoryNy.insertTransaksjonTilOs(capture(capturedOSDtos), any()) } returns Unit
