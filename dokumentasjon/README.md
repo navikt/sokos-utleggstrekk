@@ -89,7 +89,9 @@ Se også [Skatteetatens dokumentasjon](https://skatteetaten.github.io/api-dokume
 ### Gjenoppbygging etter tap av data
 I en situasjon hvor man har mistet alle data er det mulig å hente den ut igjen fra Skatteetatens API ved å spørre fra sekvensnummer=0. Merk da at dette kallet bare vil
 returnere det som er gjeldende versjoner av hvert trekk, ikke tidligere versjoner. For å gjenskape korrekt tilstand er man derfor nødt til å enten hente tilstand fra Oppdrag
-slik at korrekt diff kan beregnes, eller slette tilstand i Oppdrag Z slik at alle de siste trekkversjoner blir til nye trekk i Oppdragsystemet. 
+slik at korrekt diff kan beregnes, eller slette tilstand i Oppdrag Z slik at alle de siste trekkversjoner blir til nye trekk i Oppdragsystemet.
+
+Det er mulig å hente eldre versjoner fra Skattetaten, men dette kan bare gjøres enkeltvis.
 
 ## [Datamodell](datamodell/README.md)
 
