@@ -17,8 +17,8 @@ import io.mockk.every
 import io.mockk.invoke
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.unmockkObject
 import io.mockk.slot
+import io.mockk.unmockkObject
 import kotliquery.TransactionalSession
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
