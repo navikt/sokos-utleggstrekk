@@ -85,7 +85,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             ) { 1 } != null
         }
 
-    fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg): Long? =
+    fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg, status: SkattTrekkStatus = SkattTrekkStatus.MOTTATT): Long? =
         dataSource.withTransaction { session ->
             val fraSkattId =
                 session.updateAndReturnGeneratedKey(
@@ -164,7 +164,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                     """.trimIndent(),
                     mapOf(
                         "fraskattID" to fraSkattId,
-                        "status" to SkattTrekkStatus.MOTTATT.name,
+                        "status" to status.name,
                     ),
                 ),
             )
@@ -466,6 +466,16 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             }
         }
 
+    fun getSkattTrekkStatus(fraSkattId: Long, session: TransactionalSession): SkattTrekkStatus =
+        session.single(
+            queryOf(
+                "SELECT status FROM fraskatt_status WHERE fraskatt_id = :fraSkattId",
+                mapOf("fraSkattId" to fraSkattId),
+            ),
+        ) { row ->
+            SkattTrekkStatus.valueOf(row.string("status"))
+        } ?: throw IllegalArgumentException("Ingen status funnet for fraskatt_id $fraSkattId")
+
     fun getTrekkFraSkattStatus(id: Long): SkattTrekkStatus? =
         dataSource.withTransaction { session ->
             session.single(
@@ -483,8 +493,8 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
     fun updateTrekkFraSkattStatus(fraSkattId: Long, status: SkattTrekkStatus, session: TransactionalSession) {
         session.update(
             queryOf(
-                "UPDATE fraskatt_status SET status = :status, tidspunkt_satt = NOW() WHERE id = :id",
-                mapOf("id" to fraSkattId, "status" to status.name),
+                "UPDATE fraskatt_status SET status = :status, tidspunkt_satt = NOW() WHERE fraskatt_id = :fraSkattId",
+                mapOf("fraSkattId" to fraSkattId, "status" to status.name),
             ),
         )
     }
@@ -508,16 +518,19 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             ) { row -> TrekkFraSkatt(row) }
         }
 
-    /** Henter en spesifik versjon av et trekk gitt fraskatt_id */
     fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
         dataSource.withTransaction { session ->
-            session.single(
-                queryOf(
-                    """SELECT * FROM fraskatt WHERE id=:id""".trimIndent(),
-                    mapOf("id" to id),
-                ),
-            ) { row -> TrekkFraSkatt(row) }
+            getTrekkFraSkatt(id, session)
         }
+
+    /** Henter en spesifik versjon av et trekk gitt fraskatt_id */
+    fun getTrekkFraSkatt(id: Long, session: TransactionalSession): TrekkFraSkatt =
+        session.single(
+            queryOf(
+                """SELECT * FROM fraskatt WHERE id=:id""".trimIndent(),
+                mapOf("id" to id),
+            ),
+        ) { row -> TrekkFraSkatt(row) } ?: throw IllegalArgumentException("Trekk med id $id finnes ikke")
 
     fun getTrekkFraSkatt(trekkid: String, versjon: Int): TrekkFraSkatt? =
         dataSource.withTransaction { session ->
@@ -553,8 +566,8 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         SELECT DISTINCT ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}
                         FROM  ${TransaksjonOsTable.TABLE_NAME}  
                         WHERE ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}=:${TransaksjonOsTable.TREKK_ID_SKE_PARAM}
-                        AND ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.OK}' 
-                        OR ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}  = '${KvitteringStatus.IKKE_MOTTATT.name}'
+                        AND (${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.OK.name}' 
+                        OR ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}  = '${KvitteringStatus.IKKE_MOTTATT.name}')
                     """.trimMargin(),
                     mapOf(TransaksjonOsTable.TREKK_ID_SKE_PARAM to trekkIdSke),
                 ),
@@ -571,7 +584,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         JOIN  ${TransaksjonOsTable.TABLE_NAME}  t ON p.transaksjon_os_id = t.id 
                         WHERE trekk_id_ske=:trekkIdSke 
                         AND t.trekk_alternativ=:trekkAlternativ 
-                        AND t.kvittering_status in ('${KvitteringStatus.IKKE_MOTTATT.name}', '${KvitteringStatus.OK.name}')
+                        AND t.kvittering_status IN ('${KvitteringStatus.IKKE_MOTTATT.name}', '${KvitteringStatus.OK.name}')
                         ORDER BY p.id ASC 
                 """,
                     mapOf(
@@ -599,21 +612,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             ) { row -> row.intOrNull(1) } ?: 0
         }
 
-    // TODO: Må også oppdatere hvordan ostransaksjon funker
-    fun getTrekkSomIkkeErBehandlet(): List<TrekkFraSkatt> =
-        dataSource.withTransaction { session ->
-            session.list(
-                queryOf(
-                    """
-                    SELECT f.* FROM fraskatt f
-                    LEFT JOIN  fraskatt_status t ON t.fraskatt_id = f.id
-                    WHERE t.status IS NULL OR t.status != 'BEHANDLET'
-                    ORDER BY f.sekvensnummer ASC
-                    """.trimIndent(),
-                ),
-            ) { row -> TrekkFraSkatt(row) }
-        }
-
     fun getTransaksjonerTilOsSomIkkeErSendt(): List<TransaksjonOS> =
         dataSource.withTransaction { session ->
             session.list(
@@ -637,8 +635,8 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 queryOf(
                     """
                     SELECT * FROM ${TransaksjonOsTable.TABLE_NAME}
-                    WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} = '${TransaksjonsStatus.SENDT}'
-                    AND ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.IKKE_MOTTATT}'
+                    WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} = '${TransaksjonsStatus.SENDT.name}'
+                    AND ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.IKKE_MOTTATT.name}'
                     """.trimIndent(),
                 ),
             ) { row ->
@@ -706,7 +704,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         SELECT trekk_alternativ, COUNT(*) AS count
                             FROM ( 
                                 SELECT DISTINCT ON (t.trekk_id_ske) t.trekk_id_ske, t.trekk_alternativ FROM transaksjon_os t                                                                                                                                             
-                                    WHERE t.kvittering_status = 'OK' AND NOT EXISTS (                                                                                                                                                      
+                                    WHERE t.kvittering_status = :kvitteringStatus AND NOT EXISTS (                                                                                                                                                      
                                         SELECT 1 FROM transaksjon_os t2 
                                             WHERE t2.trekk_id_ske = t.trekk_id_ske AND t2.gyldig_tom_dato IS NOT NULL
                                     ) ORDER BY t.trekk_id_ske, t.trekkversjon DESC
@@ -716,6 +714,34 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                     ),
                 ) { row -> TrekkAlternativ.valueOf(row.string("trekk_alternativ")) to row.long("count") }
                 .toMap()
+        }
+
+    fun getNyesteTrekkVersjon(trekkId: String, session: TransactionalSession): TrekkFraSkatt =
+        session.single(
+            queryOf(
+                """
+                    |SELECT * FROM fraskatt
+                    |WHERE trekkid=:trekkid ORDER BY trekk DESC LIMIT 1
+                """.trimMargin(),
+                mapOf("trekkid" to trekkId),
+            ),
+        ) { row ->
+            TrekkFraSkatt(row)
+        } ?: throw IllegalStateException("Fant ikke trekk fra skatt for $trekkId")
+
+    fun getTrekkIdTilTrekkSomSkalBehandles(): List<Long> =
+        dataSource.withTransaction { session ->
+            session.list(
+                queryOf(
+                    """
+                    SELECT f.id FROM fraskatt f
+                    LEFT JOIN  fraskatt_status t ON t.fraskatt_id = f.id
+                    WHERE t.status IS NULL 
+                    OR t.status IN ('${SkattTrekkStatus.MOTTATT.name}', '${SkattTrekkStatus.REPETERES.name}')
+                    ORDER BY f.sekvensnummer ASC
+                    """.trimIndent(),
+                ),
+            ) { row -> row.long(1) }
         }
 }
 

@@ -47,6 +47,7 @@ spec:
           ports:
             - port: 1414
         - host: api.skatteetaten.no
+        - host: hooks.slack.com
   ingresses:
     - https://sokos-utleggstrekk.intern.nav.no
   prometheus:

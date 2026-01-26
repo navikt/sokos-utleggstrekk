@@ -1,5 +1,6 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle.SHORT
@@ -15,6 +16,7 @@ import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
@@ -88,12 +90,20 @@ class UtleggsTrekkService(
     private fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
         // Sortert for at vi ikke skal hoppe over noen i sekvens dersom vi feiler før alle er lagret.
         trekkpaalegg.sortedBy { it.sekvensnummer }.forEach { trekk ->
+            var status = SkattTrekkStatus.MOTTATT
             try {
                 trekk.validate()
-                repositoryNy.insertTrekkFraSkatt(trekk)
+            } catch (e: IllegalArgumentException) {
+                logger.error("Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}")
+                logger.error(TEAM_LOGS_MARKER, "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}", e)
+                status = SkattTrekkStatus.AVVIST
+            }
+            try {
+                repositoryNy.insertTrekkFraSkatt(trekk, status)
                 utleggstrekkFraSkatt.inc()
             } catch (e: Exception) {
-                logger.error("Kunne ikke lagre trekkpåleg sekvens #${trekk.sekvensnummer} ", e)
+                logger.error("Kunne ikke lagre trekkpålegg sekvens #${trekk.sekvensnummer} ")
+                logger.error(TEAM_LOGS_MARKER, "Kunne ikke lagre trekkpålegg sekvens #${trekk.sekvensnummer} ", e)
                 // Kaster exception videre fordi vi ønsker å avslutte henting og lagring selv om MAX_ANTALL ikke er nådd
                 throw e
             }

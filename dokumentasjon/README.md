@@ -75,3 +75,5 @@ Det er tre feature toggles i [Unleash](https://okonomi-unleash-web.iap.nav.cloud
 * sokos-utleggstrekk.send-til-os.enabled
 
 ## [Datamodell](datamodell/README.md)
+
+## [Flytdiagram](flytdiagram/README.md)

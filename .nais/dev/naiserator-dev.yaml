@@ -52,6 +52,7 @@ spec:
           ports:
             - port: 1413
         - host: api-test.sits.no
+        - host: hooks.slack.com
   ingresses:
     - https://sokos-utleggstrekk.intern.dev.nav.no
   prometheus:

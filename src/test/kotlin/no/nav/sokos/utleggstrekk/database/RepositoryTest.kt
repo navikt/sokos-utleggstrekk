@@ -7,6 +7,7 @@ import kotlin.time.Duration.Companion.seconds
 
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -25,6 +26,7 @@ import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.BEHANDLET
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
@@ -42,6 +44,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
+import no.nav.sokos.utleggstrekk.util.insertRawSQL
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 class RepositoryTest :
@@ -563,6 +566,21 @@ class RepositoryTest :
                     betalingsinformasjon.betalingsmottaker shouldBe sampleBetalingsinformasjon.betalingsmottaker
                     betalingsinformasjon.kidnummer shouldBe sampleBetalingsinformasjon.kidnummer
                     betalingsinformasjon.kontonummer shouldBe sampleBetalingsinformasjon.kontonummer
+                }
+            }
+        }
+        Given("Vi har trekk med forskjellige statuser i databasen") {
+            DBListener.clearDB()
+            RepositoryNy.insertRawSQL(resourceToString("dbTestData/RepositoryTest/trekkMedForskjelligeStatuser.sql"))
+
+            When("Når listen over trekk som skal prosesseres hentes") {
+                Then("Skal bare trekk med status MOTTATT eller REPETERES være i listen") {
+                    val trekkId = RepositoryNy.getTrekkIdTilTrekkSomSkalBehandles()
+                    trekkId.size shouldBe 2
+                    trekkId.forEach { id ->
+                        val status = RepositoryNy.getTrekkFraSkattStatus(id)
+                        status shouldBeIn listOf(SkattTrekkStatus.MOTTATT, SkattTrekkStatus.REPETERES)
+                    }
                 }
             }
         }

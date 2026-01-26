@@ -89,8 +89,11 @@ data class BetalingsinformasjonFraSkatt(
 }
 
 enum class SkattTrekkStatus {
-    MOTTATT,
-    BEHANDLET,
+    MOTTATT, // Nytt trekk mottatt fra skatt
+    BEHANDLET, // Trekk er behandlet og dokument(er) som skal sendes til oppdrag er laget
+    AVVIST, // Trekket har feil og kan ikke behandles
+    REPETERES, // Trekket har blitt manuelt feilrettet og skal forsøkes behandlet på nytt
+    HOPPET_OVER, // Et repetert trekk viser seg å ha blitt erstattet av en nytt trekkversjon, og skal derfor hoppes over
 }
 
 fun List<PeriodeFraSkatt>.mapNewFomTom(): List<PeriodeFraSkatt> {

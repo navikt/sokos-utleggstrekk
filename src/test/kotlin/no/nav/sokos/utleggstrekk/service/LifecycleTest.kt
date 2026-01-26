@@ -19,6 +19,8 @@ import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
+import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.withTransaction
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.Mmel
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -241,3 +243,18 @@ private fun RepositoryNy.fakeTidspunktOpprettet(trekkid: String, trekkversjon: I
         ) shouldBe 1
     }
 }
+
+// TODO: Må også oppdatere hvordan ostransaksjon funker
+private fun RepositoryNy.getTrekkSomIkkeErBehandlet(): List<TrekkFraSkatt> =
+    withTransaction { session ->
+        session.list(
+            queryOf(
+                """
+                SELECT f.* FROM fraskatt f
+                LEFT JOIN  fraskatt_status t ON t.fraskatt_id = f.id
+                WHERE t.status IS NULL OR t.status != 'BEHANDLET'
+                ORDER BY f.sekvensnummer ASC
+                """.trimIndent(),
+            ),
+        ) { row -> TrekkFraSkatt(row) }
+    }
