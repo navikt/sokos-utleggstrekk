@@ -87,3 +87,5 @@ Dette kun til etteretning, for dette skal allerede ha blitt gjort. Systemet vedl
 Se også [Skatteetatens dokumentasjon](https://skatteetaten.github.io/api-dokumentasjon/om/systembruker) og [Utbetalingsseksjonsens confluence](https://confluence.adeo.no/spaces/TOB/pages/739049218/Maskinporten+og+system+users) 
 
 ## [Datamodell](datamodell/README.md)
+
+## [Flytdiagram](flytdiagram/README.md)

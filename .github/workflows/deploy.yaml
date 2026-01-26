@@ -52,6 +52,7 @@ jobs:
       id-token: write
     needs: [build-and-test]
     name: Build push prod image
+    if: ${{ github.ref == 'refs/heads/main' }}
     uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-push-image.yaml@main
     secrets: inherit
     with:
@@ -80,6 +81,7 @@ jobs:
       deployments: write
     needs: [build-push-image-prod, deploy-dev]
     name: Deploy to prod-gcp
+    if: ${{ github.ref == 'refs/heads/main' }}
     uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
     with:
       cluster: prod-gcp

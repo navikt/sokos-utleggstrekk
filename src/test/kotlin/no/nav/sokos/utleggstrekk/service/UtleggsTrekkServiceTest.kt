@@ -17,7 +17,9 @@ import io.mockk.mockk
 import io.mockk.verify
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
+import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
@@ -32,6 +34,7 @@ import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
 import no.nav.sokos.utleggstrekk.util.dager
 import no.nav.sokos.utleggstrekk.util.idag
 import no.nav.sokos.utleggstrekk.util.plus
+import no.nav.sokos.utleggstrekk.util.resourceToString
 
 internal class UtleggsTrekkServiceTest :
     BehaviorSpec({
@@ -222,6 +225,31 @@ internal class UtleggsTrekkServiceTest :
                 Then("Vi sender alarmer på slack") {
                     verify(exactly = 1) { slackService.addError(any(), any()) }
                     coVerify(exactly = 1) { slackService.sendCachedErrors(any()) }
+                }
+            }
+        }
+        Given("Vi får trekk som ikke validerer") {
+            DBListener.clearDB()
+            val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("trekkMedFeil/trekkMedUgyldigPnr.json")).first()
+            val skeClientMock =
+                mockk<SkeClient> {
+                    coEvery { hentUtleggstrekkFraSekvensnr(any()) } returns listOf(trekkpaalegg)
+                }
+            val slackService = mockk<SlackService>(relaxUnitFun = true)
+
+            val utleggsTrekkService =
+                UtleggsTrekkService(
+                    RepositoryNy,
+                    skeClient = skeClientMock,
+                    slackService = slackService,
+                    maxAntall = 2,
+                    mqProducer = mqProducerMock,
+                )
+
+            When("Trekket prosesseres") {
+                utleggsTrekkService.schedule()
+                Then("Blir status AVVIST") {
+                    RepositoryNy.getTrekkFraSkattStatus(1) shouldBe SkattTrekkStatus.AVVIST
                 }
             }
         }
