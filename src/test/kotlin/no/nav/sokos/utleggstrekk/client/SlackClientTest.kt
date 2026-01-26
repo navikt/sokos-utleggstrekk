@@ -24,7 +24,6 @@ import no.nav.sokos.utleggstrekk.service.ErrorMessage
 
 class SlackClientTest :
     FunSpec({
-        // TODO: Have that in application.test.conf instead of injection?
         val endpoint = "slack_endpoint"
 
         test("sendMessage skal POST en melding til slack") {
