@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 import kotliquery.TransactionalSession
+import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
@@ -32,26 +33,40 @@ import no.nav.sokos.utleggstrekk.utils.Validation.isUuidV4
 const val KODE_TREKKTYPE = "TRK1"
 const val KILDE = "SOKOSUTLEGG"
 
+private val logger = KotlinLogging.logger { }
+
 class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource)) {
     // TODO: Bør være private
     fun behandleTrekk() =
-        repositoryNy.getTrekkSomIkkeErBehandlet().forEach { trekk ->
-
+        repositoryNy.getTrekkIdTilTrekkSomSkalBehandles().forEach { trekkId ->
             repositoryNy.withTransaction { session ->
-                val documents = lagTrekkDokument(trekk, session)
+                try {
+                    val trekk = repositoryNy.getTrekkFraSkatt(trekkId, session)
+                    val status = repositoryNy.getSkattTrekkStatus(trekk.id, session)
 
-                documents.forEach { document ->
-                    val documentJson = jsonConfig.encodeToString<TrekkTilOppdrag>(document)
-                    val dto =
-                        OSDto(
-                            document.dokument.transaksjonsId,
-                            trekk.trekkid,
-                            trekkversjon = trekk.trekkversjon,
-                            document.dokument.innrapporteringTrekk,
-                            documentJson,
-                        )
-                    repositoryNy.insertTransaksjonTilOs(dto, session)
-                    repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session)
+                    if (status == SkattTrekkStatus.REPETERES) {
+                        if (repositoryNy.getNyesteTrekkVersjon(trekk.trekkid, session).trekkversjon != trekk.trekkversjon) {
+                            repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.HOPPET_OVER)
+                            return@withTransaction
+                        }
+                    }
+                    val documents = lagTrekkDokument(trekk, session)
+                    documents.forEach { document ->
+                        val documentJson = jsonConfig.encodeToString<TrekkTilOppdrag>(document)
+                        val dto =
+                            OSDto(
+                                document.dokument.transaksjonsId,
+                                trekk.trekkid,
+                                trekkversjon = trekk.trekkversjon,
+                                document.dokument.innrapporteringTrekk,
+                                documentJson,
+                            )
+                        repositoryNy.insertTransaksjonTilOs(dto, session)
+                        repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session)
+                    }
+                } catch (e: Exception) {
+                    logger.error("Feil under prossessering av trekk med trekkid=$trekkId")
+                    repositoryNy.updateTrekkFraSkattStatus(trekkId, SkattTrekkStatus.AVVIST)
                 }
             }
         }
