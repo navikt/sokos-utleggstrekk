@@ -37,7 +37,9 @@ internal class LifecycleTest :
                 explicitNulls = false
             }
 
-        val repository = DBListener.RepositoryNy
+        val repository by lazy {
+            DBListener.RepositoryNy
+        }
 
         Given("Vi har mottatt utleggstrekk...  ") {
             val bodyFraSkatt = resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
