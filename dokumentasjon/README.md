@@ -74,6 +74,28 @@ Det er tre feature toggles i [Unleash](https://okonomi-unleash-web.iap.nav.cloud
 * sokos-utleggstrekk.prosesser-utleggstrekk.enabled
 * sokos-utleggstrekk.send-til-os.enabled
 
+## Bruk av Skatteetatens APIer
+En installasjon i NAVs NAIS-platforme får tildelt en Maskinporten-bruker som tilhører NAVs hovedorganisasjonssnummer (889640782). 
+Dette er ikke riktig organisasjonsnummer å bruke for å hente trekkpålegg. Det vil gi oss trekkpåleggene til NAV-ansatte. Vi trenger å hente 
+trekkpåleggene for NAVs brukere, og må derfor bruke organisasjonsnummeret til NAV Økonomilinjen (995277670)
+
+For å få til dette er vi nødt til å bruke en __systembruker__. Dette gjøres ved å først registrere et __system__ i [Digdir](https://docs.altinn.studio/nb/api/authentication/systemuserapi/systemregister/create/)
+Registrere Maskinporten __ClientID__ til sokos-utleggstrekk i denne samt registrerere ressursen "ske-informasjon-om-trekkpaalegg" som er det som gir tilgang til utleggstrekk.
+Deretter må noen med tilstrekkelige rettigheter på vegne av Økonomilinja opprette en systemtilgang i Altinn.
+
+Dette kun til etteretning, for dette skal allerede ha blitt gjort. Systemet vedlikeholdes av en NAIS jobb [sokos-systembruker-vedlikehold](https://github.com/navikt/sokos-systembruker-vedlikehold/tree/main)
+Se også [Skatteetatens dokumentasjon](https://skatteetaten.github.io/api-dokumentasjon/om/systembruker) og [Utbetalingsseksjonsens confluence](https://confluence.adeo.no/spaces/TOB/pages/739049218/Maskinporten+og+system+users) 
+
+### Gjenoppbygging etter tap av data
+I en situasjon hvor man har mistet alle data er det mulig å hente den ut igjen fra Skatteetatens API ved å spørre fra sekvensnummer=0. Merk da at dette kallet bare vil
+returnere det som er gjeldende versjoner av hvert trekk, ikke tidligere versjoner. For å gjenskape korrekt tilstand er man derfor nødt til å enten hente tilstand fra Oppdrag
+slik at korrekt diff kan beregnes, eller slette tilstand i Oppdrag Z slik at alle de siste trekkversjoner blir til nye trekk i Oppdragsystemet.
+
+Det er mulig å hente eldre versjoner fra Skattetaten, men dette kan bare gjøres enkeltvis.
+
+Sokos-utleggstrekk betrakter seg selv som fasit for trekkene den sender til Oppdrag, så hvis det gjøres endringer på disse vil de bli overskrevet neste
+gang det kommer en ny trekkversjon inn. 
+
 ## [Datamodell](datamodell/README.md)
 
-## [Flytdiagram](flytdiagram/README.md)
+## [Flytdiagram og forretningslogikk](flytdiagram/README.md)
