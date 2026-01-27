@@ -1,6 +1,5 @@
 package no.nav.sokos.utleggstrekk.service
 
-import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle.SHORT
@@ -12,6 +11,7 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.client.MAX_ANTALL
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
@@ -112,7 +112,8 @@ class UtleggsTrekkService(
         }.onSuccess {
             repositoryNy.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
-            logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
+            logger.error("Feil ved sending av dokument til OS: ${exception.message}")
+            logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
         }
     }
 
