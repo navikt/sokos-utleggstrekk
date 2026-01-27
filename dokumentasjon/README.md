@@ -93,6 +93,9 @@ slik at korrekt diff kan beregnes, eller slette tilstand i Oppdrag Z slik at all
 
 Det er mulig å hente eldre versjoner fra Skattetaten, men dette kan bare gjøres enkeltvis.
 
+Sokos-utleggstrekk betrakter seg selv som fasit for trekkene den sender til Oppdrag, så hvis det gjøres endringer på disse vil de bli overskrevet neste
+gang det kommer en ny trekkversjon inn. 
+
 ## [Datamodell](datamodell/README.md)
 
-## [Flytdiagram](flytdiagram/README.md)
+## [Flytdiagram og forretningslogikk](flytdiagram/README.md)

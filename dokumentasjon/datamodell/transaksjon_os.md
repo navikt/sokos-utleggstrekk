@@ -1,6 +1,10 @@
 
 Dette er datamodellen for InnrapporteringTrekk som sendes til Oppdrag Z
 
+Feltet kreditor_trekk_id har samme verdi som trekk_id_ske (hentet fra trekkpåleggets trekkid) med en ekstra bokstav P
+eller M for Prosentrekk eller Månedstrekk (beløp) med mindre trekkid er mer enn 35 tegn.
+Dersom trekkid er en UUID blir bindestrekene fjernet.
+
 ```mermaid
 ---
 transaksjon_os
