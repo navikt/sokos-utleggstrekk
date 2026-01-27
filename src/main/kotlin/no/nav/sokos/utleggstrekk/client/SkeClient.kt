@@ -36,14 +36,6 @@ class SkeClient(
 ) {
     val basePath = PropertiesConfig.skeConfig.skeRestUrl
 
-    // TODO: skal ikke brukes
-    suspend fun hentAlleUtleggstrekk(): List<Trekkpaalegg> =
-        client
-            .get {
-                url(basePath)
-                headers(commonHeaders())
-            }.toTrekkpaalegg()
-
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> =
         client
             .get {

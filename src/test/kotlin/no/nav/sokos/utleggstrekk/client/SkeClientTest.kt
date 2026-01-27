@@ -10,7 +10,6 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldNotContain
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockEngineConfig
@@ -108,73 +107,6 @@ class SkeClientTest :
             every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
         }
 
-        context("hentAlleUtleggstrekk") {
-            test("hentAlleUtleggstrekk skal sende GET request med korrekt headers og body") {
-                val engine =
-                    MockEngine {
-                        respond(content = "[]", headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
-
-                val trekkListe = skeClient.hentAlleUtleggstrekk()
-
-                engine.requestHistory shouldHaveSize 1
-
-                val request = engine.requestHistory.first()
-                request.url.toString() shouldNotContain "\\?.*".toRegex()
-                request.headers["Klientid"] shouldBe "NAV/0.1"
-                request.headers["Korrelasjonsid"] shouldNotBe null
-                request.headers[HttpHeaders.Authorization] shouldBe "Bearer mock-token"
-
-                trekkListe shouldBe emptyList()
-                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
-            }
-
-            test("hentAlleUtleggstrekk skal konvertere en body til en list av Trekkpaalegg") {
-                val mockedResponse = resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
-                val engine =
-                    MockEngine {
-                        respond(content = mockedResponse, headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
-
-                val trekkListe = skeClient.hentAlleUtleggstrekk()
-
-                trekkListe shouldHaveSize 2
-                trekkListe.first() shouldBe mockTrekk
-                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
-            }
-
-            test("hentAlleUtleggstrekk skal return en emptyList når den kan ikke parse body") {
-                val mockedResponse = resourceToString("Fra_Skatt_Trekk1_versjon1_beløp_ingen_ting_ekstra_Feil.json")
-                val mockEngine =
-                    MockEngine {
-                        respond(content = mockedResponse, headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(mockEngine), slackService, mockTokenProvider)
-
-                val errorMsg = slot<() -> Any?>()
-                every { logger.warn(capture(errorMsg)) } just runs
-                val trekkListe = skeClient.hentAlleUtleggstrekk()
-                trekkListe shouldBe emptyList()
-                verify(exactly = 1) { logger.warn(any<() -> Unit>()) }
-                errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av response"
-            }
-
-            test("hentAlleUtleggstrekk skal takle data med felter den ikke kjenner") {
-                val mockedResponse = resourceToString("Trekk_med_ukjente_felter.json")
-                val mockEngine =
-                    MockEngine {
-                        respond(content = mockedResponse, headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(mockEngine), slackService, mockTokenProvider)
-
-                val trekkListe = skeClient.hentAlleUtleggstrekk()
-                trekkListe shouldHaveSize 1
-                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
-            }
-        }
-
         context("hentUtleggstrekkFraSekvensnr") {
             test("skal sende GET request med korrekt headers og body") {
                 val engine =
@@ -251,7 +183,7 @@ class SkeClientTest :
                     }
                 val skeClient = SkeClient(mockClient(mockEngine), slackService, mockTokenProvider)
 
-                val trekkListe = skeClient.hentAlleUtleggstrekk()
+                val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
                 trekkListe shouldHaveSize 1
                 verify(exactly = 0) {
                     logger.warn(any<() -> Unit>())
@@ -330,6 +262,7 @@ class SkeClientTest :
                 messages.last() shouldContain ".+sekvensnr=2.+KB-001.+KorrelasjonsId.+".toRegex()
             }
         }
+
         context(name = "Feil i json-struktur") {
             test("String for tall id") {
                 val mockedResponse = resourceToString("trekkMedFeil/stringForTall.json")
@@ -338,10 +271,9 @@ class SkeClientTest :
                         respond(content = mockedResponse, headers = headers)
                     }
                 val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
-                val ex =
-                    shouldThrow<Exception> {
-                        val trekkListe = skeClient.hentAlleUtleggstrekk()
-                    }
+                shouldThrow<Exception> {
+                    skeClient.hentUtleggstrekkFraSekvensnr(1)
+                }
             }
             test("Beløp og prosent i samme periode") {
                 val mockedResponse = resourceToString("trekkMedFeil/belopOgProsent.json")
@@ -350,11 +282,10 @@ class SkeClientTest :
                         respond(content = mockedResponse, headers = headers)
                     }
                 val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
-                val ex =
-                    shouldThrow<Exception> {
-                        val trekkListe = skeClient.hentAlleUtleggstrekk()
-                        println(trekkListe.first().trekkstoerrelseForPeriode.first())
-                    }
+                shouldThrow<Exception> {
+                    val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
+                    println(trekkListe.first().trekkstoerrelseForPeriode.first())
+                }
             }
         }
 
