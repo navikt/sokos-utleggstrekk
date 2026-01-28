@@ -28,6 +28,7 @@ import io.ktor.http.isSuccess
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.MaskinportenClientConfig
+import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 
 class MaskinportenAccessTokenClient(
     private val maskinportenConfig: MaskinportenClientConfig,
@@ -71,8 +72,10 @@ class MaskinportenAccessTokenClient(
             AccessToken(response.body<MaskinportenTokenResponse>())
         } else {
             val feilmelding = response.body<TokenError>()
-            logger.error("Feil fra tokenprovider, Feilmelding: $feilmelding")
-            throw MaskinportenException("Feil fra tokenprovider, Feilmelding: $feilmelding")
+            val msg = "Feil fra tokenprovider, Feilmelding: $feilmelding"
+            logger.error { msg }
+            logger.error(TEAM_LOGS_MARKER, msg)
+            throw MaskinportenException(msg)
         }
     }
 
@@ -80,7 +83,9 @@ class MaskinportenAccessTokenClient(
         runCatching {
             client.get(maskinportenConfig.wellKnownUrl).body<OpenIdConfiguration>()
         }.getOrElse { exception ->
-            logger.error(exception) { "Feil i henting av OpenID konfigurasjon fra ${maskinportenConfig.wellKnownUrl}: ${exception.message}" }
+            val msg = "Feil i henting av OpenID konfigurasjon fra ${maskinportenConfig.wellKnownUrl}"
+            logger.error { "$msg : ${exception.message}" }
+            logger.error(TEAM_LOGS_MARKER, msg, exception)
             throw exception
         }
 

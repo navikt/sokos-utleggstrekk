@@ -1,6 +1,5 @@
 package no.nav.sokos.utleggstrekk.service
 
-import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle.SHORT
@@ -60,10 +59,6 @@ class UtleggsTrekkService(
         if (featureToggles.isSendTilOSEnabled()) {
             repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
         }
-        // TODO: Fjerne når vi bekreftet at secure logger funker
-        logger.info(marker = TEAM_LOGS_MARKER) {
-            "Alle nye utleggstrekk er lagret."
-        }
         repositoryNy.deleteOldData()
         calculateMetrics()
         slackService.sendCachedErrors("Trekk henting feil")
@@ -117,7 +112,8 @@ class UtleggsTrekkService(
         }.onSuccess {
             repositoryNy.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
-            logger.error(exception) { "Feil ved sending av dokument til OS: ${exception.message}" }
+            logger.error("Feil ved sending av dokument til OS: ${exception.message}")
+            logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
         }
     }
 

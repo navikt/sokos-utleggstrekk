@@ -56,7 +56,7 @@ class SkeClientTest :
         val slackService = mockk<SlackService>(relaxUnitFun = true)
         val logger =
             mockk<KLogger> {
-                every { error(any<() -> Unit>()) } just runs
+                every { warn(any<() -> Unit>()) } just runs
             }
 
         val mockToken = "mock-token"
@@ -127,7 +127,7 @@ class SkeClientTest :
                 request.headers[HttpHeaders.Authorization] shouldBe "Bearer mock-token"
 
                 trekkListe shouldBe emptyList()
-                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
             }
 
             test("hentAlleUtleggstrekk skal konvertere en body til en list av Trekkpaalegg") {
@@ -142,7 +142,7 @@ class SkeClientTest :
 
                 trekkListe shouldHaveSize 2
                 trekkListe.first() shouldBe mockTrekk
-                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
             }
 
             test("hentAlleUtleggstrekk skal return en emptyList når den kan ikke parse body") {
@@ -154,10 +154,10 @@ class SkeClientTest :
                 val skeClient = SkeClient(mockClient(mockEngine), slackService, mockTokenProvider)
 
                 val errorMsg = slot<() -> Any?>()
-                every { logger.error(capture(errorMsg)) } just runs
+                every { logger.warn(capture(errorMsg)) } just runs
                 val trekkListe = skeClient.hentAlleUtleggstrekk()
                 trekkListe shouldBe emptyList()
-                verify(exactly = 1) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 1) { logger.warn(any<() -> Unit>()) }
                 errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av response"
             }
 
@@ -171,7 +171,7 @@ class SkeClientTest :
 
                 val trekkListe = skeClient.hentAlleUtleggstrekk()
                 trekkListe shouldHaveSize 1
-                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
             }
         }
 
@@ -196,7 +196,7 @@ class SkeClientTest :
                 request.headers[HttpHeaders.Authorization] shouldBe "Bearer mock-token"
 
                 trekkListe shouldBe emptyList()
-                verify(exactly = 0) { logger.error(any<() -> Unit>()) }
+                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
             }
 
             test("skal konvertere en body til en list av Trekkpaalegg") {
@@ -212,7 +212,7 @@ class SkeClientTest :
                 trekkListe shouldHaveSize 2
                 trekkListe.first() shouldBe mockTrekk
                 verify(exactly = 0) {
-                    logger.error(any<() -> Unit>())
+                    logger.warn(any<() -> Unit>())
                     slackService.addError(any(), any())
                 }
             }
@@ -227,7 +227,7 @@ class SkeClientTest :
                 val skeClient = SkeClient(mockClient(mockEngine), slackService, mockTokenProvider)
 
                 val errorMsg = slot<() -> Any?>()
-                every { logger.error(capture(errorMsg)) } just runs
+                every { logger.warn(capture(errorMsg)) } just runs
 
                 val slackMessage = slot<String>()
                 every { slackService.addError(any(), capture(slackMessage)) } returns Unit
@@ -236,7 +236,7 @@ class SkeClientTest :
 
                 trekkListe shouldBe emptyList()
                 verify(exactly = 1) {
-                    logger.error(any<() -> Unit>())
+                    logger.warn(any<() -> Unit>())
                     slackService.addError("JsonConvertException", any())
                 }
                 errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av response"
@@ -254,7 +254,7 @@ class SkeClientTest :
                 val trekkListe = skeClient.hentAlleUtleggstrekk()
                 trekkListe shouldHaveSize 1
                 verify(exactly = 0) {
-                    logger.error(any<() -> Unit>())
+                    logger.warn(any<() -> Unit>())
                     slackService.addError(any(), any())
                 }
             }

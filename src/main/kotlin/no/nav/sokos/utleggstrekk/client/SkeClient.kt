@@ -80,7 +80,7 @@ class SkeClient(
                 }
             }
         } catch (e: JsonConvertException) {
-            logger.error { "Feil i konvertering av response: ${e.message}" }
+            logger.warn { "Feil i konvertering av response: ${e.message}" }
             slackService.addError("JsonConvertException", "Feil i konvertering av response: ${e.message}")
             emptyList()
         }

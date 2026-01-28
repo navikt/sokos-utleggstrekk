@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 
 import mu.KotlinLogging
 
+import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.service.SlackService
 
 private val logger = KotlinLogging.logger { }
@@ -74,7 +75,7 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
                     try {
                         task()
                     } catch (e: Exception) {
-                        logger.error("Scheduled job failed: ", e)
+                        logger.error(TEAM_LOGS_MARKER, "Scheduled job failed: ", e)
                         SlackService.instance.addError("Scheduled job failed", "Scheduled job failed: ${e.message}")
                         SlackService.instance.sendCachedErrors("Scheduled job failed")
                     } finally {

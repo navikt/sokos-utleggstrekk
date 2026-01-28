@@ -15,6 +15,7 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.MQConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
@@ -41,7 +42,7 @@ class JmsListenerService(
 
     init {
         jmsContext.start()
-        jmsContext.setExceptionListener { logger.error("Feil på MQ-kommunikasjon", it) }
+        jmsContext.setExceptionListener { logger.error(TEAM_LOGS_MARKER, "Feil på MQ-kommunikasjon", it) }
         jmsContext.createConsumer(osKvitteringQueue).setMessageListener { onReceipt(it) }
     }
 
@@ -55,7 +56,7 @@ class JmsListenerService(
             message.acknowledge()
         } catch (exception: Exception) {
             val header = "Prosessering av kvitteringmelding feilet."
-            logger.error(exception) { "$header ${message.jmsMessageID}" }
+            logger.error(TEAM_LOGS_MARKER, "$header ${message.jmsMessageID}", exception)
             slackService.addError(header, message.jmsMessageID)
         }
 
@@ -90,7 +91,7 @@ class JmsListenerService(
             "Trekk med kreditorstrekkID: ${receipt.dokument.innrapporteringTrekk.kreditorTrekkId}, " +
                 "corrid: ${receipt.dokument.transaksjonsId} har feilkode: ${receipt.mmel?.kodeMelding} og beskrivelse: $errorDescription"
 
-        logger.info(message)
+        logger.warn(message)
         slackService.addError("Kvittering feil", message)
     }
 }
