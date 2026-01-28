@@ -46,7 +46,7 @@ class UtleggsTrekkService(
         ),
 ) {
     private val logger = KotlinLogging.logger { }
-    private val featureToggles = UnleashIntegration()
+    private val featureToggles = UnleashIntegration(slackService)
 
     suspend fun schedule() {
         logger.info("Schedule started")
