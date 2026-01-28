@@ -4,8 +4,6 @@ import java.time.Instant
 import java.time.LocalDate
 
 object Validation {
-    val UUID_MATCHER = Regex("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
-
     fun String.isNumber(): Boolean = this.isNotEmpty() && this.all { it in '0'..'9' }
 
     fun String.inRange(min: Int, max: Int): Boolean = this.length >= min && this.length <= max
@@ -40,10 +38,5 @@ object Validation {
 
     fun String.validateString(allowNewLines: Boolean = false) {
         if (!isSafeText(allowNewLines)) throw IllegalArgumentException("Malformed string data")
-    }
-
-    fun String.isUuidV4(): Boolean {
-        if (length != 36) return false
-        return UUID_MATCHER.matches(this)
     }
 }

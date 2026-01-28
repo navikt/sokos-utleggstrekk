@@ -40,7 +40,8 @@ innrapporteringstrekk blir to dokumenter med Innrapporteringstrekk laget.
 
 Trekkpåleggets trekkid blir til kreditor_trekk_id i trekkpålegget hvor vi legger på en P eller M avhengig om det er prosent
 eller månedstrekk, men siden kreditor_trekk_id er begrenset til 35 tegn, og trekkid ofte vil være en 36 tegns UUID v4 tar
-vi vekk bindestrekene.
+vi vekk bindestrekene. Fordi feltet fra Skatteetaten er av ubegrenset lengde genererer vi for sikkerhetsskyld en BASE64 encodet
+kryptografisk digest med suffix -P eller -M dersom en trekkid på mer enn 34 tegn som ikke er en UUID.
 
 Sokos-utleggstrekk vil se etter perioder den har sendt til OS som ikke lenger finnes i trekkpålegget fra Skatteetaten. 
 Disse periodene vil bli reperert i de nye dokumentene mend verdien satt til 0. Nye perioder i blir opprettet hvis nødvendig.
