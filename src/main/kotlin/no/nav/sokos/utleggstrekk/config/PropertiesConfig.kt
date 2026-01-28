@@ -131,11 +131,11 @@ data class MQProperties(
 data class PostgresConfig(
     val host: String,
     val port: String,
-    val name: String,
     val username: String,
     val password: String,
     val jdbcUrl: String,
     val user: String,
+    val name: String,
 )
 
 @Serializable
