@@ -64,7 +64,7 @@ dependencies {
     // Ktor Client
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache5:$ktorVersion")
 
     // Serialization
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
