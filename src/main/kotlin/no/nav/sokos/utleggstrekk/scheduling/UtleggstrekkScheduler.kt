@@ -36,7 +36,7 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
         name: String? = null,
         task: suspend () -> Unit,
     ) {
-        logger.info("Scheduler started at ${hour.twoPad()}:${minute.twoPad()}:SS")
+        logger.info("Scheduler for '$name' started at ${hour.twoPad()}:${minute.twoPad()}:SS")
         scheduleNext(hour, minute, 0, name, task)
     }
 

@@ -43,8 +43,8 @@ private fun Application.module() {
 
     val schedulerProperties = applicationProperties.scheduler
     if (schedulerProperties.isActive) {
-        UtleggstrekkScheduler(appScope).scheduleHourlyAt(schedulerProperties.minutes) { utleggsTrekkService.schedule() }
-        UtleggstrekkScheduler(appScope).scheduleDailyAt(hour = 8, minute = 0) { utleggsTrekkService.reportMissingKvittering() }
+        UtleggstrekkScheduler(appScope).scheduleHourlyAt(schedulerProperties.minutes, name = "Schedule retrieving data from ske") { utleggsTrekkService.schedule() }
+        UtleggstrekkScheduler(appScope).scheduleDailyAt(hour = 8, minute = 0, name = "Report missing receipts") { utleggsTrekkService.reportMissingKvittering() }
     } else {
         log.info("Property SCHEDULER_ACTIVE is false. Scheduler is not running.")
     }
