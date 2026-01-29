@@ -57,7 +57,7 @@ object PropertiesConfig {
 fun ApplicationConfig.mergeWithEnv(): ApplicationConfig {
     val hoconConfig = HoconApplicationConfig(ConfigFactory.load())
     val environment =
-        (System.getenv("CLUSTER_NAME") ?: System.getProperty("CLUSTER_NAME"))
+        (System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME"))
             ?.lowercase()
             ?.substringBefore("-")
             ?: propertyOrNull("ktor.environment")?.getString()
