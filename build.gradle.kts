@@ -19,7 +19,7 @@ repositories {
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
-val ktorVersion = "3.3.3"
+val ktorVersion = "3.4.0"
 val kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
 val kotlinxSerializationVersion = "1.9.0"
 val nimbusVersion = "10.6"
@@ -115,6 +115,7 @@ dependencies {
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("net.bytebuddy:byte-buddy:1.18.3") // TEMP: Needed for mockk 1.14.6 with java25. Remove when Mockk is updated and bytebuddy is no longer needed.
     testImplementation("org.apache.activemq:artemis-jakarta-server:$activemqVersion")
+    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
 application {
