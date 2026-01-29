@@ -57,8 +57,9 @@ object PropertiesConfig {
 fun ApplicationConfig.mergeWithEnv(): ApplicationConfig {
     val hoconConfig = HoconApplicationConfig(ConfigFactory.load())
     val environment =
-        (System.getenv("APPLICATION_ENV") ?: System.getProperty("APPLICATION_ENV") ?: this.propertyOrNull("APPLICATION_ENV")?.getString())
+        (System.getenv("CLUSTER_NAME") ?: System.getProperty("CLUSTER_NAME"))
             ?.lowercase()
+            ?.substringBefore("-")
             ?: propertyOrNull("ktor.environment")?.getString()
             ?: "local"
     val environmentConfig = ApplicationConfig("application-$environment.conf")
