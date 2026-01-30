@@ -17,17 +17,14 @@ Hver time trigges UtleggsTrekkService.schedule() på minuttet konfigurert i __SC
 
 #### Applikasjon
 
-|                             Property |            Default |                                                                                  Forklaring |           Kilde |
-|-------------------------------------:|-------------------:|--------------------------------------------------------------------------------------------:|----------------:|
-|                        NAIS_APP_NAME | sokos-utleggstrekk |                                                                     Navnet på applikasjonen |            NAIS |
-|                       NAIS_NAMESPACE |            okonomi |                                                                         Navnet på namespace |            NAIS |
-|              AZURE_APP_PROVIDER_NAME |            azureAd |                                                                         Autentiseringskilde |                 |
-|                      SCEDULER_ACTIVE |                    |                                              Hvis true blir applikasjonen trigget hver time | naiserator.yaml |
-|                     SCEDULER_MINUTES |                 45 |           Regulerer hvilket minutt på timen jobben starter med å hente data fra Skattetaten |                 |
-|                   USE_AUTHENTICATION |              false |                                    Skrur av og på autentisering på sokos-utleggstrekk APIet |                 |
-| SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL |                    |                                                       Webhook for å sende alarmer til Slack |     NAIS secret |
-|         UNLEASHED_DEFAULT_IS_ENABLED |                    |                                                    Bestemmer defaultverdi til Unleash flagg |                 |
-|      MASKINPORTEN_SYSTEMBRUKER_CLAIM |                    |                    Organisasjonsnummer i claim for å skape token knyttet til systembrukeren | naiserator.yaml |
+|                             Property |            Default |                                                                                  Forklaring |            Kilde |
+|-------------------------------------:|-------------------:|--------------------------------------------------------------------------------------------:|-----------------:|
+|                        NAIS_APP_NAME | sokos-utleggstrekk |                                                                     Navnet på applikasjonen |             NAIS |
+|                       NAIS_NAMESPACE |            okonomi |                                                                         Navnet på namespace |             NAIS |
+|                      SCEDULER_ACTIVE |              false |                                              Hvis true blir applikasjonen trigget hver time | application.conf |
+|                     SCEDULER_MINUTES |                 45 |           Regulerer hvilket minutt på timen jobben starter med å hente data fra Skattetaten |                  |
+| SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL |                    |                                                       Webhook for å sende alarmer til Slack |      NAIS secret |
+|      MASKINPORTEN_SYSTEMBRUKER_CLAIM |                    |                    Organisasjonsnummer i claim for å skape token knyttet til systembrukeren | application.conf |
 
 #### Databaseoppkobling
 
@@ -42,25 +39,25 @@ Hver time trigges UtleggsTrekkService.schedule() på minuttet konfigurert i __SC
 
 #### MQ
 
-|              Property |                             Default |                                                           Forklaring |           Kilde |
-|----------------------:|------------------------------------:|---------------------------------------------------------------------:|----------------:|  
-|           MQ_HOSTNAME |                mqls02.preprod.local |                                                             Hostname | naiserator.yaml |
-|               MQ_PORT |                                     |                                                                      | naiserator.yaml |
-|            MQ_CHANNEL |                     Q1_UTLEGGSTREKK |                                                              Channel | naiserator.yaml |
-|         MQ_QUEUE_NAME |  QA.Q1_231.OB04_TREKK_FRASKATT_JSON | Kø brukt av sokos-utleggstrekk til å sende trekk til Oppdragsystemet | naiserator.yaml |
-|    MQ_REPLYQUEUE_NAME | QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING |    Kø for Oppdragsystemets kvitteringer sendt til sokos-utleggstrekk | naiserator.yaml |
-|           MQ_USERNAME |                                     |                                                        MQ brukernavn |     NAIS Secret |
-|           MQ_PASSWORD |                                     |                                                           MQ passord |     NAIS Secret |
-| MQ_QUEUE_MANAGER_NAME |                              MQLS02 |                                                                      | naiserator.yaml |
+|              Property |                             Default |                                                           Forklaring |                          Kilde |
+|----------------------:|------------------------------------:|---------------------------------------------------------------------:|-------------------------------:|  
+|           MQ_HOSTNAME |                mqls02.preprod.local |                                                             Hostname | application-{environment}.conf |
+|               MQ_PORT |                                     |                                                                      | application-{environment}.conf |
+|            MQ_CHANNEL |                     Q1_UTLEGGSTREKK |                                                              Channel | application-{environment}.conf |
+|         MQ_QUEUE_NAME |  QA.Q1_231.OB04_TREKK_FRASKATT_JSON | Kø brukt av sokos-utleggstrekk til å sende trekk til Oppdragsystemet | application-{environment}.conf |
+|    MQ_REPLYQUEUE_NAME | QA.Q1_SOKOS_UTLEGGSTREKK.KVITTERING |    Kø for Oppdragsystemets kvitteringer sendt til sokos-utleggstrekk | application-{environment}.conf |
+|           MQ_USERNAME |                                     |                                                        MQ brukernavn |                    NAIS Secret |
+|           MQ_PASSWORD |                                     |                                                           MQ passord |                    NAIS Secret |
+| MQ_QUEUE_MANAGER_NAME |                              MQLS02 |                                                                      | application-{environment}.conf |
 
 #### Skatteetaten
 
-|     Property |                                      Default |                                                            Forklaring |       Kilde |
-|-------------:|---------------------------------------------:|----------------------------------------------------------------------:|------------:|  
-| SKE_REST_URL | https://api-test.sits.no/api/trekkpaalegg/v1 |                          Endepunkt for å hente trekk fra Skatteetaten | NAIS Secret |
-|    SKE_ORGNR |                                    971648199 |                Skatteetatens orgnummer. Brukes til å mappe til TSS ID | NAIS Secret |
-|    SKE_TTSID |                                              | TTS id. Brukes til å identifisere Skatteetaten i trekkene til Oppdrag | NAIS Secret |
-|  SKE_KONTONR |                                              |                  Skatteetatens kontonummer trekket skal utbetales til | NAIS Secret |
+|     Property |                                      Default |                                                            Forklaring |                           Kilde |
+|-------------:|---------------------------------------------:|----------------------------------------------------------------------:|--------------------------------:|  
+| SKE_REST_URL | https://api-test.sits.no/api/trekkpaalegg/v1 |                          Endepunkt for å hente trekk fra Skatteetaten |  application-{environment}.conf |
+|    SKE_ORGNR |                                    971648199 |                Skatteetatens orgnummer. Brukes til å mappe til TSS ID |  application-{environment}.conf |
+|    SKE_TTSID |                                              | TTS id. Brukes til å identifisere Skatteetaten i trekkene til Oppdrag |  application-{environment}.conf |
+|  SKE_KONTONR |                                              |                  Skatteetatens kontonummer trekket skal utbetales til |  application-{environment}.conf |
 
 ## Alarmer
 

@@ -7,18 +7,17 @@ import io.getunleash.util.UnleashConfig
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig.Configuration
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig.UnleashProperties
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.applicationProperties
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.unleashProperties
 import no.nav.sokos.utleggstrekk.service.SlackService
 
 private val logger = KotlinLogging.logger { }
 
 open class UnleashIntegration(val slackService: SlackService) {
-    val unleashIsEnabled = PropertiesConfig.Configuration().unleashEnabled
     private var unleashClient: Unleash
     private val lastStates: MutableMap<String, Boolean> = mutableMapOf()
 
-    private fun lastStateOf(toggleName: String): Boolean = lastStates.getOrPut(toggleName) { unleashIsEnabled }
+    private fun lastStateOf(toggleName: String): Boolean = lastStates.getOrPut(toggleName) { unleashProperties.enabledByDefault }
 
     // Kill switcher:
     fun isHentFraSKEEnabled(): Boolean = isEnabled("sokos-utleggstrekk.hent-fra-ske.enabled")
@@ -28,7 +27,7 @@ open class UnleashIntegration(val slackService: SlackService) {
     fun isProsesserUtleggstrekkEnabled(): Boolean = isEnabled("sokos-utleggstrekk.prosesser-utleggstrekk.enabled")
 
     fun isEnabled(toggleName: String): Boolean {
-        val state = unleashClient.isEnabled(toggleName, unleashIsEnabled)
+        val state = unleashClient.isEnabled(toggleName, unleashProperties.enabledByDefault)
         val lastState = lastStateOf(toggleName)
         if (lastState != state) {
             val message = "$toggleName has switched from $lastState to $state"
@@ -40,17 +39,17 @@ open class UnleashIntegration(val slackService: SlackService) {
     }
 
     init {
-        if (Configuration().profile == PropertiesConfig.Profile.LOCAL) {
+        if (PropertiesConfig.isLocal || PropertiesConfig.isTest) {
             unleashClient = FakeUnleash()
         } else {
             val config: UnleashConfig =
                 UnleashConfig
                     .builder()
-                    .appName(Configuration().naisAppName)
-                    .instanceId(Configuration().naisPodName)
-                    .unleashAPI(UnleashProperties.unleashAPI + "/api/")
-                    .apiKey(UnleashProperties.apiKey)
-                    .environment(UnleashProperties.environment)
+                    .appName(applicationProperties.appName)
+                    .instanceId(applicationProperties.naisPodName)
+                    .unleashAPI(unleashProperties.unleashApi + "/api/")
+                    .apiKey(unleashProperties.apiKey)
+                    .environment(unleashProperties.environment)
                     .synchronousFetchOnInitialisation(true)
                     .build()
             unleashClient = DefaultUnleash(config)

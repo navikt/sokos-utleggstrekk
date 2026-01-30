@@ -22,7 +22,7 @@ import org.slf4j.event.Level
 
 import no.nav.sokos.utleggstrekk.metrics.Metrics
 
-private val logger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger {}
 
 // Add this marker to the logger when sending logs with secrets
 val TEAM_LOGS_MARKER: Marker = MarkerFactory.getMarker("TEAM_LOGS")
@@ -34,8 +34,7 @@ val jsonConfig =
         prettyPrint = true
     }
 
-// TODO: Bytte navn. Dette er ikke "common".
-@OptIn(ExperimentalSerializationApi::class) // TODO: Sjekk om denne kan fjernes
+@OptIn(ExperimentalSerializationApi::class)
 fun Application.commonConfig() {
     install(CallLogging) {
         logger = no.nav.sokos.utleggstrekk.config.logger

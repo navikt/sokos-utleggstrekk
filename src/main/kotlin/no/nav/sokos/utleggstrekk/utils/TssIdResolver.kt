@@ -10,7 +10,7 @@ import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.service.SlackService
 
 object TssIdResolver {
-    val config = PropertiesConfig.SKEConfig()
+    val config = PropertiesConfig.skeConfig
 
     fun resolve(betalingsinformasjonFraSkatt: BetalingsinformasjonFraSkatt) =
         if (betalingsinformasjonFraSkatt.betalingsmottaker == config.skeOrgNr && betalingsinformasjonFraSkatt.kontonummer == config.skeKontoNr) {

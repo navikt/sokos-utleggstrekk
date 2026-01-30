@@ -46,13 +46,6 @@ class JmsListenerServiceTest :
 
         val replyQueue = ActiveMQQueue("replyQueue")
 
-        JmsListenerService(
-            RepositoryNy,
-            slackService,
-            osKvitteringQueue = replyQueue,
-            connectionFactory,
-        )
-
         val jmsProducerTrekk: JmsProducerService by lazy {
             JmsProducerService(
                 targetQueue = replyQueue,
@@ -62,6 +55,13 @@ class JmsListenerServiceTest :
         }
 
         beforeSpec {
+            JmsListenerService(
+                RepositoryNy,
+                slackService,
+                osKvitteringQueue = replyQueue,
+                connectionFactory,
+            )
+
             mockkObject(KotlinLogging)
             every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
         }
@@ -167,6 +167,7 @@ class JmsListenerServiceTest :
         afterContainer {
             clearMocks(slackService, answers = false)
         }
+
         afterSpec {
             clearAllMocks()
             unmockkObject(KotlinLogging)

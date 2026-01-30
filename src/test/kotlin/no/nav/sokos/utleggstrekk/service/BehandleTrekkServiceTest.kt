@@ -11,13 +11,17 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldBeEmpty
 import io.kotest.matchers.string.shouldNotBeEmpty
+import io.ktor.server.config.ApplicationConfig
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.invoke
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.slot
+import io.mockk.unmockkObject
 import kotliquery.TransactionalSession
 
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
@@ -39,9 +43,18 @@ class BehandleTrekkServiceTest :
     BehaviorSpec({
         val capturedOSDtos = mutableListOf<OSDto>()
 
+        beforeSpec {
+            mockkObject(PropertiesConfig)
+            every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
+        }
+
         afterContainer {
             capturedOSDtos.clear()
             clearAllMocks()
+        }
+
+        afterSpec {
+            unmockkObject(PropertiesConfig)
         }
 
         val gyldigTomDatoAvslutt = LocalDate.now().toString()
@@ -87,8 +100,8 @@ class BehandleTrekkServiceTest :
 
             return behandleTrekkServiceNy
         }
-        Given("Trekkdokument dannes") {
 
+        Given("Trekkdokument dannes") {
             val trekkVersjon = 1
             val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
             val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)

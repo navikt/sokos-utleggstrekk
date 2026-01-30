@@ -113,6 +113,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("commons-net:commons-net:$commonsVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
     testImplementation("net.bytebuddy:byte-buddy:1.18.3") // TEMP: Needed for mockk 1.14.6 with java25. Remove when Mockk is updated and bytebuddy is no longer needed.
     testImplementation("org.apache.activemq:artemis-jakarta-server:$activemqVersion")
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")

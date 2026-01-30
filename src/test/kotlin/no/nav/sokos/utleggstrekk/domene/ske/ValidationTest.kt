@@ -3,6 +3,12 @@ package no.nav.sokos.utleggstrekk.domene.ske
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
+import io.ktor.server.config.ApplicationConfig
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
@@ -28,11 +34,11 @@ class ValidationTest :
                 betalingsinformasjon = Betalingsinformasjon("971648199", "17274826482648264826482", "70213997155"),
             )
 
-        val utleggstrekk =
+        val utleggstrekk by lazy {
             InnrapporteringTrekk(
                 aksjonskode = Aksjonskode.NY,
                 navTrekkId = "1234",
-                kreditorIdTss = PropertiesConfig.SKEConfig().skeTSSId,
+                kreditorIdTss = PropertiesConfig.skeConfig.skeTSSId,
                 kreditorTrekkId = "fe0d1de19840448093823dbad27e9002P",
                 kreditorsRef = "UTLEGG/2025/678",
                 debitorId = "10987654321",
@@ -45,6 +51,12 @@ class ValidationTest :
                 gyldigTomDato = null,
                 perioder = Perioder(listOf(Periode("2025-12-01", "2025-12-31", sats = 2000.0))),
             )
+        }
+
+        beforeSpec {
+            mockkObject(PropertiesConfig)
+            every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
+        }
 
         Given("Trekkpålegg med gyldige feltverdier") {
             When("Validering") {
@@ -110,5 +122,10 @@ class ValidationTest :
                     }
                 }
             }
+        }
+
+        afterSpec {
+            clearAllMocks()
+            unmockkObject(KotlinLogging, PropertiesConfig)
         }
     })

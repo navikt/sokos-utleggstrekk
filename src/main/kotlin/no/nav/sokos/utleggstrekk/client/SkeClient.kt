@@ -32,9 +32,9 @@ private val logger = KotlinLogging.logger { }
 class SkeClient(
     private val client: HttpClient = httpClient,
     private val slackService: SlackService = SlackService.instance,
-    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.MaskinportenClientConfig(), client),
+    private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.maskinportenClientConfig, client),
 ) {
-    val basePath = PropertiesConfig.SKEConfig().skeRestUrl
+    val basePath = PropertiesConfig.skeConfig.skeRestUrl
 
     // TODO: skal ikke brukes
     suspend fun hentAlleUtleggstrekk(): List<Trekkpaalegg> =

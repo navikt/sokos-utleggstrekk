@@ -7,15 +7,14 @@ import org.testcontainers.ext.ScriptUtils
 import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.postgresConfig
 
 class TestContainer {
-    private val properties = PropertiesConfig.PostgresConfig
     private val dockerImageName = "postgres:latest"
     private val container =
         PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
             withReuse(false)
-            withUsername(properties.user)
+            withUsername(postgresConfig.user)
             start()
         }
 
@@ -30,7 +29,7 @@ class TestContainer {
         Flyway
             .configure()
             .dataSource(dataSource)
-            .initSql("""SET ROLE "${PropertiesConfig.PostgresConfig.user}"""")
+            .initSql("""SET ROLE "${postgresConfig.user}"""")
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
             .load()

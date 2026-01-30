@@ -39,7 +39,7 @@ class UtleggsTrekkService(
     private val mqProducer: JmsProducerService =
         JmsProducerService(
             targetQueue =
-                MQQueue(PropertiesConfig.MQProperties().queueName).apply {
+                MQQueue(PropertiesConfig.mqProperties.queueName).apply {
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 },
             replyQueue = JmsListenerService(repositoryNy).osKvitteringQueue,

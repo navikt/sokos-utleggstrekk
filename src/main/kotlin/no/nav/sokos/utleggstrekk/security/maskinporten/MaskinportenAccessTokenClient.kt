@@ -27,11 +27,11 @@ import io.ktor.http.Parameters
 import io.ktor.http.isSuccess
 import mu.KotlinLogging
 
-import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.MaskinportenClientConfig
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 
 class MaskinportenAccessTokenClient(
-    private val maskinportenConfig: PropertiesConfig.MaskinportenClientConfig,
+    private val maskinportenConfig: MaskinportenClientConfig,
     private val client: HttpClient,
 ) {
     private val logger = KotlinLogging.logger {}

@@ -4,6 +4,11 @@ import com.zaxxer.hikari.HikariDataSource
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.spec.Spec
 import io.kotest.extensions.testcontainers.toDataSource
+import io.ktor.server.config.ApplicationConfig
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import kotliquery.queryOf
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
@@ -12,19 +17,21 @@ import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.PropertiesConfig.postgresConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.withTransaction
 
 object DBListener : TestListener {
     private val dockerImageName = "postgres:latest"
-    private val container =
+    private val container by lazy {
         PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
             withReuse(false)
-            withUsername(PropertiesConfig.PostgresConfig.user)
+            withUsername(postgresConfig.user)
             waitingFor(Wait.defaultWaitStrategy())
             start()
         }
+    }
 
     val dataSource: HikariDataSource by lazy {
         container
@@ -32,12 +39,21 @@ object DBListener : TestListener {
                 maximumPoolSize = 100
                 minimumIdle = 1
                 isAutoCommit = false
+            }.apply {
+                PostgresDataSource.migrate(this)
             }
-    }.apply {
-        PostgresDataSource.migrate(container.toDataSource())
     }
 
-    val RepositoryNy = RepositoryNy(dataSource)
+    val RepositoryNy by lazy {
+        RepositoryNy(dataSource)
+    }
+
+    override suspend fun beforeSpec(spec: Spec) {
+        super.beforeSpec(spec)
+
+        mockkObject(PropertiesConfig)
+        every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
+    }
 
     fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
 
@@ -57,5 +73,7 @@ object DBListener : TestListener {
 
     override suspend fun afterSpec(spec: Spec) {
         clearDB()
+        clearAllMocks()
+        unmockkObject(PropertiesConfig)
     }
 }

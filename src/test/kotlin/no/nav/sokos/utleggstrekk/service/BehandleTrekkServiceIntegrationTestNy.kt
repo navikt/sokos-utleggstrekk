@@ -27,8 +27,12 @@ import no.nav.sokos.utleggstrekk.util.plus
 class BehandleTrekkServiceIntegrationTestNy :
     BehaviorSpec({
         extensions(DBListener)
-        val repository = RepositoryNy(DBListener.dataSource)
-        val behandleTrekkService = BehandleTrekkServiceNy(repository)
+        val repository by lazy {
+            RepositoryNy(DBListener.dataSource)
+        }
+        val behandleTrekkService by lazy {
+            BehandleTrekkServiceNy(repository)
+        }
 
         fun storedInDb(trekk: Trekkpaalegg): Long? = repository.insertTrekkFraSkatt(trekk)
 

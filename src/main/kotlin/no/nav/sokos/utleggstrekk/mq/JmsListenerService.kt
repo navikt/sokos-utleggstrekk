@@ -31,7 +31,7 @@ class JmsListenerService(
     private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
     private val slackService: SlackService = SlackService.instance,
     val osKvitteringQueue: Queue =
-        MQQueue(PropertiesConfig.MQProperties().replyQueueName).apply {
+        MQQueue(PropertiesConfig.mqProperties.replyQueueName).apply {
             targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
         },
     connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),

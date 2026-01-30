@@ -6,7 +6,7 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 
-import no.nav.sokos.utleggstrekk.ApplicationState
+import no.nav.sokos.utleggstrekk.config.ApplicationState
 import no.nav.sokos.utleggstrekk.metrics.Metrics
 
 fun Routing.internalNaisRoutes(applicationState: ApplicationState, readynessCheck: () -> Boolean = { applicationState.ready }, alivenessCheck: () -> Boolean = { applicationState.alive }) {
