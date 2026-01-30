@@ -35,7 +35,7 @@ class SkeEksemplerTest :
         // Flags transaction_os as SENT and OKed.
         fun simulerOkFraOS(document: Document) {
             DBListener.RepositoryNy.updateTransaksjonSendt(document.transaksjonsId)
-            DBListener.RepositoryNy.updateTransaksjon(
+            DBListener.RepositoryNy.updateReceiptStatusOfTransaksjon(
                 document.transaksjonsId,
                 KvitteringStatus.OK,
                 document.innrapporteringTrekk.kreditorTrekkId + "navId" + document.innrapporteringTrekk.kodeTrekkAlternativ.suffix,

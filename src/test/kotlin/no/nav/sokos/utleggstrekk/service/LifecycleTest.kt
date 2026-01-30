@@ -181,9 +181,9 @@ internal class LifecycleTest :
             ikkeSendt.forEach { repository.updateTransaksjonSendt(it.transaksjonsID) }
 
             val skalSlettes1 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv1" }!!
-            repository.updateTransaksjon(skalSlettes1.transaksjonsID, KvitteringStatus.OK, "navid1")
+            repository.updateReceiptStatusOfTransaksjon(skalSlettes1.transaksjonsID, KvitteringStatus.OK, "navid1")
             val skalSlettes2 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv2" }!!
-            repository.updateTransaksjon(skalSlettes2.transaksjonsID, KvitteringStatus.FEIL, "navid1")
+            repository.updateReceiptStatusOfTransaksjon(skalSlettes2.transaksjonsID, KvitteringStatus.FEIL, "navid1")
 
             val kvittering =
                 KvitteringFraOppdrag(
@@ -201,7 +201,7 @@ internal class LifecycleTest :
 
             val skalIkkeSlettes = ikkeSendt.filterNot { it.trekkIdSke == "1" }
             skalIkkeSlettes.forEach { tilOs ->
-                repository.updateTransaksjon(tilOs.transaksjonsID, KvitteringStatus.OK, "navid" + tilOs.trekkIdSke)
+                repository.updateReceiptStatusOfTransaksjon(tilOs.transaksjonsID, KvitteringStatus.OK, "navid" + tilOs.trekkIdSke)
             }
 
             When("To trekk er eldre enn seks måneder, et av dem har trekkstatus avsluttet (1) og det tredje er yngre enn seks måneder") {

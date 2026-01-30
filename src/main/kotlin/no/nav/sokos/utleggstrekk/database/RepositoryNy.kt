@@ -379,8 +379,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         }
     }
 
-    // TODO: Rename?
-    fun updateTransaksjon(transaksjonId: String, kvitteringStatus: KvitteringStatus, navTrekkId: String) {
+    fun updateReceiptStatusOfTransaksjon(transaksjonId: String, kvitteringStatus: KvitteringStatus, navTrekkId: String) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
