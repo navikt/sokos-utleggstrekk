@@ -9,17 +9,8 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.MockEngineConfig
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.engine.mock.respondError
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
-import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.config.ApplicationConfig
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
@@ -46,6 +37,8 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus.AKTIV
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
 import no.nav.sokos.utleggstrekk.service.SlackService
+import no.nav.sokos.utleggstrekk.util.MockHttpClient.getClient
+import no.nav.sokos.utleggstrekk.util.MockHttpClient.getEngine
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 @OptIn(ExperimentalTime::class)
@@ -62,8 +55,6 @@ class SkeClientTest :
             mockk<MaskinportenAccessTokenClient> {
                 coEvery { getAccessToken() } returns mockToken
             }
-
-        val headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
 
         val mockTrekk =
             Trekkpaalegg(
@@ -108,18 +99,15 @@ class SkeClientTest :
 
         context("hentUtleggstrekkFraSekvensnr") {
             test("skal sende GET request med korrekt headers og body") {
-                val engine =
-                    MockEngine {
-                        respond(content = "[]", headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
+                val mockEngine = getEngine()
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
                 val sekvensnr = 1
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
 
-                engine.requestHistory shouldHaveSize 1
+                mockEngine.requestHistory shouldHaveSize 1
 
-                val request = engine.requestHistory.first()
+                val request = mockEngine.requestHistory.first()
                 println(request.url.encodedPath)
                 request.url.toString() shouldContain "\\?fraSekvensnummer=$sekvensnr&maksAntall=2500".toRegex()
                 request.headers["Klientid"] shouldBe "NAV/0.1"
@@ -132,11 +120,8 @@ class SkeClientTest :
 
             test("skal konvertere en body til en list av Trekkpaalegg") {
                 val mockedResponse = resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
-                val engine =
-                    MockEngine {
-                        respond(content = mockedResponse, headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
+                val mockEngine = getEngine(mockedResponse)
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
 
@@ -151,11 +136,8 @@ class SkeClientTest :
             test("skal returnere en emptyList når den kan ikke parse body og sende en alarm") {
 
                 val mockedResponse = resourceToString("Fra_Skatt_Trekk1_versjon1_beløp_ingen_ting_ekstra_Feil.json")
-                val mockEngine =
-                    MockEngine {
-                        respond(content = mockedResponse, headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(mockEngine), slackService, mockTokenProvider)
+                val mockEngine = getEngine(mockedResponse)
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
                 val errorMsg = slot<() -> Any?>()
                 every { logger.warn(capture(errorMsg)) } just runs
@@ -176,11 +158,8 @@ class SkeClientTest :
 
             test("skal takle data med felter den ikke kjenner") {
                 val mockedResponse = resourceToString("Trekk_med_ukjente_felter.json")
-                val mockEngine =
-                    MockEngine {
-                        respond(content = mockedResponse, headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(mockEngine), slackService, mockTokenProvider)
+                val mockEngine = getEngine(mockedResponse)
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
                 trekkListe shouldHaveSize 1
@@ -194,11 +173,7 @@ class SkeClientTest :
                 val message = slot<String>()
                 every { slackService.addError(any(), capture(message)) } returns Unit
 
-                val engine =
-                    MockEngine {
-                        respond(content = "[]", headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
+                val skeClient = SkeClient(getClient(), slackService, mockTokenProvider)
 
                 val sekvensnr = 1
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
@@ -213,39 +188,26 @@ class SkeClientTest :
                 val messages = mutableListOf<String>()
                 every { slackService.addError(capture(alarmHeaders), capture(messages)) } returns Unit
 
-                val engineConfig =
-                    MockEngineConfig().apply {
-                        addHandler {
-                            val content =
-                                SkeErrorMessage(
-                                    kode = "KB-005",
-                                    melding = "Feil i forbindelse med samtykketoken.",
-                                    korrelasjonsid = "123",
-                                )
-                            respondError(
-                                status = HttpStatusCode.Forbidden,
-                                content = jsonConfig.encodeToString(content),
-                                headers = headers,
-                            )
-                        }
+                val skeErrorMessage1 =
+                    SkeErrorMessage(
+                        kode = "KB-005",
+                        melding = "Feil i forbindelse med samtykketoken.",
+                        korrelasjonsid = "123",
+                    )
+                val skeErrorMessage2 =
+                    SkeErrorMessage(
+                        kode = "KB-001",
+                        melding = "Uventet feil på tjenesten",
+                        korrelasjonsid = "345",
+                    )
 
-                        addHandler {
-                            val content =
-                                SkeErrorMessage(
-                                    kode = "KB-001",
-                                    melding = "Uventet feil på tjenesten",
-                                    korrelasjonsid = "345",
-                                )
-                            respondError(
-                                status = HttpStatusCode.InternalServerError,
-                                content = jsonConfig.encodeToString(content),
-                                headers = headers,
-                            )
-                        }
-                    }
-                val engine = MockEngine(engineConfig)
+                val mockEngine =
+                    getEngine(
+                        Pair(HttpStatusCode.Forbidden, jsonConfig.encodeToString(skeErrorMessage1)),
+                        Pair(HttpStatusCode.InternalServerError, jsonConfig.encodeToString(skeErrorMessage2)),
+                    )
 
-                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
                 val trekkListe1 = skeClient.hentUtleggstrekkFraSekvensnr(1)
                 val trekkListe2 = skeClient.hentUtleggstrekkFraSekvensnr(2)
@@ -265,22 +227,18 @@ class SkeClientTest :
         context(name = "Feil i json-struktur") {
             test("String for tall id") {
                 val mockedResponse = resourceToString("trekkMedFeil/stringForTall.json")
-                val engine =
-                    MockEngine {
-                        respond(content = mockedResponse, headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
+                val mockEngine = getEngine(mockedResponse)
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
+
                 shouldThrow<Exception> {
                     skeClient.hentUtleggstrekkFraSekvensnr(1)
                 }
             }
             test("Beløp og prosent i samme periode") {
                 val mockedResponse = resourceToString("trekkMedFeil/belopOgProsent.json")
-                val engine =
-                    MockEngine {
-                        respond(content = mockedResponse, headers = headers)
-                    }
-                val skeClient = SkeClient(mockClient(engine), slackService, mockTokenProvider)
+                val mockEngine = getEngine(mockedResponse)
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
+
                 shouldThrow<Exception> {
                     val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
                     println(trekkListe.first().trekkstoerrelseForPeriode.first())
@@ -297,9 +255,3 @@ class SkeClientTest :
             unmockkObject(KotlinLogging, PropertiesConfig)
         }
     })
-
-private fun mockClient(engine: MockEngine) =
-    HttpClient(engine) {
-        install(ContentNegotiation) { json(jsonConfig) }
-        expectSuccess = false
-    }
