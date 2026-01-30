@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.client
 
-import kotlinx.serialization.json.Json
-
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -18,6 +16,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import io.mockk.verify
 
+import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.domene.nav.Data
 import no.nav.sokos.utleggstrekk.domene.nav.createSlackMessage
 import no.nav.sokos.utleggstrekk.service.ErrorMessage
@@ -60,14 +59,6 @@ class SlackClientTest :
 
 private fun mockClient(engine: MockEngine) =
     HttpClient(engine) {
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    prettyPrint = true
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                },
-            )
-        }
+        install(ContentNegotiation) { json(jsonConfig) }
         expectSuccess = false
     }

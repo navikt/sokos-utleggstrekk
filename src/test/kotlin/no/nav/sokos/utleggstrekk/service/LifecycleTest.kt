@@ -3,8 +3,6 @@ package no.nav.sokos.utleggstrekk.service
 import java.time.Instant
 import java.time.temporal.ChronoUnit.DAYS
 
-import kotlinx.serialization.json.Json
-
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
@@ -20,7 +18,6 @@ import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
-import no.nav.sokos.utleggstrekk.database.withTransaction
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.Mmel
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -32,12 +29,6 @@ import no.nav.sokos.utleggstrekk.util.resourceToString
 internal class LifecycleTest :
     BehaviorSpec({
         extensions(DBListener)
-        val json =
-            Json {
-                prettyPrint = true
-                isLenient = true
-                explicitNulls = false
-            }
 
         val repository by lazy {
             DBListener.RepositoryNy
@@ -45,7 +36,7 @@ internal class LifecycleTest :
 
         Given("Vi har mottatt utleggstrekk...  ") {
             val bodyFraSkatt = resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
-            val paleggstrekkFraSkatt = json.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
+            val paleggstrekkFraSkatt = jsonConfig.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
 
             then("lagres disse i database") {
                 paleggstrekkFraSkatt.forEach { repository.insertTrekkFraSkatt(it) }
@@ -151,7 +142,9 @@ internal class LifecycleTest :
                 val perioderFraSkatt = repository.getPerioderForTrekkVersjon(trekkFraSkatt!!.id)
                 val betalingsInformasjon = repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
                 val osdok: TransaksjonOS = trekkSomSkalSendes.first()
-                val trekkTilOppdrag = jsonConfig.decodeFromString<TrekkTilOppdrag>(osdok.documentJson)
+                val trekkTilOppdrag =
+                    no.nav.sokos.utleggstrekk.config.jsonConfig
+                        .decodeFromString<TrekkTilOppdrag>(osdok.documentJson)
 
                 withClue("osDokumentet skal ha samme info som i trekk og perioder") {
                     with(trekkTilOppdrag.dokument.innrapporteringTrekk) {
@@ -168,7 +161,7 @@ internal class LifecycleTest :
             val fiveMonthsAgo = Instant.now().minus(5 * 30, DAYS)
 
             val trekkpaalegg =
-                jsonConfig.decodeFromString<Array<Trekkpaalegg>>(
+                no.nav.sokos.utleggstrekk.config.jsonConfig.decodeFromString<Array<Trekkpaalegg>>(
                     resourceToString("lifecycleTestData/gamleTrekk.json")
                         .replace("###OPPRETTETGAMMEL###", sevenMonthsAgo.toString())
                         .replace("###OPPRETTETNY###", fiveMonthsAgo.toString()),
@@ -194,7 +187,9 @@ internal class LifecycleTest :
 
             val kvittering =
                 KvitteringFraOppdrag(
-                    jsonConfig.decodeFromString<TrekkTilOppdrag>(skalSlettes2.documentJson).dokument,
+                    no.nav.sokos.utleggstrekk.config.jsonConfig
+                        .decodeFromString<TrekkTilOppdrag>(skalSlettes2.documentJson)
+                        .dokument,
                     mmel =
                         Mmel(
                             kodeMelding = "B720005F",

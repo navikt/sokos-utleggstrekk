@@ -1,7 +1,6 @@
 package no.nav.sokos.utleggstrekk.client
 
 import kotlin.time.ExperimentalTime
-import kotlinx.serialization.json.Json
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -301,14 +300,6 @@ class SkeClientTest :
 
 private fun mockClient(engine: MockEngine) =
     HttpClient(engine) {
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    prettyPrint = true
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                },
-            )
-        }
+        install(ContentNegotiation) { json(jsonConfig) }
         expectSuccess = false
     }

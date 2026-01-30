@@ -2,12 +2,11 @@ package no.nav.sokos.utleggstrekk.testcases
 
 import java.time.LocalDate
 
-import kotlinx.serialization.json.Json
-
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 
+import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
@@ -24,13 +23,6 @@ import no.nav.sokos.utleggstrekk.util.resourceToStringList
 class PeriodejusteringsTest :
     BehaviorSpec({
         extensions(DBListener)
-
-        val jsonConfig =
-            Json {
-                explicitNulls = false
-                encodeDefaults = true
-                prettyPrint = true
-            }
 
         // Flags transaction_os as SENT and OKed.
         fun simulerOkFraOS(document: Document) {
