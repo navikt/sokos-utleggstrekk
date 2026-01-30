@@ -95,7 +95,7 @@ internal class UtleggsTrekkServiceTest :
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    RepositoryNy, // TODO: Mock repository i stedet? Tilkobling med databasen er testet i RepositoryTest.
+                    RepositoryNy,
                     skeClient = skeClientMock,
                     slackService = slackService,
                     mqProducer = mqProducerMock,

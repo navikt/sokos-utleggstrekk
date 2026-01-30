@@ -37,7 +37,6 @@ val jsonConfig =
         ignoreUnknownKeys = true
     }
 
-@OptIn(ExperimentalSerializationApi::class)
 fun Application.commonConfig() {
     install(CallLogging) {
         logger = no.nav.sokos.utleggstrekk.config.logger

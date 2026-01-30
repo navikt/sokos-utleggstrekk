@@ -7,7 +7,7 @@ import kotliquery.Row
 import no.nav.sokos.utleggstrekk.domene.nav.Periode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 
-data class PeriodeTilOS( // TODO: Kan vi klare oss med bare Periode-klassen?
+data class PeriodeTilOS(
     val id: Long = 0,
     val osTransaksjonId: Long = 0,
     val sats: Double,

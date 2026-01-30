@@ -41,7 +41,6 @@ data class Mmel(
     val sectionNavn: String? = null,
 )
 
-// TODO: Se på spk-mottak
 @Serializable
 data class Document(
     val transaksjonsId: String,
@@ -65,7 +64,6 @@ data class InnrapporteringTrekk(
     val kilde: String = KILDE,
     val saldo: Double = 0.0,
     val prioritetFomDato: String? = null,
-    // val gyldigTomDato: String = LocalDate().minusDays(1).toString(),
     val gyldigTomDato: String? = null,
     val perioder: Perioder?,
 )
