@@ -2,6 +2,7 @@
 
 # shellcheck disable=SC2034
 ADC_FILE="$HOME/.config/gcloud/application_default_credentials.json"
+NAIS_CLIENT_ID=dev-gcp:okonomi:sokos-utleggstrekk
 
 if ! gcloud auth application-default print-access-token >/dev/null 2>&1; then
     echo "ADC not configured or invalid, running login with --update-adc..."
