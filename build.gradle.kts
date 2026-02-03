@@ -45,7 +45,7 @@ val gsonVersion = "2.13.2"
 
 // Test
 val kotestVersion = "6.0.7"
-val mockkVersion = "1.14.7"
+val mockkVersion = "1.14.9"
 val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.4"
 val activemqVersion = "2.44.0"
@@ -114,7 +114,6 @@ dependencies {
     testImplementation("commons-net:commons-net:$commonsVersion")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
-    testImplementation("net.bytebuddy:byte-buddy:1.18.3") // TEMP: Needed for mockk 1.14.6 with java25. Remove when Mockk is updated and bytebuddy is no longer needed.
     testImplementation("org.apache.activemq:artemis-jakarta-server:$activemqVersion")
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
 }
