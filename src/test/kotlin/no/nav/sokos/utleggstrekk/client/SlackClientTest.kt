@@ -1,18 +1,11 @@
 package no.nav.sokos.utleggstrekk.client
 
-import kotlinx.serialization.json.Json
-
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
-import io.ktor.serialization.kotlinx.json.json
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -21,6 +14,7 @@ import io.mockk.verify
 import no.nav.sokos.utleggstrekk.domene.nav.Data
 import no.nav.sokos.utleggstrekk.domene.nav.createSlackMessage
 import no.nav.sokos.utleggstrekk.service.ErrorMessage
+import no.nav.sokos.utleggstrekk.util.MockHttpClient
 
 class SlackClientTest :
     FunSpec({
@@ -30,11 +24,8 @@ class SlackClientTest :
             mockkStatic(::createSlackMessage)
             every { createSlackMessage(any(), any()) } returns Data("", emptyList())
 
-            val engine =
-                MockEngine {
-                    respond("")
-                }
-            val slackClient = SlackClient(endpoint, mockClient(engine))
+            val engine = MockHttpClient.getEngine("")
+            val slackClient = SlackClient(endpoint, MockHttpClient.getClient(engine))
 
             val header = "Message header"
             val messages =
@@ -57,17 +48,3 @@ class SlackClientTest :
             unmockkStatic(::createSlackMessage)
         }
     })
-
-private fun mockClient(engine: MockEngine) =
-    HttpClient(engine) {
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    prettyPrint = true
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                },
-            )
-        }
-        expectSuccess = false
-    }

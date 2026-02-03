@@ -3,8 +3,6 @@ package no.nav.sokos.utleggstrekk.service
 import java.time.Instant
 import java.time.temporal.ChronoUnit.DAYS
 
-import kotlinx.serialization.json.Json
-
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
@@ -20,7 +18,6 @@ import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
-import no.nav.sokos.utleggstrekk.database.withTransaction
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.Mmel
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -32,26 +29,18 @@ import no.nav.sokos.utleggstrekk.util.resourceToString
 internal class LifecycleTest :
     BehaviorSpec({
         extensions(DBListener)
-        val json =
-            Json {
-                prettyPrint = true
-                isLenient = true
-                explicitNulls = false
-            }
-
         val repository by lazy {
             DBListener.RepositoryNy
         }
 
         Given("Vi har mottatt utleggstrekk...  ") {
             val bodyFraSkatt = resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json")
-            val paleggstrekkFraSkatt = json.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
+            val paleggstrekkFraSkatt = jsonConfig.decodeFromString<List<Trekkpaalegg>>(bodyFraSkatt)
 
             then("lagres disse i database") {
                 paleggstrekkFraSkatt.forEach { repository.insertTrekkFraSkatt(it) }
                 val trekk = repository.getAllTrekkFraSkatt()
                 trekk shouldHaveSize 2
-
                 val perioder = trekk.map { repository.getPerioderForTrekk(it) }.flatten()
                 perioder shouldHaveSize 4
             }
@@ -146,7 +135,6 @@ internal class LifecycleTest :
                     loppPerioder shouldHaveSize 3
                     loppPerioder.filter { it.sats == 0.0 } shouldHaveSize 2
                 }
-
                 val trekkFraSkatt = repository.getTrekkFraSkatt(1L)
                 val perioderFraSkatt = repository.getPerioderForTrekkVersjon(trekkFraSkatt!!.id)
                 val betalingsInformasjon = repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
@@ -166,7 +154,6 @@ internal class LifecycleTest :
             DBListener.clearDB()
             val sevenMonthsAgo = Instant.now().minus(7 * 30, DAYS)
             val fiveMonthsAgo = Instant.now().minus(5 * 30, DAYS)
-
             val trekkpaalegg =
                 jsonConfig.decodeFromString<Array<Trekkpaalegg>>(
                     resourceToString("lifecycleTestData/gamleTrekk.json")
@@ -179,19 +166,15 @@ internal class LifecycleTest :
             repository.fakeTidspunktOpprettet("1", 2, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("2", 1, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("3", 1, fiveMonthsAgo)
-
             val service = BehandleTrekkServiceNy(DBListener.RepositoryNy)
             val idToTrekkId = repository.getTrekkSomIkkeErBehandlet().associate { it.id to it.trekkid }
             service.behandleTrekk()
-
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
             ikkeSendt.forEach { repository.updateTransaksjonSendt(it.transaksjonsID) }
-
             val skalSlettes1 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv1" }!!
-            repository.updateTransaksjon(skalSlettes1.transaksjonsID, KvitteringStatus.OK, "navid1")
+            repository.updateReceiptStatusOfTransaksjon(skalSlettes1.transaksjonsID, KvitteringStatus.OK, "navid1")
             val skalSlettes2 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv2" }!!
-            repository.updateTransaksjon(skalSlettes2.transaksjonsID, KvitteringStatus.FEIL, "navid1")
-
+            repository.updateReceiptStatusOfTransaksjon(skalSlettes2.transaksjonsID, KvitteringStatus.FEIL, "navid1")
             val kvittering =
                 KvitteringFraOppdrag(
                     jsonConfig.decodeFromString<TrekkTilOppdrag>(skalSlettes2.documentJson).dokument,
@@ -203,10 +186,9 @@ internal class LifecycleTest :
                         ),
                 )
             repository.insertFeilmeldingFraOS(kvittering)
-
             val skalIkkeSlettes = ikkeSendt.filterNot { it.trekkIdSke == "1" }
             skalIkkeSlettes.forEach { tilOs ->
-                repository.updateTransaksjon(tilOs.transaksjonsID, KvitteringStatus.OK, "navid" + tilOs.trekkIdSke)
+                repository.updateReceiptStatusOfTransaksjon(tilOs.transaksjonsID, KvitteringStatus.OK, "navid" + tilOs.trekkIdSke)
             }
 
             When("To trekk er eldre enn seks måneder, et av dem har trekkstatus avsluttet (1) og det tredje er yngre enn seks måneder") {

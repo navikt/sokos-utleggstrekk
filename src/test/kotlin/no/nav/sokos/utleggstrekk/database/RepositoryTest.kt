@@ -281,7 +281,7 @@ class RepositoryTest :
             When("Transaksjon oppdateres med kvitteringsstatus og navtrekkid") {
                 val nyKvitteringStatus = KvitteringStatus.OK
                 val nyNavTrekkId = "123456789"
-                RepositoryNy.updateTransaksjon(dto.transaksjonID, nyKvitteringStatus, nyNavTrekkId)
+                RepositoryNy.updateReceiptStatusOfTransaksjon(dto.transaksjonID, nyKvitteringStatus, nyNavTrekkId)
                 val transaksjonTilOs = RepositoryNy.getTransaksjonTilOs(dto.transaksjonID)
                 transaksjonTilOs.shouldNotBeNull()
 

@@ -36,7 +36,6 @@ const val KILDE = "SOKOSUTLEGG"
 private val logger = KotlinLogging.logger { }
 
 class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource)) {
-    // TODO: Bør være private
     fun behandleTrekk() =
         repositoryNy.getTrekkIdTilTrekkSomSkalBehandles().forEach { trekkId ->
             repositoryNy.withTransaction { session ->

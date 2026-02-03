@@ -36,14 +36,6 @@ class SkeClient(
 ) {
     val basePath = PropertiesConfig.skeConfig.skeRestUrl
 
-    // TODO: skal ikke brukes
-    suspend fun hentAlleUtleggstrekk(): List<Trekkpaalegg> =
-        client
-            .get {
-                url(basePath)
-                headers(commonHeaders())
-            }.toTrekkpaalegg()
-
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> =
         client
             .get {
@@ -56,7 +48,7 @@ class SkeClient(
         val token = tokenProvider.getAccessToken()
         return {
             append("Klientid", KLIENT_ID)
-            append("Korrelasjonsid", UUID.randomUUID().toString()) // TODO: Hvis dette skal være noe poeng må den tas vare på et sted!
+            append("Korrelasjonsid", UUID.randomUUID().toString())
             append(HttpHeaders.Authorization, "Bearer $token")
         }
     }

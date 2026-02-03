@@ -68,7 +68,7 @@ class JmsListenerService(
     private fun processReceipt(receipt: KvitteringFraOppdrag) {
         val kvitteringStatus = KvitteringStatus.fromValue(receipt.mmel?.alvorlighetsgrad)
 
-        repositoryNy.updateTransaksjon(
+        repositoryNy.updateReceiptStatusOfTransaksjon(
             receipt.dokument.transaksjonsId,
             kvitteringStatus,
             receipt.dokument.innrapporteringTrekk.navTrekkId,

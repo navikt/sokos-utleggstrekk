@@ -27,14 +27,16 @@ private val logger = KotlinLogging.logger {}
 // Add this marker to the logger when sending logs with secrets
 val TEAM_LOGS_MARKER: Marker = MarkerFactory.getMarker("TEAM_LOGS")
 
+@OptIn(ExperimentalSerializationApi::class)
 val jsonConfig =
     Json {
         explicitNulls = false
         encodeDefaults = true
         prettyPrint = true
+        decodeEnumsCaseInsensitive = true
+        ignoreUnknownKeys = true
     }
 
-@OptIn(ExperimentalSerializationApi::class)
 fun Application.commonConfig() {
     install(CallLogging) {
         logger = no.nav.sokos.utleggstrekk.config.logger
@@ -42,18 +44,7 @@ fun Application.commonConfig() {
         filter { call -> call.request.path().startsWith("/api") }
         disableDefaultColors()
     }
-    // TODO: flytt til et object
-    install(ContentNegotiation) {
-        json(
-            Json {
-                prettyPrint = true
-                isLenient = true
-                decodeEnumsCaseInsensitive = true
-                explicitNulls = true
-                encodeDefaults = true
-            },
-        )
-    }
+    install(ContentNegotiation) { json(jsonConfig) }
 
     install(MicrometerMetrics) {
         registry = Metrics.registry
