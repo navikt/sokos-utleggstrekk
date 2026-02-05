@@ -24,7 +24,7 @@ import mu.Marker
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.jsonConfig
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
@@ -39,7 +39,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
-import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
+import no.nav.sokos.utleggstrekk.listener.DBListener.repository
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
 import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
 import no.nav.sokos.utleggstrekk.util.dager
@@ -101,7 +101,7 @@ internal class UtleggsTrekkServiceTest :
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    RepositoryNy,
+                    repository,
                     skeClient = skeClientMock,
                     slackService = slackService,
                     mqProducer = mqProducerMock,
@@ -118,11 +118,11 @@ internal class UtleggsTrekkServiceTest :
                     }
                 }
                 Then("Skal trekkpaalegget lagres i databasen") {
-                    val trekkFraSkatt = RepositoryNy.getTrekkFraSkatt(trekkpaalegg.trekkid, trekkpaalegg.trekkversjon)
+                    val trekkFraSkatt = repository.getTrekkFraSkatt(trekkpaalegg.trekkid, trekkpaalegg.trekkversjon)
                     trekkFraSkatt.shouldNotBeNull()
 
                     withClue("Perioder skal lagres") {
-                        val perioder = RepositoryNy.getPerioderForTrekkVersjon(trekkFraSkatt.id)
+                        val perioder = repository.getPerioderForTrekkVersjon(trekkFraSkatt.id)
                         perioder.size shouldBe 1
                         val periode = perioder.first()
                         periode.trekkprosent.shouldNotBeNull()
@@ -132,7 +132,7 @@ internal class UtleggsTrekkServiceTest :
                     }
 
                     withClue("Betalingsinformasjon skal lagres") {
-                        val betalingsInformasjon = RepositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
+                        val betalingsInformasjon = repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
 
                         betalingsInformasjon.shouldNotBeNull()
                         betalingsInformasjon.betalingsmottaker shouldBe mottaker.betalingsmottaker
@@ -140,7 +140,7 @@ internal class UtleggsTrekkServiceTest :
                 }
 
                 Then("Skal transaksjon oppdateres") {
-                    val transaksjoner = RepositoryNy.getTransaksjonerTilOsForTrekkID(trekkpaalegg.trekkid)
+                    val transaksjoner = repository.getTransaksjonerTilOsForTrekkID(trekkpaalegg.trekkid)
                     transaksjoner.forEach { it.transaksjonStatus shouldBe TransaksjonsStatus.SENDT }
                 }
             }
@@ -181,7 +181,7 @@ internal class UtleggsTrekkServiceTest :
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    RepositoryNy,
+                    repository,
                     skeClient = skeClientMock,
                     slackService = slackService,
                     maxAntall = 4,
@@ -204,7 +204,7 @@ internal class UtleggsTrekkServiceTest :
                     }
                 val utleggsTrekkService =
                     UtleggsTrekkService(
-                        repositoryNy = mockk(relaxed = true),
+                        repository = mockk(relaxed = true),
                         skeClient = mockk(relaxed = true),
                         slackService = slackService,
                         mqProducer = mqProducerMock,
@@ -225,8 +225,8 @@ internal class UtleggsTrekkServiceTest :
                     every { tidspunktSendt } returnsMany listOf(now, oldDate)
                 }
 
-            val repositoryNy =
-                mockk<RepositoryNy> {
+            val repository =
+                mockk<Repository> {
                     every { getTransakjonerTilOsSomManglerKvittering() } returns List(2) { mockTransaksjonOS }
                 }
 
@@ -238,7 +238,7 @@ internal class UtleggsTrekkServiceTest :
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    repositoryNy,
+                    repository,
                     skeClient = mockk(),
                     slackService = slackService,
                     mqProducer = mqProducerMock,
@@ -263,7 +263,7 @@ internal class UtleggsTrekkServiceTest :
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    RepositoryNy,
+                    repository,
                     skeClient = skeClientMock,
                     slackService = slackService,
                     maxAntall = 2,
@@ -273,7 +273,7 @@ internal class UtleggsTrekkServiceTest :
             When("Trekket prosesseres") {
                 utleggsTrekkService.schedule()
                 Then("Blir status AVVIST") {
-                    RepositoryNy.getTrekkFraSkattStatus(1) shouldBe SkattTrekkStatus.AVVIST
+                    repository.getTrekkFraSkattStatus(1) shouldBe SkattTrekkStatus.AVVIST
                 }
             }
         }
@@ -307,8 +307,8 @@ internal class UtleggsTrekkServiceTest :
                 mockk<TransaksjonOS> {
                     every { documentJson } returns jsonConfig.encodeToString(document)
                 }
-            val repositoryNy =
-                mockk<RepositoryNy>(relaxed = true) {
+            val repository =
+                mockk<Repository>(relaxed = true) {
                     every { getTransaksjonerTilOsSomIkkeErSendt() } returns listOf(mockTransaksjonOS)
                 }
             val mockSlackService =
@@ -319,7 +319,7 @@ internal class UtleggsTrekkServiceTest :
 
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    repositoryNy = repositoryNy,
+                    repository = repository,
                     skeClient = mockk(relaxed = true),
                     slackService = mockSlackService,
                     mqProducer = mqProducerMock,

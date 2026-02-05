@@ -8,7 +8,7 @@ import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
 import no.nav.sokos.utleggstrekk.database.model.PerioderTilOS
@@ -35,17 +35,17 @@ const val KILDE = "SOKOSUTLEGG"
 
 private val logger = KotlinLogging.logger { }
 
-class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource)) {
+class BehandleTrekkServiceNy(private val repository: Repository = Repository(PostgresDataSource.dataSource)) {
     fun behandleTrekk() =
-        repositoryNy.getTrekkIdTilTrekkSomSkalBehandles().forEach { trekkId ->
-            repositoryNy.withTransaction { session ->
+        repository.getTrekkIdTilTrekkSomSkalBehandles().forEach { trekkId ->
+            repository.withTransaction { session ->
                 try {
-                    val trekk = repositoryNy.getTrekkFraSkatt(trekkId, session)
-                    val status = repositoryNy.getSkattTrekkStatus(trekk.id, session)
+                    val trekk = repository.getTrekkFraSkatt(trekkId, session)
+                    val status = repository.getSkattTrekkStatus(trekk.id, session)
 
                     if (status == SkattTrekkStatus.REPETERES) {
-                        if (repositoryNy.getNyesteTrekkVersjon(trekk.trekkid, session).trekkversjon != trekk.trekkversjon) {
-                            repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.HOPPET_OVER)
+                        if (repository.getNyesteTrekkVersjon(trekk.trekkid, session).trekkversjon != trekk.trekkversjon) {
+                            repository.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.HOPPET_OVER)
                             return@withTransaction
                         }
                     }
@@ -60,19 +60,19 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
                                 document.dokument.innrapporteringTrekk,
                                 documentJson,
                             )
-                        repositoryNy.insertTransaksjonTilOs(dto, session)
-                        repositoryNy.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session)
+                        repository.insertTransaksjonTilOs(dto, session)
+                        repository.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session)
                     }
                 } catch (e: Exception) {
                     logger.error("Feil under prossessering av trekk med trekkid=$trekkId")
-                    repositoryNy.updateTrekkFraSkattStatus(trekkId, SkattTrekkStatus.AVVIST)
+                    repository.updateTrekkFraSkattStatus(trekkId, SkattTrekkStatus.AVVIST)
                 }
             }
         }
 
     private fun lagTrekkDokument(trekk: TrekkFraSkatt, session: TransactionalSession): List<TrekkTilOppdrag> {
         // Vi trenger å vite om trekk(ene) er kjent for OS
-        val kjenteAlternativ = repositoryNy.getOsAlternativForTrekk(trekk, session)
+        val kjenteAlternativ = repository.getOsAlternativForTrekk(trekk, session)
         val nyePerioderTilOS = nyePerioderTilOS(trekk, session)
 
         return nyePerioderTilOS.alternativ.map { alternativ ->
@@ -86,18 +86,18 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
     }
 
     private fun nyePerioderTilOS(trekkFraSkatt: TrekkFraSkatt, session: TransactionalSession): PerioderTilOS {
-        val trekkPerioder = repositoryNy.getPerioderForTrekk(trekkFraSkatt).mapNewFomTom()
+        val trekkPerioder = repository.getPerioderForTrekk(trekkFraSkatt).mapNewFomTom()
         // Alternativene som finnes i dette trekket + alternativ fra dokumenter vi har sendt eller skal sende til OS
         val alternativ =
             buildSet {
                 addAll(trekkPerioder.map { it.trekkAlternativ() }.distinct())
-                addAll(repositoryNy.getOsAlternativForTrekk(trekkFraSkatt, session))
+                addAll(repository.getOsAlternativForTrekk(trekkFraSkatt, session))
             }
 
         // Vi henter kjente osPerioder for å se etter endringer. Bare perioder som er fortsatt gyldige og som har en sats er relevante.
         val osPerioder =
             alternativ.associateWith { alternativ ->
-                val allePerioder = repositoryNy.getPerioderTilOs(trekkFraSkatt.trekkid, alternativ)
+                val allePerioder = repository.getPerioderTilOs(trekkFraSkatt.trekkid, alternativ)
                 allePerioder.filterNot { obsoleted(allePerioder, it) }
             }
         // De osPeriodene med sats, fortsatt gyldige, men som ikke finnes i trekkFraSkatt gjelder ikke lenger og må nulles i OS.
@@ -141,7 +141,7 @@ class BehandleTrekkServiceNy(private val repositoryNy: RepositoryNy = Repository
         // Må hente betalingsinformasjonen til trekket for å finne tssid og kid
 
         val betalingsinformasjon: BetalingsinformasjonFraSkatt =
-            repositoryNy.getBetalingsinformasjonForTrekk(trekkFraSkatt.id) ?: throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
+            repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id) ?: throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
 
         val perioder = Perioder(perioderTilOS.map { it.asPeriode() }).takeUnless { it.periode.isEmpty() }
 

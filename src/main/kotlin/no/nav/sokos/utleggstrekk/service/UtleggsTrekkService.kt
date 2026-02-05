@@ -14,7 +14,7 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -32,7 +32,7 @@ import no.nav.sokos.utleggstrekk.unleash.UnleashIntegration
 import no.nav.sokos.utleggstrekk.utils.DurationUtil.durationOf
 
 class UtleggsTrekkService(
-    private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
+    private val repository: Repository = Repository(PostgresDataSource.dataSource),
     private val skeClient: SkeClient = SkeClient(),
     private val slackService: SlackService = SlackService.instance,
     private val maxAntall: Int = MAX_ANTALL,
@@ -42,7 +42,7 @@ class UtleggsTrekkService(
                 MQQueue(PropertiesConfig.mqProperties.queueName).apply {
                     targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
                 },
-            replyQueue = JmsListenerService(repositoryNy).osKvitteringQueue,
+            replyQueue = JmsListenerService(repository).osKvitteringQueue,
         ),
 ) {
     private val logger = KotlinLogging.logger { }
@@ -54,12 +54,12 @@ class UtleggsTrekkService(
             lagreAlleNyeUtleggstrekk()
         }
         if (featureToggles.isProsesserUtleggstrekkEnabled()) {
-            BehandleTrekkServiceNy(repositoryNy).behandleTrekk()
+            BehandleTrekkServiceNy(repository).behandleTrekk()
         }
         if (featureToggles.isSendTilOSEnabled()) {
-            repositoryNy.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
+            repository.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
         }
-        repositoryNy.deleteOldData()
+        repository.deleteOldData()
         calculateMetrics()
         slackService.sendCachedErrors("Trekk henting feil")
     }
@@ -78,7 +78,7 @@ class UtleggsTrekkService(
     }
 
     private suspend fun hentUtleggsTrekk(): List<Trekkpaalegg> {
-        val sisteSekvensnr = repositoryNy.getLastSekvensnummer()
+        val sisteSekvensnr = repository.getLastSekvensnummer()
         return skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
     }
 
@@ -94,7 +94,7 @@ class UtleggsTrekkService(
                 status = SkattTrekkStatus.AVVIST
             }
             try {
-                repositoryNy.insertTrekkFraSkatt(trekk, status)
+                repository.insertTrekkFraSkatt(trekk, status)
                 utleggstrekkFraSkatt.inc()
             } catch (e: Exception) {
                 logger.error("Kunne ikke lagre trekkpålegg sekvens #${trekk.sekvensnummer} ")
@@ -110,7 +110,7 @@ class UtleggsTrekkService(
             jsonConfig.decodeFromString<TrekkTilOppdrag>(transaksjonOS.documentJson).validate()
             mqProducer.send(transaksjonOS.documentJson)
         }.onSuccess {
-            repositoryNy.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
+            repository.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
             slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: ${exception.message}")
             logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
@@ -120,7 +120,7 @@ class UtleggsTrekkService(
     suspend fun reportMissingKvittering() {
         val yesterday = LocalDateTime.now().minusDays(1)
         val formatter = DateTimeFormatter.ofLocalizedDateTime(SHORT)
-        repositoryNy
+        repository
             .getTransakjonerTilOsSomManglerKvittering()
             .filter { it.tidspunktSendt?.isBefore(yesterday) == true }
             .forEach {
@@ -134,11 +134,11 @@ class UtleggsTrekkService(
     fun calculateMetrics() {
         val duration =
             durationOf {
-                val utleggstrekkCounts = repositoryNy.countUtleggstrekk()
+                val utleggstrekkCounts = repository.countUtleggstrekk()
                 Metrics.utleggstrekkAktive.set(utleggstrekkCounts[Trekkstatus.AKTIV] ?: 0)
                 Metrics.utleggstrekkAvsluttede.set(utleggstrekkCounts[Trekkstatus.AVSLUTTET] ?: 0)
 
-                val kvitterteTrekk = repositoryNy.countKvitterteTrekkTilOS()
+                val kvitterteTrekk = repository.countKvitterteTrekkTilOS()
                 Metrics.aktiveTrekkKvittert.labelValues("prosenttrekk").set(kvitterteTrekk[TrekkAlternativ.LOPP] ?: 0)
                 Metrics.aktiveTrekkKvittert.labelValues("beløpstrekk").set(kvitterteTrekk[TrekkAlternativ.LOPM] ?: 0)
             }

@@ -5,7 +5,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
-import no.nav.sokos.utleggstrekk.listener.DBListener.RepositoryNy
+import no.nav.sokos.utleggstrekk.listener.DBListener.repository
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
 /*
@@ -22,7 +22,7 @@ class FagCaser :
 
         Given("Nytt trekk (som ikke endres)") {
             val skalSendes: Trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
-            val idForTrekk = RepositoryNy.insertTrekkFraSkatt(skalSendes)
+            val idForTrekk = repository.insertTrekkFraSkatt(skalSendes)
 
             When("Periode april 2026 - 24. juli 2026 - 25 prosent") {
                 Then("TRK1 LOPP") {}

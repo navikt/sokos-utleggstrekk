@@ -13,7 +13,7 @@ import io.kotest.matchers.string.shouldEndWith
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
@@ -30,7 +30,7 @@ internal class LifecycleTest :
     BehaviorSpec({
         extensions(DBListener)
         val repository by lazy {
-            DBListener.RepositoryNy
+            DBListener.repository
         }
 
         Given("Vi har mottatt utleggstrekk...  ") {
@@ -166,7 +166,7 @@ internal class LifecycleTest :
             repository.fakeTidspunktOpprettet("1", 2, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("2", 1, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("3", 1, fiveMonthsAgo)
-            val service = BehandleTrekkServiceNy(DBListener.RepositoryNy)
+            val service = BehandleTrekkServiceNy(DBListener.repository)
             val idToTrekkId = repository.getTrekkSomIkkeErBehandlet().associate { it.id to it.trekkid }
             service.behandleTrekk()
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
@@ -215,7 +215,7 @@ internal class LifecycleTest :
         }
     })
 
-private fun RepositoryNy.fakeTidspunktOpprettet(trekkid: String, trekkversjon: Int, instant: Instant) {
+private fun Repository.fakeTidspunktOpprettet(trekkid: String, trekkversjon: Int, instant: Instant) {
     withTransaction { session ->
         session.update(
             queryOf(
@@ -227,7 +227,7 @@ private fun RepositoryNy.fakeTidspunktOpprettet(trekkid: String, trekkversjon: I
 }
 
 // TODO: Må også oppdatere hvordan ostransaksjon funker
-private fun RepositoryNy.getTrekkSomIkkeErBehandlet(): List<TrekkFraSkatt> =
+private fun Repository.getTrekkSomIkkeErBehandlet(): List<TrekkFraSkatt> =
     withTransaction { session ->
         session.list(
             queryOf(

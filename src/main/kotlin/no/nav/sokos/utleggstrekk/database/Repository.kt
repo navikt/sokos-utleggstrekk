@@ -28,7 +28,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 private val logger = KotlinLogging.logger { }
 
-class RepositoryNy(private val dataSource: HikariDataSource) {
+class Repository(private val dataSource: HikariDataSource) {
     fun deleteOldData() {
         val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
 

@@ -22,7 +22,7 @@ import io.mockk.unmockkObject
 import kotliquery.TransactionalSession
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
@@ -67,8 +67,8 @@ class BehandleTrekkServiceTest :
         ): BehandleTrekkServiceNy {
             val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(alleTrekkSomIkkeErBehandlet.first())
 
-            val repositoryNy = mockk<RepositoryNy>()
-            val behandleTrekkServiceNy = BehandleTrekkServiceNy(repositoryNy)
+            val repository = mockk<Repository>()
+            val behandleTrekkServiceNy = BehandleTrekkServiceNy(repository)
             val trekkAlternativIOS =
                 buildSet {
                     if (kjenteLOPMPerioder.isNotEmpty()) add(TrekkAlternativ.LOPM)
@@ -76,27 +76,27 @@ class BehandleTrekkServiceTest :
                 }
 
             // Mock withTransaction
-            every { repositoryNy.withTransaction<Any?>(captureLambda()) } answers {
+            every { repository.withTransaction<Any?>(captureLambda()) } answers {
                 // Execute the captured lambda with a session mock
                 val session = mockk<TransactionalSession>()
                 lambda<(TransactionalSession) -> Any?>().invoke(session)
             }
 
-            every { repositoryNy.getOsAlternativForTrekk(any(), any()) } returns trekkAlternativIOS
-            every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPM) } returns kjenteLOPMPerioder
-            every { repositoryNy.getPerioderTilOs(any(), TrekkAlternativ.LOPP) } returns kjenteLOPPPerioder
-            every { repositoryNy.getTrekkIdTilTrekkSomSkalBehandles() } returns alleTrekkSomIkkeErBehandlet.map { it.id }
+            every { repository.getOsAlternativForTrekk(any(), any()) } returns trekkAlternativIOS
+            every { repository.getPerioderTilOs(any(), TrekkAlternativ.LOPM) } returns kjenteLOPMPerioder
+            every { repository.getPerioderTilOs(any(), TrekkAlternativ.LOPP) } returns kjenteLOPPPerioder
+            every { repository.getTrekkIdTilTrekkSomSkalBehandles() } returns alleTrekkSomIkkeErBehandlet.map { it.id }
             val trekkIdSlot = slot<Long>()
-            every { repositoryNy.getTrekkFraSkatt(capture(trekkIdSlot), any()) } answers {
+            every { repository.getTrekkFraSkatt(capture(trekkIdSlot), any()) } answers {
                 alleTrekkSomIkkeErBehandlet.first { it.id == trekkIdSlot.captured }
             }
-            every { repositoryNy.getSkattTrekkStatus(capture(trekkIdSlot), any()) } answers {
+            every { repository.getSkattTrekkStatus(capture(trekkIdSlot), any()) } answers {
                 SkattTrekkStatus.MOTTATT
             }
-            every { repositoryNy.getPerioderForTrekk(any()) } returns perioderForTrekkFraSkatt
-            every { repositoryNy.getBetalingsinformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
-            every { repositoryNy.insertTransaksjonTilOs(capture(capturedOSDtos), any()) } returns Unit
-            every { repositoryNy.updateTrekkFraSkattStatus(any(), any(), any()) } returns Unit
+            every { repository.getPerioderForTrekk(any()) } returns perioderForTrekkFraSkatt
+            every { repository.getBetalingsinformasjonForTrekk(any()) } returns betalingsinformasjonForTrekkFraSkatt
+            every { repository.insertTransaksjonTilOs(capture(capturedOSDtos), any()) } returns Unit
+            every { repository.updateTrekkFraSkattStatus(any(), any(), any()) } returns Unit
 
             return behandleTrekkServiceNy
         }
