@@ -202,6 +202,7 @@ class Repository(private val dataSource: HikariDataSource) {
         }
     }
 
+    // TODO: Ta den bort og pass på at det er ingen skrivefeil
     object TransaksjonOsTable {
         const val TABLE_NAME = "transaksjon_os"
         const val ID_COLUMN = "id"
