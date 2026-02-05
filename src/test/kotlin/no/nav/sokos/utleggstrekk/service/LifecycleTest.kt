@@ -167,6 +167,7 @@ internal class LifecycleTest :
             repository.fakeTidspunktOpprettet("2", 1, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("3", 1, fiveMonthsAgo)
             val service = BehandleTrekkService(DBListener.repository)
+            // TODO: Ikke bruke getTrekkSomIkkeErBehandlet lengre. Bruke getTrekkIdTilTrekkSomSkalBehandles
             val idToTrekkId = repository.getTrekkSomIkkeErBehandlet().associate { it.id to it.trekkid }
             service.behandleTrekk()
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
@@ -226,7 +227,7 @@ private fun Repository.fakeTidspunktOpprettet(trekkid: String, trekkversjon: Int
     }
 }
 
-// TODO: Må også oppdatere hvordan ostransaksjon funker
+// TODO: Skal slettes
 private fun Repository.getTrekkSomIkkeErBehandlet(): List<TrekkFraSkatt> =
     withTransaction { session ->
         session.list(

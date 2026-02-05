@@ -110,7 +110,6 @@ internal class UtleggsTrekkServiceTest :
             When("Trekk sendes") {
                 utleggsTrekkService.schedule()
 
-                // TODO: Skal håndtering av serialisering flyttes til JMSProducer?
                 Then("Skal trekk serialiseres riktig") {
                     capturedPayloads.forEach {
                         it shouldContain "SOKOSUTLEGG"

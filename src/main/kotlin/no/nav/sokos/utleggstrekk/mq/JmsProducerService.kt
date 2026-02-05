@@ -27,7 +27,7 @@ class JmsProducerService(
         }
     }
 
-    // TODO: Må legge inn feilhåndtering + manuell håndtering
+    // TODO: Må legge backout implementasjon. Snakke med Tak Wai eller Jon
     fun send(payload: String) {
         val message = jmsContext.createTextMessage(payload)
         try {
