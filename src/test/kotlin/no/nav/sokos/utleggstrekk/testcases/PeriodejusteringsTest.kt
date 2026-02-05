@@ -34,7 +34,9 @@ class PeriodejusteringsTest :
             )
         }
 
-        val service = BehandleTrekkServiceNy(DBListener.RepositoryNy)
+        val service by lazy {
+            BehandleTrekkServiceNy(DBListener.RepositoryNy)
+        }
 
         val fileNames = resourceToStringList(TEST_DIR).filterNot { it.contains("resultat") }.filter { it.endsWith(".json") }
         val tests = fileNames.groupBy { it.substringBefore("_").toInt() } // Group files by first number.
