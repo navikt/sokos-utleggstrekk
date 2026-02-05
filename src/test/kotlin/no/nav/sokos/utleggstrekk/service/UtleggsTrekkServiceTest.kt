@@ -59,6 +59,7 @@ internal class UtleggsTrekkServiceTest :
                 every { error(any<String>()) } returns Unit
                 every { error(any<Marker>(), any<String>(), any<Exception>()) } returns Unit
                 every { info(any<String>()) } returns Unit
+                every { info(any<() -> Any?>()) } returns Unit
             }
 
         beforeSpec {
