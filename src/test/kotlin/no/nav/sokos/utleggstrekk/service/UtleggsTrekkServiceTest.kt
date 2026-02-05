@@ -195,7 +195,7 @@ internal class UtleggsTrekkServiceTest :
             }
         }
 
-        Given("Vi henter trekk fra SKE") {
+        Given("Det oppstå feil når vi henter ett trekk fra ske") {
             Then("Vi sender alarmer til slack hvis det stod en feil") {
                 val slackService =
                     mockk<SlackService> {
