@@ -30,9 +30,12 @@ private fun Application.module() {
     val applicationState = ApplicationState()
     val utleggsTrekkService = UtleggsTrekkService()
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    val schedulers = mutableListOf<UtleggstrekkScheduler>()
 
     commonConfig()
-    applicationLifecycleConfig(applicationState)
+    applicationLifecycleConfig(applicationState) {
+        schedulers.forEach { it.stop() }
+    }
     routingConfig(applicationState)
 
     if (!PropertiesConfig.isLocal) {
@@ -43,8 +46,16 @@ private fun Application.module() {
 
     val schedulerProperties = applicationProperties.scheduler
     if (schedulerProperties.isActive) {
-        UtleggstrekkScheduler(appScope).scheduleHourlyAt(schedulerProperties.minutes, name = "Schedule retrieving data from ske") { utleggsTrekkService.schedule() }
-        UtleggstrekkScheduler(appScope).scheduleDailyAt(hour = 8, minute = 0, name = "Report missing receipts") { utleggsTrekkService.reportMissingKvittering() }
+        schedulers.add(
+            UtleggstrekkScheduler(appScope).apply {
+                scheduleHourlyAt(schedulerProperties.minutes, name = "Schedule retrieving data from ske") { utleggsTrekkService.schedule() }
+            },
+        )
+        schedulers.add(
+            UtleggstrekkScheduler(appScope).apply {
+                scheduleDailyAt(hour = 8, minute = 0, name = "Report missing receipts") { utleggsTrekkService.reportMissingKvittering() }
+            },
+        )
     } else {
         log.info("Property SCHEDULER_ACTIVE is false. Scheduler is not running.")
     }

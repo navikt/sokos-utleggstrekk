@@ -565,10 +565,14 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         SELECT DISTINCT ${TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN}
                         FROM  ${TransaksjonOsTable.TABLE_NAME}  
                         WHERE ${TransaksjonOsTable.TREKK_ID_SKE_COLUMN}=:${TransaksjonOsTable.TREKK_ID_SKE_PARAM}
-                        AND (${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.OK.name}' 
-                        OR ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}  = '${KvitteringStatus.IKKE_MOTTATT.name}')
+                        AND (${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = :kvitteringStatusOk 
+                        OR ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN}  = :kvitteringStatusIkkeMottatt)
                     """.trimMargin(),
-                    mapOf(TransaksjonOsTable.TREKK_ID_SKE_PARAM to trekkIdSke),
+                    mapOf(
+                        TransaksjonOsTable.TREKK_ID_SKE_PARAM to trekkIdSke,
+                        "kvitteringStatusOk" to KvitteringStatus.OK.name,
+                        "kvitteringStatusIkkeMottatt" to KvitteringStatus.IKKE_MOTTATT.name,
+                    ),
                 ),
             ) { row -> TrekkAlternativ.valueOf(row.string(TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN).uppercase()) }
         }
@@ -583,12 +587,14 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         JOIN  ${TransaksjonOsTable.TABLE_NAME}  t ON p.transaksjon_os_id = t.id 
                         WHERE trekk_id_ske=:trekkIdSke 
                         AND t.trekk_alternativ=:trekkAlternativ 
-                        AND t.kvittering_status IN ('${KvitteringStatus.IKKE_MOTTATT.name}', '${KvitteringStatus.OK.name}')
+                        AND t.kvittering_status IN (:kvitteringStatusIkkeMottatt, :kvitteringStatusOk)
                         ORDER BY p.id ASC 
                 """,
                     mapOf(
                         "trekkIdSke" to trekkIdSke,
                         "trekkAlternativ" to alternativ.name,
+                        "kvitteringStatusIkkeMottatt" to KvitteringStatus.IKKE_MOTTATT.name,
+                        "kvitteringStatusOk" to KvitteringStatus.OK.name,
                     ),
                 ),
             ) { row -> PeriodeTilOS(row) }
@@ -616,9 +622,10 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
             session.list(
                 queryOf(
                     """
-                    SELECT * FROM  ${TransaksjonOsTable.TABLE_NAME} WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} IS null OR ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}  = '${TransaksjonsStatus.IKKE_SENDT.name}'
+                    SELECT * FROM  ${TransaksjonOsTable.TABLE_NAME} WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} IS null OR ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}  = :transaksjonsStatusIkkeSendt
                         ORDER BY id ASC
                     """.trimIndent(),
+                    mapOf("transaksjonsStatusIkkeSendt" to TransaksjonsStatus.IKKE_SENDT.name),
                 ),
             ) { row ->
                 val transaksjonId = row.long("id")
@@ -634,9 +641,13 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                 queryOf(
                     """
                     SELECT * FROM ${TransaksjonOsTable.TABLE_NAME}
-                    WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} = '${TransaksjonsStatus.SENDT.name}'
-                    AND ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = '${KvitteringStatus.IKKE_MOTTATT.name}'
+                    WHERE ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN} = :transaksjonsStatusSendt
+                    AND ${TransaksjonOsTable.KVITTERING_STATUS_COLUMN} = :kvitteringStatusIkkeMottatt
                     """.trimIndent(),
+                    mapOf(
+                        "transaksjonsStatusSendt" to TransaksjonsStatus.SENDT.name,
+                        "kvitteringStatusIkkeMottatt" to KvitteringStatus.IKKE_MOTTATT.name,
+                    ),
                 ),
             ) { row ->
                 val transaksjonId = row.long("id")

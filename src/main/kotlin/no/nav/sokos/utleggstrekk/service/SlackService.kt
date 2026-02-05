@@ -1,5 +1,7 @@
 package no.nav.sokos.utleggstrekk.service
 
+import java.util.Collections
+
 import no.nav.sokos.utleggstrekk.client.SlackClient
 
 data class ErrorMessage(
@@ -8,7 +10,11 @@ data class ErrorMessage(
 )
 
 class SlackService(private val slackClient: SlackClient = SlackClient()) {
-    val errorTracking = mutableListOf<ErrorMessage>()
+    private val errorTrackingList = Collections.synchronizedList(mutableListOf<ErrorMessage>())
+
+    // Internal accessor for testing
+    internal val errorTracking: List<ErrorMessage>
+        get() = synchronized(errorTrackingList) { errorTrackingList.toList() }
 
     /**
      * Locally cache errors to be sent to Slack
@@ -16,11 +22,13 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
      * @param message: More detailed description of the error
      */
     fun addError(header: String, message: String) {
-        val error = errorTracking.find { it.type == header }
-        if (error != null) {
-            error.info.add(message)
-        } else {
-            errorTracking.add(ErrorMessage(header, mutableListOf(message)))
+        synchronized(errorTrackingList) {
+            val error = errorTrackingList.find { it.type == header }
+            if (error != null) {
+                error.info.add(message)
+            } else {
+                errorTrackingList.add(ErrorMessage(header, mutableListOf(message)))
+            }
         }
     }
 
@@ -29,18 +37,22 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
      * @param messageTitle: Header for the Slack message
      */
     suspend fun sendCachedErrors(messageTitle: String) {
-        if (errorTracking.isEmpty()) return
+        val errorsToSend =
+            synchronized(errorTrackingList) {
+                if (errorTrackingList.isEmpty()) return
 
-        errorTracking.forEach { (type, info) ->
-            if (info.size > 5) {
-                val summary = "${info.size} av samme type feil: $type. Sjekk avstemming"
-                info.clear()
-                info.add(summary)
+                errorTrackingList.forEach { (type, info) ->
+                    if (info.size > 5) {
+                        val summary = "${info.size} av samme type feil: $type. Sjekk avstemming"
+                        info.clear()
+                        info.add(summary)
+                    }
+                }
+
+                errorTrackingList.toList().also { errorTrackingList.clear() }
             }
-        }
 
-        slackClient.sendMessage(messageTitle, errorTracking.toList())
-        errorTracking.clear()
+        slackClient.sendMessage(messageTitle, errorsToSend)
     }
 
     companion object {

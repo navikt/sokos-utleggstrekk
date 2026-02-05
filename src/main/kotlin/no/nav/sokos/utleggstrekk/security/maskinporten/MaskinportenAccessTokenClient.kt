@@ -51,7 +51,7 @@ class MaskinportenAccessTokenClient(
                 cachedToken = getMaskinportenToken()
             }
 
-            cachedToken!!.token
+            cachedToken?.token ?: throw MaskinportenException("Failed to obtain access token")
         }
 
     private suspend fun getMaskinportenToken(): AccessToken {
