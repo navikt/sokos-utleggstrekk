@@ -47,6 +47,7 @@ class JmsListenerService(
     }
 
     private fun onReceipt(message: Message) {
+        // TODO: Legg inn håndtering for om dette ikke er en textmessage. Hvis det ikke er TextMessage så har Endre endret noe
         val jmsMessage = message.getBody(String::class.java)
         try {
             jmsMessage.validateString(true)

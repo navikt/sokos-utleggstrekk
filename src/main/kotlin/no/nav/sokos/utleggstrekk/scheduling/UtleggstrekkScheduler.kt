@@ -85,6 +85,7 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
             }, delay, TimeUnit.MILLISECONDS)
     }
 
+    // TODO: Add to shutdown hook??
     fun stop() {
         future?.cancel(false)
         executor.shutdown()

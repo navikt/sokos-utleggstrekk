@@ -39,6 +39,7 @@ class JmsProducerService(
             logger.error(TEAM_LOGS_MARKER, "MQ-transaksjon feilet. ${message.jmsMessageID}", exception)
             jmsContext.rollback()
             logger.error(TEAM_LOGS_MARKER, "MQ-transaksjon rolled back", exception)
+            // TODO: Throw bedre exception (custom?  JMS Exception av noe slag?)
             throw Exception(exception.message ?: "Feil ved sending av melding til MQ")
         }
     }

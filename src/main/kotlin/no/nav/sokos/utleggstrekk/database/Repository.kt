@@ -32,7 +32,7 @@ private val logger = KotlinLogging.logger { }
 // TODO: Flytte funksjoner som brukes bare i test til test filer
 class Repository(private val dataSource: HikariDataSource) {
     fun deleteOldData() {
-        val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
+        val sixMonthsAgo = LocalDateTime.now().minusMonths(6) // TODO: logisk "beskytt" denne verdien sånn at det er tydelig at denne ikke skal endres noensinne ever? Flytt til config? Vet ikke
 
         dataSource.withTransaction { session ->
             val expiredFraskatt =
@@ -252,6 +252,7 @@ class Repository(private val dataSource: HikariDataSource) {
         const val DOKUMENT_JSON_COLUMN = "dokument_json"
     }
 
+    // TODO: Flytt til test
     fun insertTransaksjonTilOs(dto: OSDto) = dataSource.withTransaction { session -> insertTransaksjonTilOs(dto, session) }
 
     fun insertTransaksjonTilOs(dto: OSDto, session: TransactionalSession) {
@@ -503,6 +504,7 @@ class Repository(private val dataSource: HikariDataSource) {
             ) { row -> TrekkFraSkatt(row) }
         }
 
+    // TODO: Brukes bare i test (og returnerer
     fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
         dataSource.withTransaction { session ->
             getTrekkFraSkatt(id, session)
