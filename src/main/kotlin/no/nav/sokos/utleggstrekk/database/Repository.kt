@@ -63,7 +63,10 @@ class Repository(private val dataSource: HikariDataSource) {
                         parameters,
                     ),
                 )
-            logger.info("Slettet $fraskattDeleted trekkversjoner fra Skatt og $transaksjonOsDeleted fra transaksjon_os")
+
+            if (fraskattDeleted != 0 || transaksjonOsDeleted != 0) {
+                logger.info("Slettet $fraskattDeleted trekkversjoner fra Skatt og $transaksjonOsDeleted fra transaksjon_os")
+            }
         }
     }
 
