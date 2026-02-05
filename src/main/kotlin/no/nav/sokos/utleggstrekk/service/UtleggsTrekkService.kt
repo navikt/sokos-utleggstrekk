@@ -54,7 +54,7 @@ class UtleggsTrekkService(
             lagreAlleNyeUtleggstrekk()
         }
         if (featureToggles.isProsesserUtleggstrekkEnabled()) {
-            BehandleTrekkServiceNy(repository).behandleTrekk()
+            BehandleTrekkService(repository).behandleTrekk()
         }
         if (featureToggles.isSendTilOSEnabled()) {
             repository.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }

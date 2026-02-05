@@ -64,11 +64,11 @@ class BehandleTrekkServiceTest :
             perioderForTrekkFraSkatt: List<PeriodeFraSkatt>,
             kjenteLOPPPerioder: List<PeriodeTilOS> = emptyList(),
             kjenteLOPMPerioder: List<PeriodeTilOS> = emptyList(),
-        ): BehandleTrekkServiceNy {
+        ): BehandleTrekkService {
             val betalingsinformasjonForTrekkFraSkatt: BetalingsinformasjonFraSkatt = lagBetalingsinformasjonForTrekkFraSkatt(alleTrekkSomIkkeErBehandlet.first())
 
             val repository = mockk<Repository>()
-            val behandleTrekkServiceNy = BehandleTrekkServiceNy(repository)
+            val behandleTrekkService = BehandleTrekkService(repository)
             val trekkAlternativIOS =
                 buildSet {
                     if (kjenteLOPMPerioder.isNotEmpty()) add(TrekkAlternativ.LOPM)
@@ -98,7 +98,7 @@ class BehandleTrekkServiceTest :
             every { repository.insertTransaksjonTilOs(capture(capturedOSDtos), any()) } returns Unit
             every { repository.updateTrekkFraSkattStatus(any(), any(), any()) } returns Unit
 
-            return behandleTrekkServiceNy
+            return behandleTrekkService
         }
 
         Given("Trekkdokument dannes") {

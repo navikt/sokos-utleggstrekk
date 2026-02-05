@@ -12,7 +12,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.Document
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
+import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.util.resourceToStringList
 
@@ -35,7 +35,7 @@ class PeriodejusteringsTest :
         }
 
         val service by lazy {
-            BehandleTrekkServiceNy(DBListener.repository)
+            BehandleTrekkService(DBListener.repository)
         }
 
         val fileNames = resourceToStringList(TEST_DIR).filterNot { it.contains("resultat") }.filter { it.endsWith(".json") }

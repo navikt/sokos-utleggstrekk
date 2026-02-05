@@ -24,14 +24,14 @@ import no.nav.sokos.utleggstrekk.util.idag
 import no.nav.sokos.utleggstrekk.util.mnd
 import no.nav.sokos.utleggstrekk.util.plus
 
-class BehandleTrekkServiceIntegrationTestNy :
+class BehandleTrekkServiceIntegrationTest :
     BehaviorSpec({
         extensions(DBListener)
         val repository by lazy {
             Repository(DBListener.dataSource)
         }
         val behandleTrekkService by lazy {
-            BehandleTrekkServiceNy(repository)
+            BehandleTrekkService(repository)
         }
 
         fun storedInDb(trekk: Trekkpaalegg): Long? = repository.insertTrekkFraSkatt(trekk)

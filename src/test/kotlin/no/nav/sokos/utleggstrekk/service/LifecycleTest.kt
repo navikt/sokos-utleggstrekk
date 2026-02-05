@@ -88,7 +88,7 @@ internal class LifecycleTest :
                 }
             }
             then("Henter data fra database og sjekker trekk") {
-                val behandleTrekkService = BehandleTrekkServiceNy(repository)
+                val behandleTrekkService = BehandleTrekkService(repository)
                 behandleTrekkService.behandleTrekk()
                 val trekkSomSkalSendes = repository.getTransaksjonerTilOsSomIkkeErSendt()
 
@@ -166,7 +166,7 @@ internal class LifecycleTest :
             repository.fakeTidspunktOpprettet("1", 2, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("2", 1, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("3", 1, fiveMonthsAgo)
-            val service = BehandleTrekkServiceNy(DBListener.repository)
+            val service = BehandleTrekkService(DBListener.repository)
             val idToTrekkId = repository.getTrekkSomIkkeErBehandlet().associate { it.id to it.trekkid }
             service.behandleTrekk()
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()

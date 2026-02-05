@@ -15,7 +15,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
+import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
 import no.nav.sokos.utleggstrekk.util.idag
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.util.resourceToStringList
@@ -29,7 +29,7 @@ class SkeEksemplerTest :
         extensions(DBListener)
 
         val service by lazy {
-            BehandleTrekkServiceNy(DBListener.repository)
+            BehandleTrekkService(DBListener.repository)
         }
 
         // Flags transaction_os as SENT and OKed.
