@@ -28,6 +28,11 @@ import no.nav.sokos.utleggstrekk.database.RepositoryNy
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
+import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
+import no.nav.sokos.utleggstrekk.domene.nav.Document
+import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
+import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkprosent
@@ -273,6 +278,63 @@ internal class UtleggsTrekkServiceTest :
             }
         }
 
+        Given("Vi sender trekk til OS") {
+            val document =
+                TrekkTilOppdrag(
+                    dokument =
+                        Document(
+                            transaksjonsId = "TransaksjonsId01",
+                            innrapporteringTrekk =
+                                InnrapporteringTrekk(
+                                    aksjonskode = Aksjonskode.NY,
+                                    kilde = "SOKOSUTLEGG",
+                                    navTrekkId = "",
+                                    kreditorIdTss = "80000423362",
+                                    kreditorTrekkId = "10342395",
+                                    debitorId = "19074639472",
+                                    kid = "17654202404",
+                                    kreditorsRef = "SAK1",
+                                    kodeTrekktype = "KRED",
+                                    kodeTrekkAlternativ = TrekkAlternativ.LOPP,
+                                    prioritetFomDato = null,
+                                    perioder = null,
+                                ),
+                        ),
+                    mmel = null,
+                )
+
+            val mockTransaksjonOS =
+                mockk<TransaksjonOS> {
+                    every { documentJson } returns jsonConfig.encodeToString(document)
+                }
+            val repositoryNy =
+                mockk<RepositoryNy>(relaxed = true) {
+                    every { getTransaksjonerTilOsSomIkkeErSendt() } returns listOf(mockTransaksjonOS)
+                }
+            val mockSlackService =
+                mockk<SlackService> {
+                    coEvery { sendCachedErrors(any()) } returns Unit
+                    every { addError(any(), any()) } returns Unit
+                }
+
+            val utleggsTrekkService =
+                UtleggsTrekkService(
+                    repositoryNy = repositoryNy,
+                    skeClient = mockk(relaxed = true),
+                    slackService = mockSlackService,
+                    mqProducer = mqProducerMock,
+                )
+            When("Det skjedd en feil") {
+                every { mqProducerMock.send(any()) } throws Exception("Couldn't send document")
+
+                Then("Vi sender en alarm på slack") {
+                    utleggsTrekkService.schedule()
+
+                    verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: Couldn't send document") }
+                    coVerify { mockSlackService.sendCachedErrors(any()) }
+                }
+            }
+        }
         afterSpec {
             clearAllMocks()
             unmockkObject(KotlinLogging)

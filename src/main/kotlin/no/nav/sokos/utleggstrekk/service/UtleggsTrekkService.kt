@@ -112,7 +112,7 @@ class UtleggsTrekkService(
         }.onSuccess {
             repositoryNy.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
-            logger.error("Feil ved sending av dokument til OS: ${exception.message}")
+            slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: ${exception.message}")
             logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
         }
     }
