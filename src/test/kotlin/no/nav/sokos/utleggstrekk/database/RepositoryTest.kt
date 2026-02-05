@@ -81,8 +81,8 @@ class RepositoryTest :
 
         Given("Det finnes to trekk som er behandlet hvor ett er sendt.") {
             DBListener.clearDB()
-            val dokument = resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")
-            val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(dokument).first()
+            val fraskatt = resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")
+            val skalSendes = jsonConfig.decodeFromString<List<Trekkpaalegg>>(fraskatt).first()
             RepositoryNy.insertTrekkFraSkatt(skalSendes)
             val dto =
                 OSDto(
@@ -90,7 +90,7 @@ class RepositoryTest :
                     skalSendes.trekkid,
                     trekkversjon = 1,
                     lagDokumentTilOppdrag("SkalSendes").innrapporteringTrekk,
-                    dokument,
+                    "dummydokument",
                 )
             RepositoryNy.insertTransaksjonTilOs(dto)
             RepositoryNy.insertTrekkFraSkatt(skalSendes.copy(trekkid = "SkalOgsåSendes"))
@@ -102,8 +102,8 @@ class RepositoryTest :
                     transaksjonID = "SkalIkkeSendes",
                     trekkSomErSendt.trekkid,
                     trekkversjon = 1,
-                    lagDokumentTilOppdrag("SkalIkkeSendes").innrapporteringTrekk, // TODO: Legge inn faktisk dokument
-                    dokument,
+                    lagDokumentTilOppdrag("SkalIkkeSendes").innrapporteringTrekk,
+                    "dummydokument",
                 )
             RepositoryNy.insertTransaksjonTilOs(dtoSomErSendt)
             RepositoryNy.updateTransaksjonSendt(dtoSomErSendt.transaksjonID)
