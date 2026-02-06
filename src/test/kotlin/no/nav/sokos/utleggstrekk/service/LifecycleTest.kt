@@ -13,6 +13,7 @@ import io.kotest.matchers.string.shouldEndWith
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.database.ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
@@ -194,6 +195,9 @@ internal class LifecycleTest :
             }
 
             When("To trekk er eldre enn seks måneder, et av dem har trekkstatus avsluttet (1) og det tredje er yngre enn seks måneder") {
+                Then("Perioden vi tar vare på avsluttede trekk på er seks måneder") {
+                    ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA shouldBe 6
+                }
                 Then("Skal alle versjoner av trekk 1 slettes under opprydding men ikke de to andre") {
                     repository.deleteOldData()
 

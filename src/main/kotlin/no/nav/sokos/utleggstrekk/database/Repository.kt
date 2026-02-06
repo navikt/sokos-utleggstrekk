@@ -28,12 +28,13 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 private val logger = KotlinLogging.logger { }
 
+const val ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA = 6L
+
 // TODO: Ikke bruk "withTransaction" med "select". Vent til vi har kotliquery
 // TODO: Flytte funksjoner som brukes bare i test til test filer
 class Repository(private val dataSource: HikariDataSource) {
     fun deleteOldData() {
-        val sixMonthsAgo = LocalDateTime.now().minusMonths(6) // TODO: logisk "beskytt" denne verdien sånn at det er tydelig at denne ikke skal endres noensinne ever? Flytt til config? Vet ikke
-
+        val sixMonthsAgo = LocalDateTime.now().minusMonths(ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA)
         dataSource.withTransaction { session ->
             val expiredFraskatt =
                 """
