@@ -14,10 +14,10 @@ import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
-import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.Mmel
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -136,7 +136,7 @@ internal class LifecycleTest :
                     loppPerioder.filter { it.sats == 0.0 } shouldHaveSize 2
                 }
                 val trekkFraSkatt = repository.getTrekkFraSkatt(1L)
-                val perioderFraSkatt = repository.getPerioderForTrekkVersjon(trekkFraSkatt!!.id)
+                val perioderFraSkatt = repository.getPerioderForTrekkVersjon(trekkFraSkatt.id)
                 val betalingsInformasjon = repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
                 val osdok: TransaksjonOS = trekkSomSkalSendes.first()
                 val trekkTilOppdrag = jsonConfig.decodeFromString<TrekkTilOppdrag>(osdok.documentJson)
@@ -167,8 +167,9 @@ internal class LifecycleTest :
             repository.fakeTidspunktOpprettet("2", 1, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("3", 1, fiveMonthsAgo)
             val service = BehandleTrekkService(DBListener.repository)
-            // TODO: Ikke bruke getTrekkSomIkkeErBehandlet lengre. Bruke getTrekkIdTilTrekkSomSkalBehandles
-            val idToTrekkId = repository.getTrekkSomIkkeErBehandlet().associate { it.id to it.trekkid }
+
+            val trekkId = repository.getTrekkIdTilTrekkSomSkalBehandles()
+            val idToTrekkId = trekkId.associateWith { repository.getTrekkFraSkatt(it).trekkid }
             service.behandleTrekk()
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
             ikkeSendt.forEach { repository.updateTransaksjonSendt(it.transaksjonsID) }
@@ -226,18 +227,3 @@ private fun Repository.fakeTidspunktOpprettet(trekkid: String, trekkversjon: Int
         ) shouldBe 1
     }
 }
-
-// TODO: Skal slettes
-private fun Repository.getTrekkSomIkkeErBehandlet(): List<TrekkFraSkatt> =
-    withTransaction { session ->
-        session.list(
-            queryOf(
-                """
-                SELECT f.* FROM fraskatt f
-                LEFT JOIN  fraskatt_status t ON t.fraskatt_id = f.id
-                WHERE t.status IS NULL OR t.status != 'BEHANDLET'
-                ORDER BY f.sekvensnummer ASC
-                """.trimIndent(),
-            ),
-        ) { row -> TrekkFraSkatt(row) }
-    }
