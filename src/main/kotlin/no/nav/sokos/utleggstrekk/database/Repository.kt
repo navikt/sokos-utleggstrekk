@@ -504,12 +504,6 @@ class Repository(private val dataSource: HikariDataSource) {
             ) { row -> TrekkFraSkatt(row) }
         }
 
-    // TODO: Brukes bare i test (og returnerer
-    fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
-        dataSource.withTransaction { session ->
-            getTrekkFraSkatt(id, session)
-        }
-
     /** Henter en spesifik versjon av et trekk gitt fraskatt_id */
     fun getTrekkFraSkatt(id: Long, session: TransactionalSession): TrekkFraSkatt =
         session.single(

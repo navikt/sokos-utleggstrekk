@@ -21,14 +21,15 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.Repository.TransaksjonOsTable.TIDSPUNKT_SENDT_COLUMN
 import no.nav.sokos.utleggstrekk.database.Repository.TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN
 import no.nav.sokos.utleggstrekk.database.Repository.TransaksjonOsTable.TRANSAKSJONS_ID_PARAM
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
-import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.BEHANDLET
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.REPETERES
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
@@ -175,7 +176,7 @@ class RepositoryTest :
                 id.shouldNotBeNull()
 
                 eventually(duration = 1.seconds) {
-                    val lagretTrekk = getTrekkFraSkatt(id)
+                    val lagretTrekk = repository.getTrekkFraSkatt(id)
                     lagretTrekk.shouldNotBeNull()
                     Then("Skal Trekkpålegg lagres i tabellen 'fraskatt'") {
 
@@ -579,7 +580,7 @@ class RepositoryTest :
                     trekkId.size shouldBe 2
                     trekkId.forEach { id ->
                         val status = repository.getTrekkFraSkattStatus(id)
-                        status shouldBeIn listOf(SkattTrekkStatus.MOTTATT, SkattTrekkStatus.REPETERES)
+                        status shouldBeIn listOf(MOTTATT, REPETERES)
                     }
                 }
             }
@@ -603,8 +604,6 @@ private fun compareTrekk(trekkpaalegg: Trekkpaalegg, lagret: TrekkFraSkatt) {
 }
 
 private fun doesTrekkExist(trekkId: String, trekkversjon: Int): Boolean = repository.doesTrekkExist(trekkId, trekkversjon)
-
-private fun getTrekkFraSkatt(id: Long): TrekkFraSkatt = repository.getTrekkFraSkatt(id)!!
 
 private fun compareBetalingsinformasjon(betalingsinformasjon: Betalingsinformasjon, lagret: BetalingsinformasjonFraSkatt) {
     lagret.betalingsmottaker shouldBe betalingsinformasjon.betalingsmottaker
