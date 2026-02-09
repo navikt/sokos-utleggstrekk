@@ -25,6 +25,8 @@ import mu.Marker
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkattStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus

@@ -15,7 +15,11 @@ import kotliquery.queryOf
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA
 import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.TestRepository.getAllTrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.TestRepository.getFeilmeldingerFraOS
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTransaksjonTilOs
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkattMedStatus
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
