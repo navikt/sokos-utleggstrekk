@@ -4,7 +4,6 @@ import java.time.LocalDateTime
 
 import kotliquery.Row
 
-import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 
@@ -38,26 +37,26 @@ data class TransaksjonOS(
     constructor(row: Row, perioder: List<PeriodeTilOS>) : this(
         id = row.long("id"),
         navTrekkId = row.string("nav_trekk_id"),
-        transaksjonsID = row.string(Repository.TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN),
-        transaksjonStatus = TransaksjonsStatus.valueOf(row.string(Repository.TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN).uppercase()),
-        trekkIdSke = row.string(Repository.TransaksjonOsTable.TREKK_ID_SKE_COLUMN),
-        trekkversjon = row.int(Repository.TransaksjonOsTable.TREKKVERSJON_COLUMN),
-        kvitteringStatus = KvitteringStatus.valueOf(row.string(Repository.TransaksjonOsTable.KVITTERING_STATUS_COLUMN).uppercase()),
-        aksjonskode = Aksjonskode.valueOf(row.string(Repository.TransaksjonOsTable.AKSJONSKODE_COLUMN).uppercase()),
-        kreditorIdTss = row.string(Repository.TransaksjonOsTable.KREDITOR_ID_TSS_COLUMN),
-        kreditorTrekkId = row.string(Repository.TransaksjonOsTable.KREDITOR_TREKK_ID_COLUMN),
-        kreditorsref = row.string(Repository.TransaksjonOsTable.KREDITORSREF_COLUMN),
-        debitorId = row.string(Repository.TransaksjonOsTable.DEBITOR_ID_COLUMN),
-        trekkAlternativ = TrekkAlternativ.valueOf(row.string(Repository.TransaksjonOsTable.TREKK_ALTERNATIV_COLUMN).uppercase()),
-        trekktype = row.string(Repository.TransaksjonOsTable.TREKK_TYPE_COLUMN),
-        kid = row.string(Repository.TransaksjonOsTable.KID_COLUMN),
-        kilde = row.string(Repository.TransaksjonOsTable.KILDE_COLUMN),
-        saldo = row.double(Repository.TransaksjonOsTable.SALDO_COLUMN),
-        prioritetFomDato = row.stringOrNull(Repository.TransaksjonOsTable.PRIORITET_FOM_DATO_COLUMN),
-        gyldigTomDato = row.stringOrNull(Repository.TransaksjonOsTable.GYLDIG_TOM_DATO_COLUMN),
-        tidspunktSendt = row.localDateTimeOrNull(Repository.TransaksjonOsTable.TIDSPUNKT_SENDT_COLUMN),
-        tidspunktSisteStatus = row.localDateTimeOrNull(Repository.TransaksjonOsTable.TIDSPUNKT_SISTE_STATUS_COLUMN),
-        documentJson = row.string(Repository.TransaksjonOsTable.DOKUMENT_JSON_COLUMN),
+        transaksjonsID = row.string("transaksjons_id"),
+        transaksjonStatus = TransaksjonsStatus.valueOf(row.string("transaksjon_status").uppercase()),
+        trekkIdSke = row.string("trekk_id_ske"),
+        trekkversjon = row.int("trekkversjon"),
+        kvitteringStatus = KvitteringStatus.valueOf(row.string("kvittering_status").uppercase()),
+        aksjonskode = Aksjonskode.valueOf(row.string("aksjonskode").uppercase()),
+        kreditorIdTss = row.string("kreditor_id_tss"),
+        kreditorTrekkId = row.string("kreditor_trekk_id"),
+        kreditorsref = row.string("kreditorsref"),
+        debitorId = row.string("debitor_id"),
+        trekkAlternativ = TrekkAlternativ.valueOf(row.string("trekk_alternativ").uppercase()),
+        trekktype = row.string("trekk_type"),
+        kid = row.string("kid"),
+        kilde = row.string("kilde"),
+        saldo = row.double("saldo"),
+        prioritetFomDato = row.stringOrNull("prioritet_fom_dato"),
+        gyldigTomDato = row.stringOrNull("gyldig_tom_dato"),
+        tidspunktSendt = row.localDateTimeOrNull("tidspunkt_sendt"),
+        tidspunktSisteStatus = row.localDateTimeOrNull("tidspunkt_siste_status"),
+        documentJson = row.string("dokument_json"),
         perioder = perioder,
     )
 }
