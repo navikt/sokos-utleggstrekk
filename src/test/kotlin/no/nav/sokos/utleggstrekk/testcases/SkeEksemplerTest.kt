@@ -15,7 +15,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.listener.DBListener
-import no.nav.sokos.utleggstrekk.service.BehandleTrekkServiceNy
+import no.nav.sokos.utleggstrekk.service.BehandleTrekkService
 import no.nav.sokos.utleggstrekk.util.idag
 import no.nav.sokos.utleggstrekk.util.resourceToString
 import no.nav.sokos.utleggstrekk.util.resourceToStringList
@@ -29,13 +29,13 @@ class SkeEksemplerTest :
         extensions(DBListener)
 
         val service by lazy {
-            BehandleTrekkServiceNy(DBListener.RepositoryNy)
+            BehandleTrekkService(DBListener.repository)
         }
 
         // Flags transaction_os as SENT and OKed.
         fun simulerOkFraOS(document: Document) {
-            DBListener.RepositoryNy.updateTransaksjonSendt(document.transaksjonsId)
-            DBListener.RepositoryNy.updateReceiptStatusOfTransaksjon(
+            DBListener.repository.updateTransaksjonSendt(document.transaksjonsId)
+            DBListener.repository.updateReceiptStatusOfTransaksjon(
                 document.transaksjonsId,
                 KvitteringStatus.OK,
                 document.innrapporteringTrekk.kreditorTrekkId + "navId" + document.innrapporteringTrekk.kodeTrekkAlternativ.suffix,
@@ -54,11 +54,11 @@ class SkeEksemplerTest :
                 testFiles.forEach { filename ->
                     When("Filen '$filename' prosesseres") {
                         val trekkpaalegg = jsonConfig.decodeFromString<Trekkpaalegg>(resourceToString("$TEST_DIR/$filename").updateYear())
-                        DBListener.RepositoryNy.insertTrekkFraSkatt(trekkpaalegg)
+                        DBListener.repository.insertTrekkFraSkatt(trekkpaalegg)
                         service.behandleTrekk()
 
                         Then("Produseres resultatet i '${filename.resultatFil()}'") {
-                            val transaksjoner = DBListener.RepositoryNy.getTransaksjonerTilOsSomIkkeErSendt()
+                            val transaksjoner = DBListener.repository.getTransaksjonerTilOsSomIkkeErSendt()
                             val dokumenter = transaksjoner.map { jsonConfig.decodeFromString<TrekkTilOppdrag>(it.documentJson) }
                             val trekk = dokumenter.map { it.dokument.innrapporteringTrekk }
 

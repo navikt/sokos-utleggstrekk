@@ -27,7 +27,7 @@ class JmsProducerService(
         }
     }
 
-    // TODO: Må legge inn feilhåndtering + manuell håndtering
+    // TODO: Må legge backout implementasjon. Snakke med Tak Wai eller Jon
     fun send(payload: String) {
         val message = jmsContext.createTextMessage(payload)
         try {
@@ -39,6 +39,7 @@ class JmsProducerService(
             logger.error(TEAM_LOGS_MARKER, "MQ-transaksjon feilet. ${message.jmsMessageID}", exception)
             jmsContext.rollback()
             logger.error(TEAM_LOGS_MARKER, "MQ-transaksjon rolled back", exception)
+            // TODO: Throw bedre exception (custom?  JMS Exception av noe slag?)
             throw Exception(exception.message ?: "Feil ved sending av melding til MQ")
         }
     }

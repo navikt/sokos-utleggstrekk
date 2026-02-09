@@ -19,7 +19,7 @@ import org.testcontainers.utility.DockerImageName
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.postgresConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.withTransaction
 
 object DBListener : TestListener {
@@ -44,8 +44,8 @@ object DBListener : TestListener {
             }
     }
 
-    val RepositoryNy by lazy {
-        RepositoryNy(dataSource)
+    val repository by lazy {
+        Repository(dataSource)
     }
 
     override suspend fun beforeSpec(spec: Spec) {

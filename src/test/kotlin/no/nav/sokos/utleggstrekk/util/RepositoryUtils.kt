@@ -2,9 +2,9 @@ package no.nav.sokos.utleggstrekk.util
 
 import kotliquery.queryOf
 
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 
-fun RepositoryNy.insertRawSQL(sql: String) {
+fun Repository.insertRawSQL(sql: String) {
     withTransaction { session ->
         sql.split(";").forEachIndexed { index, statement ->
             try {

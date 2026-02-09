@@ -6,7 +6,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
@@ -24,14 +24,14 @@ import no.nav.sokos.utleggstrekk.util.idag
 import no.nav.sokos.utleggstrekk.util.mnd
 import no.nav.sokos.utleggstrekk.util.plus
 
-class BehandleTrekkServiceIntegrationTestNy :
+class BehandleTrekkServiceIntegrationTest :
     BehaviorSpec({
         extensions(DBListener)
         val repository by lazy {
-            RepositoryNy(DBListener.dataSource)
+            Repository(DBListener.dataSource)
         }
         val behandleTrekkService by lazy {
-            BehandleTrekkServiceNy(repository)
+            BehandleTrekkService(repository)
         }
 
         fun storedInDb(trekk: Trekkpaalegg): Long? = repository.insertTrekkFraSkatt(trekk)

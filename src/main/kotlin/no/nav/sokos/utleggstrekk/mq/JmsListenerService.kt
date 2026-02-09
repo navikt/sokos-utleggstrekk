@@ -18,7 +18,7 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.validate
@@ -28,7 +28,7 @@ import no.nav.sokos.utleggstrekk.service.SlackService
 import no.nav.sokos.utleggstrekk.utils.Validation.validateString
 
 class JmsListenerService(
-    private val repositoryNy: RepositoryNy = RepositoryNy(PostgresDataSource.dataSource),
+    private val repository: Repository = Repository(PostgresDataSource.dataSource),
     private val slackService: SlackService = SlackService.instance,
     val osKvitteringQueue: Queue =
         MQQueue(PropertiesConfig.mqProperties.replyQueueName).apply {
@@ -47,6 +47,7 @@ class JmsListenerService(
     }
 
     private fun onReceipt(message: Message) {
+        // TODO: Legg inn håndtering for om dette ikke er en textmessage. Hvis det ikke er TextMessage så har Endre endret noe
         val jmsMessage = message.getBody(String::class.java)
         try {
             jmsMessage.validateString(true)
@@ -68,14 +69,14 @@ class JmsListenerService(
     private fun processReceipt(receipt: KvitteringFraOppdrag) {
         val kvitteringStatus = KvitteringStatus.fromValue(receipt.mmel?.alvorlighetsgrad)
 
-        repositoryNy.updateReceiptStatusOfTransaksjon(
+        repository.updateReceiptStatusOfTransaksjon(
             receipt.dokument.transaksjonsId,
             kvitteringStatus,
             receipt.dokument.innrapporteringTrekk.navTrekkId,
         )
 
         if (kvitteringStatus == KvitteringStatus.FEIL) {
-            repositoryNy.insertFeilmeldingFraOS(receipt)
+            repository.insertFeilmeldingFraOS(receipt)
             logError(receipt)
             trekkAvvistAvOs.inc()
         } else {

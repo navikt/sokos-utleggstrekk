@@ -13,11 +13,12 @@ import io.kotest.matchers.string.shouldEndWith
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
-import no.nav.sokos.utleggstrekk.database.RepositoryNy
+import no.nav.sokos.utleggstrekk.database.ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA
+import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
-import no.nav.sokos.utleggstrekk.database.model.TrekkFraSkatt
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.Mmel
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -30,7 +31,7 @@ internal class LifecycleTest :
     BehaviorSpec({
         extensions(DBListener)
         val repository by lazy {
-            DBListener.RepositoryNy
+            DBListener.repository
         }
 
         Given("Vi har mottatt utleggstrekk...  ") {
@@ -88,7 +89,7 @@ internal class LifecycleTest :
                 }
             }
             then("Henter data fra database og sjekker trekk") {
-                val behandleTrekkService = BehandleTrekkServiceNy(repository)
+                val behandleTrekkService = BehandleTrekkService(repository)
                 behandleTrekkService.behandleTrekk()
                 val trekkSomSkalSendes = repository.getTransaksjonerTilOsSomIkkeErSendt()
 
@@ -136,7 +137,7 @@ internal class LifecycleTest :
                     loppPerioder.filter { it.sats == 0.0 } shouldHaveSize 2
                 }
                 val trekkFraSkatt = repository.getTrekkFraSkatt(1L)
-                val perioderFraSkatt = repository.getPerioderForTrekkVersjon(trekkFraSkatt!!.id)
+                val perioderFraSkatt = repository.getPerioderForTrekkVersjon(trekkFraSkatt.id)
                 val betalingsInformasjon = repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id)
                 val osdok: TransaksjonOS = trekkSomSkalSendes.first()
                 val trekkTilOppdrag = jsonConfig.decodeFromString<TrekkTilOppdrag>(osdok.documentJson)
@@ -166,8 +167,10 @@ internal class LifecycleTest :
             repository.fakeTidspunktOpprettet("1", 2, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("2", 1, sevenMonthsAgo)
             repository.fakeTidspunktOpprettet("3", 1, fiveMonthsAgo)
-            val service = BehandleTrekkServiceNy(DBListener.RepositoryNy)
-            val idToTrekkId = repository.getTrekkSomIkkeErBehandlet().associate { it.id to it.trekkid }
+            val service = BehandleTrekkService(DBListener.repository)
+
+            val trekkId = repository.getTrekkIdTilTrekkSomSkalBehandles()
+            val idToTrekkId = trekkId.associateWith { repository.getTrekkFraSkatt(it).trekkid }
             service.behandleTrekk()
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
             ikkeSendt.forEach { repository.updateTransaksjonSendt(it.transaksjonsID) }
@@ -192,6 +195,9 @@ internal class LifecycleTest :
             }
 
             When("To trekk er eldre enn seks måneder, et av dem har trekkstatus avsluttet (1) og det tredje er yngre enn seks måneder") {
+                Then("Perioden vi tar vare på avsluttede trekk på er seks måneder") {
+                    ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA shouldBe 6
+                }
                 Then("Skal alle versjoner av trekk 1 slettes under opprydding men ikke de to andre") {
                     repository.deleteOldData()
 
@@ -215,7 +221,7 @@ internal class LifecycleTest :
         }
     })
 
-private fun RepositoryNy.fakeTidspunktOpprettet(trekkid: String, trekkversjon: Int, instant: Instant) {
+private fun Repository.fakeTidspunktOpprettet(trekkid: String, trekkversjon: Int, instant: Instant) {
     withTransaction { session ->
         session.update(
             queryOf(
@@ -225,18 +231,3 @@ private fun RepositoryNy.fakeTidspunktOpprettet(trekkid: String, trekkversjon: I
         ) shouldBe 1
     }
 }
-
-// TODO: Må også oppdatere hvordan ostransaksjon funker
-private fun RepositoryNy.getTrekkSomIkkeErBehandlet(): List<TrekkFraSkatt> =
-    withTransaction { session ->
-        session.list(
-            queryOf(
-                """
-                SELECT f.* FROM fraskatt f
-                LEFT JOIN  fraskatt_status t ON t.fraskatt_id = f.id
-                WHERE t.status IS NULL OR t.status != 'BEHANDLET'
-                ORDER BY f.sekvensnummer ASC
-                """.trimIndent(),
-            ),
-        ) { row -> TrekkFraSkatt(row) }
-    }

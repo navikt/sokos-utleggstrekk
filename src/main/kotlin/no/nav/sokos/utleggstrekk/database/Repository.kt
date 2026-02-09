@@ -28,10 +28,13 @@ import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 
 private val logger = KotlinLogging.logger { }
 
-class RepositoryNy(private val dataSource: HikariDataSource) {
-    fun deleteOldData() {
-        val sixMonthsAgo = LocalDateTime.now().minusMonths(6)
+const val ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA = 6L
 
+// TODO: Ikke bruk "withTransaction" med "select". Vent til vi har kotliquery
+// TODO: Flytte funksjoner som brukes bare i test til test filer
+class Repository(private val dataSource: HikariDataSource) {
+    fun deleteOldData() {
+        val sixMonthsAgo = LocalDateTime.now().minusMonths(ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA)
         dataSource.withTransaction { session ->
             val expiredFraskatt =
                 """
@@ -63,7 +66,10 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                         parameters,
                     ),
                 )
-            logger.info("Slettet $fraskattDeleted trekkversjoner fra Skatt og $transaksjonOsDeleted fra transaksjon_os")
+
+            if (fraskattDeleted != 0 || transaksjonOsDeleted != 0) {
+                logger.info("Slettet $fraskattDeleted trekkversjoner fra Skatt og $transaksjonOsDeleted fra transaksjon_os")
+            }
         }
     }
 
@@ -202,6 +208,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         }
     }
 
+    // TODO: Ta den bort og pass på at det er ingen skrivefeil
     object TransaksjonOsTable {
         const val TABLE_NAME = "transaksjon_os"
         const val ID_COLUMN = "id"
@@ -246,6 +253,7 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
         const val DOKUMENT_JSON_COLUMN = "dokument_json"
     }
 
+    // TODO: Flytt til test
     fun insertTransaksjonTilOs(dto: OSDto) = dataSource.withTransaction { session -> insertTransaksjonTilOs(dto, session) }
 
     fun insertTransaksjonTilOs(dto: OSDto, session: TransactionalSession) {
@@ -352,26 +360,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                     """.trimIndent(),
                     mapOf(
                         TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to TransaksjonsStatus.SENDT.name,
-                        TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to transaksjonId,
-                    ),
-                ),
-            )
-        }
-    }
-
-    fun updateTransaksjonStatus(transaksjonId: String, transaksjonStatus: TransaksjonsStatus) {
-        dataSource.withTransaction { session ->
-            session.update(
-                queryOf(
-                    """
-                     UPDATE  ${TransaksjonOsTable.TABLE_NAME}  
-                     SET 
-                    ${TransaksjonOsTable.TRANSAKSJON_STATUS_COLUMN}=:${TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM},
-                     ${TransaksjonOsTable.TIDSPUNKT_SISTE_STATUS_COLUMN}=NOW() 
-                     WHERE ${TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN}=:${TransaksjonOsTable.TRANSAKSJONS_ID_PARAM}
-                    """.trimIndent(),
-                    mapOf(
-                        TransaksjonOsTable.TRANSAKSJON_STATUS_PARAM to transaksjonStatus.name,
                         TransaksjonOsTable.TRANSAKSJONS_ID_PARAM to transaksjonId,
                     ),
                 ),
@@ -515,11 +503,6 @@ class RepositoryNy(private val dataSource: HikariDataSource) {
                     """SELECT * FROM fraskatt""".trimIndent(),
                 ),
             ) { row -> TrekkFraSkatt(row) }
-        }
-
-    fun getTrekkFraSkatt(id: Long): TrekkFraSkatt? =
-        dataSource.withTransaction { session ->
-            getTrekkFraSkatt(id, session)
         }
 
     /** Henter en spesifik versjon av et trekk gitt fraskatt_id */

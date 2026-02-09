@@ -48,7 +48,7 @@ class SkeClient(
         val token = tokenProvider.getAccessToken()
         return {
             append("Klientid", KLIENT_ID)
-            append("Korrelasjonsid", UUID.randomUUID().toString())
+            append("Korrelasjonsid", UUID.randomUUID().toString()) // TODO: Logge corrid når kall går galt? Logge når vi kaller?
             append(HttpHeaders.Authorization, "Bearer $token")
         }
     }
