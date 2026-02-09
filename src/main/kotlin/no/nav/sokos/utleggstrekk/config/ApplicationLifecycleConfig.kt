@@ -6,7 +6,7 @@ import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.ServerReady
 import io.ktor.server.application.log
 
-fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
+fun Application.applicationLifecycleConfig(applicationState: ApplicationState, onShutdown: () -> Unit) {
     monitor.subscribe(ApplicationStarted) {
         applicationState.alive = true
         it.log.info("Application is started")
@@ -20,6 +20,7 @@ fun Application.applicationLifecycleConfig(applicationState: ApplicationState) {
     monitor.subscribe(ApplicationStopped) {
         applicationState.alive = false
         applicationState.ready = false
+        onShutdown()
         it.log.info("Application is stopped")
     }
 }

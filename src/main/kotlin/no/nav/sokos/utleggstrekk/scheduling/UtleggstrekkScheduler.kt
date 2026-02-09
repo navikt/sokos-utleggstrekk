@@ -7,7 +7,9 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 import mu.KotlinLogging
 
@@ -19,6 +21,10 @@ private val logger = KotlinLogging.logger { }
 class UtleggstrekkScheduler(private val scope: CoroutineScope) {
     private val executor = Executors.newSingleThreadScheduledExecutor()
     private var future: ScheduledFuture<*>? = null
+
+    @Volatile private var stopped = false
+
+    @Volatile private var runningJob: Job? = null
 
     fun scheduleHourlyAt(
         minute: Int,
@@ -71,23 +77,30 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
 
         future =
             executor.schedule({
-                scope.launch {
-                    try {
-                        task()
-                    } catch (e: Exception) {
-                        logger.error(TEAM_LOGS_MARKER, "Scheduled job failed: ", e)
-                        SlackService.instance.addError("Scheduled job failed", "Scheduled job failed: ${e.message}")
-                        SlackService.instance.sendCachedErrors("Scheduled job failed")
-                    } finally {
-                        scheduleNext(hour, minute, second, name = name, task) // chain to next run
+                runningJob =
+                    scope.launch {
+                        try {
+                            task()
+                        } catch (e: Exception) {
+                            logger.error(TEAM_LOGS_MARKER, "Scheduled job failed: ", e)
+                            SlackService.instance.addError("Scheduled job failed", "Scheduled job failed: ${e.message}")
+                            SlackService.instance.sendCachedErrors("Scheduled job failed")
+                        } finally {
+                            if (!stopped) {
+                                scheduleNext(hour, minute, second, name = name, task) // chain to next run
+                            }
+                        }
                     }
-                }
             }, delay, TimeUnit.MILLISECONDS)
     }
 
-    // TODO: Add to shutdown hook??
-    fun stop() {
+    suspend fun stop(timeout: Duration = Duration.ofSeconds(30)) {
+        stopped = true
         future?.cancel(false)
+        val job = runningJob
+        if (job != null) {
+            withTimeoutOrNull(timeout.toMillis()) { job.join() }
+        }
         executor.shutdown()
     }
 }
