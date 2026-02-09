@@ -50,8 +50,7 @@ class MaskinportenAccessTokenClient(
             if (current == null || current.expiresAt.isBefore(inOneMinute)) {
                 cachedToken = getMaskinportenToken()
             }
-
-            cachedToken!!.token
+            cachedToken?.token ?: throw MaskinportenException("Failed to obtain access token")
         }
 
     private suspend fun getMaskinportenToken(): AccessToken {
