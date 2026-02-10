@@ -37,6 +37,8 @@ const val KILDE = "SOKOSUTLEGG"
 private val logger = KotlinLogging.logger { }
 
 class BehandleTrekkService(private val repository: Repository = Repository(PostgresDataSource.dataSource)) {
+    private val slackService: SlackService = SlackService.instance
+
     fun behandleTrekk() =
         repository.getTrekkIdTilTrekkSomSkalBehandles().forEach { trekkId ->
             repository.withTransaction { session ->
@@ -123,10 +125,21 @@ class BehandleTrekkService(private val repository: Repository = Repository(Postg
                 nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = periode.startdato, periodeTomDato = periode.sluttdato))
             }
         }
+
+        val maanedsbeloepperioder = nyePerioderForOS[LOPM]?.toList().orEmpty()
+        val prosentperioder = nyePerioderForOS[LOPP]?.toList().orEmpty()
+
+        if (!trekkFraSkatt.erAvsluttet()) {
+            if (maanedsbeloepperioder.isEmpty() && prosentperioder.isEmpty()) {
+                val melding = "Trekk med id=${trekkFraSkatt.trekkid} sekvensnr=${trekkFraSkatt.sekvensnummer} er ikke avsluttet, men resulterte i ingen nye perioder."
+                logger.warn(melding)
+                slackService.addError("Manglende perioder", melding)
+            }
+        }
         return PerioderTilOS(
             alternativ,
-            LOPM = nyePerioderForOS[LOPM]?.toList().orEmpty(),
-            LOPP = nyePerioderForOS[LOPP]?.toList().orEmpty(),
+            maanedsbeloepperioder,
+            prosentperioder,
         )
     }
 
@@ -188,3 +201,5 @@ class BehandleTrekkService(private val repository: Repository = Repository(Postg
             else -> false
         }
 }
+
+private fun TrekkFraSkatt.erAvsluttet(): Boolean = trekkstatus == AVSLUTTET.name
