@@ -61,7 +61,7 @@ class UtleggsTrekkService(
         }
         repository.deleteOldData()
         calculateMetrics()
-        slackService.sendCachedErrors("Trekk henting feil")
+        slackService.sendCachedErrors("Trekk henting alert")
     }
 
     private suspend fun lagreAlleNyeUtleggstrekk() {

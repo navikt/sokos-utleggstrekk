@@ -212,7 +212,7 @@ internal class UtleggsTrekkServiceTest :
                     )
 
                 utleggsTrekkService.schedule()
-                coVerify(exactly = 1) { slackService.sendCachedErrors("Trekk henting feil") }
+                coVerify(exactly = 1) { slackService.sendCachedErrors("Trekk henting alert") }
             }
         }
 
