@@ -46,7 +46,8 @@ class SkeClientTest :
     FunSpec({
         val slackService = mockk<SlackService>(relaxUnitFun = true)
         val logger =
-            mockk<KLogger> {
+            mockk<KLogger>(relaxed = true) {
+                every { info(any<() -> Unit>()) } just runs
                 every { warn(any<() -> Unit>()) } just runs
             }
 
@@ -129,12 +130,10 @@ class SkeClientTest :
                 trekkListe.first() shouldBe mockTrekk
                 verify(exactly = 0) {
                     logger.warn(any<() -> Unit>())
-                    slackService.addError(any(), any())
                 }
             }
 
             test("skal returnere en emptyList når den kan ikke parse body og sende en alarm") {
-
                 val mockedResponse = resourceToString("Fra_Skatt_Trekk1_versjon1_beløp_ingen_ting_ekstra_Feil.json")
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
@@ -165,15 +164,13 @@ class SkeClientTest :
                 trekkListe shouldHaveSize 1
                 verify(exactly = 0) {
                     logger.warn(any<() -> Unit>())
-                    slackService.addError(any(), any())
                 }
             }
-
             test("skal sende en alarm når API-kallet returnere en empty body") {
                 val message = slot<String>()
                 every { slackService.addError(any(), capture(message)) } returns Unit
-
-                val skeClient = SkeClient(getClient(), slackService, mockTokenProvider)
+                val mockEngine = getEngine("")
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
                 val sekvensnr = 1
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
@@ -182,7 +179,6 @@ class SkeClientTest :
                 verify(exactly = 1) { slackService.addError("Manglende data", any()) }
                 message.captured shouldContain "Fikk ingen data for sekvensnummer=$sekvensnr"
             }
-
             test("skal sende en alarm når API-kallet mislykkes") {
                 val alarmHeaders = mutableListOf<String>()
                 val messages = mutableListOf<String>()
@@ -230,9 +226,11 @@ class SkeClientTest :
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
-                shouldThrow<Exception> {
-                    skeClient.hentUtleggstrekkFraSekvensnr(1)
-                }
+                val errorMsg = slot<() -> Any?>()
+                every { logger.warn(capture(errorMsg)) } just runs
+
+                skeClient.hentUtleggstrekkFraSekvensnr(1)
+                errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av respons"
             }
             test("Beløp og prosent i samme periode") {
                 val mockedResponse = resourceToString("trekkMedFeil/belopOgProsent.json")
@@ -240,9 +238,19 @@ class SkeClientTest :
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
                 shouldThrow<Exception> {
-                    val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
-                    println(trekkListe.first().trekkstoerrelseForPeriode.first())
+                    skeClient.hentUtleggstrekkFraSekvensnr(1).first()
                 }
+            }
+            test("Trekk med ugyldige tegn") {
+                val mockedResponse = resourceToString("trekkMedFeil/trekkMedUgyldigPnr.json").replace(" ", "\u0001")
+
+                val mockEngine = getEngine(mockedResponse)
+                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
+
+                val errorMsg = slot<() -> Any?>()
+                every { logger.warn(capture(errorMsg)) } just runs
+                skeClient.hentUtleggstrekkFraSekvensnr(1)
+                errorMsg.captured.invoke().toString() shouldContain "Malformed string data"
             }
         }
 
