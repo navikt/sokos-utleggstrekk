@@ -17,6 +17,23 @@ group = "no.nav.sokos"
 repositories {
     mavenCentral()
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
+
+    val githubToken = System.getenv("GITHUB_TOKEN")
+    if (githubToken.isNullOrEmpty()) {
+        maven {
+            name = "external-mirror-github-navikt"
+            url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
+        }
+    } else {
+        maven {
+            name = "github-package-registry-navikt"
+            url = uri("https://maven.pkg.github.com/navikt/maven-release")
+            credentials {
+                username = "token"
+                password = githubToken
+            }
+        }
+    }
 }
 
 val ktorVersion = "3.4.0"
@@ -33,7 +50,7 @@ val unleashedVersion = "11.2.1"
 val hikaricpVersion = "7.0.2"
 val flywayVersion = "11.20.0"
 val postgresqlVersion = "42.7.8"
-val kotliqueryVersion = "1.9.1"
+val kotliqueryVersion = "2.0.0"
 
 // Logging
 val logbackVersion = "1.5.24"
@@ -93,7 +110,7 @@ dependencies {
     // Database
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
-    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
+    implementation("no.nav.kotliquery:kotliquery:$kotliqueryVersion")
     implementation("no.nav:vault-jdbc:$vaultVersion")
 
     runtimeOnly("org.flywaydb:flyway-database-postgresql:$flywayVersion")
