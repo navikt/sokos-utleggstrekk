@@ -3,6 +3,7 @@ package no.nav.sokos.utleggstrekk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.runBlocking
 
 import io.ktor.server.application.Application
 import io.ktor.server.application.log
@@ -30,9 +31,12 @@ private fun Application.module() {
     val applicationState = ApplicationState()
     val utleggsTrekkService = UtleggsTrekkService()
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    val scheduler = UtleggstrekkScheduler(appScope)
 
     commonConfig()
-    applicationLifecycleConfig(applicationState)
+    applicationLifecycleConfig(applicationState) {
+        runBlocking { scheduler.stop() }
+    }
     routingConfig(applicationState)
 
     if (!PropertiesConfig.isLocal) {
@@ -43,8 +47,8 @@ private fun Application.module() {
 
     val schedulerProperties = applicationProperties.scheduler
     if (schedulerProperties.isActive) {
-        UtleggstrekkScheduler(appScope).scheduleHourlyAt(schedulerProperties.minutes, name = "Schedule retrieving data from ske") { utleggsTrekkService.schedule() }
-        UtleggstrekkScheduler(appScope).scheduleDailyAt(hour = 8, minute = 0, name = "Report missing receipts") { utleggsTrekkService.reportMissingKvittering() }
+        scheduler.scheduleHourlyAt(schedulerProperties.minutes, name = "Schedule retrieving data from ske") { utleggsTrekkService.schedule() }
+        scheduler.scheduleDailyAt(hour = 8, minute = 0, name = "Report missing receipts") { utleggsTrekkService.reportMissingKvittering() }
     } else {
         log.info("Property SCHEDULER_ACTIVE is false. Scheduler is not running.")
     }

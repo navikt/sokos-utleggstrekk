@@ -6,6 +6,7 @@ import java.util.UUID
 import kotliquery.TransactionalSession
 import mu.KotlinLogging
 
+import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
@@ -35,7 +36,10 @@ const val KILDE = "SOKOSUTLEGG"
 
 private val logger = KotlinLogging.logger { }
 
-class BehandleTrekkService(private val repository: Repository = Repository(PostgresDataSource.dataSource)) {
+class BehandleTrekkService(
+    private val repository: Repository = Repository(PostgresDataSource.dataSource),
+    private val slackService: SlackService = SlackService.instance,
+) {
     fun behandleTrekk() =
         repository.getTrekkIdTilTrekkSomSkalBehandles().forEach { trekkId ->
             repository.withTransaction { session ->
@@ -64,8 +68,8 @@ class BehandleTrekkService(private val repository: Repository = Repository(Postg
                         repository.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session)
                     }
                 } catch (e: Exception) {
-                    // Todo: Logg exception i team log
                     logger.error("Feil under prossessering av trekk med trekkid=$trekkId")
+                    logger.error(TEAM_LOGS_MARKER, "Feil under prossessering av trekk med trekkid=$trekkId", e)
                     repository.updateTrekkFraSkattStatus(trekkId, SkattTrekkStatus.AVVIST)
                 }
             }
@@ -122,11 +126,21 @@ class BehandleTrekkService(private val repository: Repository = Repository(Postg
                 nyePerioderForOS.getValue(alternativ).add(PeriodeTilOS(sats = periode.satsFor(alternativ), periodeFomDato = periode.startdato, periodeTomDato = periode.sluttdato))
             }
         }
-        // TODO: Legge inn  sjekk på at minst én av dem ikke er tom HVIS trekket ikke er type avsluttet. Logg feil hvis sjekk feiler
+
+        val maanedsbeloepperioder = nyePerioderForOS[LOPM]?.toList().orEmpty()
+        val prosentperioder = nyePerioderForOS[LOPP]?.toList().orEmpty()
+
+        if (!trekkFraSkatt.erAvsluttet()) {
+            if (maanedsbeloepperioder.isEmpty() && prosentperioder.isEmpty()) {
+                val melding = "Trekk med id=${trekkFraSkatt.trekkid} sekvensnr=${trekkFraSkatt.sekvensnummer} er ikke avsluttet, men resulterte i ingen nye perioder."
+                logger.warn(melding)
+                slackService.addError("Manglende perioder", melding)
+            }
+        }
         return PerioderTilOS(
             alternativ,
-            LOPM = nyePerioderForOS[LOPM]?.toList().orEmpty(),
-            LOPP = nyePerioderForOS[LOPP]?.toList().orEmpty(),
+            maanedsbeloepperioder,
+            prosentperioder,
         )
     }
 
@@ -141,9 +155,8 @@ class BehandleTrekkService(private val repository: Repository = Repository(Postg
 
         // Må hente betalingsinformasjonen til trekket for å finne tssid og kid
 
-        // TODO: Lage custom exception
         val betalingsinformasjon: BetalingsinformasjonFraSkatt =
-            repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id) ?: throw Exception("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
+            repository.getBetalingsinformasjonForTrekk(trekkFraSkatt.id) ?: throw IllegalStateException("Betalingsinformasjon er null for trekkId=${trekkFraSkatt.id}")
 
         val perioder = Perioder(perioderTilOS.map { it.asPeriode() }).takeUnless { it.periode.isEmpty() }
 
@@ -189,3 +202,5 @@ class BehandleTrekkService(private val repository: Repository = Repository(Postg
             else -> false
         }
 }
+
+private fun TrekkFraSkatt.erAvsluttet(): Boolean = trekkstatus == AVSLUTTET.name

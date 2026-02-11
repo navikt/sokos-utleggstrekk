@@ -3,6 +3,7 @@ package no.nav.sokos.utleggstrekk.mq
 import com.ibm.msg.client.jakarta.jms.JmsConstants.SESSION_TRANSACTED
 import jakarta.jms.ConnectionFactory
 import jakarta.jms.JMSContext
+import jakarta.jms.JMSException
 import jakarta.jms.JMSProducer
 import jakarta.jms.Queue
 import mu.KotlinLogging
@@ -39,8 +40,7 @@ class JmsProducerService(
             logger.error(TEAM_LOGS_MARKER, "MQ-transaksjon feilet. ${message.jmsMessageID}", exception)
             jmsContext.rollback()
             logger.error(TEAM_LOGS_MARKER, "MQ-transaksjon rolled back", exception)
-            // TODO: Throw bedre exception (custom?  JMS Exception av noe slag?)
-            throw Exception(exception.message ?: "Feil ved sending av melding til MQ")
+            throw JMSException(exception.message ?: "Feil ved sending av melding til MQ")
         }
     }
 }

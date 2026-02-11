@@ -14,17 +14,23 @@ import no.nav.sokos.utleggstrekk.service.SlackService
 private val logger = KotlinLogging.logger { }
 
 open class UnleashIntegration(val slackService: SlackService) {
+    private enum class ToggleNames(val key: String) {
+        HENT_FRA_SKE("sokos-utleggstrekk.hent-fra-ske.enabled"),
+        SEND_TIL_OS("sokos-utleggstrekk.send-til-os.enabled"),
+        BEHANDLE_TREKK("sokos-utleggstrekk.prosesser-utleggstrekk.enabled"),
+    }
+
     private var unleashClient: Unleash
     private val lastStates: MutableMap<String, Boolean> = mutableMapOf()
 
     private fun lastStateOf(toggleName: String): Boolean = lastStates.getOrPut(toggleName) { unleashProperties.enabledByDefault }
 
     // Kill switcher:
-    fun isHentFraSKEEnabled(): Boolean = isEnabled("sokos-utleggstrekk.hent-fra-ske.enabled")
+    fun isHentFraSKEEnabled(): Boolean = isEnabled(ToggleNames.HENT_FRA_SKE.key)
 
-    fun isSendTilOSEnabled(): Boolean = isEnabled("sokos-utleggstrekk.send-til-os.enabled")
+    fun isSendTilOSEnabled(): Boolean = isEnabled(ToggleNames.SEND_TIL_OS.key)
 
-    fun isProsesserUtleggstrekkEnabled(): Boolean = isEnabled("sokos-utleggstrekk.prosesser-utleggstrekk.enabled")
+    fun isProsesserUtleggstrekkEnabled(): Boolean = isEnabled(ToggleNames.BEHANDLE_TREKK.key)
 
     fun isEnabled(toggleName: String): Boolean {
         val state = unleashClient.isEnabled(toggleName, unleashProperties.enabledByDefault)
@@ -53,6 +59,10 @@ open class UnleashIntegration(val slackService: SlackService) {
                     .synchronousFetchOnInitialisation(true)
                     .build()
             unleashClient = DefaultUnleash(config)
+        }
+        // Fetch current states
+        ToggleNames.entries.map { it.key }.forEach { toggleName ->
+            lastStates[toggleName] = unleashClient.isEnabled(toggleName, unleashProperties.enabledByDefault)
         }
     }
 }

@@ -18,10 +18,14 @@ import io.kotest.matchers.shouldNotBe
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.config.jsonConfig
-import no.nav.sokos.utleggstrekk.database.Repository.TransaksjonOsTable.TIDSPUNKT_SENDT_COLUMN
-import no.nav.sokos.utleggstrekk.database.Repository.TransaksjonOsTable.TRANSAKSJONS_ID_COLUMN
-import no.nav.sokos.utleggstrekk.database.Repository.TransaksjonOsTable.TRANSAKSJONS_ID_PARAM
+import no.nav.sokos.utleggstrekk.database.TestRepository.doesTrekkExist
+import no.nav.sokos.utleggstrekk.database.TestRepository.getAllTrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.TestRepository.getFeilmeldingerFraOS
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTransaksjonTilOs
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkattMedStatus
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkattStatus
+import no.nav.sokos.utleggstrekk.database.TestRepository.insertTransaksjonTilOs
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
@@ -117,10 +121,10 @@ class RepositoryTest :
                 repository.withTransaction { session ->
                     session.list(
                         queryOf(
-                            "SELECT $TIDSPUNKT_SENDT_COLUMN FROM transaksjon_os WHERE $TRANSAKSJONS_ID_COLUMN=:transaksjonId",
-                            mapOf(TRANSAKSJONS_ID_PARAM to dtoSomErSendt.transaksjonID),
+                            "SELECT tidspunkt_sendt FROM transaksjon_os WHERE transaksjons_id=:transaksjonId",
+                            mapOf("transaksjonId" to dtoSomErSendt.transaksjonID),
                         ),
-                    ) { row -> row.localDateTime(TIDSPUNKT_SENDT_COLUMN) } shouldNotBe null
+                    ) { row -> row.localDateTime("tidspunkt_sendt") } shouldNotBe null
                 }
             }
         }
@@ -324,7 +328,7 @@ class RepositoryTest :
 
         Given("Det finnes eksisterende trekk") {
             DBListener.clearDB()
-            doesTrekkExist("1", 1) shouldBe false
+            repository.doesTrekkExist("1", 1) shouldBe false
             val trekkpalegg =
                 jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             trekkpalegg.forEach { repository.insertTrekkFraSkatt(it) }
@@ -333,9 +337,9 @@ class RepositoryTest :
 
             val allTrekkFraSkatt = repository.getAllTrekkFraSkatt()
             allTrekkFraSkatt.shouldNotBeEmpty()
-            doesTrekkExist("1", 1) shouldBe true
-            doesTrekkExist("2_xx", 1) shouldBe true
-            doesTrekkExist("1", 2) shouldBe false
+            repository.doesTrekkExist("1", 1) shouldBe true
+            repository.doesTrekkExist("2_xx", 1) shouldBe true
+            repository.doesTrekkExist("1", 2) shouldBe false
         }
 
         Given("Det kommer inn trekk ut av rekkefølge") {
@@ -352,7 +356,7 @@ class RepositoryTest :
 
         Given("To trekk finnes med status MOTTATT") {
             DBListener.clearDB()
-            doesTrekkExist("1", 1) shouldBe false
+            repository.doesTrekkExist("1", 1) shouldBe false
             val trekkpalegg =
                 jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("FraSkatt_Trekkversjon1_1Trekkalternativ-2trekk.json"))
             trekkpalegg.forEach { repository.insertTrekkFraSkatt(it) }
@@ -602,8 +606,6 @@ private fun compareTrekk(trekkpaalegg: Trekkpaalegg, lagret: TrekkFraSkatt) {
     lagret.skyldner shouldBe trekkpaalegg.skyldner
     lagret.trekkpliktig shouldBe trekkpaalegg.trekkpliktig
 }
-
-private fun doesTrekkExist(trekkId: String, trekkversjon: Int): Boolean = repository.doesTrekkExist(trekkId, trekkversjon)
 
 private fun compareBetalingsinformasjon(betalingsinformasjon: Betalingsinformasjon, lagret: BetalingsinformasjonFraSkatt) {
     lagret.betalingsmottaker shouldBe betalingsinformasjon.betalingsmottaker

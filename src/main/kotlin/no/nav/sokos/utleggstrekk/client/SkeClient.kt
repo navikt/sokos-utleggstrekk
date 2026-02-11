@@ -15,6 +15,7 @@ import io.ktor.serialization.JsonConvertException
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
@@ -36,44 +37,60 @@ class SkeClient(
 ) {
     val basePath = PropertiesConfig.skeConfig.skeRestUrl
 
-    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> =
-        client
+    suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> {
+        val korrId = UUID.randomUUID().toString()
+        logger.info { "Henter utleggstrekk fra sekvensnummer $sekvensnr, antall $MAX_ANTALL, korrId=$korrId" }
+        return client
             .get {
                 url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
-                headers(commonHeaders())
-            }.handleError(sekvensnr)
-            ?.toTrekkpaalegg(sekvensnr) ?: emptyList()
+                headers(commonHeaders(korrId))
+            }.handleError(sekvensnr, korrId)
+            ?.toTrekkpaalegg(sekvensnr, korrId) ?: emptyList()
+    }
 
-    private suspend fun commonHeaders(): HeadersBuilder.() -> Unit {
+    private suspend fun commonHeaders(korrId: String): HeadersBuilder.() -> Unit {
         val token = tokenProvider.getAccessToken()
         return {
             append("Klientid", KLIENT_ID)
-            append("Korrelasjonsid", UUID.randomUUID().toString()) // TODO: Logge corrid når kall går galt? Logge når vi kaller?
+            append("Korrelasjonsid", korrId)
             append(HttpHeaders.Authorization, "Bearer $token")
         }
     }
 
-    private suspend fun HttpResponse.handleError(sekvensnr: Int): HttpResponse? {
+    private suspend fun HttpResponse.handleError(sekvensnr: Int, korrId: String): HttpResponse? {
         if (isSuccessful()) return this
 
         if (status.isClientError() || status.isServerError()) {
             val errorMessage = body<SkeErrorMessage>()
-            slackService.addError("$status", "Kunne ikke få trekk for sekvensnr=$sekvensnr: ${errorMessage.description()}")
+            slackService.addError("$status", "Kunne ikke få trekk for sekvensnr=$sekvensnr: korrId=$korrId ${errorMessage.description()}")
         }
         return null
     }
 
-    private suspend fun HttpResponse.toTrekkpaalegg(sekvensnr: Int? = null) =
+    private suspend fun HttpResponse.toTrekkpaalegg(sekvensnr: Int? = null, korrId: String) =
         try {
-            bodyAsText().validateString(true)
-            body<List<Trekkpaalegg>>().also {
-                if (it.isEmpty()) {
-                    slackService.addError("Manglende data", "Fikk ingen data for sekvensnummer=$sekvensnr")
+            val text = bodyAsText()
+            if (text.isEmpty()) {
+                throw IllegalStateException("Empty response from")
+            }
+            text.validateString(true)
+
+            jsonConfig.decodeFromString<List<Trekkpaalegg>>(text).also {
+                if (it.isNotEmpty()) {
+                    slackService.addError("Data fra Skatteetaten", "Hentet ${it.size} trekk sekvensnummer=$sekvensnr")
                 }
             }
         } catch (e: JsonConvertException) {
-            logger.warn { "Feil i konvertering av response: ${e.message}" }
-            slackService.addError("JsonConvertException", "Feil i konvertering av response: ${e.message}")
+            logger.warn { "Feil i konvertering av response: ${e.message} korrId=$korrId" }
+            slackService.addError("JsonConvertException", "Feil i konvertering av response: ${e.message} korrId=$korrId")
+            emptyList()
+        } catch (e: IllegalArgumentException) {
+            logger.warn { "Feil i konvertering av response: ${e.message} korrId=$korrId" }
+            slackService.addError("JsonConvertException", "Feil i konvertering av response: ${e.message} korrId=$korrId")
+            emptyList()
+        } catch (e: IllegalStateException) {
+            logger.warn { "Tom body i response: ${e.message} korrId=$korrId" }
+            slackService.addError("Manglende data", "Tom body i response: ${e.message} Fikk ingen data for sekvensnummer=$sekvensnr korrId=$korrId")
             emptyList()
         }
 }
