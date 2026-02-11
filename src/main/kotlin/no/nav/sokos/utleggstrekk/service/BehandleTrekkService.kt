@@ -36,9 +36,10 @@ const val KILDE = "SOKOSUTLEGG"
 
 private val logger = KotlinLogging.logger { }
 
-class BehandleTrekkService(private val repository: Repository = Repository(PostgresDataSource.dataSource)) {
-    private val slackService: SlackService = SlackService.instance
-
+class BehandleTrekkService(
+    private val repository: Repository = Repository(PostgresDataSource.dataSource),
+    private val slackService: SlackService = SlackService.instance,
+) {
     fun behandleTrekk() =
         repository.getTrekkIdTilTrekkSomSkalBehandles().forEach { trekkId ->
             repository.withTransaction { session ->
