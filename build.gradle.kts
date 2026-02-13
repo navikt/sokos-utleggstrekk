@@ -135,6 +135,20 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
+// CVE fixes for vulnerable dependencies from transitive dependencies io.kotest.extensions:kotest-extensions-testcontainers
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.lz4" && requested.name == "lz4-java") {
+            useTarget("at.yawk.lz4:lz4-java:1.10.3")
+            because("CVE fix: Out-of-bounds memory operations in versions < 1.8.1")
+        }
+        if (requested.group == "org.xerial.snappy" && requested.name == "snappy-java") {
+            useVersion("1.1.10.8")
+            because("CVE fix: Unchecked chunk length leads to DoS in versions <= 1.1.10.0")
+        }
+    }
+}
+
 application {
     mainClass.set("no.nav.sokos.utleggstrekk.ApplicationKt")
 }
