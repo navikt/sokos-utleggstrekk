@@ -7,6 +7,17 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      gradle:
+      kotlin-plugins:
         patterns:
-          - "*"
+          - "jvm"
+          - "plugin.serialization"
+        update-types:
+          - minor
+          - patch
+      gradle-minor-patch:
+        update-types:
+          - minor
+          - patch
+        exclude-patterns:
+          - "jvm"
+          - "plugin.serialization"
