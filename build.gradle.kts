@@ -48,7 +48,7 @@ val unleashedVersion = "12.1.1"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "11.20.0"
+val flywayVersion = "12.0.0"
 val postgresqlVersion = "42.7.9"
 val kotliqueryVersion = "2.0.0"
 
