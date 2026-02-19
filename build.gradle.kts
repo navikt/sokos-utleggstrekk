@@ -44,7 +44,7 @@ val nimbusVersion = "10.7"
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.16.3"
-val unleashedVersion = "11.2.1"
+val unleashedVersion = "12.1.1"
 
 // DB
 val hikaricpVersion = "7.0.2"
