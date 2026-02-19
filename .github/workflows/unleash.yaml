@@ -9,6 +9,9 @@ on:
       - '.nais/dev/unleash-dev.yaml'
       - '.nais/dev/unleash-prod.yaml'
 
+env:
+  TZ: Europe/Oslo
+
 jobs:
   deploy-dev:
     permissions:

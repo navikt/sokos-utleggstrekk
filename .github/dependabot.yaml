@@ -4,6 +4,8 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+      time: "08:00"
+      timezone: "Europe/Oslo"
     cooldown:
       default-days: 7
     groups:
