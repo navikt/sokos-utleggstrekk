@@ -47,9 +47,8 @@ class JmsListenerService(
     }
 
     private fun onReceipt(message: Message) {
-        // TODO: Legg inn håndtering for om dette ikke er en textmessage. Hvis det ikke er TextMessage så har Endre endret noe
-        val jmsMessage = message.getBody(String::class.java)
         try {
+            val jmsMessage = message.getBody(String::class.java)
             jmsMessage.validateString(true)
             val receipt = jsonConfig.decodeFromString<KvitteringFraOppdrag>(jmsMessage)
             receipt.validate()
@@ -57,8 +56,9 @@ class JmsListenerService(
             message.acknowledge()
         } catch (exception: Exception) {
             val header = "Prosessering av kvitteringmelding feilet."
-            logger.error(TEAM_LOGS_MARKER, "$header ${message.jmsMessageID}", exception)
-            slackService.addError(header, message.jmsMessageID)
+            val messageId = message.jmsMessageID
+            logger.error(TEAM_LOGS_MARKER, "$header $messageId", exception)
+            slackService.addError(header, messageId)
         }
 
         CoroutineScope(SupervisorJob() + Default).launch {
