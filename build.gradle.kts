@@ -39,12 +39,12 @@ repositories {
 val ktorVersion = "3.4.0"
 val kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
 val kotlinxSerializationVersion = "1.10.0"
-val nimbusVersion = "10.7"
+val nimbusVersion = "10.8"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.16.3"
-val unleashedVersion = "12.1.1"
+val unleashedVersion = "12.1.2"
 
 // DB
 val hikaricpVersion = "7.0.2"
@@ -53,7 +53,7 @@ val postgresqlVersion = "42.7.10"
 val kotliqueryVersion = "2.0.0"
 
 // Logging
-val logbackVersion = "1.5.31"
+val logbackVersion = "1.5.32"
 val logstashVersion = "9.0"
 val kotlinLoggingVersion = "3.0.5"
 val janinoVersion = "3.1.12"
