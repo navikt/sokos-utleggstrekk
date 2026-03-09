@@ -9,11 +9,10 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.applicationProperties
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.unleashProperties
-import no.nav.sokos.utleggstrekk.service.SlackService
 
 private val logger = KotlinLogging.logger { }
 
-open class UnleashIntegration(val slackService: SlackService) {
+open class UnleashIntegration {
     private enum class ToggleNames(val key: String) {
         HENT_FRA_SKE("sokos-utleggstrekk.hent-fra-ske.enabled"),
         SEND_TIL_OS("sokos-utleggstrekk.send-til-os.enabled"),
@@ -38,7 +37,6 @@ open class UnleashIntegration(val slackService: SlackService) {
         if (lastState != state) {
             val message = "$toggleName has switched from $lastState to $state"
             logger.info { message }
-            slackService.addError("Feature toggled", message)
             lastStates[toggleName] = state
         }
         return state

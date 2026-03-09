@@ -46,7 +46,7 @@ class UtleggsTrekkService(
         ),
 ) {
     private val logger = KotlinLogging.logger { }
-    private val featureToggles = UnleashIntegration(slackService)
+    private val featureToggles = UnleashIntegration()
 
     suspend fun schedule() {
         logger.info("Schedule started")
@@ -112,7 +112,7 @@ class UtleggsTrekkService(
         }.onSuccess {
             repository.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
-            slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: ${exception.message}")
+            slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS")
             logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
         }
     }
@@ -125,7 +125,7 @@ class UtleggsTrekkService(
             .filter { it.tidspunktSendt?.isBefore(yesterday) == true }
             .forEach {
                 val header = "TransaksjonID mangler kvitteringen"
-                val message = "TransaksjonID ${it.transaksjonsID} ble sendt ${it.tidspunktSendt?.format(formatter)} men vi har ikke mottatt kvitteringen."
+                val message = "Mangler kvittering for transaksjonID ${it.transaksjonsID} sendt ${it.tidspunktSendt?.format(formatter)}"
                 slackService.addError(header, message)
             }
         slackService.sendCachedErrors("Kvittering fra oppdrag uteblir")
