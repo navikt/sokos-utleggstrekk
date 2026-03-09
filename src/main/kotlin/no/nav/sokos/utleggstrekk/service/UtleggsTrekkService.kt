@@ -82,7 +82,8 @@ class UtleggsTrekkService(
         return skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
     }
 
-    private fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
+    private suspend fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
+        val slackService = SlackService()
         // Sortert for at vi ikke skal hoppe over noen i sekvens dersom vi feiler før alle er lagret.
         trekkpaalegg.sortedBy { it.sekvensnummer }.forEach { trekk ->
             var status = SkattTrekkStatus.MOTTATT
@@ -91,6 +92,8 @@ class UtleggsTrekkService(
             } catch (e: IllegalArgumentException) {
                 logger.error("Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}")
                 logger.error(TEAM_LOGS_MARKER, "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}", e)
+                slackService.addError("Feil i validering", "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}: $e")
+                slackService.sendCachedErrors("Ugyldige verdier i trekk fra skatt")
                 status = SkattTrekkStatus.AVVIST
             }
             try {
