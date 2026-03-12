@@ -47,14 +47,14 @@ class JmsListenerService(
     }
 
     private fun onReceipt(message: Message) {
-        try {
+        runCatching {
             val jmsMessage = message.getBody(String::class.java)
             jmsMessage.validateString(true)
             val receipt = jsonConfig.decodeFromString<KvitteringFraOppdrag>(jmsMessage)
             receipt.validate()
             processReceipt(receipt)
             message.acknowledge()
-        } catch (exception: Exception) {
+        }.onFailure { exception ->
             val header = "Prosessering av kvitteringmelding feilet."
             val messageId = message.jmsMessageID
             logger.error(TEAM_LOGS_MARKER, "$header $messageId", exception)
