@@ -14,7 +14,7 @@ import no.nav.sokos.utleggstrekk.metrics.Metrics.trekkSendtTilOs
 
 class JmsProducerService(
     private val targetQueue: Queue,
-    private val replyQueue: Queue,
+    private val replyQueue: Queue? = null,
     connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),
 ) {
     private val logger = KotlinLogging.logger {}
