@@ -67,7 +67,7 @@ class JmsListenerServiceTest :
             JmsListenerService(
                 repository,
                 slackService,
-                osKvitteringQueue = replyQueue,
+                replyQueue,
                 jmsProducerBoq,
                 connectionFactory,
             )
