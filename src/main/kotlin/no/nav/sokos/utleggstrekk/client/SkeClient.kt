@@ -77,8 +77,8 @@ class SkeClient(
         return null
     }
 
-    private suspend fun HttpResponse.toTrekkpaalegg(sekvensnr: Int? = null, korrId: String) =
-        try {
+    private suspend fun HttpResponse.toTrekkpaalegg(sekvensnr: Int? = null, korrId: String): List<Trekkpaalegg> =
+        runCatching {
             val text = bodyAsText()
             if (text.isEmpty()) {
                 throw IllegalStateException("Empty response from")
@@ -90,16 +90,19 @@ class SkeClient(
                     logger().info { "Hentet ${it.size} trekk sekvensnummer=$sekvensnr" }
                 }
             }
-        } catch (e: JsonConvertException) {
-            logger().error(marker = TEAM_LOGS_MARKER) { "Feil i konvertering av response til Trekkpålegg: ${e.message} korrId=$korrId" }
-            logger().error("Feil i konvertering av response til Trekkpålegg ")
-            emptyList()
-        } catch (e: IllegalArgumentException) {
-            logger().error(marker = TEAM_LOGS_MARKER) { "Feil i konvertering av response til Trekkpålegg: ${e.message} korrId=$korrId" }
-            logger().error("Feil i konvertering av response til Trekkpålegg ")
-            emptyList()
-        } catch (e: IllegalStateException) {
-            logger().warn { "Tom body i response ${e.message} corrId=$korrId" }
+        }.getOrElse { e ->
+            when (e) {
+                is JsonConvertException,
+                is IllegalArgumentException,
+                -> {
+                    logger().error(marker = TEAM_LOGS_MARKER) { "Feil i konvertering av response til Trekkpålegg: ${e.message} korrId=$korrId" }
+                    logger().error("Feil i konvertering av response til Trekkpålegg ")
+                }
+
+                is IllegalStateException -> {
+                    logger().warn { "Tom body i response ${e.message} corrId=$korrId" }
+                }
+            }
             emptyList()
         }
 }

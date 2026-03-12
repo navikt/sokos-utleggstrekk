@@ -83,7 +83,6 @@ class UtleggsTrekkService(
     }
 
     private suspend fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
-        val slackService = SlackService()
         // Sortert for at vi ikke skal hoppe over noen i sekvens dersom vi feiler før alle er lagret.
         trekkpaalegg.sortedBy { it.sekvensnummer }.forEach { trekk ->
             var status = SkattTrekkStatus.MOTTATT
