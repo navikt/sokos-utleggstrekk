@@ -11,7 +11,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HeadersBuilder
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.JsonConvertException
-import mu.KLogger
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
@@ -30,7 +29,7 @@ const val MAX_ANTALL = 2500
 private const val KLIENT_ID = "NAV/0.1"
 
 // Don't cache a logger at file-load time; this allows tests to mock KotlinLogging.logger.
-private fun logger(): KLogger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger { }
 
 class SkeClient(
     private val client: HttpClient = httpClient,
@@ -41,7 +40,7 @@ class SkeClient(
 
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> {
         val korrId = UUID.randomUUID().toString()
-        logger().info { "Henter utleggstrekk fra sekvensnummer $sekvensnr, antall $MAX_ANTALL, korrId=$korrId" }
+        logger.info { "Henter utleggstrekk fra sekvensnummer $sekvensnr, antall $MAX_ANTALL, korrId=$korrId" }
         return client
             .get {
                 url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
@@ -66,12 +65,12 @@ class SkeClient(
             try {
                 val errorMessage = jsonConfig.decodeFromString<SkeErrorMessage>(bodyAsText)
                 slackService.addError("Feil fra SKE", "Kunne ikke få trekk for sekvensnr=$sekvensnr: ${errorMessage.kode}, korrId = ${errorMessage.korrelasjonsid}")
-                logger().error(marker = TEAM_LOGS_MARKER) { "Feil ved henting av trekk fra SKE: ${errorMessage.kode} ${errorMessage.description()}, korrId = ${errorMessage.korrelasjonsid} " }
+                logger.error(marker = TEAM_LOGS_MARKER) { "Feil ved henting av trekk fra SKE: ${errorMessage.kode} ${errorMessage.description()}, korrId = ${errorMessage.korrelasjonsid} " }
             } catch (_: Exception) {
-                logger().error(marker = TEAM_LOGS_MARKER) { "Feil ved henting av trekk fra SKE: ${this.headers} ${status.value} ${status.description}" }
+                logger.error(marker = TEAM_LOGS_MARKER) { "Feil ved henting av trekk fra SKE: ${this.headers} ${status.value} ${status.description}" }
             }
         } else {
-            logger().error(marker = TEAM_LOGS_MARKER) { "Feil ved henting av trekk fra SKE: ${this.headers} ${status.value} ${status.description}" }
+            logger.error(marker = TEAM_LOGS_MARKER) { "Feil ved henting av trekk fra SKE: ${this.headers} ${status.value} ${status.description}" }
         }
 
         return null
@@ -87,7 +86,7 @@ class SkeClient(
 
             jsonConfig.decodeFromString<List<Trekkpaalegg>>(text).also {
                 if (it.isNotEmpty()) {
-                    logger().info { "Hentet ${it.size} trekk sekvensnummer=$sekvensnr" }
+                    logger.info { "Hentet ${it.size} trekk sekvensnummer=$sekvensnr" }
                 }
             }
         }.getOrElse { e ->
@@ -95,12 +94,12 @@ class SkeClient(
                 is JsonConvertException,
                 is IllegalArgumentException,
                 -> {
-                    logger().error(marker = TEAM_LOGS_MARKER) { "Feil i konvertering av response til Trekkpålegg: ${e.message} korrId=$korrId" }
-                    logger().error("Feil i konvertering av response til Trekkpålegg ")
+                    logger.error(marker = TEAM_LOGS_MARKER) { "Feil i konvertering av response til Trekkpålegg: ${e.message} korrId=$korrId" }
+                    logger.error("Feil i konvertering av response til Trekkpålegg ")
                 }
 
                 is IllegalStateException -> {
-                    logger().warn { "Tom body i response ${e.message} corrId=$korrId" }
+                    logger.warn { "Tom body i response ${e.message} corrId=$korrId" }
                 }
             }
             emptyList()
