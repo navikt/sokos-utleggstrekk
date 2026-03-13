@@ -2,22 +2,20 @@ package no.nav.sokos.utleggstrekk.mockexamples
 
 /*
  * Demonstrates that `private val logger` in SkeClient.kt breaks logger mocking
- * when the class is loaded before mockkObject(KotlinLogging) is called.
+ * even when using the standard beforeSpec/afterSpec pattern for mock setup.
  *
- * Test 1 creates a SkeClient and calls it WITHOUT mocking the logger.
- * This loads SkeClient.kt's class file and freezes:
+ * SkeClientFreezerSpec (order 1) loads SkeClient.kt with no KotlinLogging mock active,
+ * freezing `private val logger` to the real KLogger permanently.
  *
- *     private val logger = KotlinLogging.logger { }   ← captured here, with the REAL logger
+ * SkeClientVictimSpec (order 2) uses beforeSpec/afterSpec — the exact pattern real tests
+ * use — to install and clean up mockkObject(KotlinLogging). Every logger verify still
+ * fails because the val was already frozen in the freezer spec.
  *
- * Test 2 then tries to mock the logger with mockkObject(KotlinLogging) and assert
- * that SkeClient logged via the mock. This FAILS — because the val in SkeClient was
- * already set to the real logger by test 1, and mockkObject cannot retroactively
- * replace an already-captured object reference.
- *
- * The fix is `private fun logger(): KLogger = KotlinLogging.logger { }` — evaluated
- * at call-time, after mockkObject is active, always returning the mock.
+ * The fix is `private fun logger(): KLogger = KotlinLogging.logger { }` — resolved
+ * at call-time, after mockkObject is active, always returning the current mock.
  */
 
+import io.kotest.core.spec.Order
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.ktor.server.config.ApplicationConfig
@@ -40,9 +38,14 @@ import no.nav.sokos.utleggstrekk.service.SlackService
 import no.nav.sokos.utleggstrekk.util.MockHttpClient.getClient
 import no.nav.sokos.utleggstrekk.util.MockHttpClient.getEngine
 
-class SkeClientValLoggerDemoTest :
-    FunSpec({
+// ── Spec 1: the FREEZER ───────────────────────────────────────────────────────
+// Calls SkeClient normally, with no KotlinLogging mock installed.
+// Side effect: loads SkeClientKt's static initialiser, freezing `private val logger`
+// to the real KLogger permanently for this JVM run.
 
+@Order(1)
+class SkeClientFreezerSpec :
+    FunSpec({
         val slackService = mockk<SlackService>(relaxUnitFun = true)
         val mockTokenProvider =
             mockk<MaskinportenAccessTokenClient> {
@@ -59,114 +62,74 @@ class SkeClientValLoggerDemoTest :
             clearMocks(slackService, mockTokenProvider)
         }
 
-        // ── Test 1: use SkeClient without caring about logging ────────────────────────────────
-        // This is the innocent test. It just calls SkeClient normally.
-        // Side effect: SkeClient.kt's class is loaded, and `private val logger` is frozen
-        // to whatever KotlinLogging.logger {} returns right now — the REAL logger,
-        // because no mockkObject(KotlinLogging) is active yet.
-        test("test 1 – uses SkeClient without mocking the logger (loads the class, freezes val logger)") {
+        test("uses SkeClient without mocking the logger — loads the class and freezes val logger") {
             val skeClient = SkeClient(getClient(getEngine()), slackService, mockTokenProvider)
-
-            // hentUtleggstrekkFraSekvensnr calls logger.info { "Henter utleggstrekk..." }
-            // That call goes to the REAL logger — which is now frozen in SkeClient's val.
             val result = skeClient.hentUtleggstrekkFraSekvensnr(1)
             result.shouldBeEmpty()
-
-            // No logger assertions here — this test doesn't care about logging.
-            // But it has permanently frozen SkeClient's val logger to the real logger.
+            // No logger assertions — this test doesn't care about logging.
+            // Its only purpose is to trigger class-loading before SkeClientVictimSpec runs.
         }
+    })
 
-        // ── Test 2: tries to mock the logger AFTER the class was loaded in test 1 ─────────────
-        // This test FAILS — demonstrating the broken behaviour of `private val logger`.
-        // The val was captured in test 1 before mockkObject was installed here.
-        // mockLogger will never receive any calls from SkeClient.
-        test("test 2 – mocks logger AFTER class load: verify fails because val is already frozen") {
-            val mockLogger =
-                mockk<KLogger>(relaxed = true) {
-                    every { info(any<() -> Unit>()) } just runs
-                }
+// ── Spec 2: the VICTIM ────────────────────────────────────────────────────────
+// Uses beforeSpec/afterSpec — the standard pattern real tests use.
+// mockkObject(KotlinLogging) is installed before any test runs and cleaned up after all.
+// Every logger verify still fails because SkeClientFreezerSpec already froze the val.
+//
+// Also demonstrates that a per-test mock (different object each time, declared at spec
+// level and reset in afterTest) makes no difference: the frozen val in SkeClientKt
+// stores a direct object reference that no amount of mock reinstallation can replace.
 
-            mockkObject(KotlinLogging)
+@Order(2)
+class SkeClientVictimSpec :
+    FunSpec({
+        val slackService = mockk<SlackService>(relaxUnitFun = true)
+        val mockTokenProvider =
+            mockk<MaskinportenAccessTokenClient> {
+                coEvery { getAccessToken() } returns "mock-token"
+            }
+
+        // Shared logger mock for the whole spec.
+        val mockLogger =
+            mockk<KLogger>(relaxed = true) {
+                every { info(any<() -> Unit>()) } just runs
+            }
+
+        beforeSpec {
+            mockkObject(PropertiesConfig, KotlinLogging)
+            every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
             every { KotlinLogging.logger(any<() -> Unit>()) } returns mockLogger
-
-            try {
-                val skeClient = SkeClient(getClient(getEngine()), slackService, mockTokenProvider)
-
-                // This call triggers logger.info { "Henter utleggstrekk fra sekvensnummer..." }
-                // inside SkeClient. But the logger used is the val frozen in test 1 —
-                // NOT mockLogger. The mock receives zero calls.
-                skeClient.hentUtleggstrekkFraSekvensnr(1)
-
-                // This verify FAILS:
-                //   Verification failed: call 1 of 1: KLogger(#N).info(...) was not called.
-                // Because SkeClient's frozen val bypasses mockLogger entirely.
-                //
-                // If SkeClient used `private fun logger()` instead of `private val logger`,
-                // the call to KotlinLogging.logger {} would happen here, after mockkObject,
-                // and this verify would pass.
-                verify(exactly = 1) { mockLogger.info(any<() -> Unit>()) }
-            } finally {
-                unmockkObject(KotlinLogging)
-                clearMocks(mockLogger)
-            }
         }
 
-        // ── Each-test-creates-own-mock pattern ────────────────────────────────────────────────
-        // These two tests each create their OWN mockLogger and install mockkObject independently.
-        // They look correct in isolation — but test B still fails, because SkeClient's val was
-        // frozen in "test 1" above (or whichever test first loaded the class).
-        // No matter how many times you create a new mock and call mockkObject, the val in
-        // SkeClient cannot be replaced retroactively.
-
-        test("each-test mock A – own mock, own SkeClient: PASSES only if class not yet loaded") {
-            // If this test ran FIRST (before test 1 above), it would pass — the class would be
-            // loaded while mockkObject is active. But since test 1 ran first, the val is already
-            // the real logger, and this mock is never used by SkeClient.
-            val mockLoggerA =
-                mockk<KLogger>(relaxed = true) {
-                    every { info(any<() -> Unit>()) } just runs
-                }
-
-            mockkObject(KotlinLogging)
-            every { KotlinLogging.logger(any<() -> Unit>()) } returns mockLoggerA
-
-            try {
-                val skeClient = SkeClient(getClient(getEngine()), slackService, mockTokenProvider)
-                skeClient.hentUtleggstrekkFraSekvensnr(1)
-
-                // FAILS — val frozen in test 1, mockLoggerA never called by SkeClient.
-                verify(exactly = 1) { mockLoggerA.info(any<() -> Unit>()) }
-            } finally {
-                unmockkObject(KotlinLogging)
-                clearMocks(mockLoggerA)
-            }
+        afterSpec {
+            unmockkObject(PropertiesConfig, KotlinLogging)
+            clearMocks(slackService, mockTokenProvider, mockLogger)
         }
 
-        test("each-test mock B – own mock, own SkeClient: ALSO fails – same frozen val, different mock") {
-            // A completely fresh mock — different object than mockLoggerA — but it makes no
-            // difference. SkeClient's val still points to the logger captured in test 1.
-            // Creating a new SkeClient instance does NOT re-evaluate the file-level val.
-            val mockLoggerB =
-                mockk<KLogger>(relaxed = true) {
-                    every { info(any<() -> Unit>()) } just runs
-                }
+        afterTest {
+            // Clear recorded calls between tests so each verify is independent.
+            clearMocks(mockLogger, answers = false)
+        }
 
-            mockkObject(KotlinLogging)
-            every { KotlinLogging.logger(any<() -> Unit>()) } returns mockLoggerB
+        test("mocks logger in beforeSpec — val already frozen, mockLogger never called") {
+            // mockkObject is active: KotlinLogging.logger {} now returns mockLogger.
+            // But SkeClient's `private val logger` was frozen in SkeClientFreezerSpec.
+            // The frozen val still points to the real KLogger — mockLogger receives zero calls.
+            val skeClient = SkeClient(getClient(getEngine()), slackService, mockTokenProvider)
+            skeClient.hentUtleggstrekkFraSekvensnr(1)
 
-            try {
-                // Fresh SkeClient instance — but `private val logger` is file-level, shared
-                // across ALL instances of SkeClient. Creating a new instance does not re-run
-                // the top-level val initialiser.
-                val skeClient = SkeClient(getClient(getEngine()), slackService, mockTokenProvider)
-                skeClient.hentUtleggstrekkFraSekvensnr(1)
+            // FAILS: Verification failed: KLogger(#N).info(...) was not called.
+            verify(exactly = 1) { mockLogger.info(any<() -> Unit>()) }
+        }
 
-                // FAILS — same reason as mock A. The val is file-scoped, not instance-scoped.
-                // Every SkeClient instance shares the same frozen logger.
-                verify(exactly = 1) { mockLoggerB.info(any<() -> Unit>()) }
-            } finally {
-                unmockkObject(KotlinLogging)
-                clearMocks(mockLoggerB)
-            }
+        test("new SkeClient() instance does not re-evaluate the file-level val — still frozen") {
+            // A brand-new SkeClient instance — but `private val logger` is file-scoped,
+            // shared across ALL instances. Creating a new instance does not re-run the
+            // static initialiser. mockLogger still receives zero calls.
+            val skeClient = SkeClient(getClient(getEngine()), slackService, mockTokenProvider)
+            skeClient.hentUtleggstrekkFraSekvensnr(1)
+
+            // FAILS: same reason as above.
+            verify(exactly = 1) { mockLogger.info(any<() -> Unit>()) }
         }
     })

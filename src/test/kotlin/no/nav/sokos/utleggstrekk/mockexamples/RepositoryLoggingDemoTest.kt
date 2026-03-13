@@ -17,27 +17,24 @@ package no.nav.sokos.utleggstrekk.mockexamples
  *   → loads Repository.kt's class file
  *   → evaluates `private val logger = KotlinLogging.logger { }` ← FROZEN HERE
  *
- * Because beforeSpec runs before any test body — and therefore before any
- * mockkObject(KotlinLogging) call — the real logger is captured into the val.
- *
- * ## What insertOldAvsluttetTrekk does NOT do
- *
- * `insertOldAvsluttetTrekk` only accesses DBListenerWithEagerRepository.dataSource
- * (a separate lazy for the HikariDataSource). It never touches .repository and does
- * NOT affect the val.
+ * Because the extension's beforeSpec runs before the spec's own beforeSpec — and
+ * therefore before any mockkObject(KotlinLogging) call — the real logger is captured.
  *
  * ## Execution order (in isolation)
  *
- *   1. DBListenerWithEagerRepository.beforeSpec
+ *   1. DBListenerWithEagerRepository.beforeSpec  (extension)
  *        → mocks PropertiesConfig
  *        → calls repository.deleteOldData()
  *             → lazy triggers → Repository class loaded
  *             → `private val logger` = REAL KLogger  ← frozen here
- *   2. Test body starts
- *   3. insertOldAvsluttetTrekk() — inserts via dataSource only, val unaffected
- *   4. mockkObject(KotlinLogging) installed — too late, val already frozen in step 1
- *   5. repository.deleteOldData() — lazy already done, same Repository instance
+ *   2. spec.beforeSpec
+ *        → mockkObject(KotlinLogging) installed — too late, val already frozen in step 1
+ *        → every { KotlinLogging.logger(...) } returns thisTestsMock
+ *   3. Test body runs
+ *        → DBListenerWithEagerRepository.repository.deleteOldData()
  *        → logs via frozen val = REAL logger, NOT thisTestsMock
+ *   4. spec.afterSpec
+ *        → unmockkObject(KotlinLogging)
  *
  * ## Consequence
  *
@@ -46,12 +43,12 @@ package no.nav.sokos.utleggstrekk.mockexamples
  * ## The fix
  *
  * Use `private fun logger(): KLogger = KotlinLogging.logger { }` in Repository.kt.
- * The logger is resolved at call-time, after mockkObject is active, returning the mock.
+ * The logger is resolved at call-time inside deleteOldData(), after mockkObject is active.
  */
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -68,6 +65,25 @@ import no.nav.sokos.utleggstrekk.database.withTransaction
 class RepositoryLoggingDemoTest :
     FunSpec({
         extensions(DBListenerWithEagerRepository)
+
+        val thisTestsMock =
+            mockk<KLogger>(relaxed = true) {
+                every { info(any<() -> Unit>()) } just runs
+            }
+
+        // mockkObject installed in beforeSpec — the standard pattern.
+        // But DBListenerWithEagerRepository's beforeSpec (extension) runs FIRST and has
+        // already frozen the val. This beforeSpec is too late to influence it.
+        beforeSpec {
+            mockkObject(KotlinLogging)
+            every { KotlinLogging.logger(any<() -> Unit>()) } returns thisTestsMock
+        }
+
+        afterSpec {
+            unmockkObject(KotlinLogging)
+            clearMocks(thisTestsMock)
+            DBListenerWithEagerRepository.clearDB()
+        }
 
         // Helper: insert a row that qualifies for deleteOldData() deletion.
         // Rows must have trekkstatus=AVSLUTTET and tidspunkt_opprettet older than 6 months.
@@ -88,34 +104,18 @@ class RepositoryLoggingDemoTest :
         }
 
         test("Repository val logger is NOT the mock we install in this test – verify() would lie") {
-            // DBListenerWithEagerRepository.beforeSpec already called repository.deleteOldData(),
-            // which loaded Repository.kt's class and froze `private val logger` to the real logger.
-            // By the time we reach this test body the val is already set — it cannot be replaced.
             insertOldAvsluttetTrekk("demo-trekk-1")
 
-            val thisTestsMock =
-                mockk<KLogger>(relaxed = true) {
-                    every { info(any<() -> Unit>()) } just runs
-                }
-            mockkObject(KotlinLogging)
-            every { KotlinLogging.logger(any<() -> Unit>()) } returns thisTestsMock
+            // Any NEW call to KotlinLogging.logger {} after mockkObject returns thisTestsMock ✅
+            val freshLogger: KLogger = KotlinLogging.logger {}
+            freshLogger shouldBe thisTestsMock
 
-            try {
-                // Any NEW call to KotlinLogging.logger {} returns thisTestsMock ✅
-                val freshLogger: KLogger = KotlinLogging.logger {}
-                freshLogger shouldBe thisTestsMock
+            // deleteOldData() fires logger.info(string) for the deleted row,
+            // but the log goes to the frozen val (real logger) — NOT thisTestsMock.
+            DBListenerWithEagerRepository.repository.deleteOldData()
 
-                // deleteOldData() fires logger.info(string) for the deleted row,
-                // but the log goes to the frozen val (real logger) — NOT thisTestsMock.
-                DBListenerWithEagerRepository.repository.deleteOldData()
-
-                // FAILS: mock received 0 calls — the frozen val bypassed it entirely.
-                // If Repository used `private fun logger()` this would pass.
-                verify(exactly = 1) { thisTestsMock.info(any<String>()) }
-            } finally {
-                unmockkObject(KotlinLogging)
-                clearAllMocks()
-                DBListenerWithEagerRepository.clearDB()
-            }
+            // FAILS: mock received 0 calls — the frozen val bypassed it entirely.
+            // If Repository used `private fun logger()` this would pass.
+            verify(exactly = 1) { thisTestsMock.info(any<String>()) }
         }
     })
