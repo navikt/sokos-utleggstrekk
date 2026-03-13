@@ -11,30 +11,35 @@ package no.nav.sokos.utleggstrekk.mockexamples
  *
  * `private val logger = KotlinLogging.logger { }` at file scope compiles into the static
  * initialiser of the generated `<FileName>Kt` class. The JVM runs a static initialiser
- * exactly ONCE per ClassLoader — the first time ANYTHING in that file is referenced,
- * whether that is:
- *   - calling a method on a file-level `object`  (LocalService.doWork())
- *   - constructing an instance of a file-level `class`  (ClassBasedService())
+ * exactly ONCE per ClassLoader — the first time ANYTHING in that file is referenced.
  *
- * Both trigger the same static initialiser, which captures the val from whatever
- * KotlinLogging.logger {} returns at that exact moment. Every subsequent spec shares
- * the same ClassLoader, so they all see the same already-frozen reference.
+ * Both `logger` and `classLogger` are in THIS file, so they are BOTH captured the
+ * first time this file is loaded — which happens when ValLoggerFreezerSpec (order 1)
+ * calls LocalService.doWork(). By the time ClassFreezerSpec (order 3) runs, both vals
+ * are already frozen to the real logger.
+ *
+ * The class-based part (Part 2) demonstrates an additional point: even creating a NEW
+ * instance of ClassBasedService does not re-evaluate the file-level val. The val is
+ * shared across all instances, frozen forever at first class-load.
  *
  * ── Structure ─────────────────────────────────────────────────────────────────
  *
  * Part 1 — object (LocalService):
- *   ValLoggerFreezerSpec (order 1) — calls LocalService.doWork() with NO mock → val frozen
+ *   ValLoggerFreezerSpec (order 1) — calls LocalService.doWork() with NO mock
+ *                                    → BOTH logger AND classLogger are frozen here
  *   ValLoggerVictimSpec  (order 2) — installs mock, calls doWork() → mock never called ❌
  *
  * Part 2 — class (ClassBasedService, mirrors SkeClient):
- *   ClassFreezerSpec     (order 3) — constructs ClassBasedService() with NO mock → val frozen
- *   ClassVictimSpec      (order 4) — installs mock, constructs + calls service → mock never called ❌
+ *   ClassFreezerSpec     (order 3) — constructs ClassBasedService() with NO mock
+ *                                    → classLogger already frozen in order 1, no-op here
+ *   ClassVictimSpec      (order 4) — installs mock, creates new instance + calls service
+ *                                    → mock never called ❌ (val frozen, new instance irrelevant)
  */
 
 import io.kotest.core.spec.Order
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -46,7 +51,6 @@ import mu.KLogger
 import mu.KotlinLogging
 
 // ── Part 1: object ────────────────────────────────────────────────────────────
-// Mirrors Repository.kt / any file with a top-level object and a file-level val logger.
 
 private val logger = KotlinLogging.logger { }
 
@@ -58,9 +62,8 @@ object LocalService {
 
 // ── Part 2: class ─────────────────────────────────────────────────────────────
 // Mirrors SkeClient.kt — a file-level val logger shared by a regular class.
-// The val is NOT inside the class; it is file-scoped, compiled into the static
-// initialiser of ClassBasedServiceKt. Constructing ANY instance of ClassBasedService
-// is enough to trigger that static initialiser and freeze the val.
+// NOTE: classLogger is in the SAME file as logger above, so it is frozen at the
+// exact same moment — when ValLoggerFreezerSpec first loads this file.
 
 private val classLogger = KotlinLogging.logger { }
 
@@ -77,7 +80,9 @@ class ClassBasedService {
 @Order(1)
 class ValLoggerFreezerSpec :
     FunSpec({
-        test("calls LocalService with no mock active — freezes val logger to the real logger") {
+        test("calls LocalService with no mock active — freezes BOTH logger and classLogger to the real logger") {
+            // First reference to anything in this file → static initialiser runs →
+            // both `logger` AND `classLogger` are captured as the real KLogger right now.
             LocalService.doWork()
             1 shouldBe 1
         }
@@ -98,7 +103,7 @@ class ValLoggerVictimSpec :
 
         afterSpec {
             unmockkObject(KotlinLogging)
-            clearAllMocks()
+            clearMocks(mockLogger)
         }
 
         test("mockLogger installed in beforeSpec never receives calls — val was frozen by ValLoggerFreezerSpec") {
@@ -121,28 +126,20 @@ class ValLoggerVictimSpec :
 // Part 2 specs — class (mirrors SkeClient)
 // ═════════════════════════════════════════════════════════════════════════════
 
-// Spec 3: simply constructs ClassBasedService with no mock active.
-// This is enough to trigger the static initialiser for ClassBasedServiceKt,
-// freezing `private val classLogger` to the real logger permanently.
-
 @Order(3)
 class ClassFreezerSpec :
     FunSpec({
-        test("constructs ClassBasedService with no mock — freezes classLogger to the real logger") {
-            // Just constructing the class is sufficient.
-            // The file-level val is evaluated when the JVM first loads this file,
-            // which happens here — before ClassVictimSpec has a chance to install a mock.
+        test("constructs ClassBasedService with no mock — classLogger already frozen in order 1, this confirms it") {
+            // classLogger was already frozen when ValLoggerFreezerSpec loaded this file.
+            // Constructing ClassBasedService here is a no-op for freezing — it's already done.
+            // This spec exists to show that constructing a class is sufficient to trigger the
+            // static initialiser IF this file had not been loaded yet.
             val service = ClassBasedService()
             service.doWork()
 
             1 shouldBe 1
         }
     })
-
-// Spec 4: installs a mock and constructs a NEW ClassBasedService instance.
-// Even though each test creates its own instance, `private val classLogger` is
-// file-scoped — it is shared across ALL instances and was already frozen in spec 3.
-// Creating a new instance does NOT re-run the file-level val initialiser.
 
 @Order(4)
 class ClassVictimSpec :
@@ -159,17 +156,16 @@ class ClassVictimSpec :
 
         afterSpec {
             unmockkObject(KotlinLogging)
-            clearAllMocks()
+            clearMocks(mockLogger)
         }
 
-        test("new ClassBasedService() does NOT re-evaluate classLogger — val still frozen from spec 3") {
-            // A brand-new instance — but the file-level val was already captured in spec 3.
-            // This is the key difference from an instance-scoped logger: every instance
-            // shares the exact same frozen val reference.
+        test("new ClassBasedService() does NOT re-evaluate classLogger — val still frozen from order 1") {
+            // A brand-new instance — but classLogger is file-level, shared across all instances,
+            // and was frozen when the file was first loaded in ValLoggerFreezerSpec.
             val service = ClassBasedService()
             service.doWork()
 
-            // FAILS: classLogger was frozen to the real logger in ClassFreezerSpec.
+            // FAILS: classLogger was frozen to the real logger.
             // mockLogger receives 0 calls regardless of how many new instances are created.
             verify(exactly = 1) { mockLogger.info(any<() -> Unit>()) }
         }
@@ -178,9 +174,7 @@ class ClassVictimSpec :
             val freshLogger = KotlinLogging.logger {}
             freshLogger.info { "called via fresh logger" }
 
-            // PASSES: freshLogger is resolved after mockkObject is active.
-            // If ClassBasedService used `private fun classLogger()` instead of `private val`,
-            // service.doWork() would also pass — it would resolve the logger here, not at class-load.
+            // PASSES: freshLogger resolved at call-time, after mockkObject is active.
             verify(exactly = 1) { mockLogger.info(any<() -> Unit>()) }
         }
     })

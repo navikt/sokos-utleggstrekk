@@ -31,7 +31,7 @@ package no.nav.sokos.utleggstrekk.mockexamples
 import io.kotest.core.spec.Order
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -94,7 +94,7 @@ class CrossSpecVictimSpec :
 
         afterSpec {
             unmockkObject(KotlinLogging)
-            clearAllMocks()
+            clearMocks(mockLogger)
         }
 
         fun insertOldAvsluttetTrekk(trekkid: String) {

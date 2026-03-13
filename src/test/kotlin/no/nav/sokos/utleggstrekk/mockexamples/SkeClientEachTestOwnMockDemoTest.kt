@@ -24,7 +24,6 @@ package no.nav.sokos.utleggstrekk.mockexamples
 
 import io.kotest.core.spec.style.FunSpec
 import io.ktor.server.config.ApplicationConfig
-import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
@@ -60,7 +59,7 @@ class SkeClientEachTestOwnMockDemoTest :
 
         afterSpec {
             unmockkObject(PropertiesConfig)
-            clearAllMocks()
+            clearMocks(slackService, mockTokenProvider)
         }
 
         // ── Test 1 ────────────────────────────────────────────────────────────────────────────

@@ -5,15 +5,12 @@ import io.kotest.core.listeners.TestListener
 import io.kotest.core.spec.Spec
 import io.kotest.extensions.testcontainers.toDataSource
 import io.ktor.server.config.ApplicationConfig
-import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import kotliquery.queryOf
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
-import org.testcontainers.ext.ScriptUtils
-import org.testcontainers.jdbc.JdbcDatabaseDelegate
 import org.testcontainers.utility.DockerImageName
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
@@ -34,11 +31,10 @@ import no.nav.sokos.utleggstrekk.database.withTransaction
  * of whether another spec happened to access DBListener.repository first.
  */
 object DBListenerWithEagerRepository : TestListener {
-    private val dockerImageName = "postgres:latest"
     private val container by lazy {
-        PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
+        PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:latest")).apply {
             withReuse(false)
-            withUsername(PropertiesConfig.postgresConfig.user)
+            withUsername("sokos-utleggstrekk")
             waitingFor(Wait.defaultWaitStrategy())
             start()
         }
@@ -72,8 +68,6 @@ object DBListenerWithEagerRepository : TestListener {
         repository.deleteOldData()
     }
 
-    fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
-
     fun clearDB() {
         dataSource.withTransaction { session ->
             val tables = mutableListOf<String>()
@@ -89,7 +83,6 @@ object DBListenerWithEagerRepository : TestListener {
 
     override suspend fun afterSpec(spec: Spec) {
         clearDB()
-        clearAllMocks()
         unmockkObject(PropertiesConfig)
     }
 }
