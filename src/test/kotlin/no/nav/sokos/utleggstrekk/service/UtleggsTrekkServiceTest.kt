@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -43,6 +44,7 @@ import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.repository
 import no.nav.sokos.utleggstrekk.mq.JmsProducerService
+import no.nav.sokos.utleggstrekk.unleash.UnleashIntegration
 import no.nav.sokos.utleggstrekk.util.TestData.makeTrekkpaalegg
 import no.nav.sokos.utleggstrekk.util.dager
 import no.nav.sokos.utleggstrekk.util.idag
@@ -51,22 +53,25 @@ import no.nav.sokos.utleggstrekk.util.resourceToString
 
 internal class UtleggsTrekkServiceTest :
     BehaviorSpec({
-
         extensions(DBListener)
-
         val capturedPayloads = mutableListOf<String>()
-
         val mqProducerMock =
             mockk<JmsProducerService>(relaxed = true) {
                 every { send(capture(capturedPayloads)) } just Runs
             }
-
         val logger =
             mockk<KLogger> {
                 every { error(any<String>()) } returns Unit
                 every { error(any<Marker>(), any<String>(), any<Exception>()) } returns Unit
                 every { info(any<String>()) } returns Unit
                 every { info(any<() -> Any?>()) } returns Unit
+            }
+
+        fun mockedFeatureToggle(hentFraSkatt: Boolean = false, prossesserUtleggstrekk: Boolean = false, sendTilOs: Boolean = false) =
+            mockk<UnleashIntegration> {
+                every { isHentFraSKEEnabled() } returns hentFraSkatt
+                every { isProsesserUtleggstrekkEnabled() } returns prossesserUtleggstrekk
+                every { isSendTilOSEnabled() } returns sendTilOs
             }
 
         beforeSpec {
@@ -82,7 +87,6 @@ internal class UtleggsTrekkServiceTest :
                     "2026-04-02",
                     trekkprosent = Trekkprosent(20.0),
                 )
-
             val trekkpaalegg =
                 makeTrekkpaalegg(
                     trekkId = "ID1",
@@ -142,6 +146,7 @@ internal class UtleggsTrekkServiceTest :
 
                 Then("Skal transaksjon oppdateres") {
                     val transaksjoner = repository.getTransaksjonerTilOsForTrekkID(trekkpaalegg.trekkid)
+                    transaksjoner.shouldNotBeEmpty()
                     transaksjoner.forEach { it.transaksjonStatus shouldBe TransaksjonsStatus.SENDT }
                 }
             }
@@ -171,7 +176,6 @@ internal class UtleggsTrekkServiceTest :
                     )
                 }
             val parts = trekkpaalegg.chunked(4)
-
             val skeClientMock =
                 mockk<SkeClient> {
                     parts.forEach { part ->
@@ -179,7 +183,6 @@ internal class UtleggsTrekkServiceTest :
                     }
                 }
             val slackService = mockk<SlackService>(relaxUnitFun = true)
-
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     repository,
@@ -187,6 +190,7 @@ internal class UtleggsTrekkServiceTest :
                     slackService = slackService,
                     maxAntall = 4,
                     mqProducer = mqProducerMock,
+                    featureToggles = mockedFeatureToggle(hentFraSkatt = true),
                 )
 
             When("Trekk hentes") {
@@ -209,6 +213,7 @@ internal class UtleggsTrekkServiceTest :
                         skeClient = mockk(relaxed = true),
                         slackService = slackService,
                         mqProducer = mqProducerMock,
+                        featureToggles = mockedFeatureToggle(hentFraSkatt = true),
                     )
 
                 utleggsTrekkService.schedule()
@@ -219,30 +224,27 @@ internal class UtleggsTrekkServiceTest :
         Given("Vi henter transaksjoner til OS som mangler kvittering") {
             val now = LocalDateTime.now()
             val oldDate = now.minusDays(2)
-
             val mockTransaksjonOS =
                 mockk<TransaksjonOS> {
                     every { transaksjonsID } returnsMany listOf("1", "2")
                     every { tidspunktSendt } returnsMany listOf(now, oldDate)
                 }
-
             val repository =
                 mockk<Repository> {
                     every { getTransakjonerTilOsSomManglerKvittering() } returns List(2) { mockTransaksjonOS }
                 }
-
             val slackService =
                 mockk<SlackService> {
                     every { addError(any(), any()) } returns Unit
                     coEvery { sendCachedErrors(any()) } returns Unit
                 }
-
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     repository,
                     skeClient = mockk(),
                     slackService = slackService,
                     mqProducer = mqProducerMock,
+                    featureToggles = mockedFeatureToggle(),
                 )
 
             When("Transaksjonen ble sendt for mer enn en døgn siden") {
@@ -253,6 +255,7 @@ internal class UtleggsTrekkServiceTest :
                 }
             }
         }
+
         Given("Vi får trekk som ikke validerer") {
             DBListener.clearDB()
             val trekkpaalegg = jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("trekkMedFeil/trekkMedUgyldigPnr.json")).first()
@@ -261,7 +264,6 @@ internal class UtleggsTrekkServiceTest :
                     coEvery { hentUtleggstrekkFraSekvensnr(any()) } returns listOf(trekkpaalegg)
                 }
             val slackService = mockk<SlackService>(relaxUnitFun = true)
-
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     repository,
@@ -269,6 +271,7 @@ internal class UtleggsTrekkServiceTest :
                     slackService = slackService,
                     maxAntall = 2,
                     mqProducer = mqProducerMock,
+                    featureToggles = mockedFeatureToggle(hentFraSkatt = true),
                 )
 
             When("Trekket prosesseres") {
@@ -303,12 +306,11 @@ internal class UtleggsTrekkServiceTest :
                         ),
                     mmel = null,
                 )
-
             val mockTransaksjonOS =
                 mockk<TransaksjonOS> {
                     every { documentJson } returns jsonConfig.encodeToString(document)
                 }
-            val repository =
+            val mockedRepository =
                 mockk<Repository>(relaxed = true) {
                     every { getTransaksjonerTilOsSomIkkeErSendt() } returns listOf(mockTransaksjonOS)
                 }
@@ -317,13 +319,13 @@ internal class UtleggsTrekkServiceTest :
                     coEvery { sendCachedErrors(any()) } returns Unit
                     every { addError(any(), any()) } returns Unit
                 }
-
             val utleggsTrekkService =
                 UtleggsTrekkService(
-                    repository = repository,
+                    repository = mockedRepository,
                     skeClient = mockk(relaxed = true),
                     slackService = mockSlackService,
                     mqProducer = mqProducerMock,
+                    featureToggles = mockedFeatureToggle(sendTilOs = true),
                 )
             When("Det skjedd en feil") {
                 every { mqProducerMock.send(any()) } throws Exception("Couldn't send document")

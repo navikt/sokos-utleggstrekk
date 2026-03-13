@@ -44,9 +44,9 @@ class UtleggsTrekkService(
                 },
             replyQueue = JmsListenerService(repository).osKvitteringQueue,
         ),
+    private val featureToggles: UnleashIntegration = UnleashIntegration(slackService),
 ) {
     private val logger = KotlinLogging.logger { }
-    private val featureToggles = UnleashIntegration(slackService)
 
     suspend fun schedule() {
         logger.info("Schedule started")
