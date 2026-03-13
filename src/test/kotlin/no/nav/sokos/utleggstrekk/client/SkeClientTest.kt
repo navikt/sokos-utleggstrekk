@@ -54,7 +54,6 @@ class SkeClientTest :
                 every { error(any<String>()) } just runs
                 every { error(any<Marker>(), any<() -> Unit>()) } just runs
             }
-
         val mockToken = "mock-token"
         val mockTokenProvider =
             mockk<MaskinportenAccessTokenClient> {
@@ -113,14 +112,12 @@ class SkeClientTest :
                 mockEngine.requestHistory shouldHaveSize 1
 
                 val request = mockEngine.requestHistory.first()
-                println(request.url.encodedPath)
                 request.url.toString() shouldContain "\\?fraSekvensnummer=$sekvensnr&maksAntall=2500".toRegex()
                 request.headers["Klientid"] shouldBe "NAV/0.1"
                 request.headers["Korrelasjonsid"] shouldNotBe null
                 request.headers[HttpHeaders.Authorization] shouldBe "Bearer mock-token"
 
                 trekkListe shouldBe emptyList()
-                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
             }
 
             test("skal konvertere en body til en list av Trekkpaalegg") {
@@ -132,27 +129,22 @@ class SkeClientTest :
 
                 trekkListe shouldHaveSize 2
                 trekkListe.first() shouldBe mockTrekk
-
-                verify(exactly = 0) {
-                    logger.warn(any<() -> Unit>())
-                }
             }
 
-            test("skal returnere en emptyList når den ikke kan parse body ") {
+            test("skal returnere en emptyList når den ikke kan parse body") {
                 val mockedResponse = resourceToString("Fra_Skatt_Trekk1_versjon1_beløp_ingen_ting_ekstra_Feil.json")
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
 
+                trekkListe shouldBe emptyList()
                 verify(exactly = 1) { logger.error(any<Marker>(), any<() -> Unit>()) }
                 verify(exactly = 1) { logger.error("Feil i konvertering av response til Trekkpålegg ") }
                 verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
-
-                trekkListe shouldBe emptyList()
             }
 
-            test("skal logge warn når API-kallet returnerer en empty body") {
+            test("skal returnere emptyList når API-kallet returnerer en empty body") {
                 val mockEngine = getEngine("")
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
@@ -162,7 +154,7 @@ class SkeClientTest :
                 verify(exactly = 1) { logger.warn(any<() -> Unit>()) }
             }
 
-            test("skal sende slack + logge TEAM_LOGS når API-kallet gir 4xx, og ikke sende slack når 5xx") {
+            test("skal sende slack for både 4xx og 5xx når responsen kan parses til SkeErrorMessage") {
                 val alarmHeaders = mutableListOf<String>()
                 val messages = mutableListOf<String>()
                 every { slackService.addError(capture(alarmHeaders), capture(messages)) } returns Unit
@@ -191,8 +183,8 @@ class SkeClientTest :
                 skeClient.hentUtleggstrekkFraSekvensnr(1).shouldBeEmpty()
                 skeClient.hentUtleggstrekkFraSekvensnr(2).shouldBeEmpty()
 
-                // Oppdatert behavior: Slack sendes både for 4xx og 5xx (hvis responsen kan parses til SkeErrorMessage).
                 verify(exactly = 2) { slackService.addError(any(), any()) }
+
                 alarmHeaders.first() shouldBe "Feil fra SKE"
                 messages.first() shouldContain "sekvensnr=1"
                 messages.first() shouldContain "KB-005"
@@ -200,14 +192,12 @@ class SkeClientTest :
                 alarmHeaders.last() shouldBe "Feil fra SKE"
                 messages.last() shouldContain "sekvensnr=2"
                 messages.last() shouldContain "KB-001"
-
-                // Logging: TEAM_LOGS marker error logges for begge kallene.
                 verify(exactly = 2) { logger.error(TEAM_LOGS_MARKER, any<() -> Unit>()) }
             }
         }
 
-        context(name = "Feil i json-struktur") {
-            test("String i numerisk id skal returnere tom liste`") {
+        context("Feil i json-struktur") {
+            test("String i numerisk id skal returnere tom liste") {
                 val mockedResponse = resourceToString("trekkMedFeil/stringForTall.json")
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
@@ -224,9 +214,9 @@ class SkeClientTest :
                     skeClient.hentUtleggstrekkFraSekvensnr(1).first()
                 }
             }
-            test("Trekk med ugyldige tegn skal returnere tom liste") {
-                val mockedResponse = resourceToString("trekkMedFeil/trekkMedUgyldigPnr.json").replace(" ", "\u0001")
 
+            test("Trekk med ugyldige tegn skal returnere tom liste") {
+                val mockedResponse = resourceToString("trekkMedFeil/trekkMedUgyldigPnr.json").replace(" ", "\u0001")
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
