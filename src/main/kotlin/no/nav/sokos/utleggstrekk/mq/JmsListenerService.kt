@@ -10,6 +10,7 @@ import com.ibm.msg.client.jakarta.wmq.WMQConstants
 import jakarta.jms.ConnectionFactory
 import jakarta.jms.JMSContext
 import jakarta.jms.Message
+import jakarta.jms.MessageFormatException
 import jakarta.jms.Queue
 import mu.KotlinLogging
 
@@ -34,6 +35,13 @@ class JmsListenerService(
         MQQueue(PropertiesConfig.mqProperties.replyQueueName).apply {
             targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
         },
+    private val producerBoq: JmsProducerService =
+        JmsProducerService(
+            targetQueue =
+                MQQueue(PropertiesConfig.mqProperties.replyBoqQueueName).apply {
+                    targetClient = WMQConstants.WMQ_CLIENT_NONJMS_MQ
+                },
+        ),
     connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),
 ) {
     private val logger = KotlinLogging.logger {}
@@ -47,18 +55,24 @@ class JmsListenerService(
     }
 
     private fun onReceipt(message: Message) {
-        try {
+        runCatching {
             val jmsMessage = message.getBody(String::class.java)
             jmsMessage.validateString(true)
             val receipt = jsonConfig.decodeFromString<KvitteringFraOppdrag>(jmsMessage)
             receipt.validate()
             processReceipt(receipt)
             message.acknowledge()
-        } catch (exception: Exception) {
+        }.onFailure { exception ->
             val header = "Prosessering av kvitteringmelding feilet."
             val messageId = message.jmsMessageID
             logger.error(TEAM_LOGS_MARKER, "$header $messageId", exception)
             slackService.addError(header, messageId)
+
+            if (exception !is MessageFormatException) {
+                val jmsMessage = message.getBody(String::class.java)
+                producerBoq.send(jmsMessage)
+                message.acknowledge()
+            }
         }
 
         CoroutineScope(SupervisorJob() + Default).launch {

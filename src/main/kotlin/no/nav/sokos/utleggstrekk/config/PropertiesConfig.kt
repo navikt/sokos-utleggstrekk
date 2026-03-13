@@ -125,7 +125,9 @@ data class MQProperties(
     val username: String,
     val password: String,
     val userAuth: Boolean,
-)
+) {
+    val replyBoqQueueName = "${replyQueueName}_BOQ"
+}
 
 @Serializable
 data class PostgresConfig(

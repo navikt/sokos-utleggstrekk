@@ -14,7 +14,7 @@ import no.nav.sokos.utleggstrekk.metrics.Metrics.trekkSendtTilOs
 
 class JmsProducerService(
     private val targetQueue: Queue,
-    private val replyQueue: Queue,
+    private val replyQueue: Queue? = null,
     connectionFactory: ConnectionFactory = MQConfig.connectionFactory(),
 ) {
     private val logger = KotlinLogging.logger {}
@@ -28,7 +28,6 @@ class JmsProducerService(
         }
     }
 
-    // TODO: Må legge backout implementasjon. Snakke med Tak Wai eller Jon
     fun send(payload: String) {
         val message = jmsContext.createTextMessage(payload)
         try {
