@@ -110,10 +110,18 @@ class UtleggsTrekkService(
             jsonConfig.decodeFromString<TrekkTilOppdrag>(transaksjonOS.documentJson).validate()
             mqProducer.send(transaksjonOS.documentJson)
         }.onSuccess {
-            repository.updateTransaksjonSendt(transaksjonOS.transaksjonsID)
+            updateTransactionAfterSending(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
             slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: ${exception.message}")
             logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
+        }
+    }
+
+    private fun updateTransactionAfterSending(transaksjonId: String) {
+        runCatching {
+            repository.updateTransaksjonSendt(transaksjonId)
+        }.onFailure {
+            slackService.addError("Database feil", "Kunne ikke oppdatere transaksjon status til $transaksjonId")
         }
     }
 
