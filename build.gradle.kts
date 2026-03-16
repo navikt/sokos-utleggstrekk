@@ -44,7 +44,7 @@ val nimbusVersion = "10.8"
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.16.3"
-val unleashedVersion = "12.1.2"
+val unleashedVersion = "12.2.0"
 
 // DB
 val hikaricpVersion = "7.0.2"
@@ -61,11 +61,11 @@ val janinoVersion = "3.1.12"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.1.4"
+val kotestVersion = "6.1.5"
 val mockkVersion = "1.14.9"
 val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.4"
-val activemqVersion = "2.51.0"
+val activemqVersion = "2.52.0"
 val kotestTestContainerExtensionVersion = "2.0.2"
 val ibmMqVersion = "9.4.5.0"
 
@@ -139,7 +139,7 @@ dependencies {
 configurations.all {
     resolutionStrategy.eachDependency {
         if (requested.group == "org.lz4" && requested.name == "lz4-java") {
-            useTarget("at.yawk.lz4:lz4-java:1.10.3")
+            useTarget("at.yawk.lz4:lz4-java:1.10.4")
             because("CVE fix: Out-of-bounds memory operations in versions < 1.8.1")
         }
         if (requested.group == "org.xerial.snappy" && requested.name == "snappy-java") {

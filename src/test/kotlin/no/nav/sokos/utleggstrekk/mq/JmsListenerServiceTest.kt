@@ -16,6 +16,7 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkObject
+import io.mockk.verify
 import mu.KLogger
 import mu.KotlinLogging
 import mu.Marker
@@ -57,11 +58,17 @@ class JmsListenerServiceTest :
             )
         }
 
+        val jmsProducerBoq =
+            mockk<JmsProducerService> {
+                every { send(any()) } returns Unit
+            }
+
         beforeSpec {
             JmsListenerService(
                 repository,
                 slackService,
-                osKvitteringQueue = replyQueue,
+                replyQueue,
+                jmsProducerBoq,
                 connectionFactory,
             )
 
@@ -162,6 +169,12 @@ class JmsListenerServiceTest :
                             slackService.addError("Prosessering av kvitteringmelding feilet.", any())
                             slackService.sendCachedErrors("Kvittering fra oppdrag feil")
                         }
+                    }
+                }
+
+                Then("Meldingen skal sendes til backoff kø") {
+                    eventually(duration = 1.seconds) {
+                        verify(exactly = 1) { jmsProducerBoq.send(any()) }
                     }
                 }
             }
