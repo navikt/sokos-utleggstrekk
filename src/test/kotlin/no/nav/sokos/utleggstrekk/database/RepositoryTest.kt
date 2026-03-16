@@ -11,6 +11,7 @@ import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.ranges.shouldBeIn
 import io.kotest.matchers.shouldBe
@@ -280,6 +281,10 @@ class RepositoryTest :
                     transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.VALIDERINGSFEIL
                 }
 
+                And("Tidspunktsendt skal være null") {
+                    transaksjonTilOs.tidspunktSendt.shouldBeNull()
+                }
+
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
                     transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
@@ -294,6 +299,11 @@ class RepositoryTest :
 
                 Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
                     transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.SENDT
+                }
+
+                And("Tidspunktsendt skal være nå") {
+                    val now = dbNow()
+                    transaksjonTilOs.tidspunktSendt?.shouldBeIn(now.minusSeconds(10)..now)
                 }
 
                 And("Tidspunktsistestatus skal være nå") {
