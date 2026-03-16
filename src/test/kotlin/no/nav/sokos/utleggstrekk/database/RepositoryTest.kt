@@ -270,7 +270,7 @@ class RepositoryTest :
                 }
             }
 
-            When("Transaksjonstatus oppdateres til valideringfeil") {
+            When("Transaksjonstatus oppdateres til valideringsfeil") {
                 repository.updateTransaksjonValideringsfeil(dto.transaksjonID)
 
                 var transaksjonTilOs = repository.getTransaksjonTilOs(dto.transaksjonID)
