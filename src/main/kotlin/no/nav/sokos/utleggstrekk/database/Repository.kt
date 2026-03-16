@@ -276,7 +276,7 @@ class Repository(private val dataSource: HikariDataSource) {
         }
     }
 
-    fun updateTransaksjonSendt(transaksjonId: String) {
+    private fun updateTransaksjonStatus(transaksjonId: String, transaksjonsStatus: TransaksjonsStatus) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
@@ -289,12 +289,20 @@ class Repository(private val dataSource: HikariDataSource) {
                     WHERE transaksjons_id=:transaksjonsId
                     """.trimIndent(),
                     mapOf(
-                        "transaksjonStatus" to TransaksjonsStatus.SENDT.name,
+                        "transaksjonStatus" to transaksjonsStatus.name,
                         "transaksjonsId" to transaksjonId,
                     ),
                 ),
             )
         }
+    }
+
+    fun updateTransaksjonSendt(transaksjonId: String) {
+        updateTransaksjonStatus(transaksjonId, TransaksjonsStatus.SENDT)
+    }
+
+    fun updateTransaksjonValideringsfeil(transaksjonId: String) {
+        updateTransaksjonStatus(transaksjonId, TransaksjonsStatus.VALIDERINGSFEIL)
     }
 
     fun updateReceiptStatusOfTransaksjon(transaksjonId: String, kvitteringStatus: KvitteringStatus, navTrekkId: String) {

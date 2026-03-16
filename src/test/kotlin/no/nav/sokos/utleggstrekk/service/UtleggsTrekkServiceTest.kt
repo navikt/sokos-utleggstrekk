@@ -11,6 +11,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -104,7 +105,6 @@ internal class UtleggsTrekkServiceTest :
                     coEvery { hentUtleggstrekkFraSekvensnr(any()) } returns listOf(trekkpaalegg)
                 }
             val slackService = mockk<SlackService>(relaxUnitFun = true)
-
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     repository,
@@ -283,61 +283,91 @@ internal class UtleggsTrekkServiceTest :
         }
 
         Given("Vi sender trekk til OS") {
-            val document =
-                TrekkTilOppdrag(
-                    dokument =
-                        Document(
-                            transaksjonsId = "TransaksjonsId01",
-                            innrapporteringTrekk =
-                                InnrapporteringTrekk(
-                                    aksjonskode = Aksjonskode.NY,
-                                    kilde = "SOKOSUTLEGG",
-                                    navTrekkId = "",
-                                    kreditorIdTss = "80000423362",
-                                    kreditorTrekkId = "10342395",
-                                    debitorId = "19074639472",
-                                    kid = "17654202404",
-                                    kreditorsRef = "SAK1",
-                                    kodeTrekktype = "KRED",
-                                    kodeTrekkAlternativ = TrekkAlternativ.LOPP,
-                                    prioritetFomDato = null,
-                                    perioder = null,
-                                ),
-                        ),
-                    mmel = null,
-                )
-            val mockTransaksjonOS =
-                mockk<TransaksjonOS> {
-                    every { documentJson } returns jsonConfig.encodeToString(document)
-                }
-            val mockedRepository =
-                mockk<Repository>(relaxed = true) {
-                    every { getTransaksjonerTilOsSomIkkeErSendt() } returns listOf(mockTransaksjonOS)
-                }
             val mockSlackService =
                 mockk<SlackService> {
                     coEvery { sendCachedErrors(any()) } returns Unit
                     every { addError(any(), any()) } returns Unit
                 }
+
+            val mockedTransaksjonOS = mockk<TransaksjonOS>()
+
+            val mockedRepository =
+                mockk<Repository> {
+                    every { getTransaksjonerTilOsSomIkkeErSendt() } returns listOf(mockedTransaksjonOS)
+                    every { updateTransaksjonSendt(any()) } returns Unit
+                    every { updateTransaksjonValideringsfeil(any()) } returns Unit
+                    every { deleteOldData() } returns Unit
+                }
+
             val utleggsTrekkService =
                 UtleggsTrekkService(
                     repository = mockedRepository,
-                    skeClient = mockk(relaxed = true),
+                    skeClient = mockk(),
                     slackService = mockSlackService,
                     mqProducer = mqProducerMock,
                     featureToggles = mockedFeatureToggle(sendTilOs = true),
                 )
-            When("Det skjedd en feil") {
+
+            fun trekkTilOppdrag(shouldValidate: Boolean = true): TrekkTilOppdrag {
+                val innrapporteringTrekk =
+                    InnrapporteringTrekk(
+                        aksjonskode = Aksjonskode.NY,
+                        kilde = "SOKOSUTLEGG",
+                        navTrekkId = "",
+                        kreditorIdTss = if (shouldValidate) "80000423362" else "invalid kreditorIdTss",
+                        kreditorTrekkId = "10342395",
+                        debitorId = "19074639472",
+                        kid = "17654202404",
+                        kreditorsRef = "SAK1",
+                        kodeTrekktype = "KRED",
+                        kodeTrekkAlternativ = TrekkAlternativ.LOPP,
+                        prioritetFomDato = null,
+                        perioder = null,
+                    )
+
+                return TrekkTilOppdrag(
+                    dokument =
+                        Document(
+                            transaksjonsId = "TransaksjonsId01",
+                            innrapporteringTrekk = innrapporteringTrekk,
+                        ),
+                    mmel = null,
+                )
+            }
+
+            When("Transaksjonen sendes ikke") {
+                clearMocks(mockSlackService, answers = false)
+                every { mockedTransaksjonOS.documentJson } returns jsonConfig.encodeToString(trekkTilOppdrag())
                 every { mqProducerMock.send(any()) } throws Exception("Couldn't send document")
 
+                utleggsTrekkService.schedule()
                 Then("Vi sender en alarm på slack") {
-                    utleggsTrekkService.schedule()
-
                     verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: Couldn't send document") }
                     coVerify { mockSlackService.sendCachedErrors(any()) }
                 }
+
+                Then("Vi setter ikke transaksjons status til VALIDERINGSFEIL") {
+                    verify(exactly = 0) { mockedRepository.updateTransaksjonValideringsfeil(any()) }
+                }
+            }
+
+            When("Transaksjonen valideres ikke") {
+                val trekkTilOppdrag = trekkTilOppdrag(shouldValidate = false)
+                every { mockedTransaksjonOS.documentJson } returns jsonConfig.encodeToString(trekkTilOppdrag)
+                every { mockedTransaksjonOS.transaksjonsID } returns trekkTilOppdrag.dokument.transaksjonsId
+
+                utleggsTrekkService.schedule()
+                Then("Vi sender en alarm på slack") {
+                    verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: kreditorIdTss er ugydlig") }
+                    coVerify { mockSlackService.sendCachedErrors(any()) }
+                }
+
+                Then("Vi setter transaksjons status til VALIDERINGSFEIL") {
+                    verify(exactly = 1) { mockedRepository.updateTransaksjonValideringsfeil("TransaksjonsId01") }
+                }
             }
         }
+
         afterSpec {
             clearAllMocks()
             unmockkObject(KotlinLogging)

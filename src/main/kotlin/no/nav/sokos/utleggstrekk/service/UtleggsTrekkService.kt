@@ -60,7 +60,9 @@ class UtleggsTrekkService(
             repository.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
         }
         repository.deleteOldData()
-        calculateMetrics()
+        if (!PropertiesConfig.isTest) {
+            calculateMetrics()
+        }
         slackService.sendCachedErrors("Trekk henting alert")
     }
 
@@ -114,6 +116,10 @@ class UtleggsTrekkService(
         }.onFailure { exception ->
             slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: ${exception.message}")
             logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
+
+            if (exception is IllegalArgumentException) {
+                repository.updateTransaksjonValideringsfeil(transaksjonOS.transaksjonsID)
+            }
         }
     }
 

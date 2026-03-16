@@ -270,19 +270,38 @@ class RepositoryTest :
                 }
             }
 
-            When("Transaksjonstatus oppdateres") {
-                repository.updateTransaksjonSendt(dto.transaksjonID)
-                val transaksjonTilOs = repository.getTransaksjonTilOs(dto.transaksjonID)
-                transaksjonTilOs.shouldNotBeNull()
-                Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
+            When("Transaksjonstatus oppdateres til valideringfeil") {
+                repository.updateTransaksjonValideringsfeil(dto.transaksjonID)
 
-                    transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.SENDT
+                var transaksjonTilOs = repository.getTransaksjonTilOs(dto.transaksjonID)
+                transaksjonTilOs.shouldNotBeNull()
+
+                Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
+                    transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.VALIDERINGSFEIL
                 }
+
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
                     transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
                 }
             }
+
+            When("Transaksjonstatus oppdateres til sendt") {
+                repository.updateTransaksjonSendt(dto.transaksjonID)
+
+                val transaksjonTilOs = repository.getTransaksjonTilOs(dto.transaksjonID)
+                transaksjonTilOs.shouldNotBeNull()
+
+                Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
+                    transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.SENDT
+                }
+
+                And("Tidspunktsistestatus skal være nå") {
+                    val now = dbNow()
+                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                }
+            }
+
             When("Transaksjon oppdateres med kvitteringsstatus og navtrekkid") {
                 val nyKvitteringStatus = KvitteringStatus.OK
                 val nyNavTrekkId = "123456789"
