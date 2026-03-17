@@ -358,7 +358,7 @@ internal class UtleggsTrekkServiceTest :
 
                 utleggsTrekkService.schedule()
                 Then("Vi sender en alarm på slack") {
-                    verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: kreditorIdTss er ugyldig") }
+                    verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS") }
                     coVerify { mockSlackService.sendCachedErrors(any()) }
                 }
 

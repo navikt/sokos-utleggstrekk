@@ -44,7 +44,7 @@ class UtleggsTrekkService(
                 },
             replyQueue = JmsListenerService(repository).osKvitteringQueue,
         ),
-    private val featureToggles: UnleashIntegration = UnleashIntegration(slackService),
+    private val featureToggles: UnleashIntegration = UnleashIntegration(),
 ) {
     private val logger = KotlinLogging.logger { }
 
