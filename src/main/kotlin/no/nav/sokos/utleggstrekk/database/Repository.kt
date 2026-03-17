@@ -520,11 +520,14 @@ class Repository(private val dataSource: HikariDataSource) {
                     SELECT DISTINCT trekk_alternativ from  transaksjon_os  WHERE trekk_id_ske=:trekkIdSke 
                     AND
                     kvittering_status NOT IN (:FEIL, :UKJENT)
+                    AND
+                    transaksjon_status = :SENDT
                     """.trimIndent(),
                     mapOf(
                         "trekkIdSke" to trekk.trekkid,
                         "FEIL" to KvitteringStatus.FEIL.name,
                         "UKJENT" to KvitteringStatus.UKJENT.name,
+                        "SENDT" to TransaksjonsStatus.SENDT.name,
                     ),
                 ),
             ) { row ->
