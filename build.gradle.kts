@@ -135,16 +135,21 @@ dependencies {
     testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
 }
 
-// CVE fixes for vulnerable dependencies from transitive dependencies io.kotest.extensions:kotest-extensions-testcontainers
 configurations.all {
-    resolutionStrategy.eachDependency {
-        if (requested.group == "org.lz4" && requested.name == "lz4-java") {
-            useTarget("at.yawk.lz4:lz4-java:1.10.4")
-            because("CVE fix: Out-of-bounds memory operations in versions < 1.8.1")
-        }
-        if (requested.group == "org.xerial.snappy" && requested.name == "snappy-java") {
-            useVersion("1.1.10.8")
-            because("CVE fix: Unchecked chunk length leads to DoS in versions <= 1.1.10.0")
+    resolutionStrategy {
+        eachDependency {
+            if (requested.group == "org.lz4" && requested.name == "lz4-java") {
+                useTarget("at.yawk.lz4:lz4-java:1.10.4")
+                because("Prefer the patched fork for vulnerability fix")
+            }
+            if (requested.group == "com.fasterxml.jackson.core" && requested.name == "jackson-core") {
+                useVersion("2.21.1")
+                because("jackson-core: Number Length Constraint Bypass in Async Parser Leads to Potential DoS Condition. Affected version >= 2.19.0, < 2.21.1")
+            }
+            if (requested.group == "org.xerial.snappy" && requested.name == "snappy-java") {
+                useVersion("1.1.10.4")
+                because("snappy-java's missing upper bound check on chunk length can lead to Denial of Service (DoS) impact. Affected version <= 1.1.10.3")
+            }
         }
     }
 }
