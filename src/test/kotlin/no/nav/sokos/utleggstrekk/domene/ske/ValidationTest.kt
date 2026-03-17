@@ -8,7 +8,6 @@ import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
-import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
@@ -126,6 +125,6 @@ class ValidationTest :
 
         afterSpec {
             clearAllMocks()
-            unmockkObject(KotlinLogging, PropertiesConfig)
+            unmockkObject(PropertiesConfig)
         }
     })

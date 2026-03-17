@@ -72,7 +72,7 @@ class MaskinportenAccessTokenClient(
         } else {
             val feilmelding = response.body<TokenError>()
             val msg = "Feil fra tokenprovider, Feilmelding: $feilmelding"
-            logger.error { msg }
+            logger.error { "Feil fra tokenprovider" }
             logger.error(TEAM_LOGS_MARKER, msg)
             throw MaskinportenException(msg)
         }
