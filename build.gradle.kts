@@ -43,12 +43,12 @@ val nimbusVersion = "10.8"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
-val prometheusVersion = "1.16.3"
+val prometheusVersion = "1.16.4"
 val unleashedVersion = "12.2.0"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "12.0.3"
+val flywayVersion = "12.1.0"
 val postgresqlVersion = "42.7.10"
 val kotliqueryVersion = "2.0.0"
 
@@ -61,7 +61,7 @@ val janinoVersion = "3.1.12"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.1.5"
+val kotestVersion = "6.1.6"
 val mockkVersion = "1.14.9"
 val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.4"
