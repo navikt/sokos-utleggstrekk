@@ -84,7 +84,7 @@ class UtleggsTrekkService(
         return skeClient.hentUtleggstrekkFraSekvensnr(sisteSekvensnr)
     }
 
-    private fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
+    private suspend fun processTrekkpaalegg(trekkpaalegg: List<Trekkpaalegg>) {
         // Sortert for at vi ikke skal hoppe over noen i sekvens dersom vi feiler før alle er lagret.
         trekkpaalegg.sortedBy { it.sekvensnummer }.forEach { trekk ->
             var status = SkattTrekkStatus.MOTTATT
@@ -93,6 +93,8 @@ class UtleggsTrekkService(
             } catch (e: IllegalArgumentException) {
                 logger.error("Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}")
                 logger.error(TEAM_LOGS_MARKER, "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}", e)
+                slackService.addError("Feil i validering", "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}: $e")
+                slackService.sendCachedErrors("Ugyldige verdier i trekk fra skatt")
                 status = SkattTrekkStatus.AVVIST
             }
             try {
@@ -114,7 +116,7 @@ class UtleggsTrekkService(
         }.onSuccess {
             updateTransactionAfterSending(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
-            slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: ${exception.message}")
+            slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS")
             logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
 
             if (exception is IllegalArgumentException) {
@@ -139,7 +141,7 @@ class UtleggsTrekkService(
             .filter { it.tidspunktSendt?.isBefore(yesterday) == true }
             .forEach {
                 val header = "TransaksjonID mangler kvitteringen"
-                val message = "TransaksjonID ${it.transaksjonsID} ble sendt ${it.tidspunktSendt?.format(formatter)} men vi har ikke mottatt kvitteringen."
+                val message = "Mangler kvittering for transaksjonID ${it.transaksjonsID} sendt ${it.tidspunktSendt?.format(formatter)}"
                 slackService.addError(header, message)
             }
         slackService.sendCachedErrors("Kvittering fra oppdrag uteblir")

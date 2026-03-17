@@ -20,13 +20,14 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.runs
-import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
 import mu.KLogger
 import mu.KotlinLogging
+import mu.Marker
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
@@ -49,6 +50,9 @@ class SkeClientTest :
             mockk<KLogger>(relaxed = true) {
                 every { info(any<() -> Unit>()) } just runs
                 every { warn(any<() -> Unit>()) } just runs
+                every { error(any<() -> Unit>()) } just runs
+                every { error(any<String>()) } just runs
+                every { error(any<Marker>(), any<() -> Unit>()) } just runs
             }
 
         val mockToken = "mock-token"
@@ -128,58 +132,37 @@ class SkeClientTest :
 
                 trekkListe shouldHaveSize 2
                 trekkListe.first() shouldBe mockTrekk
+
                 verify(exactly = 0) {
                     logger.warn(any<() -> Unit>())
                 }
             }
 
-            test("skal returnere en emptyList når den kan ikke parse body og sende en alarm") {
+            test("skal returnere en emptyList når den ikke kan parse body ") {
                 val mockedResponse = resourceToString("Fra_Skatt_Trekk1_versjon1_beløp_ingen_ting_ekstra_Feil.json")
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
-                val errorMsg = slot<() -> Any?>()
-                every { logger.warn(capture(errorMsg)) } just runs
-
-                val slackMessage = slot<String>()
-                every { slackService.addError(any(), capture(slackMessage)) } returns Unit
-
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
+
+                verify(exactly = 1) { logger.error(any<Marker>(), any<() -> Unit>()) }
+                verify(exactly = 1) { logger.error("Feil i konvertering av response til Trekkpålegg ") }
+                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
 
                 trekkListe shouldBe emptyList()
-                verify(exactly = 1) {
-                    logger.warn(any<() -> Unit>())
-                    slackService.addError("JsonConvertException", any())
-                }
-                errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av response"
-                slackMessage.captured shouldContain "Feil i konvertering av response"
             }
 
-            test("skal takle data med felter den ikke kjenner") {
-                val mockedResponse = resourceToString("Trekk_med_ukjente_felter.json")
-                val mockEngine = getEngine(mockedResponse)
-                val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
-
-                val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
-                trekkListe shouldHaveSize 1
-                verify(exactly = 0) {
-                    logger.warn(any<() -> Unit>())
-                }
-            }
-            test("skal sende en alarm når API-kallet returnere en empty body") {
-                val message = slot<String>()
-                every { slackService.addError(any(), capture(message)) } returns Unit
+            test("skal logge warn når API-kallet returnerer en empty body") {
                 val mockEngine = getEngine("")
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
-                val sekvensnr = 1
-                val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(sekvensnr)
+                val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
 
                 trekkListe.shouldBeEmpty()
-                verify(exactly = 1) { slackService.addError("Manglende data", any()) }
-                message.captured shouldContain "Fikk ingen data for sekvensnummer=$sekvensnr"
+                verify(exactly = 1) { logger.warn(any<() -> Unit>()) }
             }
-            test("skal sende en alarm når API-kallet mislykkes") {
+
+            test("skal sende slack + logge TEAM_LOGS når API-kallet gir 4xx, og ikke sende slack når 5xx") {
                 val alarmHeaders = mutableListOf<String>()
                 val messages = mutableListOf<String>()
                 every { slackService.addError(capture(alarmHeaders), capture(messages)) } returns Unit
@@ -205,34 +188,34 @@ class SkeClientTest :
 
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
-                val trekkListe1 = skeClient.hentUtleggstrekkFraSekvensnr(1)
-                val trekkListe2 = skeClient.hentUtleggstrekkFraSekvensnr(2)
+                skeClient.hentUtleggstrekkFraSekvensnr(1).shouldBeEmpty()
+                skeClient.hentUtleggstrekkFraSekvensnr(2).shouldBeEmpty()
 
-                trekkListe1.shouldBeEmpty()
-                trekkListe2.shouldBeEmpty()
+                // Oppdatert behavior: Slack sendes både for 4xx og 5xx (hvis responsen kan parses til SkeErrorMessage).
                 verify(exactly = 2) { slackService.addError(any(), any()) }
+                alarmHeaders.first() shouldBe "Feil fra SKE"
+                messages.first() shouldContain "sekvensnr=1"
+                messages.first() shouldContain "KB-005"
 
-                alarmHeaders.first() shouldBe "403 Forbidden"
-                messages.first() shouldContain ".+sekvensnr=1.+KB-005.+KorrelasjonsId.+".toRegex()
+                alarmHeaders.last() shouldBe "Feil fra SKE"
+                messages.last() shouldContain "sekvensnr=2"
+                messages.last() shouldContain "KB-001"
 
-                alarmHeaders.last() shouldBe "500 Internal Server Error"
-                messages.last() shouldContain ".+sekvensnr=2.+KB-001.+KorrelasjonsId.+".toRegex()
+                // Logging: TEAM_LOGS marker error logges for begge kallene.
+                verify(exactly = 2) { logger.error(TEAM_LOGS_MARKER, any<() -> Unit>()) }
             }
         }
 
         context(name = "Feil i json-struktur") {
-            test("String for tall id") {
+            test("String i numerisk id skal returnere tom liste`") {
                 val mockedResponse = resourceToString("trekkMedFeil/stringForTall.json")
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
-                val errorMsg = slot<() -> Any?>()
-                every { logger.warn(capture(errorMsg)) } just runs
-
-                skeClient.hentUtleggstrekkFraSekvensnr(1)
-                errorMsg.captured.invoke().toString() shouldContain "Feil i konvertering av respons"
+                skeClient.hentUtleggstrekkFraSekvensnr(1).shouldBeEmpty()
             }
-            test("Beløp og prosent i samme periode") {
+
+            test("Beløp og prosent i samme periode skal kaste exception") {
                 val mockedResponse = resourceToString("trekkMedFeil/belopOgProsent.json")
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
@@ -241,16 +224,13 @@ class SkeClientTest :
                     skeClient.hentUtleggstrekkFraSekvensnr(1).first()
                 }
             }
-            test("Trekk med ugyldige tegn") {
+            test("Trekk med ugyldige tegn skal returnere tom liste") {
                 val mockedResponse = resourceToString("trekkMedFeil/trekkMedUgyldigPnr.json").replace(" ", "\u0001")
 
                 val mockEngine = getEngine(mockedResponse)
                 val skeClient = SkeClient(getClient(mockEngine), slackService, mockTokenProvider)
 
-                val errorMsg = slot<() -> Any?>()
-                every { logger.warn(capture(errorMsg)) } just runs
-                skeClient.hentUtleggstrekkFraSekvensnr(1)
-                errorMsg.captured.invoke().toString() shouldContain "Malformed string data"
+                skeClient.hentUtleggstrekkFraSekvensnr(1).shouldBeEmpty()
             }
         }
 

@@ -341,8 +341,8 @@ internal class UtleggsTrekkServiceTest :
                 every { mqProducerMock.send(any()) } throws Exception("Couldn't send document")
 
                 utleggsTrekkService.schedule()
-                Then("Vi sender en alarm på slack") {
-                    verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS: Couldn't send document") }
+                Then("Sendes en alarm til slack") {
+                    verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS") }
                     coVerify { mockSlackService.sendCachedErrors(any()) }
                 }
 
