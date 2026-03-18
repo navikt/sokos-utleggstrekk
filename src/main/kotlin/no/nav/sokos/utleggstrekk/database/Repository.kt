@@ -402,26 +402,6 @@ class Repository(private val dataSource: HikariDataSource) {
 
     fun getPerioderForTrekk(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> = getPerioderForTrekkVersjon(trekkFraSkatt.id)
 
-    fun getTrekkAlternativOS(trekkIdSke: String): List<TrekkAlternativ> =
-        using(sessionOf(dataSource)) { session ->
-            session.list(
-                queryOf(
-                    """
-                        SELECT DISTINCT trekk_alternativ
-                            FROM  transaksjon_os  
-                            WHERE trekk_id_ske=:trekkIdSke
-                            AND (kvittering_status = :OK 
-                            OR kvittering_status = :IKKE_MOTTATT)
-                    """.trimMargin(),
-                    mapOf(
-                        "trekkIdSke" to trekkIdSke,
-                        "OK" to KvitteringStatus.OK.name,
-                        "IKKE_MOTTATT" to KvitteringStatus.IKKE_MOTTATT.name,
-                    ),
-                ),
-            ) { row -> TrekkAlternativ.valueOf(row.string("trekk_alternativ").uppercase()) }
-        }
-
     fun getPerioderTilOs(trekkIdSke: String, alternativ: TrekkAlternativ): List<PeriodeTilOS> =
         using(sessionOf(dataSource)) { session ->
             session.list(

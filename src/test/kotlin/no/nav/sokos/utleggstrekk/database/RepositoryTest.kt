@@ -8,7 +8,6 @@ import kotlin.time.Duration.Companion.seconds
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldBeNull
@@ -496,40 +495,6 @@ class RepositoryTest :
                     transaksjonerIkkeSendt.shouldHaveSize(2)
                     transaksjonerIkkeSendt.filter { it.transaksjonStatus == TransaksjonsStatus.SENDT }.shouldHaveSize(0)
                     transaksjonerIkkeSendt.filter { it.transaksjonStatus == TransaksjonsStatus.IKKE_SENDT }.shouldHaveSize(2)
-                }
-            }
-        }
-
-        Given("Vi henter unike TrekkAlternativ for en spesifikk TrekkID") {
-            DBListener.clearDB()
-            val trekkIdSke = "TestTrekkID"
-            val transaksjonsId1 = "id1"
-            val transaksjonsId2 = "id2"
-            // Insert transactions with distinct TrekkAlternativ
-            val dto1 =
-                OSDto(
-                    transaksjonID = transaksjonsId1,
-                    trekkIdSke,
-                    trekkversjon = 1,
-                    lagDokumentTilOppdrag(transaksjonsId1).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPM)).innrapporteringTrekk,
-                    "",
-                )
-            val dto2 =
-                OSDto(
-                    transaksjonID = transaksjonsId2,
-                    trekkIdSke,
-                    trekkversjon = 1,
-                    lagDokumentTilOppdrag(transaksjonsId2).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPP)).innrapporteringTrekk,
-                    "",
-                )
-            repository.insertTransaksjonTilOs(dto1)
-            repository.insertTransaksjonTilOs(dto2)
-
-            When("Når unike TrekkAlternativ verdier hentes for for TrekkID: $trekkIdSke") {
-                val alternativ = repository.getTrekkAlternativOS(trekkIdSke)
-
-                Then("Så skal verdiene inneholde kun én LOPM og kun én LOPP") {
-                    alternativ.shouldContainExactlyInAnyOrder(TrekkAlternativ.LOPM, TrekkAlternativ.LOPP)
                 }
             }
         }
