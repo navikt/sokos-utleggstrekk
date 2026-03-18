@@ -68,10 +68,10 @@ internal class UtleggsTrekkServiceTest :
                 every { info(any<() -> Any?>()) } returns Unit
             }
 
-        fun mockedFeatureToggle(hentFraSkatt: Boolean = false, prossesserUtleggstrekk: Boolean = false, sendTilOs: Boolean = false) =
+        fun mockedFeatureToggle(hentFraSkatt: Boolean = false, prosesserUtleggstrekk: Boolean = false, sendTilOs: Boolean = false) =
             mockk<UnleashIntegration> {
                 every { isHentFraSKEEnabled() } returns hentFraSkatt
-                every { isProsesserUtleggstrekkEnabled() } returns prossesserUtleggstrekk
+                every { isProsesserUtleggstrekkEnabled() } returns prosesserUtleggstrekk
                 every { isSendTilOSEnabled() } returns sendTilOs
             }
 
