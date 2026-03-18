@@ -352,6 +352,7 @@ internal class UtleggsTrekkServiceTest :
             }
 
             When("Transaksjonen valideres ikke") {
+                clearMocks(mockSlackService, answers = false)
                 val trekkTilOppdrag = trekkTilOppdrag(shouldValidate = false)
                 every { mockedTransaksjonOS.documentJson } returns jsonConfig.encodeToString(trekkTilOppdrag)
                 every { mockedTransaksjonOS.transaksjonsID } returns trekkTilOppdrag.dokument.transaksjonsId
