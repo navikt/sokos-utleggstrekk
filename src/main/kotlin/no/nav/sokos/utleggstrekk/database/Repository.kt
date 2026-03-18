@@ -432,12 +432,14 @@ class Repository(private val dataSource: HikariDataSource) {
                             JOIN  transaksjon_os  t ON p.transaksjon_os_id = t.id 
                             WHERE trekk_id_ske=:trekkIdSke 
                                 AND t.trekk_alternativ=:trekkAlternativ 
+                                AND t.transaksjon_status=:transaksjonStatus
                                 AND t.kvittering_status IN (:IKKE_MOTTATT, :OK)
                             ORDER BY p.id ASC 
                 """,
                     mapOf(
                         "trekkIdSke" to trekkIdSke,
                         "trekkAlternativ" to alternativ.name,
+                        "transaksjonStatus" to TransaksjonsStatus.SENDT.name,
                         "OK" to KvitteringStatus.OK.name,
                         "IKKE_MOTTATT" to KvitteringStatus.IKKE_MOTTATT.name,
                     ),

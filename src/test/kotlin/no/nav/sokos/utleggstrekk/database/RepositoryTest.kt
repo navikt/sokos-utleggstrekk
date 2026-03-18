@@ -565,7 +565,19 @@ class RepositoryTest :
 
             repository.insertTransaksjonTilOs(dto)
 
+            When("Transkasjonen er ikke sendt") {
+                repository.updateTransaksjonValideringsfeil(dto.transaksjonID)
+
+                val fetchedPerioder = repository.getPerioderTilOs(trekkIdSke, alternativ)
+
+                Then("Vi henter ikke perioder for TrekkId '$trekkIdSke' og TrekkAlternativ '$alternativ'") {
+                    fetchedPerioder.shouldHaveSize(0)
+                }
+            }
+
             When("Vi henter perioder for TrekkID '$trekkIdSke' og TrekkAlternativ '$alternativ'") {
+                repository.updateTransaksjonSendt(dto.transaksjonID)
+
                 val fetchedPerioder = repository.getPerioderTilOs(trekkIdSke, alternativ)
 
                 Then("Skal periodene som hentes matche periodene som ble lagret") {
