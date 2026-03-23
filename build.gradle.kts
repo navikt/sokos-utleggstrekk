@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "2.3.10"
     kotlin("plugin.serialization") version "2.3.10"
-    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.7"
 
     application
@@ -36,7 +36,7 @@ repositories {
     }
 }
 
-val ktorVersion = "3.4.0"
+val ktorVersion = "3.4.1"
 val kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
 val kotlinxSerializationVersion = "1.10.0"
 val nimbusVersion = "10.8"
@@ -61,7 +61,7 @@ val janinoVersion = "3.1.12"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.1.6"
+val kotestVersion = "6.1.7"
 val mockkVersion = "1.14.9"
 val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.4"
