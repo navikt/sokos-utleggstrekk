@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Ensure user is authenicated, and run login if not.
-gcloud auth print-identity-token &> /dev/null
-if [ $? -gt 0 ]; then
-    gcloud auth login
+log "Checking gcloud authentication..."
+if ! gcloud auth print-identity-token &>/dev/null; then
+    nais auth login
+    nais auth login --nais
 fi
 
 # Suppress kubectl config output
@@ -19,15 +20,36 @@ if [ -z "$POD_NAME" ]; then
 fi
 
 echo "Fetching environment variables from pod: $POD_NAME"
+ENV_VARS=$(cat <<'EOF'
+MASKINPORTEN_CLIENT_ID
+MASKINPORTEN_WELL_KNOWN_URL
+MASKINPORTEN_SCOPES
+MASKINPORTEN_CLIENT_JWK
+MASKINPORTEN_SYSTEMBRUKER_CLAIM
+MQ_USERNAME
+MQ_PASSWORD
+POSTGRES_HOST
+POSTGRES_PORT
+POSTGRES_USERNAME
+POSTGRES_PASSWORD
+POSTGRES_JDBC_URL
+SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL
+UNLEASH_SERVER_API_URL
+UNLEASH_SERVER_API_TOKEN
+UNLEASH_SERVER_API_ENV
+NAIS_APP_NAME
+NAIS_POD_NAME
+NAIS_CLUSTER_NAME
+EOF
+)
 
-# Get system variables
-envValue=$(kubectl exec "$POD_NAME" -c sokos-utleggstrekk -- env | egrep "^AZURE|^MASKINPORTEN|^MQ_USERNAME|^MQ_PASSWORD|^POSTGRES|^SOKOS_UTLEGGSTREKK|^SKE"| sort)
+envValue=$(kubectl exec "$POD_NAME" -c sokos-utleggstrekk -- env | awk -F= 'NR==FNR{allow[$1]=1; next} allow[$1]' <(printf '%s\n' "$ENV_VARS") - | sort)
 
 # Set local environment variables
 rm -f defaults.properties
 echo "$envValue" > defaults.properties
 
 echo "# proxy jdbc_url " >> defaults.properties
-echo POSTGRES_JDBC_URL=jdbc:postgresql://localhost:5432/sokos-utleggstrekk?user=`gcloud auth list --filter=status:ACTIVE --format="value(account)"` >> defaults.properties
+echo "POSTGRES_JDBC_URL=jdbc:postgresql://localhost:5432/sokos-utleggstrekk?user=$(gcloud auth list --filter=status:ACTIVE --format='value(account)')" >> defaults.properties
 
 echo "Environment variables saved to defaults.properties"
