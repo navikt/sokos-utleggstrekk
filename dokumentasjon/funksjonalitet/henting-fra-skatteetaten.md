@@ -26,23 +26,23 @@ Kallet autentiseres med et **Maskinporten Bearer-token** hentet på vegne av NAV
 
 Hvert mottatt `Trekkpaalegg` lagres i databasen:
 
-| Tabell | Innhold |
-|--------|---------|
-| `fraskatt` | Hoved-data for trekkpålegget |
-| `fraskatt_status` | Settes til `MOTTATT` |
-| `periode_fra_skatt` | Alle perioder for trekket |
+| Tabell                          | Innhold                             |
+|---------------------------------|-------------------------------------|
+| `fraskatt`                      | Hoved-data for trekkpålegget        |
+| `fraskatt_status`               | Settes til `MOTTATT`                |
+| `periode_fra_skatt`             | Alle perioder for trekket           |
 | `betalingsinformasjon_fraskatt` | KID, kontonummer, betalingsmottaker |
 
 Det siste sekvensnummeret oppdateres etter at alle trekk er lagret.
 
 ## Kanttilfeller
 
-| Situasjon | Håndtering |
-|-----------|------------|
-| SKE API er utilgjengelig | Hentingen avbrytes, neste syklus prøver igjen |
-| Samme trekk mottas igjen (samme versjon) | Lagres ikke på nytt (duplikat-sjekk på sekvensnummer) |
-| Nyere versjon av eksisterende trekk | Lagres som ny rad – eldre versjon beholdes for diff-beregning |
-| Trekk med `trekkstatus = AVSLUTTET` | Lagres med `MOTTATT` og behandles videre |
+| Situasjon                                | Håndtering                                                                                                                      |
+|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| SKE API er utilgjengelig                 | Hentingen avbrytes, neste syklus prøver igjen                                                                                   |
+| Samme trekk mottas igjen (samme versjon) | Lagres ikke på nytt (duplikat-sjekk på sekvensnummer)                                                                           |
+| Nyere versjon av eksisterende trekk      | Lagres som ny rad – eldre versjon beholdes slik at behandlingen kan finne hvilke perioder som er endret, lagt til eller fjernet |
+| Trekk med `trekkstatus = AVSLUTTET`      | Lagres med `MOTTATT` og behandles videre                                                                                        |
 
 ## Feature toggle
 

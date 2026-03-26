@@ -78,17 +78,19 @@ Logikken er implementert i funksjonen `mapNewFomTom()` i databasemodellen.
 
 ---
 
-## Beregning av aksjonskode
+## Bestemmelse av aksjonskode
 
-`BehandleTrekkService` bestemmer aksjonskode ved å sammenligne innkommende trekk med det som allerede finnes i OS:
+`BehandleTrekkService` bestemmer aksjonskode ved å slå opp trekket i `transaksjon_os`-tabellen og se på periodene:
 
 ```
 1. Slå opp trekk_id_ske i transaksjon_os-tabellen
    ├── Finnes ikke → aksjonskode = NY
-   └── Finnes → sammenlign perioder
-       ├── Ingen endringer → send ikke noe
-       └── Endringer funnet → aksjonskode = ENDR
-           └── Med nulleringer der perioder er fjernet
+   └── Finnes → sammenlign perioder mot det som er i OS
+       ├── trekkstatus = AVSLUTTET → aksjonskode = OPPH (ingen perioder sendes)
+       ├── Ingen periodemessige endringer → send ikke noe
+       └── Perioder er endret → aksjonskode = ENDR
+           ├── Perioder som er fjernet → legges til med sats=0 (nullering)
+           └── Perioder som er nye eller endret → legges til med ny sats
 ```
 
 ### Nullering av fjernede perioder

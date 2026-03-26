@@ -9,6 +9,7 @@ Denne mappen inneholder detaljert teknisk dokumentasjon av sokos-utleggstrekk, i
 | [arkitektur.md](arkitektur.md) | Detaljert arkitektur, lagdeling og kodestruktur |
 | [flyt.md](flyt.md) | Detaljert prosesseringsflyt med sekvensdiagrammer |
 | [trekk-transformasjon.md](trekk-transformasjon.md) | Forretningslogikk for transformasjon av trekkpålegg |
+| [perioder.md](perioder.md) | Detaljert forklaring av hvordan perioder utledes og behandles |
 | [kode.md](kode.md) | Gjennomgang av de viktigste klassene og tjenestene |
 
 ## Forutsetninger

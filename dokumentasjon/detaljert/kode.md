@@ -23,13 +23,13 @@ Innganspunktet for applikasjonen. Starter Ktor-serveren og setter opp alle avhen
 
 ### Metoder
 
-| Metode | Beskrivelse |
-|--------|-------------|
-| `schedule()` | Innganspunkt kalt av scheduler. Koordinerer alle steg. |
-| `lagreAlleNyeUtleggstrekk()` | Henter og lagrer nye trekkpålegg fra SKE |
-| `processTrekkpaalegg()` | Validerer og lagrer mottatte trekk i DB |
-| `calculateMetrics()` | Oppdaterer Prometheus-metrics |
-| `reportMissingKvittering()` | Rapporterer manglende kvitteringer til Slack |
+| Metode                       | Beskrivelse                                            |
+|------------------------------|--------------------------------------------------------|
+| `schedule()`                 | Innganspunkt kalt av scheduler. Koordinerer alle steg. |
+| `lagreAlleNyeUtleggstrekk()` | Henter og lagrer nye trekkpålegg fra SKE               |
+| `processTrekkpaalegg()`      | Validerer og lagrer mottatte trekk i DB                |
+| `calculateMetrics()`         | Oppdaterer Prometheus-metrics                          |
+| `reportMissingKvittering()`  | Rapporterer manglende kvitteringer til Slack           |
 
 ### Avhengigheter
 
@@ -53,11 +53,11 @@ UtleggsTrekkService
 
 ### Metoder
 
-| Metode | Beskrivelse |
-|--------|-------------|
-| `behandleTrekk()` | Behandler alle MOTTATT-trekk i databasen |
-| `lagTrekkDokument(trekk)` | Lager ett eller to OS-dokumenter for et trekk |
-| `nyePerioderTilOS(...)` | Beregner perioder som skal sendes til OS |
+| Metode                       | Beskrivelse                                    |
+|------------------------------|------------------------------------------------|
+| `behandleTrekk()`            | Behandler alle MOTTATT-trekk i databasen       |
+| `lagTrekkDokument(trekk)`    | Lager ett eller to OS-dokumenter for et trekk  |
+| `nyePerioderTilOS(...)`      | Beregner perioder som skal sendes til OS       |
 | `nullerFjernetPerioder(...)` | Legger til null-perioder for fjernede perioder |
 
 ---
@@ -108,15 +108,15 @@ UtleggsTrekkService
 
 ### Viktige metoder
 
-| Metode | Beskrivelse |
-|--------|-------------|
-| `lagreTrekkFraSkatt(trekk)` | Lagrer nytt trekkpålegg |
-| `hentMottatteTrekk()` | Henter trekk med status MOTTATT |
-| `settTrekkStatus(id, status)` | Oppdaterer status på et trekk |
-| `lagreTransaksjonOS(trans)` | Lagrer ny OS-transaksjon |
-| `hentIkkeSendteTransaksjoner()` | Henter transaksjoner klar for sending |
-| `oppdaterKvitteringStatus(...)` | Lagrer kvitteringsresultat fra OS |
-| `hentSisteSekvens()` | Returnerer siste mottatte sekvensnummer |
+| Metode                          | Beskrivelse                             |
+|---------------------------------|-----------------------------------------|
+| `lagreTrekkFraSkatt(trekk)`     | Lagrer nytt trekkpålegg                 |
+| `hentMottatteTrekk()`           | Henter trekk med status MOTTATT         |
+| `settTrekkStatus(id, status)`   | Oppdaterer status på et trekk           |
+| `lagreTransaksjonOS(trans)`     | Lagrer ny OS-transaksjon                |
+| `hentIkkeSendteTransaksjoner()` | Henter transaksjoner klar for sending   |
+| `oppdaterKvitteringStatus(...)` | Lagrer kvitteringsresultat fra OS       |
+| `hentSisteSekvens()`            | Returnerer siste mottatte sekvensnummer |
 
 ---
 

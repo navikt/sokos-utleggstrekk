@@ -70,7 +70,12 @@ sequenceDiagram
             BehandleTrekkService->>BehandleTrekkService: Sett aksjonskode = NY
         else Kjent trekk
             BehandleTrekkService->>DB: Hent eksisterende perioder fra OS
-            BehandleTrekkService->>BehandleTrekkService: Beregn diff (ENDR/OPPH)
+            alt trekkstatus = AVSLUTTET
+                BehandleTrekkService->>BehandleTrekkService: Sett aksjonskode = OPPH (ingen perioder sendes)
+            else Perioder er endret
+                BehandleTrekkService->>BehandleTrekkService: Sett aksjonskode = ENDR
+                note over BehandleTrekkService: Nuller fjernede perioder (sats=0)<br/>Legger til nye/endrede perioder
+            end
         end
         BehandleTrekkService->>BehandleTrekkService: Lag dokument(er) (P og/eller M)
         BehandleTrekkService->>DB: Lagre TransaksjonOS + PeriodeTilOS
