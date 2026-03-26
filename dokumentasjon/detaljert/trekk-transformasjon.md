@@ -6,12 +6,11 @@ Dette dokumentet beskriver forretningslogikken i `BehandleTrekkService` – den 
 
 Skatteetaten og Oppdrag Z har **ulike datamodeller** for trekk:
 
-| | Skatteetaten | Oppdrag Z |
-|-|-------------|-----------|
-| **Format** | Snapshot av gjeldende tilstand | Differanse (endringer) |
-| **Perioder** | Kombinerte prosent- og beløpsperioder | Separate dokumenter per type |
-| **Periodegrenser** | Vilkårlige datoer | Første/siste dag i måneden |
-| **Versjonering** | Sekvensnummer + trekkversjon | Aksjonskode (NY/ENDR/OPPH) |
+|                    | Skatteetaten                          | Oppdrag Z                    |
+|--------------------|---------------------------------------|------------------------------|
+| **Perioder**       | Kombinerte prosent- og beløpsperioder | Separate dokumenter per type |
+| **Periodegrenser** | Vilkårlige datoer                     | Første/siste dag i måneden   |
+| **Versjonering**   | Sekvensnummer + trekkversjon          | Aksjonskode (NY/ENDR/OPPH)   |
 
 `BehandleTrekkService` løser disse forskjellene.
 
@@ -95,7 +94,7 @@ Logikken er implementert i funksjonen `mapNewFomTom()` i databasemodellen.
 
 ### Nullering av fjernede perioder
 
-Hvis en periode eksisterer i OS, men ikke lenger i det nye SKE-trekket, **nulleres den** i ENDR-dokumentet:
+Hvis en periode eksisterer i OS, men ikke lenger i det nye SKE-trekket, **nulles den ut** i ENDR-dokumentet:
 
 ```
 Eksisterende i OS: Periode Jan–Mar, sats=15%
@@ -125,10 +124,10 @@ Resultat-ENDR:
 
 Feltet `kreditor_trekk_id` i Oppdrag Z er begrenset til **35 tegn**. Skatteetatens `trekkid` er en UUID (36 tegn med bindestreker).
 
-| Situasjon | Løsning |
-|-----------|---------|
-| trekkid er UUID (36 tegn) | Fjern bindestreker → 32 tegn, legg til `-P` eller `-M` |
-| trekkid ≤ 34 tegn | Bruk direkte med `-P`/`-M`-suffiks |
+| Situasjon                     | Løsning                                                |
+|-------------------------------|--------------------------------------------------------|
+| trekkid er UUID (36 tegn)     | Fjern bindestreker → 32 tegn, legg til `-P` eller `-M` |
+| trekkid ≤ 34 tegn             | Bruk direkte med `-P`/`-M`-suffiks                     |
 | trekkid > 34 tegn (ikke UUID) | BASE64-kodet kryptografisk hash, med `-P`/`-M`-suffiks |
 
 Eksempel:
@@ -144,7 +143,7 @@ kreditor_trekk_id:   "550e8400e29b41d4a716446655440000-M"  (beløpstrekk)
 
 Når et trekk fra Skatteetaten har `trekkstatus = AVSLUTTET`:
 - Det sendes **ingen** periodeoppdateringer til Oppdrag Z
-- Oppdrag Z håndterer avslutting av trekket på sin side
+- Oppdrag Z håndterer avslutning av trekket på sin side
 - Trekket i databasen settes til `BEHANDLET`
 
 ---

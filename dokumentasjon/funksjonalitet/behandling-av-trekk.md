@@ -12,11 +12,11 @@ Alle trekk med status `MOTTATT` hentes fra databasen og behandles i rekkefølge.
 
 ### 2. Bestem aksjonskode
 
-| Situasjon | Aksjonskode |
-|-----------|-------------|
-| Trekket finnes ikke i OS fra før | `NY` |
-| Trekket er kjent i OS og har endrede perioder | `ENDR` |
-| Trekket har `trekkstatus = AVSLUTTET` | `OPPH` (ingen perioder sendes) |
+| Situasjon                                     | Aksjonskode                    |
+|-----------------------------------------------|--------------------------------|
+| Trekket finnes ikke i OS fra før              | `NY`                           |
+| Trekket er kjent i OS og har endrede perioder | `ENDR`                         |
+| Trekket har `trekkstatus = AVSLUTTET`         | `OPPH` (ingen perioder sendes) |
 
 ### 3. Splitt i P og M (hvis nødvendig)
 

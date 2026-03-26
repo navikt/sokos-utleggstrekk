@@ -131,17 +131,17 @@ postgresConfig {
 
 ## Databaseskjema
 
-Administrert av **Flyway**. Se [datamodell](../datamodell/README.md) for full ER-diagram.
+Administrert av **Flyway**. 
 
-| Tabell | Beskrivelse |
-|--------|-------------|
-| `fraskatt` | Trekkpålegg mottatt fra Skatteetaten |
-| `fraskatt_status` | Statussporing per trekkpålegg |
-| `periode_fra_skatt` | Perioder for hvert trekkpålegg |
-| `betalingsinformasjon_fraskatt` | Betalingsinformasjon per trekkpålegg |
-| `transaksjon_os` | Innrapporteringstrekk sendt til Oppdrag Z |
-| `periode_til_os` | Perioder i hvert OS-dokument |
-| `kvittering_fra_os` | Kvitteringer mottatt fra Oppdrag Z |
+| Tabell                          | Beskrivelse                               |
+|---------------------------------|-------------------------------------------|
+| `fraskatt`                      | Trekkpålegg mottatt fra Skatteetaten      |
+| `fraskatt_status`               | Statussporing per trekkpålegg             |
+| `periode_fra_skatt`             | Perioder for hvert trekkpålegg            |
+| `betalingsinformasjon_fraskatt` | Betalingsinformasjon per trekkpålegg      |
+| `transaksjon_os`                | Innrapporteringstrekk sendt til Oppdrag Z |
+| `periode_til_os`                | Perioder i hvert OS-dokument              |
+| `kvittering_fra_os`             | Kvitteringer mottatt fra Oppdrag Z        |
 
 ## Teststruktur
 

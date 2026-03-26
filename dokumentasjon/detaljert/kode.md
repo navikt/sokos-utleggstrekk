@@ -38,7 +38,7 @@ UtleggsTrekkService
 ├── SkeClient               (henter fra SKE)
 ├── BehandleTrekkService    (transformerer trekk)
 ├── JmsProducerService      (sender til OS)
-├── Repository              (databas-tilgang)
+├── Repository              (databasetilgang)
 ├── SlackService            (varsling)
 ├── MetricsService          (metrics)
 └── UnleashIntegration      (feature toggles)
@@ -233,8 +233,8 @@ Eksempler på målinger:
 **Fil:** `api/NaisApi.kt`  
 **Ansvar:** Interne Kubernetes-endepunkter.
 
-| Endepunkt | Formål |
-|-----------|--------|
-| `GET /internal/isAlive` | Kubernetes liveness probe |
+| Endepunkt               | Formål                     |
+|-------------------------|----------------------------|
+| `GET /internal/isAlive` | Kubernetes liveness probe  |
 | `GET /internal/isReady` | Kubernetes readiness probe |
-| `GET /internal/metrics` | Prometheus metrics-scrape |
+| `GET /internal/metrics` | Prometheus metrics-scrape  |

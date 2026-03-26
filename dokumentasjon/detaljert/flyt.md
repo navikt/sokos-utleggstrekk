@@ -85,11 +85,11 @@ sequenceDiagram
 
 **Tilstandsmaskin for behandling:**
 
-| Situasjon | Aksjonskode | Forklaring |
-|-----------|-------------|------------|
-| Trekket finnes ikke i OS | `NY` | Første gang dette trekket sendes |
-| Trekket finnes i OS, perioder er endret | `ENDR` | Oppdaterer eksisterende trekk |
-| Trekket er avsluttet i SKE | `OPPH` | Ingen nye periodeoppdateringer sendes |
+| Situasjon                               | Aksjonskode | Forklaring                            |
+|-----------------------------------------|-------------|---------------------------------------|
+| Trekket finnes ikke i OS                | `NY`        | Første gang dette trekket sendes      |
+| Trekket finnes i OS, perioder er endret | `ENDR`      | Oppdaterer eksisterende trekk         |
+| Trekket er avsluttet i SKE              | `OPPH`      | Ingen nye periodeoppdateringer sendes |
 
 ---
 
@@ -151,10 +151,10 @@ Etter prosesseringssyklusen:
 
 ## Feilhåndtering
 
-| Feilscenario | Håndtering |
-|-------------|------------|
-| SKE API utilgjengelig | Logger feil, stopper henting for denne syklusen |
-| Valideringsfeil i trekk | Status settes til `AVVIST`, meldes til Slack |
-| MQ-sending feiler | Transaksjonen forblir `IKKE_SENDT`, prøves på nytt neste syklus |
-| Kvittering med feil | Status `FEIL`, feilkode lagres, Slack-varsel sendes |
-| Manglende kvittering | Rapporteres til Slack etter timeout |
+| Feilscenario            | Håndtering                                                      |
+|-------------------------|-----------------------------------------------------------------|
+| SKE API utilgjengelig   | Logger feil, stopper henting for denne syklusen                 |
+| Valideringsfeil i trekk | Status settes til `AVVIST`, meldes til Slack                    |
+| MQ-sending feiler       | Transaksjonen forblir `IKKE_SENDT`, prøves på nytt neste syklus |
+| Kvittering med feil     | Status `FEIL`, feilkode lagres, Slack-varsel sendes             |
+| Manglende kvittering    | Rapporteres til Slack etter timeout                             |
