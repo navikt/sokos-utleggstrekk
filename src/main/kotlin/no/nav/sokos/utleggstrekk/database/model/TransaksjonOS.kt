@@ -82,4 +82,5 @@ enum class KvitteringStatus {
 enum class TransaksjonsStatus {
     IKKE_SENDT,
     SENDT,
+    VALIDERINGSFEIL,
 }

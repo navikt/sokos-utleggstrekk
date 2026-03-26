@@ -297,6 +297,26 @@ class Repository(private val dataSource: HikariDataSource) {
         }
     }
 
+    fun updateTransaksjonValideringsfeil(transaksjonId: String) {
+        dataSource.withTransaction { session ->
+            session.update(
+                queryOf(
+                    """
+                    UPDATE  transaksjon_os  
+                    SET 
+                        transaksjon_status=:transaksjonStatus,
+                        tidspunkt_siste_status=NOW()
+                    WHERE transaksjons_id=:transaksjonsId
+                    """.trimIndent(),
+                    mapOf(
+                        "transaksjonStatus" to TransaksjonsStatus.VALIDERINGSFEIL.name,
+                        "transaksjonsId" to transaksjonId,
+                    ),
+                ),
+            )
+        }
+    }
+
     fun updateReceiptStatusOfTransaksjon(transaksjonId: String, kvitteringStatus: KvitteringStatus, navTrekkId: String) {
         dataSource.withTransaction { session ->
             session.update(
@@ -382,26 +402,6 @@ class Repository(private val dataSource: HikariDataSource) {
 
     fun getPerioderForTrekk(trekkFraSkatt: TrekkFraSkatt): List<PeriodeFraSkatt> = getPerioderForTrekkVersjon(trekkFraSkatt.id)
 
-    fun getTrekkAlternativOS(trekkIdSke: String): List<TrekkAlternativ> =
-        using(sessionOf(dataSource)) { session ->
-            session.list(
-                queryOf(
-                    """
-                        SELECT DISTINCT trekk_alternativ
-                            FROM  transaksjon_os  
-                            WHERE trekk_id_ske=:trekkIdSke
-                            AND (kvittering_status = :OK 
-                            OR kvittering_status = :IKKE_MOTTATT)
-                    """.trimMargin(),
-                    mapOf(
-                        "trekkIdSke" to trekkIdSke,
-                        "OK" to KvitteringStatus.OK.name,
-                        "IKKE_MOTTATT" to KvitteringStatus.IKKE_MOTTATT.name,
-                    ),
-                ),
-            ) { row -> TrekkAlternativ.valueOf(row.string("trekk_alternativ").uppercase()) }
-        }
-
     fun getPerioderTilOs(trekkIdSke: String, alternativ: TrekkAlternativ): List<PeriodeTilOS> =
         using(sessionOf(dataSource)) { session ->
             session.list(
@@ -412,12 +412,14 @@ class Repository(private val dataSource: HikariDataSource) {
                             JOIN  transaksjon_os  t ON p.transaksjon_os_id = t.id 
                             WHERE trekk_id_ske=:trekkIdSke 
                                 AND t.trekk_alternativ=:trekkAlternativ 
+                                AND t.transaksjon_status=:transaksjonStatus
                                 AND t.kvittering_status IN (:IKKE_MOTTATT, :OK)
                             ORDER BY p.id ASC 
                 """,
                     mapOf(
                         "trekkIdSke" to trekkIdSke,
                         "trekkAlternativ" to alternativ.name,
+                        "transaksjonStatus" to TransaksjonsStatus.SENDT.name,
                         "OK" to KvitteringStatus.OK.name,
                         "IKKE_MOTTATT" to KvitteringStatus.IKKE_MOTTATT.name,
                     ),
@@ -500,11 +502,14 @@ class Repository(private val dataSource: HikariDataSource) {
                     SELECT DISTINCT trekk_alternativ from  transaksjon_os  WHERE trekk_id_ske=:trekkIdSke 
                     AND
                     kvittering_status NOT IN (:FEIL, :UKJENT)
+                    AND
+                    transaksjon_status = :SENDT
                     """.trimIndent(),
                     mapOf(
                         "trekkIdSke" to trekk.trekkid,
                         "FEIL" to KvitteringStatus.FEIL.name,
                         "UKJENT" to KvitteringStatus.UKJENT.name,
+                        "SENDT" to TransaksjonsStatus.SENDT.name,
                     ),
                 ),
             ) { row ->

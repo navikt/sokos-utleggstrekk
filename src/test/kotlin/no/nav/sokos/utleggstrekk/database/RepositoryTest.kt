@@ -8,9 +8,9 @@ import kotlin.time.Duration.Companion.seconds
 import io.kotest.assertions.nondeterministic.eventually
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.collections.shouldBeIn
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.ranges.shouldBeIn
 import io.kotest.matchers.shouldBe
@@ -270,19 +270,47 @@ class RepositoryTest :
                 }
             }
 
-            When("Transaksjonstatus oppdateres") {
-                repository.updateTransaksjonSendt(dto.transaksjonID)
-                val transaksjonTilOs = repository.getTransaksjonTilOs(dto.transaksjonID)
-                transaksjonTilOs.shouldNotBeNull()
-                Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
+            When("Transaksjonstatus oppdateres til valideringsfeil") {
+                repository.updateTransaksjonValideringsfeil(dto.transaksjonID)
 
-                    transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.SENDT
+                var transaksjonTilOs = repository.getTransaksjonTilOs(dto.transaksjonID)
+                transaksjonTilOs.shouldNotBeNull()
+
+                Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
+                    transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.VALIDERINGSFEIL
                 }
+
+                And("Tidspunktsendt skal være null") {
+                    transaksjonTilOs.tidspunktSendt.shouldBeNull()
+                }
+
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
                     transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
                 }
             }
+
+            When("Transaksjonstatus oppdateres til sendt") {
+                repository.updateTransaksjonSendt(dto.transaksjonID)
+
+                val transaksjonTilOs = repository.getTransaksjonTilOs(dto.transaksjonID)
+                transaksjonTilOs.shouldNotBeNull()
+
+                Then("Skal transaksjonen oppdateres med ny transaksjonstatus") {
+                    transaksjonTilOs.transaksjonStatus shouldBe TransaksjonsStatus.SENDT
+                }
+
+                And("Tidspunktsendt skal være nå") {
+                    val now = dbNow()
+                    transaksjonTilOs.tidspunktSendt?.shouldBeIn(now.minusSeconds(10)..now)
+                }
+
+                And("Tidspunktsistestatus skal være nå") {
+                    val now = dbNow()
+                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                }
+            }
+
             When("Transaksjon oppdateres med kvitteringsstatus og navtrekkid") {
                 val nyKvitteringStatus = KvitteringStatus.OK
                 val nyNavTrekkId = "123456789"
@@ -471,40 +499,6 @@ class RepositoryTest :
             }
         }
 
-        Given("Vi henter unike TrekkAlternativ for en spesifikk TrekkID") {
-            DBListener.clearDB()
-            val trekkIdSke = "TestTrekkID"
-            val transaksjonsId1 = "id1"
-            val transaksjonsId2 = "id2"
-            // Insert transactions with distinct TrekkAlternativ
-            val dto1 =
-                OSDto(
-                    transaksjonID = transaksjonsId1,
-                    trekkIdSke,
-                    trekkversjon = 1,
-                    lagDokumentTilOppdrag(transaksjonsId1).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPM)).innrapporteringTrekk,
-                    "",
-                )
-            val dto2 =
-                OSDto(
-                    transaksjonID = transaksjonsId2,
-                    trekkIdSke,
-                    trekkversjon = 1,
-                    lagDokumentTilOppdrag(transaksjonsId2).copy(innrapporteringTrekk = dummyInnrapporteringTrekk.copy(kodeTrekkAlternativ = TrekkAlternativ.LOPP)).innrapporteringTrekk,
-                    "",
-                )
-            repository.insertTransaksjonTilOs(dto1)
-            repository.insertTransaksjonTilOs(dto2)
-
-            When("Når unike TrekkAlternativ verdier hentes for for TrekkID: $trekkIdSke") {
-                val alternativ = repository.getTrekkAlternativOS(trekkIdSke)
-
-                Then("Så skal verdiene inneholde kun én LOPM og kun én LOPP") {
-                    alternativ.shouldContainExactlyInAnyOrder(TrekkAlternativ.LOPM, TrekkAlternativ.LOPP)
-                }
-            }
-        }
-
         Given("Vi henter perioder for en spesifikk TrekkID og TrekkAlternativ") {
             DBListener.clearDB()
             val trekkIdSke = "TestTrekkID"
@@ -536,7 +530,19 @@ class RepositoryTest :
 
             repository.insertTransaksjonTilOs(dto)
 
+            When("Transkasjonen er ikke sendt") {
+                repository.updateTransaksjonValideringsfeil(dto.transaksjonID)
+
+                val fetchedPerioder = repository.getPerioderTilOs(trekkIdSke, alternativ)
+
+                Then("Vi henter ikke perioder for TrekkId '$trekkIdSke' og TrekkAlternativ '$alternativ'") {
+                    fetchedPerioder.shouldHaveSize(0)
+                }
+            }
+
             When("Vi henter perioder for TrekkID '$trekkIdSke' og TrekkAlternativ '$alternativ'") {
+                repository.updateTransaksjonSendt(dto.transaksjonID)
+
                 val fetchedPerioder = repository.getPerioderTilOs(trekkIdSke, alternativ)
 
                 Then("Skal periodene som hentes matche periodene som ble lagret") {
