@@ -4,21 +4,6 @@
 
 `UtleggsTrekkScheduler` trigges én gang per time (på minuttet satt i `SCEDULER_MINUTES`) og kaller `UtleggsTrekkService.schedule()`.
 
-```kotlin
-// UtleggsTrekkScheduler – forenklet
-fun startScheduler() {
-    coroutineScope.launch {
-        while (true) {
-            val now = LocalDateTime.now()
-            if (now.minute == schedulerMinutes) {
-                utleggsTrekkService.schedule()
-            }
-            delay(60_000)
-        }
-    }
-}
-```
-
 Feature toggle `sokos-utleggstrekk.hent-fra-ske.enabled` / `prosesser-utleggstrekk.enabled` / `send-til-os.enabled` styrer hva som faktisk kjøres.
 
 ---
@@ -29,8 +14,8 @@ Feature toggle `sokos-utleggstrekk.hent-fra-ske.enabled` / `prosesser-utleggstre
 sequenceDiagram
     participant Scheduler
     participant UtleggsTrekkService
-    participant SkeClient
     participant DB
+    participant SkeClient
 
     Scheduler->>UtleggsTrekkService: schedule()
     UtleggsTrekkService->>DB: Hent siste sekvensnummer
@@ -65,11 +50,11 @@ sequenceDiagram
     DB-->>UtleggsTrekkService: List<TrekkFraSkatt>
     loop For hvert trekkpålegg
         UtleggsTrekkService->>BehandleTrekkService: behandleTrekk(trekkpaalegg)
-        BehandleTrekkService->>DB: Finnes trekket i OS fra før?
+        BehandleTrekkService->>DB: Er trekket kjent for OS?
         alt Nytt trekk
             BehandleTrekkService->>BehandleTrekkService: Sett aksjonskode = NY
         else Kjent trekk
-            BehandleTrekkService->>DB: Hent eksisterende perioder fra OS
+            BehandleTrekkService->>DB: Hent perioder sendt til OS
             alt trekkstatus = AVSLUTTET
                 BehandleTrekkService->>BehandleTrekkService: Sett aksjonskode = OPPH (ingen perioder sendes)
             else Perioder er endret

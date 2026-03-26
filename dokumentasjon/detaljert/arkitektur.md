@@ -11,22 +11,22 @@ Applikasjonen er organisert i følgende lag, implementert i Kotlin med Ktor som 
 │  Scheduler        UtleggsTrekkScheduler                 │
 ├─────────────────────────────────────────────────────────┤
 │  Service-lag      UtleggsTrekkService  (orkestrering)   │
-│                   BehandleTrekkService (transformasjon)  │
-│                   SlackService         (varsling)        │
+│                   BehandleTrekkService (transformasjon) │
+│                   SlackService         (varsling)       │
 ├─────────────────────────────────────────────────────────┤
 │  Integrasjonslag  SkeClient            (REST til SKE)   │
-│                   JmsProducerService   (MQ-sending)      │
-│                   JmsListenerService   (MQ-mottak)       │
+│                   JmsProducerService   (MQ-sending)     │
+│                   JmsListenerService   (MQ-mottak)      │
 ├─────────────────────────────────────────────────────────┤
-│  Datalaget        Repository           (PostgreSQL)      │
-│                   Flyway-migrasjonar                     │
+│  Datalaget        Repository           (PostgreSQL)     │
+│                   Flyway-migrasjonar                    │
 ├─────────────────────────────────────────────────────────┤
 │  Sikkerhet/konfig MaskinportenClient   (OAuth 2.0)      │
-│                   PropertiesConfig                       │
-│                   MQConfig                               │
+│                   PropertiesConfig                      │
+│                   MQConfig                              │
 ├─────────────────────────────────────────────────────────┤
 │  Tverrgående      UnleashIntegration   (feature toggles)│
-│                   MetricsService       (Prometheus)      │
+│                   MetricsService       (Prometheus)     │
 └─────────────────────────────────────────────────────────┘
 ```
 

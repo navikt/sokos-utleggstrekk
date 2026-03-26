@@ -104,7 +104,7 @@ UtleggsTrekkService
 ## Repository
 
 **Fil:** `database/Repository.kt`  
-**Ansvar:** All databas-tilgang (JDBI med PostgreSQL).
+**Ansvar:** All database-tilgang (JDBI med PostgreSQL).
 
 ### Viktige metoder
 

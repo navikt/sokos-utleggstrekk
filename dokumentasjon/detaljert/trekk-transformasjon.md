@@ -122,7 +122,10 @@ Resultat-ENDR:
 
 ## kreditor_trekk_id-formatering
 
-Feltet `kreditor_trekk_id` i Oppdrag Z er begrenset til **35 tegn**. Skatteetatens `trekkid` er en UUID (36 tegn med bindestreker).
+Feltet `kreditor_trekk_id` i Oppdrag Z er begrenset til **35 tegn**. Skatteetatens `trekkid` er en UUID v4, som med
+bindestreker er 36 tegn. Fra Skatteetaten har vi fått opplyst trekkid "typisk vil være UUID v4, men er en uformattert string
+av vilkårlig lengde". Derfor finnes det en "reserveløsning" hvor vi lager en syntetisk id basert på en kryptografisk hash av
+trekkid.
 
 | Situasjon                     | Løsning                                                |
 |-------------------------------|--------------------------------------------------------|
