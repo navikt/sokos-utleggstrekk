@@ -3,10 +3,9 @@
  if ! gcloud auth print-identity-token &>/dev/null; then
        echo "User not logged in, running gcloud auth login..."
        nais auth login
-       nais auth login --nais
  fi
 
-
+  kubectl config use-context dev-gcp
 if ! gcloud auth application-default print-access-token &>/dev/null; then
     echo "ADC not configured or invalid, running login with --update-adc..."
     gcloud auth login --update-adc
@@ -14,7 +13,7 @@ if ! gcloud auth application-default print-access-token &>/dev/null; then
     nais postgres grant sokos-utleggstrekk
 fi
 
- kubectl config use-context dev-gcp
+
 
 if nc -z localhost 5432 2>/dev/null; then
    sudo systemctl stop postgresql
