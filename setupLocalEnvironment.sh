@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Ensure user is authenicated, and run login if not.
-log "Checking gcloud authentication..."
+echo "Checking gcloud authentication..."
 if ! gcloud auth print-identity-token &>/dev/null; then
     nais auth login
     nais auth login --nais
