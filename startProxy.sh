@@ -1,7 +1,7 @@
 #!/bin/bash
 
  if ! gcloud auth print-identity-token &>/dev/null; then
-       echo "User not logged in, running gcloud auth login..."
+       echo "User not logged in, running nais auth login..."
        nais auth login
  fi
 
