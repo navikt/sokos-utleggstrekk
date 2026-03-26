@@ -66,7 +66,6 @@ val mockkVersion = "1.14.9"
 val commonsVersion = "3.12.0"
 val testContainerVersion = "1.21.4"
 val activemqVersion = "2.52.0"
-val kotestTestContainerExtensionVersion = "2.0.2"
 val ibmMqVersion = "9.4.5.0"
 
 dependencies {
@@ -119,12 +118,8 @@ dependencies {
     // MQ
     implementation("com.ibm.mq:com.ibm.mq.jakarta.client:$ibmMqVersion")
 
-    //
-    implementation("com.google.code.gson:gson:$gsonVersion")
-
     // Test
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
-    testImplementation("io.kotest.extensions:kotest-extensions-testcontainers:$kotestTestContainerExtensionVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
