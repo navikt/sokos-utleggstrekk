@@ -24,9 +24,8 @@ import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.withTransaction
 
 object DBListener : TestListener {
-    private val dockerImageName = "postgres:latest"
     private val container by lazy {
-        PostgreSQLContainer<Nothing>(DockerImageName.parse(dockerImageName)).apply {
+        PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:latest")).apply {
             withReuse(false)
             withUsername(postgresConfig.user)
             waitingFor(Wait.defaultWaitStrategy())
@@ -51,13 +50,14 @@ object DBListener : TestListener {
 
     override suspend fun beforeSpec(spec: Spec) {
         super.beforeSpec(spec)
-
         mockkObject(PropertiesConfig)
         every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
-        dataSource
     }
 
-    fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
+    fun loadInitScript(name: String) {
+        dataSource // Ensure Flyway migrations have run before executing init scripts
+        ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
+    }
 
     fun clearDB() {
         dataSource.withTransaction { session ->
