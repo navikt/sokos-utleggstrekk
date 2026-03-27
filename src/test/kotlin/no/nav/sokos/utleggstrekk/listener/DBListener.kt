@@ -1,15 +1,16 @@
 package no.nav.sokos.utleggstrekk.listener
 
+import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.kotest.core.listeners.TestListener
 import io.kotest.core.spec.Spec
-import io.kotest.extensions.testcontainers.toDataSource
 import io.ktor.server.config.ApplicationConfig
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
 import kotliquery.queryOf
+import org.testcontainers.containers.JdbcDatabaseContainer
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.ext.ScriptUtils
@@ -53,6 +54,7 @@ object DBListener : TestListener {
 
         mockkObject(PropertiesConfig)
         every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
+        dataSource
     }
 
     fun loadInitScript(name: String) = ScriptUtils.runInitScript(JdbcDatabaseDelegate(container, ""), name)
@@ -75,5 +77,15 @@ object DBListener : TestListener {
         clearDB()
         clearAllMocks()
         unmockkObject(PropertiesConfig)
+    }
+
+    fun JdbcDatabaseContainer<*>.toDataSource(configure: HikariConfig.() -> Unit = {}): HikariDataSource {
+        val config = HikariConfig()
+        config.jdbcUrl = jdbcUrl
+        config.username = username
+        config.password = password
+        config.minimumIdle = 0
+        config.configure()
+        return HikariDataSource(config)
     }
 }
