@@ -1,0 +1,33 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL Advanced"
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+env:
+  TZ: Europe/Oslo
+
+jobs:
+  codeql-trivy-scan:
+    permissions:
+      contents: read
+      id-token: write
+      security-events: write
+    name: CodeQL/Trivy Scan
+    if: success() || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    uses: navikt/mob-gha-workflows/.github/workflows/codeql-trivy-scan.yaml@main
+    secrets: inherit
+    with:
+      language: 'kotlin'
+
