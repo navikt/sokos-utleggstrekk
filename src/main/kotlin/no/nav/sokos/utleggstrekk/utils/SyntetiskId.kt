@@ -9,7 +9,7 @@ private val logger = KotlinLogging.logger { }
 
 object SyntetiskId {
     // Private: only used internally for UUID v4 format detection.
-    private val UUID_MATCHER = Regex("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
+    private val UUID_MATCHER = Regex("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$")
 
     fun syntetiskTrekkId(trekkId: String): String {
         val digest =
