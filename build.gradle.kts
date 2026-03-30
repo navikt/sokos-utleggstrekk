@@ -65,7 +65,7 @@ val kotestVersion = "6.1.7"
 val mockkVersion = "1.14.9"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
-val activemqVersion = "2.52.0"
+val activemqVersion = "2.53.0"
 val ibmMqVersion = "9.4.5.0"
 
 dependencies {
