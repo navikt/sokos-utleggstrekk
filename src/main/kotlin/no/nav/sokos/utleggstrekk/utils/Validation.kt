@@ -2,25 +2,28 @@ package no.nav.sokos.utleggstrekk.utils
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.format.DateTimeParseException
 
 object Validation {
     fun String.isNumber(): Boolean = this.isNotEmpty() && this.all { it in '0'..'9' }
 
     fun String.inRange(min: Int, max: Int): Boolean = this.length >= min && this.length <= max
 
+    // Catches DateTimeParseException specifically rather than the broad Exception to avoid masking unexpected errors.
     fun String.isDate() =
         try {
             LocalDate.parse(this)
             true
-        } catch (e: Exception) {
+        } catch (e: DateTimeParseException) {
             false
         }
 
+    // Catches DateTimeParseException specifically rather than the broad Exception to avoid masking unexpected errors.
     fun String.isDateTime() =
         try {
             Instant.parse(this)
             true
-        } catch (e: Exception) {
+        } catch (e: DateTimeParseException) {
             false
         }
 

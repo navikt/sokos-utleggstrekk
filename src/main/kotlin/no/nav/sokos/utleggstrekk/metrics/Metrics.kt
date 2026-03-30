@@ -48,9 +48,10 @@ object Metrics {
             "Antall aktive utleggstrekk",
         )
 
+    // Leading underscore removed: Prometheus metric names must not start with underscore.
     val utleggstrekkAvsluttede =
         gauge(
-            "_utleggstrekk_fra_skatt_avsluttet",
+            "utleggstrekk_fra_skatt_avsluttet",
             "Antall avsluttede utleggstrekk",
         )
 

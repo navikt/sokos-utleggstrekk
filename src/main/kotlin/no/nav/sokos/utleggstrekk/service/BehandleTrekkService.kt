@@ -68,8 +68,9 @@ class BehandleTrekkService(
                         repository.updateTrekkFraSkattStatus(trekk.id, SkattTrekkStatus.BEHANDLET, session)
                     }
                 } catch (e: Exception) {
-                    logger.error("Feil under prossessering av trekk med trekkid=$trekkId")
-                    logger.error(TEAM_LOGS_MARKER, "Feil under prossessering av trekk med trekkid=$trekkId", e)
+                    // Typo fixed: "prossessering" → "prosessering"
+                    logger.error("Feil under prosessering av trekk med trekkid=$trekkId")
+                    logger.error(TEAM_LOGS_MARKER, "Feil under prosessering av trekk med trekkid=$trekkId", e)
                     repository.updateTrekkFraSkattStatus(trekkId, SkattTrekkStatus.AVVIST)
                 }
             }

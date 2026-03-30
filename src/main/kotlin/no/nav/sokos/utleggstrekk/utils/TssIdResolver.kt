@@ -1,10 +1,5 @@
 package no.nav.sokos.utleggstrekk.utils
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.service.SlackService
@@ -22,10 +17,9 @@ object TssIdResolver {
         }
 
     private fun sendAlarm(message: String) {
+        // Only cache the error here. Dispatching a new CoroutineScope just to send immediately
+        // creates an unscoped coroutine that may not complete before shutdown. The cached error
+        // will be flushed by the next sendCachedErrors() call in the calling schedule loop.
         SlackService.instance.addError("IllegalArgumentException", message)
-        val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        appScope.launch {
-            SlackService.instance.sendCachedErrors("TssIdResolver failed")
-        }
     }
 }

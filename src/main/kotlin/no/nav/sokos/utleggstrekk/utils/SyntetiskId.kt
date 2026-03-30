@@ -8,7 +8,8 @@ import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 private val logger = KotlinLogging.logger { }
 
 object SyntetiskId {
-    val UUID_MATCHER = Regex("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
+    // Private: only used internally for UUID v4 format detection.
+    private val UUID_MATCHER = Regex("^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
 
     fun syntetiskTrekkId(trekkId: String): String {
         val digest =
