@@ -12,7 +12,7 @@ data class ErrorMessage(
 class SlackService(private val slackClient: SlackClient = SlackClient()) {
     // Thread-safe list: addError may be called concurrently from the JMS listener thread and
     // the scheduler coroutines. Using a synchronized list prevents ConcurrentModificationException.
-    val errorTracking: MutableList<ErrorMessage> = Collections.synchronizedList(mutableListOf())
+    private val errorTracking: MutableList<ErrorMessage> = Collections.synchronizedList(mutableListOf())
 
     /**
      * Locally cache errors to be sent to Slack
