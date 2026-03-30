@@ -6,10 +6,10 @@ Deployes i GPC.
 
 Hver time trigges UtleggsTrekkService.schedule() på minuttet konfigurert i __SCEDULER_MINUTES__ og utfører følgende ting:
 
-1. [Den henter nye __trekkpålegg__ fra Skatteetaten fra siste kjente sekvensnummer og lagrer disse i databasen](sekvensdiagrammer.md#henting-av-trekk-fra-skattetaten)
-2. [Sammenlikner med tidligere __Innrapporteringtrekk__ og genererer **NY**e eller **ENDR**ede __Innrapporteringtrekk__](sekvensdiagrammer.md#behandling-av-trekk-for-å-lage-meldinger-til-oppdrag-z-).
+1. [Den henter nye __trekkpålegg__ fra Skatteetaten fra siste kjente sekvensnummer og lagrer disse i databasen](detaljert/flyt.md#steg-1-hent-trekkpålegg-fra-skatteetaten)
+2. [Sammenlikner med tidligere __Innrapporteringtrekk__ og genererer **NY**e eller **ENDR**ede __Innrapporteringtrekk__](detaljert/flyt.md#steg-2-behandle-trekkpålegg-behandletrekkservice).
    Genererer meldinger for sending, og lagrer disse i databasen.
-3. [Sender innrapporteringstrekk til Oppdrag Z over MQ](sekvensdiagrammer.md#sending-av-meldinginger-til-oppdrag-z)
+3. [Sender innrapporteringstrekk til Oppdrag Z over MQ](detaljert/flyt.md#steg-3-send-til-oppdrag-z-via-mq)
 4. Mottar kvitteringer fra Oppdrag Z og lagrer **nav_trekk_id** eller feilmeldinger i databasen.
 5. Sletter gamle data. Gamle data er definert som data som hører til et trekk som ble avsluttet for mer enn 6 måneder siden.
 
@@ -65,11 +65,7 @@ Sendes til Slack. Se __SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL__.
 
 ## Unleash
 
-Det er tre feature toggles i [Unleash](https://okonomi-unleash-web.iap.nav.cloud.nais.io/)
-
-* sokos-utleggstrekk.hent-fra-ske.enabled
-* sokos-utleggstrekk.prosesser-utleggstrekk.enabled
-* sokos-utleggstrekk.send-til-os.enabled
+Det er tre feature toggles i [Unleash](https://okonomi-unleash-web.iap.nav.cloud.nais.io/). Se [funksjonalitet/feature-toggles.md](funksjonalitet/feature-toggles.md) for detaljer og bruksscenarier.
 
 ## Bruk av Skatteetatens APIer
 En installasjon i NAVs NAIS-platforme får tildelt en Maskinporten-bruker som tilhører NAVs hovedorganisasjonssnummer (889640782). 
@@ -95,4 +91,8 @@ gang det kommer en ny trekkversjon inn.
 
 ## [Datamodell](datamodell/README.md)
 
-## [Flytdiagram og forretningslogikk](flytdiagram/README.md)
+## Mer dokumentasjon
+
+- [Overordnet oversikt](overordnet/README.md)
+- [Detaljert teknisk dokumentasjon](detaljert/README.md)
+- [Funksjonalitet](funksjonalitet/README.md)
