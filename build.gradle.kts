@@ -61,11 +61,11 @@ val janinoVersion = "3.1.12"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.1.7"
+val kotestVersion = "6.1.8"
 val mockkVersion = "1.14.9"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
-val activemqVersion = "2.52.0"
+val activemqVersion = "2.53.0"
 val ibmMqVersion = "9.4.5.0"
 
 dependencies {
