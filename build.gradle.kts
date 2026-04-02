@@ -7,7 +7,7 @@ plugins {
     kotlin("jvm") version "2.3.10"
     kotlin("plugin.serialization") version "2.3.10"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    id("org.jetbrains.kotlinx.kover") version "0.9.7"
+    id("org.jetbrains.kotlinx.kover") version "0.9.8"
 
     application
 }
@@ -61,7 +61,7 @@ val janinoVersion = "3.1.12"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.1.8"
+val kotestVersion = "6.1.9"
 val mockkVersion = "1.14.9"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
