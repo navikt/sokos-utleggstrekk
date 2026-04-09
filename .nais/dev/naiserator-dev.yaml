@@ -78,7 +78,7 @@ spec:
         diskAutoresize: true
         pointInTimeRecovery: true
         tier: db-f1-micro
-        diskType: HDD
+        diskType: SSD
         databases:
           - name: sokos-utleggstrekk
             envVarPrefix: POSTGRES
