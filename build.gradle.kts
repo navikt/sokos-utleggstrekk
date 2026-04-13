@@ -39,7 +39,7 @@ repositories {
 val ktorVersion = "3.4.2"
 val kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
 val kotlinxSerializationVersion = "1.10.0"
-val nimbusVersion = "10.8"
+val nimbusVersion = "10.9"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
@@ -48,7 +48,7 @@ val unleashedVersion = "12.2.0"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "12.2.0"
+val flywayVersion = "12.3.0"
 val postgresqlVersion = "42.7.10"
 val kotliqueryVersion = "2.0.0"
 
@@ -61,7 +61,7 @@ val janinoVersion = "3.1.12"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.1.10"
+val kotestVersion = "6.1.11"
 val mockkVersion = "1.14.9"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
