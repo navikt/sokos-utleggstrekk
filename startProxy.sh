@@ -1,7 +1,8 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-    echo "No argument supplied. Write a reason for connecting to the database"
+    echo 'No argument supplied. Provide a reason for connecting to the database'
+    echo 'Usage: ./startProxy.sh "TOB-XXX: Kontrollere at ..."'
     exit 1
 fi
 
