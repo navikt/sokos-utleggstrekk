@@ -44,11 +44,11 @@ val nimbusVersion = "10.9"
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.16.5"
-val unleashedVersion = "12.2.0"
+val unleashedVersion = "12.2.1"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "12.3.0"
+val flywayVersion = "12.4.0"
 val postgresqlVersion = "42.7.10"
 val kotliqueryVersion = "2.0.0"
 
