@@ -5,11 +5,11 @@ import java.time.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-import no.nav.sokos.utleggstrekk.utils.Validation.inRange
 import no.nav.sokos.utleggstrekk.utils.Validation.isDate
 import no.nav.sokos.utleggstrekk.utils.Validation.isDateTime
 import no.nav.sokos.utleggstrekk.utils.Validation.isNumber
 import no.nav.sokos.utleggstrekk.utils.Validation.isSafeText
+import no.nav.sokos.utleggstrekk.utils.Validation.isValidKid
 
 @Serializable
 data class Trekkpaalegg(
@@ -81,7 +81,7 @@ fun Trekkpaalegg.validate() {
 
 fun Betalingsinformasjon.validate() {
     require(betalingsmottaker.length == 9 && betalingsmottaker.isNumber()) { "Betalingsmottaker har ulovlig verdi" }
-    require(kidnummer.inRange(2, 25) && kidnummer.isNumber()) { "kidnummer har ulovlig verdi" }
+    require(kidnummer.isValidKid()) { "kidnummer har ulovlig verdi" }
     require(kontonummer.length == 11 && kontonummer.isNumber()) { "kontonummer har ulovlig verdi" }
 }
 
