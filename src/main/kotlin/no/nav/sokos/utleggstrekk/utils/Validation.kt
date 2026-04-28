@@ -42,7 +42,7 @@ object Validation {
 
     fun String.isValidKid(): Boolean {
         if (length < 2 || length > 25) return false
-        if (!all { it.isDigit() }) return false
+        if (!isNumber()) return false
         return isValidMod10() || isValidMod11()
     }
 

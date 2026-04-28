@@ -1,5 +1,6 @@
 package no.nav.sokos.utleggstrekk.util
 
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -76,8 +77,16 @@ class KidnrValideringsTest :
                         "3221507688",
                         "5115486739",
                     )
-                mod10.forEach { it.isValidKid() shouldBe true }
-                mod11.forEach { it.isValidKid() shouldBe true }
+                mod10.forEach {
+                    withClue("$it ikke gyldig") {
+                        it.isValidKid() shouldBe true
+                    }
+                }
+                mod11.forEach {
+                    withClue("$it ikke gyldig") {
+                        it.isValidKid() shouldBe true
+                    }
+                }
             }
 
             test("KID med 2 siffer og gyldig MOD10 er gyldig") {
@@ -87,6 +96,10 @@ class KidnrValideringsTest :
             test("KID med 25 siffer og gyldig kontrollsiffer er gyldig") {
                 // 24 digits + MOD10 check digit
                 "1234567890123456789012340".isValidKid() shouldBe true
+            }
+
+            test("ugyldig KID når MOD11 gir remainder lik 1 og ingen gyldig kontrollsiffer") {
+                "66".isValidKid() shouldBe false
             }
         }
     })

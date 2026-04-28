@@ -317,7 +317,7 @@ internal class UtleggsTrekkServiceTest :
                         kreditorIdTss = if (shouldValidate) "80000423362" else "invalid kreditorIdTss",
                         kreditorTrekkId = "10342395",
                         debitorId = "19074639472",
-                        kid = "17654202404",
+                        kid = "2191507714",
                         kreditorsRef = "SAK1",
                         kodeTrekktype = "KRED",
                         kodeTrekkAlternativ = TrekkAlternativ.LOPP,
