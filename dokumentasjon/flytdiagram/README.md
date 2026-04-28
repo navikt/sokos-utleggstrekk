@@ -26,6 +26,7 @@ stateDiagram-v2
     if_state --> AVVIST : ugyldig
     MOTTATT --> BEHANDLET : Prosessert
     AVVIST --> REPETERES : Manuell endring
+    BEHANDLET --> REPETERES : Manuell endring hvis avvist i OS
     REPETERES --> BEHANDLET
     REPETERES --> finnes_nyere : Finnes nyere versjon?
     finnes_nyere --> HOPPET_OVER : Ja
