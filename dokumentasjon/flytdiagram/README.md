@@ -10,7 +10,9 @@ Tilstandsflyten til et trekkpålegg.
 
 Vi regner med at flyten i de aller fleste tilfeller er validering -> MOTTATT -> BEHANDLET. REPETERES eksisterer for å kunne føre
 et tidligere avvist trekk tilbake i normal flyt etter manuell korreksjon.
-Når et trekkpålegg er BEHANDLET betyr det at det finnes ett eller to dokumenter i databasen klar for sending til Oppdrag Z. 
+Når et trekkpålegg er BEHANDLET betyr det at det finnes ett eller to dokumenter i databasen klar for sending til Oppdrag Z.
+Dersom et trekkpålegg ble BEHANDLET av sokos-utleggstrekk og av en eller annan grunn avvist av Oppdrag Z, kan det være en løsning
+å manuelt endre status fra BEHANDLET til REPETERES, etter at feilen som førte til avvisningen er korrigert.
 
 
 ```mermaid
