@@ -49,6 +49,37 @@ class KidnrValideringsTest :
                 "1234-56".isValidKid() shouldBe false
             }
 
+            test("Test av alle checksum tegn") {
+                val mod11 =
+                    listOf<String>(
+                        "9784083060",
+                        "8602499031",
+                        "2219356482",
+                        "1604892763",
+                        "2191507714",
+                        "3794978025",
+                        "0528006426",
+                        "3905764917",
+                        "3383245388",
+                        "8449051239",
+                    )
+                val mod10 =
+                    listOf<String>(
+                        "7484530790",
+                        "4535061081",
+                        "2461594232",
+                        "6488103323",
+                        "7013092254",
+                        "2040816585",
+                        "4438387906",
+                        "4423381997",
+                        "3221507688",
+                        "5115486739",
+                    )
+                mod10.forEach { it.isValidKid() shouldBe true }
+                mod11.forEach { it.isValidKid() shouldBe true }
+            }
+
             test("KID med 2 siffer og gyldig MOD10 er gyldig") {
                 "18".isValidKid() shouldBe true
             }
