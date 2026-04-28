@@ -81,7 +81,7 @@ internal class UtleggsTrekkServiceTest :
         }
 
         Given("Vi henter ett trekk fra SKE") {
-            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648199", kidnummer = "13812738912427", kontonummer = "70213997155")
+            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648199", kidnummer = "2345676", kontonummer = "70213997155")
             val trekkPeriode =
                 TrekkstorrelseForPeriode(
                     "2026-02-02",
