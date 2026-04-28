@@ -3,7 +3,7 @@
 Tilstandsflyten til et trekkpålegg.
 * Validering: Trekkpålegget valideres mot skjema. Hvis gyldig går det til MOTTATT, hvis ugyldig går det til FEIL.
 * MOTTATT: Trekkpålegget er mottatt og venter på å bli prosessert.
-* BEHANDLET: Trekkpålegget er prosessert og transaksjoner som skal sendes til OS er produsert.
+* BEHANDLET: Trekkpålegget er prosessert og transaksjoner som skal sendes til Oppdrag Z er produsert. Normalt sluttpunkt, men kan settes tilbake til REPETERES dersom trekkpålegget avvises av Oppdrag Z.
 * AVVIST: Trekkpålegget har feil og må endres manuelt før det kan prosesseres.
 * REPETERES: Trekkpålegget er endret manuelt og venter på å bli prosessert på nytt.
 * HOPPET_OVER: Trekkpålegget er ignorert fordi en nyere versjon finnes.
