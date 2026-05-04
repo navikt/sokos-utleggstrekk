@@ -16,15 +16,14 @@ class SlackServiceTest :
 
         test("addError lagre en ny feil når typen er ny") {
             val service = SlackService(client)
-            service.addError("header", "message")
-
+            service.addErrorSuspending("header", "message")
             service.errorTracking.first() shouldBe ErrorMessage("header", mutableListOf("message"))
         }
 
         test("addError oppdaterer feilen når typen har allerede blitt lagret") {
             val service = SlackService(client)
-            service.addError("header", "message 1")
-            service.addError("header", "message 2")
+            service.addErrorSuspending("header", "message 1")
+            service.addErrorSuspending("header", "message 2")
 
             service.errorTracking.size shouldBe 1
             service.errorTracking.first() shouldBe ErrorMessage("header", mutableListOf("message 1", "message 2"))
@@ -37,7 +36,7 @@ class SlackServiceTest :
             val service = SlackService(client)
             repeat(2) { typeIndex ->
                 repeat(2) { infoIndex ->
-                    service.addError("Type ${typeIndex + 1}", "Info ${infoIndex + 1}")
+                    service.addErrorSuspending("Type ${typeIndex + 1}", "Info ${infoIndex + 1}")
                 }
             }
 
@@ -59,11 +58,11 @@ class SlackServiceTest :
 
             val service = SlackService(client)
             repeat(5) {
-                service.addError("Type 1", "Info ${it + 1}")
+                service.addErrorSuspending("Type 1", "Info ${it + 1}")
             }
 
             repeat(6) {
-                service.addError("Type 2", "Info ${it + 2}")
+                service.addErrorSuspending("Type 2", "Info ${it + 2}")
             }
 
             service.sendCachedErrors("Slack Message Header")
