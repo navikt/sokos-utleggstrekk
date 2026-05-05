@@ -16,7 +16,9 @@ data class ErrorMessage(
 
 class SlackService(private val slackClient: SlackClient = SlackClient()) {
     private val mutex = Mutex()
-    val errorTracking = mutableListOf<ErrorMessage>()
+    private val errorTracking = mutableListOf<ErrorMessage>()
+
+    fun errorTracking() = errorTracking.toList()
 
     /**
      * Locally cache errors to be sent to Slack

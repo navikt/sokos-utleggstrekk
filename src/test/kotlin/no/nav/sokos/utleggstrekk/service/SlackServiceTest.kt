@@ -17,7 +17,7 @@ class SlackServiceTest :
         test("addError lagre en ny feil når typen er ny") {
             val service = SlackService(client)
             service.addErrorSuspending("header", "message")
-            service.errorTracking.first() shouldBe ErrorMessage("header", mutableListOf("message"))
+            service.errorTracking().first() shouldBe ErrorMessage("header", mutableListOf("message"))
         }
 
         test("addError oppdaterer feilen når typen har allerede blitt lagret") {
@@ -25,8 +25,8 @@ class SlackServiceTest :
             service.addErrorSuspending("header", "message 1")
             service.addErrorSuspending("header", "message 2")
 
-            service.errorTracking.size shouldBe 1
-            service.errorTracking.first() shouldBe ErrorMessage("header", mutableListOf("message 1", "message 2"))
+            service.errorTracking().size shouldBe 1
+            service.errorTracking().first() shouldBe ErrorMessage("header", mutableListOf("message 1", "message 2"))
         }
 
         test("sendError sende alle lagret feilene som de er når de har mindre enn 5 info blocks") {
@@ -49,7 +49,7 @@ class SlackServiceTest :
             capturedMessages.first() shouldBe ErrorMessage("Type 1", mutableListOf("Info 1", "Info 2"))
             capturedMessages.last() shouldBe ErrorMessage("Type 2", mutableListOf("Info 1", "Info 2"))
 
-            service.errorTracking.size shouldBe 0
+            service.errorTracking().size shouldBe 0
         }
 
         test("sendError konsolidere feilene når de har mer enn 5 info blocks før sending meldingen") {
