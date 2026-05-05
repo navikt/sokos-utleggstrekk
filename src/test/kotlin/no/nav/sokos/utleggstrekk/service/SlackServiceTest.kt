@@ -85,7 +85,7 @@ class SlackServiceTest :
             coVerify(exactly = 0) { client.sendMessage(any(), any()) }
         }
 
-        test("sendCachedErrors re-queuer meldinger og kaster exception når sendMessage feiler") {
+        test("sendCachedErrors re-queues meldinger og kaster exception når sendMessage feiler") {
             val expectedException = RuntimeException("Slack er nede")
             coEvery { client.sendMessage(any(), any()) } throws expectedException
 
