@@ -1,6 +1,5 @@
 package no.nav.sokos.utleggstrekk.service
 
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.SupervisorJob
@@ -80,8 +79,6 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
 
         try {
             slackClient.sendMessage(messageTitle, errorsToSend)
-        } catch (cancellation: CancellationException) {
-            throw cancellation
         } catch (exception: Exception) {
             errorsToSend.forEach { (type, info) ->
                 info.forEach { addErrorSuspending(type, it) }
