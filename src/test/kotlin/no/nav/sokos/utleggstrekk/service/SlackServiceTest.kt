@@ -85,6 +85,27 @@ class SlackServiceTest :
             coVerify(exactly = 0) { client.sendMessage(any(), any()) }
         }
 
+        test("sendCachedErrors re-queuer meldinger og kaster exception når sendMessage feiler") {
+            val expectedException = RuntimeException("Slack er nede")
+            coEvery { client.sendMessage(any(), any()) } throws expectedException
+
+            val service = SlackService(client)
+            service.addErrorSuspending("Type 1", "Info 1")
+            service.addErrorSuspending("Type 1", "Info 2")
+            service.addErrorSuspending("Type 2", "Info 3")
+
+            val thrownException =
+                runCatching { service.sendCachedErrors("Slack Message Header") }
+                    .exceptionOrNull()
+
+            thrownException shouldBe expectedException
+
+            val requeued = service.errorTracking()
+            requeued.size shouldBe 2
+            requeued.find { it.type == "Type 1" }!!.info shouldBe mutableListOf("Info 1", "Info 2")
+            requeued.find { it.type == "Type 2" }!!.info shouldBe mutableListOf("Info 3")
+        }
+
         afterTest {
             clearMocks(client)
         }
