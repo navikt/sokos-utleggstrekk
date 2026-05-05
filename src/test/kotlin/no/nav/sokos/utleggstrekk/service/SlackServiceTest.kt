@@ -14,13 +14,13 @@ class SlackServiceTest :
     FunSpec({
         val client = mockk<SlackClient>()
 
-        test("addError lagre en ny feil når typen er ny") {
+        test("addErrorSuspending lagre en ny feil når typen er ny") {
             val service = SlackService(client)
             service.addErrorSuspending("header", "message")
             service.errorTracking().first() shouldBe ErrorMessage("header", mutableListOf("message"))
         }
 
-        test("addError oppdaterer feilen når typen har allerede blitt lagret") {
+        test("addErrorSuspending oppdaterer feilen når typen har allerede blitt lagret") {
             val service = SlackService(client)
             service.addErrorSuspending("header", "message 1")
             service.addErrorSuspending("header", "message 2")
@@ -29,7 +29,7 @@ class SlackServiceTest :
             service.errorTracking().first() shouldBe ErrorMessage("header", mutableListOf("message 1", "message 2"))
         }
 
-        test("sendError sende alle lagret feilene som de er når de har mindre enn 5 info blocks") {
+        test("addErrorSuspending sende alle lagret feilene som de er når de har mindre enn 5 info blocks") {
             val messages = slot<List<ErrorMessage>>()
             coEvery { client.sendMessage(any(), capture(messages)) } returns Unit
 
