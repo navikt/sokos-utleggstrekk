@@ -78,16 +78,8 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
         try {
             slackClient.sendMessage(messageTitle, errorsToSend)
         } catch (exception: Exception) {
-            // Requeue the batch if Slack sending fails.
-            mutex.withLock {
-                errorsToSend.forEach { (type, info) ->
-                    val existingError = errorTracking.find { it.type == type }
-                    if (existingError != null) {
-                        existingError.info.addAll(info)
-                    } else {
-                        errorTracking.add(ErrorMessage(type, info.toMutableList()))
-                    }
-                }
+            errorsToSend.forEach { (type, info) ->
+                info.forEach { addErrorSuspending(type, it) }
             }
             throw exception
         }
