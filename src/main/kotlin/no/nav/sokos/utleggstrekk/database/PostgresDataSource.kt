@@ -58,17 +58,17 @@ object PostgresDataSource {
             maxLifetime = Duration.ofMinutes(30).toMillis()
             initializationFailTimeout = Duration.ofMinutes(30).toMillis()
         }
-}
 
-private class SetRoleCallback(private val role: String) : BaseCallback() {
-    override fun supports(event: Event, context: Context?): Boolean = event == Event.AFTER_CONNECT
+    private class SetRoleCallback(private val role: String) : BaseCallback() {
+        override fun supports(event: Event, context: Context?): Boolean = event == Event.AFTER_CONNECT
 
-    override fun handle(event: Event?, context: Context?) {
-        if (event == Event.AFTER_CONNECT) {
-            require(role.isNotBlank()) { "Missing role" }
-            require(Regex("[a-zA-Z0-9_-]+").matches(role)) { "Postgres role contains unsupported characters" }
-            context?.connection?.createStatement()?.use { statement ->
-                statement.execute("""SET ROLE "$role"""")
+        override fun handle(event: Event?, context: Context?) {
+            if (event == Event.AFTER_CONNECT) {
+                require(role.isNotBlank()) { "Missing role" }
+                require(Regex("[a-zA-Z0-9_-]+").matches(role)) { "Postgres role contains unsupported characters" }
+                context?.connection?.createStatement()?.use { statement ->
+                    statement.execute("""SET ROLE "$role"""")
+                }
             }
         }
     }
