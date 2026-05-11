@@ -1,5 +1,12 @@
 package no.nav.sokos.utleggstrekk.service
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Default
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
 import no.nav.sokos.utleggstrekk.client.SlackClient
 
 data class ErrorMessage(
@@ -8,19 +15,43 @@ data class ErrorMessage(
 )
 
 class SlackService(private val slackClient: SlackClient = SlackClient()) {
-    val errorTracking = mutableListOf<ErrorMessage>()
+    private val mutex = Mutex()
+    private val errorTracking = mutableListOf<ErrorMessage>()
+
+    fun errorTracking() = errorTracking.toList()
 
     /**
      * Locally cache errors to be sent to Slack
+     *
+     * Launches a new coroutine-scope, so you may not be guaranteed that
+     * the message is registered before you get control back
+     *
+     * Use [addErrorSuspending] if it is important to have the message
+     * registered before control returns
      * @param header: Error name/short description of the problem
      * @param message: More detailed description of the error
      */
     fun addError(header: String, message: String) {
-        val error = errorTracking.find { it.type == header }
-        if (error != null) {
-            error.info.add(message)
-        } else {
-            errorTracking.add(ErrorMessage(header, mutableListOf(message)))
+        CoroutineScope(SupervisorJob() + Default).launch {
+            addErrorSuspending(header, message)
+        }
+    }
+
+    /**
+     * Locally cache errors to be sent to Slack, but suspending
+     *
+     * Use this if you are already in a coroutine-scope
+     * @param header: Error name/short description of the problem
+     * @param message: More detailed description of the error
+     */
+    suspend fun addErrorSuspending(header: String, message: String) {
+        mutex.withLock {
+            val error = errorTracking.find { it.type == header }
+            if (error != null) {
+                error.info.add(message)
+            } else {
+                errorTracking.add(ErrorMessage(header, mutableListOf(message)))
+            }
         }
     }
 
@@ -29,18 +60,31 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
      * @param messageTitle: Header for the Slack message
      */
     suspend fun sendCachedErrors(messageTitle: String) {
-        if (errorTracking.isEmpty()) return
+        val errorsToSend =
+            mutex.withLock {
+                if (errorTracking.isEmpty()) return
 
-        errorTracking.forEach { (type, info) ->
-            if (info.size > 5) {
-                val summary = "${info.size} av samme type feil: $type. Sjekk avstemming"
-                info.clear()
-                info.add(summary)
+                val preparedErrors =
+                    errorTracking.map { (type, info) ->
+                        if (info.size > 5) {
+                            ErrorMessage(type, mutableListOf("${info.size} av samme type feil: $type. Sjekk avstemming"))
+                        } else {
+                            ErrorMessage(type, info.toMutableList())
+                        }
+                    }
+
+                errorTracking.clear()
+                preparedErrors
             }
-        }
 
-        slackClient.sendMessage(messageTitle, errorTracking.toList())
-        errorTracking.clear()
+        try {
+            slackClient.sendMessage(messageTitle, errorsToSend)
+        } catch (exception: Exception) {
+            errorsToSend.forEach { (type, info) ->
+                info.forEach { addErrorSuspending(type, it) }
+            }
+            throw exception
+        }
     }
 
     companion object {
