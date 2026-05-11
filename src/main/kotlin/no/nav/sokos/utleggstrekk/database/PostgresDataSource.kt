@@ -65,10 +65,10 @@ private class SetRoleCallback(private val role: String) : BaseCallback() {
 
     override fun handle(event: Event?, context: Context?) {
         if (event == Event.AFTER_CONNECT) {
-            // low risk, but keeps the alarms from going off.
-            val sanitizedRole = role.replace(Regex("[^a-zA-Z0-9_-]"), "")
+            require(role.isNotBlank()) { "Missing role" }
+            require(Regex("[a-zA-Z0-9_-]+").matches(role)) { "Postgres role contains unsupported characters" }
             context?.connection?.createStatement()?.use { statement ->
-                statement.execute("""SET ROLE "$sanitizedRole"""")
+                statement.execute("""SET ROLE "$role"""")
             }
         }
     }
