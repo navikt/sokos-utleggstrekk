@@ -5,11 +5,11 @@ import java.time.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-import no.nav.sokos.utleggstrekk.utils.Validation.inRange
 import no.nav.sokos.utleggstrekk.utils.Validation.isDate
 import no.nav.sokos.utleggstrekk.utils.Validation.isDateTime
-import no.nav.sokos.utleggstrekk.utils.Validation.isNumber
+import no.nav.sokos.utleggstrekk.utils.Validation.isDigits
 import no.nav.sokos.utleggstrekk.utils.Validation.isSafeText
+import no.nav.sokos.utleggstrekk.utils.Validation.isValidKid
 
 @Serializable
 data class Trekkpaalegg(
@@ -70,8 +70,8 @@ fun Trekkpaalegg.validate() {
         require(trekkversjon > 0) { "trekkversjon har ulovlig verdi " }
         require(sekvensnummer > 0) { "sekvensnummer har ulovlig verdi" }
         require(opprettet.isDateTime()) { "opprettet har ulovlig verdi" }
-        require(trekkpliktig.length == 9 && trekkpliktig.isNumber()) { "trekkpliktig har ulovlig verdi" }
-        require(skyldner.length == 11 && skyldner.isNumber()) { "skyldner har ulovlig verdi" }
+        require(trekkpliktig.length == 9 && trekkpliktig.isDigits()) { "trekkpliktig har ulovlig verdi" }
+        require(skyldner.length == 11 && skyldner.isDigits()) { "skyldner har ulovlig verdi" }
         trekkstoerrelseForPeriode.forEach(TrekkstorrelseForPeriode::validate)
         betalingsinformasjon.validate()
     } catch (e: Exception) {
@@ -80,9 +80,9 @@ fun Trekkpaalegg.validate() {
 }
 
 fun Betalingsinformasjon.validate() {
-    require(betalingsmottaker.length == 9 && betalingsmottaker.isNumber()) { "Betalingsmottaker har ulovlig verdi" }
-    require(kidnummer.inRange(2, 25) && kidnummer.isNumber()) { "kidnummer har ulovlig verdi" }
-    require(kontonummer.length == 11 && kontonummer.isNumber()) { "kontonummer har ulovlig verdi" }
+    require(betalingsmottaker.length == 9 && betalingsmottaker.isDigits()) { "Betalingsmottaker har ulovlig verdi" }
+    require(kidnummer.isValidKid()) { "kidnummer har ulovlig verdi" }
+    require(kontonummer.length == 11 && kontonummer.isDigits()) { "kontonummer har ulovlig verdi" }
 }
 
 fun TrekkstorrelseForPeriode.validate() {

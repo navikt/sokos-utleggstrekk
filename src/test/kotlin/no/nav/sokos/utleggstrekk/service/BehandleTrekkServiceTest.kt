@@ -789,7 +789,7 @@ private fun List<PeriodeFraSkatt>.toKnownPeriods() =
 
 private fun lagBetalingsinformasjonForTrekkFraSkatt(trekkFraSkatt: TrekkFraSkatt): BetalingsinformasjonFraSkatt {
     val betalingsmottaker = "971648199"
-    val kidnummer = "17654202404"
+    val kidnummer = "2191507714"
     val kontonummer = "70213997155"
     return BetalingsinformasjonFraSkatt(1L, trekkFraSkatt.id, betalingsmottaker, kidnummer, kontonummer)
 }
