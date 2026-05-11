@@ -4,9 +4,7 @@ import java.time.Instant
 import java.time.LocalDate
 
 object Validation {
-    fun String.isNumber(): Boolean = this.isNotEmpty() && this.all { it in '0'..'9' }
-
-    fun String.inRange(min: Int, max: Int): Boolean = this.length >= min && this.length <= max
+    fun String.isDigits(): Boolean = this.isNotEmpty() && this.all { it in '0'..'9' }
 
     fun String.isDate() =
         try {
@@ -41,8 +39,8 @@ object Validation {
     }
 
     fun String.isValidKid(): Boolean {
-        if (length < 2 || length > 25) return false
-        if (!isNumber()) return false
+        if (length !in 2..25) return false
+        if (!isDigits()) return false
         return isValidMod10() || isValidMod11()
     }
 
@@ -71,9 +69,8 @@ object Validation {
             val weightIndex = (digits.size - 2 - i) % weights.size
             sum += digits[i] * weights[weightIndex]
         }
-        val remainder = sum % 11
         val checkDigit =
-            when (remainder) {
+            when (val remainder = sum % 11) {
                 0 -> 0
                 1 -> return false // MOD11 with remainder 1 is invalid (no valid check digit)
                 else -> 11 - remainder
