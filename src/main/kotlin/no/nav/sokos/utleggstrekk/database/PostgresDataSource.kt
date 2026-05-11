@@ -60,7 +60,7 @@ object PostgresDataSource {
         }
 }
 
-class SetRoleCallback(private val role: String) : BaseCallback() {
+private class SetRoleCallback(private val role: String) : BaseCallback() {
     override fun supports(event: Event, context: Context?): Boolean = event == Event.AFTER_CONNECT
 
     override fun handle(event: Event?, context: Context?) {
