@@ -14,30 +14,29 @@ class SlackServiceTest :
     FunSpec({
         val client = mockk<SlackClient>()
 
-        test("addError lagre en ny feil når typen er ny") {
+        test("addErrorSuspending lagre en ny feil når typen er ny") {
             val service = SlackService(client)
-            service.addError("header", "message")
-
-            service.errorTracking.first() shouldBe ErrorMessage("header", mutableListOf("message"))
+            service.addErrorSuspending("header", "message")
+            service.errorTracking().first() shouldBe ErrorMessage("header", mutableListOf("message"))
         }
 
-        test("addError oppdaterer feilen når typen har allerede blitt lagret") {
+        test("addErrorSuspending oppdaterer feilen når typen har allerede blitt lagret") {
             val service = SlackService(client)
-            service.addError("header", "message 1")
-            service.addError("header", "message 2")
+            service.addErrorSuspending("header", "message 1")
+            service.addErrorSuspending("header", "message 2")
 
-            service.errorTracking.size shouldBe 1
-            service.errorTracking.first() shouldBe ErrorMessage("header", mutableListOf("message 1", "message 2"))
+            service.errorTracking().size shouldBe 1
+            service.errorTracking().first() shouldBe ErrorMessage("header", mutableListOf("message 1", "message 2"))
         }
 
-        test("sendError sende alle lagret feilene som de er når de har mindre enn 5 info blocks") {
+        test("addErrorSuspending sende alle lagret feilene som de er når de har mindre enn 5 info blocks") {
             val messages = slot<List<ErrorMessage>>()
             coEvery { client.sendMessage(any(), capture(messages)) } returns Unit
 
             val service = SlackService(client)
             repeat(2) { typeIndex ->
                 repeat(2) { infoIndex ->
-                    service.addError("Type ${typeIndex + 1}", "Info ${infoIndex + 1}")
+                    service.addErrorSuspending("Type ${typeIndex + 1}", "Info ${infoIndex + 1}")
                 }
             }
 
@@ -50,7 +49,7 @@ class SlackServiceTest :
             capturedMessages.first() shouldBe ErrorMessage("Type 1", mutableListOf("Info 1", "Info 2"))
             capturedMessages.last() shouldBe ErrorMessage("Type 2", mutableListOf("Info 1", "Info 2"))
 
-            service.errorTracking.size shouldBe 0
+            service.errorTracking().size shouldBe 0
         }
 
         test("sendError konsolidere feilene når de har mer enn 5 info blocks før sending meldingen") {
@@ -59,11 +58,11 @@ class SlackServiceTest :
 
             val service = SlackService(client)
             repeat(5) {
-                service.addError("Type 1", "Info ${it + 1}")
+                service.addErrorSuspending("Type 1", "Info ${it + 1}")
             }
 
             repeat(6) {
-                service.addError("Type 2", "Info ${it + 2}")
+                service.addErrorSuspending("Type 2", "Info ${it + 2}")
             }
 
             service.sendCachedErrors("Slack Message Header")
@@ -84,6 +83,27 @@ class SlackServiceTest :
             service.sendCachedErrors("Slack Message Header")
 
             coVerify(exactly = 0) { client.sendMessage(any(), any()) }
+        }
+
+        test("sendCachedErrors re-queues meldinger og kaster exception når sendMessage feiler") {
+            val expectedException = RuntimeException("Slack er nede")
+            coEvery { client.sendMessage(any(), any()) } throws expectedException
+
+            val service = SlackService(client)
+            service.addErrorSuspending("Type 1", "Info 1")
+            service.addErrorSuspending("Type 1", "Info 2")
+            service.addErrorSuspending("Type 2", "Info 3")
+
+            val thrownException =
+                runCatching { service.sendCachedErrors("Slack Message Header") }
+                    .exceptionOrNull()
+
+            thrownException shouldBe expectedException
+
+            val requeued = service.errorTracking()
+            requeued.size shouldBe 2
+            requeued.find { it.type == "Type 1" }!!.info shouldBe mutableListOf("Info 1", "Info 2")
+            requeued.find { it.type == "Type 2" }!!.info shouldBe mutableListOf("Info 3")
         }
 
         afterTest {
