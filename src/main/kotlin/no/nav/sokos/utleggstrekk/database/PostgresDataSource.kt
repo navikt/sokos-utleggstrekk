@@ -67,7 +67,9 @@ private class SetRoleCallback(private val role: String) : BaseCallback() {
         if (event == Event.AFTER_CONNECT) {
             // low risk, but keeps the alarms from going off.
             val sanitizedRole = role.replace(Regex("[^a-zA-Z0-9_-]"), "")
-            context?.connection?.createStatement()?.execute("""SET ROLE "$sanitizedRole"""")
+            context?.connection?.createStatement()?.use { statement ->
+                statement.execute("""SET ROLE "$sanitizedRole"""")
+            }
         }
     }
 }
