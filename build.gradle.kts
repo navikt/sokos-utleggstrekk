@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
-    kotlin("jvm") version "2.3.20"
-    kotlin("plugin.serialization") version "2.3.20"
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.serialization") version "2.3.21"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
 
@@ -36,7 +36,7 @@ repositories {
     }
 }
 
-val ktorVersion = "3.4.2"
+val ktorVersion = "3.4.3"
 val kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
 val kotlinxSerializationVersion = "1.11.0"
 val nimbusVersion = "10.9"
@@ -48,8 +48,8 @@ val unleashedVersion = "12.2.1"
 
 // DB
 val hikaricpVersion = "7.0.2"
-val flywayVersion = "12.4.0"
-val postgresqlVersion = "42.7.10"
+val flywayVersion = "12.5.0"
+val postgresqlVersion = "42.7.11"
 val kotliqueryVersion = "2.0.0"
 
 // Logging
