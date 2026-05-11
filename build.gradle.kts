@@ -141,6 +141,10 @@ configurations.all {
             }
 
             // High
+            if (requested.group == "io.netty" && requested.name == "netty-codec") {
+                useVersion("4.1.133.Final")
+                because("CVE-2026-42583: Netty Lz4FrameDecoder is vulnerable to resource exhaustion. Affected version = 4.1.131.Final, patched in >= 4.1.133.Final")
+            }
             if (requested.group == "com.fasterxml.jackson.core" && requested.name == "jackson-core") {
                 useVersion("2.21.1")
                 because("jackson-core: Number Length Constraint Bypass in Async Parser Leads to Potential DoS Condition. Affected version >= 2.19.0, < 2.21.1")
@@ -154,12 +158,16 @@ configurations.all {
                 because("snappy-java's missing upper bound check on chunk length can lead to Denial of Service (DoS) impact. Affected version <= 1.1.10.3")
             }
             if (requested.group == "io.netty" && requested.name == "netty-codec-http") {
-                useVersion("4.2.11.Final")
-                because("Netty: HTTP Request Smuggling via Chunked Extension Quoted-String Parsing. Affected version >= 4.2.0.Alpha1, < 4.2.10.Final")
+                useVersion("4.2.13.Final")
+                because(
+                    "CVE-2026-42587: Netty HttpContentDecompressor maxAllocation bypass with br/zstd/snappy leads to decompression bomb DoS. Affected version = 4.2.11.Final, patched in >= 4.2.13.Final",
+                )
             }
             if (requested.group == "io.netty" && requested.name == "netty-codec-http2") {
-                useVersion("4.2.11.Final")
-                because("Netty HTTP/2 CONTINUATION Frame Flood DoS via Zero-Byte Frame Bypass. Affected version >= 4.2.0.Alpha1, < 4.2.10.Final")
+                useVersion("4.2.13.Final")
+                because(
+                    "CVE-2026-42587: Netty DelegatingDecompressorFrameListener maxAllocation bypass with br/zstd/snappy. Affected version = 4.2.11.Final, patched in >= 4.2.13.Final",
+                )
             }
             if (requested.group == "org.bouncycastle" && requested.name == "bcprov-jdk18on") {
                 useVersion("1.84")
@@ -167,15 +175,21 @@ configurations.all {
             }
 
             // Moderate
+            if (requested.group == "ch.qos.logback" && requested.name == "logback-core") {
+                if (requested.version?.startsWith("1.3.") == true) {
+                    useVersion("1.3.16")
+                    because("CVE-2025-11226: QOS.CH logback-core Arbitrary Code Execution through file processing. Affected version <= 1.3.14. Patched in >= 1.3.16")
+                }
+            }
             if (requested.group == "com.squareup.okio" && requested.name == "okio") {
                 useVersion("3.4.0")
                 because("Okio Signed to Unsigned Conversion Error vulnerability. Affected version >= 2.0.0-RC1, < 3.4.0")
             }
 
             // Test
-            if (requested.group == "org.apache.commons " && requested.name == "commons-compress") { // ./gradlew dependencies --configuration testRuntimeClasspath | grep commons-compress
+            if (requested.group == "org.apache.commons" && requested.name == "commons-compress") { // ./gradlew dependencies --configuration testRuntimeClasspath | grep commons-compress
                 useVersion("1.26.0")
-                because("Apache Commons Compress: OutOfMemoryError unpacking broken Pack200 filet. Affected version >= 1.21, < 1.26.0")
+                because("Apache Commons Compress: OutOfMemoryError unpacking broken Pack200 file. Affected version >= 1.21, < 1.26.0")
             }
         }
     }
