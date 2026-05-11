@@ -177,8 +177,8 @@ configurations.all {
             // Moderate
             if (requested.group == "ch.qos.logback" && requested.name == "logback-core") {
                 if (requested.version?.startsWith("1.3.") == true) {
-                    useVersion("1.3.15")
-                    because("CVE-2024-12798: QOS.CH logback-core Expression Language Injection vulnerability in JaninoEventEvaluator. Affected version <= 1.3.14. Patched in >= 1.3.15")
+                    useVersion("1.3.16")
+                    because("CVE-2025-11226: QOS.CH logback-core Arbitrary Code Execution through file processing. Affected version <= 1.3.14. Patched in >= 1.3.16")
                 }
             }
             if (requested.group == "com.squareup.okio" && requested.name == "okio") {
