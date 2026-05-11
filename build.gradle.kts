@@ -141,6 +141,10 @@ configurations.all {
             }
 
             // High
+            if (requested.group == "io.netty" && requested.name == "netty-codec") {
+                useVersion("4.1.133.Final")
+                because("CVE-2026-42583: Netty Lz4FrameDecoder is vulnerable to resource exhaustion. Affected version = 4.1.131.Final, patched in >= 4.1.133.Final")
+            }
             if (requested.group == "com.fasterxml.jackson.core" && requested.name == "jackson-core") {
                 useVersion("2.21.1")
                 because("jackson-core: Number Length Constraint Bypass in Async Parser Leads to Potential DoS Condition. Affected version >= 2.19.0, < 2.21.1")
