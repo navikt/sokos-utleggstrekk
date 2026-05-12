@@ -4,9 +4,7 @@ import java.time.Instant
 import java.time.LocalDate
 
 object Validation {
-    fun String.isNumber(): Boolean = this.isNotEmpty() && this.all { it in '0'..'9' }
-
-    fun String.inRange(min: Int, max: Int): Boolean = this.length >= min && this.length <= max
+    fun String.isDigits(): Boolean = this.isNotEmpty() && this.all { it in '0'..'9' }
 
     fun String.isDate() =
         try {
@@ -38,5 +36,45 @@ object Validation {
 
     fun String.validateString(allowNewLines: Boolean = false) {
         if (!isSafeText(allowNewLines)) throw IllegalArgumentException("Malformed string data")
+    }
+
+    fun String.isValidKid(): Boolean {
+        if (length !in 2..25) return false
+        if (!isDigits()) return false
+        return isValidMod10() || isValidMod11()
+    }
+
+    private fun String.isValidMod10(): Boolean {
+        val digits = map { it.digitToInt() }
+        var sum = 0
+        var double = true
+        for (i in digits.size - 2 downTo 0) {
+            var d = digits[i]
+            if (double) {
+                d *= 2
+                if (d > 9) d -= 9
+            }
+            sum += d
+            double = !double
+        }
+        val checkDigit = (10 - (sum % 10)) % 10
+        return checkDigit == digits.last()
+    }
+
+    private fun String.isValidMod11(): Boolean {
+        val weights = intArrayOf(2, 3, 4, 5, 6, 7)
+        val digits = map { it.digitToInt() }
+        var sum = 0
+        for (i in digits.size - 2 downTo 0) {
+            val weightIndex = (digits.size - 2 - i) % weights.size
+            sum += digits[i] * weights[weightIndex]
+        }
+        val checkDigit =
+            when (val remainder = sum % 11) {
+                0 -> 0
+                1 -> return false // MOD11 with remainder 1 is invalid (no valid check digit)
+                else -> 11 - remainder
+            }
+        return checkDigit == digits.last()
     }
 }

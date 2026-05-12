@@ -81,7 +81,7 @@ internal class UtleggsTrekkServiceTest :
         }
 
         Given("Vi henter ett trekk fra SKE") {
-            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648199", kidnummer = "13812738912427", kontonummer = "70213997155")
+            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648199", kidnummer = "2345676", kontonummer = "70213997155")
             val trekkPeriode =
                 TrekkstorrelseForPeriode(
                     "2026-02-02",
@@ -153,7 +153,7 @@ internal class UtleggsTrekkServiceTest :
         }
         Given("Vi henter nye trekk fra SKE og det er 10 nye og maksantall er 4") {
             DBListener.clearDB()
-            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648199", kidnummer = "13812738912427", kontonummer = "70213997155")
+            val mottaker = Betalingsinformasjon(betalingsmottaker = "971648199", kidnummer = "2345676", kontonummer = "70213997155")
             val trekkpaalegg: List<Trekkpaalegg> =
                 (1..10).map { index ->
                     makeTrekkpaalegg(
@@ -317,7 +317,7 @@ internal class UtleggsTrekkServiceTest :
                         kreditorIdTss = if (shouldValidate) "80000423362" else "invalid kreditorIdTss",
                         kreditorTrekkId = "10342395",
                         debitorId = "19074639472",
-                        kid = "17654202404",
+                        kid = "2191507714",
                         kreditorsRef = "SAK1",
                         kodeTrekktype = "KRED",
                         kodeTrekkAlternativ = TrekkAlternativ.LOPP,

@@ -3,8 +3,9 @@ updates:
   - package-ecosystem: gradle
     directory: "/"
     schedule:
-      interval: daily
-      time: "08:00"
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
       timezone: "Europe/Oslo"
     cooldown:
       default-days: 7
