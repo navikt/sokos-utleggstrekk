@@ -565,7 +565,7 @@ class RepositoryTest :
             val sampleBetalingsinformasjon =
                 Betalingsinformasjon(
                     betalingsmottaker = "971648199",
-                    kidnummer = "17654202404",
+                    kidnummer = "2191507714",
                     kontonummer = "70213997155",
                 )
 
