@@ -5,7 +5,7 @@ import java.time.LocalDate
 import kotlinx.serialization.Serializable
 
 import no.nav.sokos.utleggstrekk.utils.Validation.isDate
-import no.nav.sokos.utleggstrekk.utils.Validation.isNumber
+import no.nav.sokos.utleggstrekk.utils.Validation.isDigits
 import no.nav.sokos.utleggstrekk.utils.Validation.isSafeText
 
 // De er på samme format
@@ -121,10 +121,10 @@ fun Document.validate() {
 
 fun InnrapporteringTrekk.validate() {
     require(navTrekkId.isSafeText()) { "navTrekkId har ugyldige tegn" }
-    require(kreditorIdTss.length <= 11 && kreditorIdTss.isNumber()) { "kreditorIdTss er ugyldig" }
+    require(kreditorIdTss.length <= 11 && kreditorIdTss.isDigits()) { "kreditorIdTss er ugyldig" }
     require(kreditorTrekkId.length <= 35 && kreditorTrekkId.isSafeText()) { "kreditorTrekkId er ugyldig" }
     require(kreditorsRef.length <= 30 && kreditorsRef.isSafeText()) { "kreditorsRef er ugyldig" }
-    require(debitorId.length == 11 && debitorId.isNumber()) { "debitorId er ugyldig" }
+    require(debitorId.length == 11 && debitorId.isDigits()) { "debitorId er ugyldig" }
     require(kodeTrekktype.length <= 4 && kodeTrekktype.isSafeText()) { "kodeTrekkType er ugyldig" }
     require(kid.length <= 26 && kid.isSafeText()) { "kid er ugyldig" }
     require(kilde.length <= 11 && kilde.isSafeText()) { "kilde er ugyldig" }
