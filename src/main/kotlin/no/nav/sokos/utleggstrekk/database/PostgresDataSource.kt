@@ -6,9 +6,6 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import mu.KotlinLogging
 import org.flywaydb.core.Flyway
-import org.flywaydb.core.api.callback.BaseCallback
-import org.flywaydb.core.api.callback.Context
-import org.flywaydb.core.api.callback.Event
 import org.postgresql.ds.PGSimpleDataSource
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
@@ -20,12 +17,19 @@ object PostgresDataSource {
         dataSource()
     }
 
-    fun migrate(dataSource: HikariDataSource = dataSource(role = postgresConfig.user)) {
+    fun migrate() {
+        val migrationConfig =
+            hikariConfig().apply {
+                connectionInitSql = """SET ROLE "${postgresConfig.user}""""
+            }
+        dataSource(hikariConfig = migrationConfig, role = postgresConfig.user).use { migrate(it) }
+    }
+
+    fun migrate(dataSource: HikariDataSource) {
         logger.info { "Flyway migration" }
         Flyway
             .configure()
             .dataSource(dataSource)
-            .callbacks(SetRoleCallback(postgresConfig.user))
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
             .load()
@@ -58,18 +62,4 @@ object PostgresDataSource {
             maxLifetime = Duration.ofMinutes(30).toMillis()
             initializationFailTimeout = Duration.ofMinutes(30).toMillis()
         }
-
-    private class SetRoleCallback(private val role: String) : BaseCallback() {
-        override fun supports(event: Event, context: Context?): Boolean = event == Event.AFTER_CONNECT
-
-        override fun handle(event: Event?, context: Context?) {
-            if (event == Event.AFTER_CONNECT) {
-                require(role.isNotBlank()) { "Missing role" }
-                require(Regex("[a-zA-Z0-9_-]+").matches(role)) { "Postgres role contains unsupported characters" }
-                context?.connection?.createStatement()?.use { statement ->
-                    statement.execute("""SET ROLE "$role"""")
-                }
-            }
-        }
-    }
 }
