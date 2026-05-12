@@ -179,6 +179,16 @@ configurations.all {
                 useVersion("1.84")
                 because("Bouncy Castle Has Covert Timing Channel Vulnerability. Affected version >= 1.71, < 1.84")
             }
+            if (requested.group == "org.bouncycastle" && requested.name == "bcpkix-jdk18on") {
+                useVersion("1.84")
+                because(
+                    "CVE-2026-5588: Bouncy Castle Crypto Package For Java - Use of a Broken or Risky Cryptographic Algorithm vulnerability in bcpkix modules. PKIX draft CompositeVerifier accepts empty signature sequence as valid. Affected version >= 1.49, < 1.84",
+                )
+            }
+            if (requested.group == "org.bouncycastle" && requested.name == "bcutil-jdk18on") {
+                useVersion("1.84")
+                because("Upgrading bcutil-jdk18on to match bcpkix-jdk18on and bcprov-jdk18on versions for consistency")
+            }
 
             // Moderate
             if (requested.group == "ch.qos.logback" && requested.name == "logback-core") {
