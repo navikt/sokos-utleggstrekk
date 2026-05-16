@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder
+import ch.qos.logback.classic.joran.JoranConfigurator
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.OutputStreamAppender
@@ -20,6 +21,19 @@ import org.slf4j.LoggerFactory
 @Isolate
 class LogFilteringTest :
     FunSpec({
+        fun configureLogback(resourceName: String) {
+            val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
+            loggerContext.reset()
+            val configurator = JoranConfigurator()
+            configurator.context = loggerContext
+            val url =
+                LogFilteringTest::class.java.classLoader.getResource(resourceName)
+                    ?: error("$resourceName not found on classpath")
+            configurator.doConfigure(url)
+        }
+
+        beforeSpec { configureLogback("logback.xml") }
+        afterSpec { configureLogback("logback-test.xml") }
         test("Kontrolltegn er filtrert fra log output.") {
             val illegal =
                 setOf(
