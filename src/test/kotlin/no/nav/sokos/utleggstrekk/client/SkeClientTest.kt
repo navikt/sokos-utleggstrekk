@@ -198,9 +198,6 @@ class SkeClientTest :
                 messages.last() shouldContain "KB-001"
 
                 // Logging: TEAM_LOGS marker error logges for begge kallene.
-                logAppender.list.forEach {
-                    println("${it.message} - ${it.markerList} -> ${it.message}")
-                }
                 logAppender.list.filter { it.markerList?.contains(TEAM_LOGS_MARKER) ?: false }.size shouldBe 2
             }
         }
