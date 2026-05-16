@@ -2,6 +2,10 @@ package no.nav.sokos.utleggstrekk.client
 
 import kotlin.time.ExperimentalTime
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -16,15 +20,11 @@ import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.runs
 import io.mockk.unmockkObject
 import io.mockk.verify
-import mu.KLogger
-import mu.KotlinLogging
-import mu.Marker
+import org.slf4j.LoggerFactory
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
@@ -46,15 +46,14 @@ import no.nav.sokos.utleggstrekk.util.resourceToString
 class SkeClientTest :
     FunSpec({
         val slackService = mockk<SlackService>(relaxUnitFun = true)
-        val logger =
-            mockk<KLogger>(relaxed = true) {
-                every { info(any<() -> Unit>()) } just runs
-                every { warn(any<() -> Unit>()) } just runs
-                every { error(any<() -> Unit>()) } just runs
-                every { error(any<String>()) } just runs
-                every { error(any<Marker>(), any<() -> Unit>()) } just runs
-            }
+        val skeServiceLogger = LoggerFactory.getLogger(SkeClient::class.java) as Logger
 
+        val logAppender = ListAppender<ILoggingEvent>()
+
+        beforeTest {
+            logAppender.start()
+            skeServiceLogger.addAppender(logAppender)
+        }
         val mockToken = "mock-token"
         val mockTokenProvider =
             mockk<MaskinportenAccessTokenClient> {
@@ -97,8 +96,7 @@ class SkeClientTest :
             )
 
         beforeSpec {
-            mockkObject(KotlinLogging, PropertiesConfig)
-            every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
+            mockkObject(PropertiesConfig)
             every { PropertiesConfig.config } returns ApplicationConfig("application-test.conf")
         }
 
@@ -120,7 +118,7 @@ class SkeClientTest :
                 request.headers[HttpHeaders.Authorization] shouldBe "Bearer mock-token"
 
                 trekkListe shouldBe emptyList()
-                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
+                logAppender.list.filter { it.level == Level.WARN }.size shouldBe 0
             }
 
             test("skal konvertere en body til en list av Trekkpaalegg") {
@@ -133,9 +131,7 @@ class SkeClientTest :
                 trekkListe shouldHaveSize 2
                 trekkListe.first() shouldBe mockTrekk
 
-                verify(exactly = 0) {
-                    logger.warn(any<() -> Unit>())
-                }
+                logAppender.list.filter { it.level == Level.WARN }.size shouldBe 0
             }
 
             test("skal returnere en emptyList når den ikke kan parse body ") {
@@ -145,9 +141,9 @@ class SkeClientTest :
 
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
 
-                verify(exactly = 1) { logger.error(any<Marker>(), any<() -> Unit>()) }
-                verify(exactly = 1) { logger.error("Feil i konvertering av response til Trekkpålegg ") }
-                verify(exactly = 0) { logger.warn(any<() -> Unit>()) }
+                logAppender.list.filter { it.level == Level.ERROR }.size shouldBe 2 // én med og én uten TEAM_MARKER
+                logAppender.list.filter { it.message == "Feil i konvertering av response til Trekkpålegg " }.size shouldBe 1
+                logAppender.list.filter { it.level == Level.WARN }.size shouldBe 0
 
                 trekkListe shouldBe emptyList()
             }
@@ -159,7 +155,7 @@ class SkeClientTest :
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
 
                 trekkListe.shouldBeEmpty()
-                verify(exactly = 1) { logger.warn(any<() -> Unit>()) }
+                logAppender.list.filter { it.level == Level.WARN }.size shouldBe 1
             }
 
             test("skal sende slack + logge TEAM_LOGS når API-kallet gir 4xx, og ikke sende slack når 5xx") {
@@ -202,7 +198,10 @@ class SkeClientTest :
                 messages.last() shouldContain "KB-001"
 
                 // Logging: TEAM_LOGS marker error logges for begge kallene.
-                verify(exactly = 2) { logger.error(TEAM_LOGS_MARKER, any<() -> Unit>()) }
+                logAppender.list.forEach {
+                    println("${it.message} - ${it.markerList} -> ${it.message}")
+                }
+                logAppender.list.filter { it.markerList?.contains(TEAM_LOGS_MARKER) ?: false }.size shouldBe 2
             }
         }
 
@@ -235,11 +234,14 @@ class SkeClientTest :
         }
 
         afterTest {
-            clearMocks(logger, slackService)
+            clearMocks(slackService)
+            skeServiceLogger.detachAppender(logAppender)
+            logAppender.list.removeAll { true }
+            logAppender.stop()
         }
 
         afterSpec {
             clearAllMocks()
-            unmockkObject(KotlinLogging, PropertiesConfig)
+            unmockkObject(PropertiesConfig)
         }
     })
