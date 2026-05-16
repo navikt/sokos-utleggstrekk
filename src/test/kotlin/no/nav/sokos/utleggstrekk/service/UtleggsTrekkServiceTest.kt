@@ -17,12 +17,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
 import io.mockk.verify
-import mu.KLogger
-import mu.KotlinLogging
-import mu.Marker
 
 import no.nav.sokos.utleggstrekk.client.SkeClient
 import no.nav.sokos.utleggstrekk.config.jsonConfig
@@ -60,13 +55,6 @@ internal class UtleggsTrekkServiceTest :
             mockk<JmsProducerService>(relaxed = true) {
                 every { send(capture(capturedPayloads)) } just Runs
             }
-        val logger =
-            mockk<KLogger> {
-                every { error(any<String>()) } returns Unit
-                every { error(any<Marker>(), any<String>(), any<Exception>()) } returns Unit
-                every { info(any<String>()) } returns Unit
-                every { info(any<() -> Any?>()) } returns Unit
-            }
 
         fun mockedFeatureToggle(hentFraSkatt: Boolean = false, prosesserUtleggstrekk: Boolean = false, sendTilOs: Boolean = false) =
             mockk<UnleashIntegration> {
@@ -74,11 +62,6 @@ internal class UtleggsTrekkServiceTest :
                 every { isProsesserUtleggstrekkEnabled() } returns prosesserUtleggstrekk
                 every { isSendTilOSEnabled() } returns sendTilOs
             }
-
-        beforeSpec {
-            mockkObject(KotlinLogging)
-            every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
-        }
 
         Given("Vi henter ett trekk fra SKE") {
             val mottaker = Betalingsinformasjon(betalingsmottaker = "971648199", kidnummer = "2345676", kontonummer = "70213997155")
@@ -371,6 +354,5 @@ internal class UtleggsTrekkServiceTest :
 
         afterSpec {
             clearAllMocks()
-            unmockkObject(KotlinLogging)
         }
     })
