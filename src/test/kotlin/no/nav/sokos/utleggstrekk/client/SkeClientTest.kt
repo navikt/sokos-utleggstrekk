@@ -141,7 +141,7 @@ class SkeClientTest :
 
                 val trekkListe = skeClient.hentUtleggstrekkFraSekvensnr(1)
 
-                logAppender.list.filter { it.level == Level.ERROR }.size shouldBe 2 // én med og én uten TEAM_MARKER
+                logAppender.list.filter { it.level == Level.ERROR }.size shouldBe 2 // én med og én uten TEAM_LOGS_MARKER
                 logAppender.list.filter { it.message == "Feil i konvertering av response til Trekkpålegg " }.size shouldBe 1
                 logAppender.list.filter { it.level == Level.WARN }.size shouldBe 0
 
