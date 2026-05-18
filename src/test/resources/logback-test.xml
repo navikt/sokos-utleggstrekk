@@ -20,7 +20,7 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
-    <logger name="no.nav.sokos.ske.krav" level="INFO" additivity="false"/>
+    <logger name="no.nav.sokos.utleggstrekk" level="INFO" additivity="false"/>
     <logger name="secureLogger" level="INFO" additivity="false">
         <appender-ref ref="${LOG_APPENDER:-secureLog}"/>
     </logger>
