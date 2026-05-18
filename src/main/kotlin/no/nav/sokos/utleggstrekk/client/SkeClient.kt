@@ -28,14 +28,13 @@ import no.nav.sokos.utleggstrekk.utils.isSuccessful
 const val MAX_ANTALL = 2500
 private const val KLIENT_ID = "NAV/0.1"
 
-// Don't cache a logger at file-load time; this allows tests to mock KotlinLogging.logger.
-private val logger = KotlinLogging.logger { }
-
 class SkeClient(
     private val client: HttpClient = httpClient,
     private val slackService: SlackService = SlackService.instance,
     private val tokenProvider: MaskinportenAccessTokenClient = MaskinportenAccessTokenClient(PropertiesConfig.maskinportenClientConfig, client),
 ) {
+    private val logger = KotlinLogging.logger {}
+
     val basePath = PropertiesConfig.skeConfig.skeRestUrl
 
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> {
