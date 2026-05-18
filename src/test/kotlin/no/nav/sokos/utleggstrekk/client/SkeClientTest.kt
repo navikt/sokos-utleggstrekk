@@ -233,7 +233,7 @@ class SkeClientTest :
         afterTest {
             clearMocks(slackService)
             skeServiceLogger.detachAppender(logAppender)
-            logAppender.list.removeAll { true }
+            logAppender.list.clear()
             logAppender.stop()
         }
 
