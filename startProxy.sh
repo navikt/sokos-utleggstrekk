@@ -1,7 +1,11 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
+if [ "$#" -ne 1 ]; then
+  if [ "$#" -eq 0 ]; then
     echo 'No argument supplied. Provide a reason for connecting to the database'
+  else
+    echo "Too many arguments supplied. The reason should be quoted."
+  fi
     echo 'Usage: ./startProxy.sh "TOB-XXX: Kontrollere at ..."'
     exit 1
 fi
