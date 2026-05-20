@@ -27,12 +27,17 @@ env:
 jobs:
   build-and-test:
     permissions:
-      contents: write
+      contents: read
     name: Build and test
     uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-test-app.yaml@main
     with:
       upload-artifact: true
-      generate-dependency-graph: true
+
+  dependency-submission:
+    permissions:
+      contents: write
+    name: Submit dependency graph
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-dependency-submission.yaml@main
 
   build-push-image-dev:
     permissions:
