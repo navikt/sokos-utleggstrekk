@@ -13,13 +13,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.slot
-import io.mockk.unmockkObject
 import io.mockk.verify
-import mu.KLogger
-import mu.KotlinLogging
-import mu.Marker
 import org.apache.activemq.artemis.jms.client.ActiveMQQueue
 
 import no.nav.sokos.utleggstrekk.database.TestRepository.getAllTransaksjonerTilOs
@@ -41,12 +36,6 @@ class JmsListenerServiceTest :
         val slackService = mockk<SlackService>()
         every { slackService.addError(any(), any()) } returns Unit
         coEvery { slackService.sendCachedErrors(any()) } returns Unit
-
-        val logger =
-            mockk<KLogger> {
-                every { error(any<Marker>(), any<String>(), any<Exception>()) } returns Unit
-                every { warn(any<String>()) } returns Unit
-            }
 
         val replyQueue = ActiveMQQueue("replyQueue")
 
@@ -71,9 +60,6 @@ class JmsListenerServiceTest :
                 jmsProducerBoq,
                 connectionFactory,
             )
-
-            mockkObject(KotlinLogging)
-            every { KotlinLogging.logger(any<() -> Unit>()) } returns logger
         }
 
         Given("Vi mottar en kvittering") {
@@ -186,6 +172,5 @@ class JmsListenerServiceTest :
 
         afterSpec {
             clearAllMocks()
-            unmockkObject(KotlinLogging)
         }
     })
