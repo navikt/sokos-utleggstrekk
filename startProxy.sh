@@ -1,16 +1,26 @@
 #!/bin/bash
 
- if ! gcloud auth print-identity-token &>/dev/null; then
-       echo "User not logged in, running nais auth login..."
-       nais auth login
- fi
+if [ "$#" -ne 1 ]; then
+  if [ "$#" -eq 0 ]; then
+    echo 'No argument supplied. Provide a reason for connecting to the database'
+  else
+    echo "Too many arguments supplied. The reason should be quoted."
+  fi
+    echo 'Usage: ./startProxy.sh "TOB-XXX: Kontrollere at ..."'
+    exit 1
+fi
 
-  kubectl config use-context dev-gcp
+if ! gcloud auth print-identity-token &>/dev/null; then
+    echo "User not logged in, running nais auth login..."
+    nais auth login
+fi
+
+kubectl config use-context dev-gcp
 if ! gcloud auth application-default print-access-token &>/dev/null; then
     echo "ADC not configured or invalid, running login with --update-adc..."
     gcloud auth login --update-adc
-    nais postgres prepare sokos-utleggstrekk
-    nais postgres grant sokos-utleggstrekk
+    nais postgres prepare sokos-utleggstrekk --team okonomi
+    nais postgres grant sokos-utleggstrekk --team okonomi
 fi
 
 
@@ -29,4 +39,4 @@ if nc -z localhost 5432 2>/dev/null; then
 fi
 
 echo "Starting NAIS postgres proxy..."
-nais postgres proxy sokos-utleggstrekk --reason "lokal utvikling" --team okonomi
+nais postgres proxy sokos-utleggstrekk --reason "$1" --team okonomi
