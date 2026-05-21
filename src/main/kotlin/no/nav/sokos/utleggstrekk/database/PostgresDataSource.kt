@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.database
 
 import java.time.Duration
+import javax.sql.DataSource
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -13,11 +14,11 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig.postgresConfig
 
 object PostgresDataSource {
     private val logger = KotlinLogging.logger {}
-    val dataSource: HikariDataSource by lazy {
+    val dataSource: DataSource by lazy {
         dataSource()
     }
 
-    fun migrate(dataSource: HikariDataSource = dataSource(role = postgresConfig.user)) {
+    fun migrate(dataSource: DataSource = dataSource()) {
         logger.info { "Flyway migration" }
         Flyway
             .configure()
@@ -31,7 +32,7 @@ object PostgresDataSource {
         logger.info { "Migration finished" }
     }
 
-    private fun dataSource(hikariConfig: HikariConfig = hikariConfig(), role: String = postgresConfig.user): HikariDataSource = HikariDataSource(hikariConfig)
+    private fun dataSource(hikariConfig: HikariConfig = hikariConfig()): HikariDataSource = HikariDataSource(hikariConfig)
 
     private fun hikariConfig(): HikariConfig =
         HikariConfig().apply {
