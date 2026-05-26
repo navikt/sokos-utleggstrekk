@@ -83,15 +83,7 @@ Deretter må noen med tilstrekkelige rettigheter på vegne av Økonomilinja oppr
 Dette kun til etteretning, for dette skal allerede ha blitt gjort. Systemet vedlikeholdes av en NAIS jobb [sokos-systembruker-vedlikehold](https://github.com/navikt/sokos-systembruker-vedlikehold/tree/main)
 Se også [Skatteetatens dokumentasjon](https://skatteetaten.github.io/api-dokumentasjon/om/systembruker) og [Utbetalingsseksjonsens confluence](https://confluence.adeo.no/spaces/TOB/pages/739049218/Maskinporten+og+system+users) 
 
-### Gjenoppbygging etter tap av data
-I en situasjon hvor man har mistet alle data er det mulig å hente den ut igjen fra Skatteetatens API ved å spørre fra sekvensnummer=0. Merk da at dette kallet bare vil
-returnere det som er gjeldende versjoner av hvert trekk, ikke tidligere versjoner. For å gjenskape korrekt tilstand er man derfor nødt til å enten hente tilstand fra Oppdrag
-slik at korrekt diff kan beregnes, eller slette tilstand i Oppdrag Z slik at alle de siste trekkversjoner blir til nye trekk i Oppdragsystemet.
-
-Det er mulig å hente eldre versjoner fra Skattetaten, men dette kan bare gjøres enkeltvis.
-
-Sokos-utleggstrekk betrakter seg selv som fasit for trekkene den sender til Oppdrag, så hvis det gjøres endringer på disse vil de bli overskrevet neste
-gang det kommer en ny trekkversjon inn. 
+## [Driftshåndbok](drift/README.md)
 
 ## [Datamodell](datamodell/README.md)
 
