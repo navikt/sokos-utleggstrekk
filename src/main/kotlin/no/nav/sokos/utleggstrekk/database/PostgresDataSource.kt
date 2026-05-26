@@ -23,7 +23,6 @@ object PostgresDataSource {
         Flyway
             .configure()
             .dataSource(dataSource)
-            .initSql("""SET ROLE "${postgresConfig.user}"""")
             .lockRetryCount(-1)
             .validateMigrationNaming(true)
             .load()
@@ -55,5 +54,6 @@ object PostgresDataSource {
             connectionTimeout = Duration.ofSeconds(10).toMillis()
             maxLifetime = Duration.ofMinutes(30).toMillis()
             initializationFailTimeout = Duration.ofMinutes(30).toMillis()
+            connectionInitSql = """SET ROLE "${postgresConfig.user}""""
         }
 }
