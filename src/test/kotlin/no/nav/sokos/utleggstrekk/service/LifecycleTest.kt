@@ -229,6 +229,7 @@ private fun Repository.fakeTidspunktOpprettet(trekkid: String, trekkversjon: Int
     withTransaction { session ->
         session.update(
             queryOf(
+                // language=SQL
                 "UPDATE fraskatt SET tidspunkt_opprettet=:tidspunkt WHERE trekkid=:trekkid AND trekkversjon=:trekkversjon",
                 mapOf("tidspunkt" to instant, "trekkid" to trekkid, "trekkversjon" to trekkversjon),
             ),
