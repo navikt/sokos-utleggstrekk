@@ -64,7 +64,10 @@ object DBListener : TestListener {
             val tables = mutableListOf<String>()
             // Collect all public tables except Flyway history
             session.list(
-                queryOf("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename <> 'flyway_schema_history'"),
+                queryOf(
+                    // language=SQL
+                    "SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename <> 'flyway_schema_history'",
+                ),
             ) { rs -> tables += rs.string("tablename") }
 
             if (tables.isNotEmpty()) {
