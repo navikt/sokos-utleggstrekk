@@ -18,7 +18,7 @@ object PostgresDataSource {
         dataSource()
     }
 
-    fun migrate(dataSource: DataSource = dataSource()) {
+    fun migrate(dataSource: DataSource = this.dataSource) {
         logger.info { "Flyway migration" }
         Flyway
             .configure()
