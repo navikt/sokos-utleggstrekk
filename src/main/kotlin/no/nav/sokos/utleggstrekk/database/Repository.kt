@@ -1,8 +1,8 @@
 package no.nav.sokos.utleggstrekk.database
 
 import java.time.LocalDateTime
+import javax.sql.DataSource
 
-import com.zaxxer.hikari.HikariDataSource
 import kotliquery.Session
 import kotliquery.TransactionalSession
 import kotliquery.queryOf
@@ -29,7 +29,7 @@ private val logger = KotlinLogging.logger { }
 
 const val ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA = 6L
 
-class Repository(private val dataSource: HikariDataSource) {
+class Repository(private val dataSource: DataSource) {
     fun deleteOldData() {
         val sixMonthsAgo = LocalDateTime.now().minusMonths(ANTALL_MND_AVSLUTTEDE_TREKK_TAS_VARE_PAA)
         dataSource.withTransaction { session ->
@@ -618,7 +618,7 @@ class Repository(private val dataSource: HikariDataSource) {
         }
 }
 
-fun <A> HikariDataSource.withTransaction(operation: (TransactionalSession) -> A): A =
+fun <A> DataSource.withTransaction(operation: (TransactionalSession) -> A): A =
     using(sessionOf(this, returnGeneratedKey = true)) { session ->
         session.transaction { tx ->
             operation(tx)

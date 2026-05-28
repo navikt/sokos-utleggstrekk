@@ -1,6 +1,7 @@
 package no.nav.sokos.utleggstrekk.database
 
 import java.time.Duration
+import javax.sql.DataSource
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -13,19 +14,11 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig.postgresConfig
 
 object PostgresDataSource {
     private val logger = KotlinLogging.logger {}
-    val dataSource: HikariDataSource by lazy {
+    val dataSource: DataSource by lazy {
         dataSource()
     }
 
-    fun migrate() {
-        val migrationConfig =
-            hikariConfig().apply {
-                connectionInitSql = """SET ROLE "${postgresConfig.user}""""
-            }
-        dataSource(hikariConfig = migrationConfig).use { migrate(it) }
-    }
-
-    fun migrate(dataSource: HikariDataSource) {
+    fun migrate(dataSource: DataSource = this.dataSource) {
         logger.info { "Flyway migration" }
         Flyway
             .configure()
@@ -61,5 +54,6 @@ object PostgresDataSource {
             connectionTimeout = Duration.ofSeconds(10).toMillis()
             maxLifetime = Duration.ofMinutes(30).toMillis()
             initializationFailTimeout = Duration.ofMinutes(30).toMillis()
+            connectionInitSql = """SET ROLE "${postgresConfig.user}""""
         }
 }
