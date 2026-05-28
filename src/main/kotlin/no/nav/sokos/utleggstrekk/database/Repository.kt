@@ -46,6 +46,7 @@ class Repository(private val dataSource: DataSource) {
             val transaksjonOsDeleted =
                 session.update(
                     queryOf(
+                        // language=SQL
                         """
                         $expiredFraskatt
                         DELETE FROM transaksjon_os t USING expired_fraskatt ef WHERE t.trekk_id_ske = ef.trekkid
@@ -56,6 +57,7 @@ class Repository(private val dataSource: DataSource) {
             val fraskattDeleted =
                 session.update(
                     queryOf(
+                        // language=SQL
                         """
                         $expiredFraskatt
                         DELETE FROM fraskatt f USING expired_fraskatt ef WHERE f.trekkid = ef.trekkid
@@ -75,6 +77,7 @@ class Repository(private val dataSource: DataSource) {
             val fraSkattId =
                 session.updateAndReturnGeneratedKey(
                     queryOf(
+                        // language=SQL
                         """
                         INSERT INTO fraskatt(
                             trekkid,
@@ -102,6 +105,7 @@ class Repository(private val dataSource: DataSource) {
             trekkpaalegg.trekkstoerrelseForPeriode.forEach { periode ->
                 session.update(
                     queryOf(
+                        // language=SQL
                         """
                         INSERT INTO periode(
                             fraskatt_id,
@@ -125,6 +129,7 @@ class Repository(private val dataSource: DataSource) {
             }
             session.update(
                 queryOf(
+                    // language=SQL
                     """
                     INSERT INTO betalingsinformasjonfraskatt(
                         fraskatt_id,
@@ -143,6 +148,7 @@ class Repository(private val dataSource: DataSource) {
             )
             session.update(
                 queryOf(
+                    // language=SQL
                     """
                     INSERT INTO fraskatt_status(fraskatt_id, status)
                         VALUES(:fraskattID, :status)
@@ -160,6 +166,7 @@ class Repository(private val dataSource: DataSource) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
+                    // language=SQL
                     """
                     INSERT INTO feilmelding (
                         kreditor_trekk_id,
@@ -191,6 +198,7 @@ class Repository(private val dataSource: DataSource) {
         val id =
             session.updateAndReturnGeneratedKey(
                 queryOf(
+                    // language=SQL
                     """
                     INSERT INTO transaksjon_os (
                          transaksjons_id, 
@@ -254,6 +262,7 @@ class Repository(private val dataSource: DataSource) {
         dto.innrapporteringTrekk.perioder?.periode?.forEach { periode ->
             session.update(
                 queryOf(
+                    // language=SQL
                     """ 
                     INSERT INTO periode_til_os (
                         transaksjon_os_id, sats, periode_fom_dato, periode_tom_dato
@@ -280,6 +289,7 @@ class Repository(private val dataSource: DataSource) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
+                    // language=SQL
                     """
                     UPDATE  transaksjon_os  
                     SET 
@@ -301,6 +311,7 @@ class Repository(private val dataSource: DataSource) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
+                    // language=SQL
                     """
                     UPDATE  transaksjon_os  
                     SET 
@@ -321,6 +332,7 @@ class Repository(private val dataSource: DataSource) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
+                    // language=SQL
                     """
                     UPDATE  transaksjon_os  
                     SET 
@@ -343,6 +355,7 @@ class Repository(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT * FROM transaksjon_os WHERE 
                         trekk_id_ske=:trekkIdSke
@@ -359,6 +372,7 @@ class Repository(private val dataSource: DataSource) {
     fun getSkattTrekkStatus(fraSkattId: Long, session: TransactionalSession): SkattTrekkStatus =
         session.single(
             queryOf(
+                // language=SQL
                 "SELECT status FROM fraskatt_status WHERE fraskatt_id = :fraSkattId",
                 mapOf("fraSkattId" to fraSkattId),
             ),
@@ -371,6 +385,7 @@ class Repository(private val dataSource: DataSource) {
     fun updateTrekkFraSkattStatus(fraSkattId: Long, status: SkattTrekkStatus, session: TransactionalSession) {
         session.update(
             queryOf(
+                // language=SQL
                 "UPDATE fraskatt_status SET status = :status, tidspunkt_satt = NOW() WHERE fraskatt_id = :fraSkattId",
                 mapOf("fraSkattId" to fraSkattId, "status" to status.name),
             ),
@@ -381,6 +396,7 @@ class Repository(private val dataSource: DataSource) {
     fun getTrekkFraSkatt(id: Long, session: TransactionalSession): TrekkFraSkatt =
         session.single(
             queryOf(
+                // language=SQL
                 """SELECT * FROM fraskatt WHERE id=:id""".trimIndent(),
                 mapOf("id" to id),
             ),
@@ -390,6 +406,7 @@ class Repository(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT * FROM periode p WHERE fraskatt_id=:fraSkattId ORDER BY p.dato_start ASC
                     """.trimIndent(),
@@ -406,6 +423,7 @@ class Repository(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     """
                         SELECT * 
                             FROM periode_til_os p 
@@ -431,6 +449,7 @@ class Repository(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.single(
                 queryOf(
+                    // language=SQL
                     """SELECT * FROM betalingsinformasjonfraskatt WHERE fraskatt_id=:id""".trimIndent(),
                     mapOf("id" to id),
                 ),
@@ -440,7 +459,10 @@ class Repository(private val dataSource: DataSource) {
     fun getLastSekvensnummer(): Int =
         using(sessionOf(dataSource)) { session ->
             session.single(
-                queryOf("""SELECT sekvensnummer FROM fraskatt ORDER BY sekvensnummer DESC LIMIT 1"""),
+                queryOf(
+                    // language=SQL
+                    """SELECT sekvensnummer FROM fraskatt ORDER BY sekvensnummer DESC LIMIT 1""",
+                ),
             ) { row -> row.intOrNull(1) } ?: 0
         }
 
@@ -448,6 +470,7 @@ class Repository(private val dataSource: DataSource) {
         dataSource.withTransaction { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT * FROM  transaksjon_os WHERE transaksjon_status IS null OR transaksjon_status = :IKKE_SENDT
                         ORDER BY id ASC
@@ -466,6 +489,7 @@ class Repository(private val dataSource: DataSource) {
         dataSource.withTransaction { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT * FROM transaksjon_os
                     WHERE transaksjon_status = :SENDT
@@ -487,6 +511,7 @@ class Repository(private val dataSource: DataSource) {
     fun getPerioderForTransaksjon(transaksjonOSId: Long, session: Session): List<PeriodeTilOS> =
         session.list(
             queryOf(
+                // language=SQL
                 """
                 SELECT * FROM periode_til_os WHERE transaksjon_os_id = :transaksjonOSId
                 """.trimIndent(),
@@ -498,6 +523,7 @@ class Repository(private val dataSource: DataSource) {
         session
             .list(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT DISTINCT trekk_alternativ from  transaksjon_os  WHERE trekk_id_ske=:trekkIdSke 
                     AND
@@ -523,6 +549,7 @@ class Repository(private val dataSource: DataSource) {
             session
                 .list(
                     queryOf(
+                        // language=SQL
                         """
                         SELECT trekkstatus, COUNT(*) as count
                             FROM (SELECT DISTINCT ON (trekkid) trekkid, trekkstatus 
@@ -539,6 +566,7 @@ class Repository(private val dataSource: DataSource) {
             session
                 .list(
                     queryOf(
+                        // language=SQL
                         """
                         SELECT trekk_alternativ, COUNT(*) AS count
                             FROM ( 
@@ -558,6 +586,7 @@ class Repository(private val dataSource: DataSource) {
     fun getNyesteTrekkVersjon(trekkId: String, session: TransactionalSession): TrekkFraSkatt =
         session.single(
             queryOf(
+                // language=SQL
                 """
                     |SELECT * FROM fraskatt
                     |WHERE trekkid=:trekkid ORDER BY trekkversjon DESC LIMIT 1
@@ -572,6 +601,7 @@ class Repository(private val dataSource: DataSource) {
         using(sessionOf(dataSource)) { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT f.id FROM fraskatt f
                         LEFT JOIN  fraskatt_status t ON t.fraskatt_id = f.id

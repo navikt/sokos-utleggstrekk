@@ -121,6 +121,7 @@ class RepositoryTest :
                 repository.withTransaction { session ->
                     session.list(
                         queryOf(
+                            // language=SQL
                             "SELECT tidspunkt_sendt FROM transaksjon_os WHERE transaksjons_id=:transaksjonId",
                             mapOf("transaksjonId" to dtoSomErSendt.transaksjonID),
                         ),

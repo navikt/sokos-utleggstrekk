@@ -15,6 +15,7 @@ object TestRepository {
         withTransaction { session ->
             session.single(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT * FROM  transaksjon_os  WHERE 
                     transaksjons_id=:transaksjonsId
@@ -33,6 +34,7 @@ object TestRepository {
         withTransaction { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT * FROM  transaksjon_os 
                     """.trimIndent(),
@@ -54,6 +56,7 @@ object TestRepository {
         withTransaction { session ->
             session.single(
                 queryOf(
+                    // language=SQL
                     """
                     SELECT 1
                     FROM fraskatt
@@ -72,6 +75,7 @@ object TestRepository {
         withTransaction { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     "SELECT * FROM fraskatt f JOIN fraskatt_status s ON f.id = s.fraskatt_id WHERE s.status=:status ORDER BY f.sekvensnummer ASC",
                     mapOf("status" to status.name),
                 ),
@@ -84,6 +88,7 @@ object TestRepository {
         withTransaction { session ->
             session.single(
                 queryOf(
+                    // language=SQL
                     "SELECT status FROM fraskatt f JOIN fraskatt_status s ON f.id = s.fraskatt_id WHERE f.id=:id",
                     mapOf("id" to id),
                 ),
@@ -96,6 +101,7 @@ object TestRepository {
         withTransaction { session ->
             session.single(
                 queryOf(
+                    // language=SQL
                     "SELECT * FROM feilmelding WHERE transaksjons_id=:transaksjonsId",
                     mapOf("transaksjonsId" to transaksjonsId),
                 ),
@@ -106,6 +112,7 @@ object TestRepository {
         withTransaction { session ->
             session.list(
                 queryOf(
+                    // language=SQL
                     """SELECT * FROM fraskatt""".trimIndent(),
                 ),
             ) { row -> TrekkFraSkatt(row) }
@@ -115,6 +122,7 @@ object TestRepository {
         withTransaction { session ->
             session.single(
                 queryOf(
+                    // language=SQL
                     """SELECT * FROM fraskatt WHERE trekkid=:trekkid AND trekkversjon=:versjon""".trimIndent(),
                     mapOf("trekkid" to trekkid, "versjon" to versjon),
                 ),
