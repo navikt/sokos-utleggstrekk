@@ -1,7 +1,7 @@
 # Driftshåndbok
 
 ## Feilsituasjoner og korrigering
-Det finnes ikke noe brukergrensesnitt i sokos-utleggstrekk for fagarbeidere til å gjøre endringer. Det er først mulig etter at trekk har blitt overført til Oppgrag Z, men merk
+Det finnes ikke noe brukergrensesnitt i sokos-utleggstrekk for fagarbeidere til å gjøre endringer. Det er først mulig etter at trekk har blitt overført til Oppdrag Z, men merk
 at sokos-utleggstrekk betrakter seg selv som fasit for trekkene den sender til Oppdrag, så hvis det gjøres endringer på disse vil de bli overskrevet neste 
 gang det kommer en ny trekkversjon inn.
 
