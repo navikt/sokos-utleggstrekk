@@ -28,7 +28,7 @@ I denne situasjonen vil `fraskatt_status.status` inneholde verdien `BEHANDLET`, 
 `transaksjon_til_os`. Denne raden inneholder mange kolonner, men merk at de faktiske dataene som skal sendes til OS ligger i kollonnen `dokument_json`
 Her vil det hjelpe å se på feltene `kvittering_status` og `transaksjon_status`.
 
-Dersom `transaksjon_status` er `IKKE_SENDT` har ikke meldingen blitt forsøkt send, og vil bli sendt neste gang jobben kjøres. Er den `VALIDERINGSFEIL`
+Dersom `transaksjon_status` er `IKKE_SENDT` har ikke meldingen blitt forsøkt sendt, og vil bli sendt neste gang jobben kjøres. Er den `VALIDERINGSFEIL`
 betyr det at det finnes en feil i sokos-utleggstrekk som har produsert en `dokument_json` som ikke passerer valideringskontrollen av utdata. 
 Er den `SENDT` se på `KVITTERING_STATUS`. 
 
