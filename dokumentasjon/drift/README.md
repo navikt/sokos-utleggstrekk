@@ -19,7 +19,7 @@ av Skatteetaten, ellers må sokos-utleggstrekk fikses og deployes av oss.
 Trekk kan også bli avvist dersom det ikke passerer validering (ugyldige tegn), eller førte til en feil i behandling av trekket. I denne situasjonen vil man
 finne en rad i tabellen `fraskatt_status` med status `AVVIST`. Fordi trekket ble hentet vil siste sekvensnummer også endre seg, så det vil ikke bli forsøkt
 hentet igjen, men ingenting har blitt sendt til Oppdrag Z. Dette kan korrigeres ved at en eventuell feil med trekket rettes opp av Skatteetaten slik at
-vi får en ny versjon av trekket, eller hvis feilen er på sokos-utleggstrekks side kan man manuellt endre `fraskatt_status.status` til `REPETERES`. Da
+vi får en ny versjon av trekket, eller hvis feilen er på sokos-utleggstrekks side kan man manuelt endre `fraskatt_status.status` til `REPETERES`. Da
 vil dette trekket bli forsøkt behandlet på nytt, med mindre det har kommet en ny versjon av trekket. Da vil status settes til `HOPPET OVER`. 
 Det finnes en [oversikt over tilstandene](../flytdiagram/README.md) til et trekk.
 
