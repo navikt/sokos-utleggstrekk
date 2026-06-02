@@ -30,9 +30,9 @@ Her vil det hjelpe å se på feltene `kvittering_status` og `transaksjon_status`
 
 Dersom `transaksjon_status` er `IKKE_SENDT` har ikke meldingen blitt forsøkt sendt, og vil bli sendt neste gang jobben kjøres. Er den `VALIDERINGSFEIL`
 betyr det at det finnes en feil i sokos-utleggstrekk som har produsert en `dokument_json` som ikke passerer valideringskontrollen av utdata. 
-Er den `SENDT` se på `KVITTERING_STATUS`. 
+Er den `SENDT` se på `kvittering_status`. 
 
-Er `KVITTERING_STATUS` = `OK` har sokos-utleggsrekk motatt bekreftelse på at trekket er akseptert av Oppdrag Z. Andre mulige verdier på `KVITTERING_STATUS` er 
+Er `kvittering_status` = `OK` har sokos-utleggsrekk motatt bekreftelse på at trekket er akseptert av Oppdrag Z. Andre mulige verdier på `kvittering_status` er 
 `IKKE_MOTTATT`, `FEIL` og `UKJENT`. I de to siste tilfellene skal det være innslag i tabellen `feilmelding` med mer ufyllende beskrivelse.
 
 Det vil i denne feilsituasjonen også være mulig å endre `fraskatt_status.status` til `REPETERES`. Det vil føre til at det under neste kjøring vil bli laget en ny rad
