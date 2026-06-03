@@ -32,7 +32,7 @@ Dersom `transaksjon_status` er `IKKE_SENDT` har ikke meldingen blitt forsøkt se
 betyr det at det finnes en feil i sokos-utleggstrekk som har produsert en `dokument_json` som ikke passerer valideringskontrollen av utdata. 
 Er den `SENDT` se på `kvittering_status`. 
 
-Er `kvittering_status` = `OK` har sokos-utleggsrekk motatt bekreftelse på at trekket er akseptert av Oppdrag Z. Andre mulige verdier på `kvittering_status` er 
+Er `kvittering_status` = `OK` har sokos-utleggstrekk motatt bekreftelse på at trekket er akseptert av Oppdrag Z. Andre mulige verdier på `kvittering_status` er 
 `IKKE_MOTTATT`, `FEIL` og `UKJENT`. I de to siste tilfellene skal det være innslag i tabellen `feilmelding` med mer ufyllende beskrivelse.
 
 Det vil i denne feilsituasjonen også være mulig å endre `fraskatt_status.status` til `REPETERES`. Det vil føre til at det under neste kjøring vil bli laget en ny rad
