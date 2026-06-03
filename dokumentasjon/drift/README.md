@@ -8,7 +8,7 @@ gang det kommer en ny trekkversjon inn.
 ### Dersom trekk fra skatt har blitt avvist av sokos-utleggstrekk
 Trekk vil bli avvist dersom sokos-utleggstrekk ikke klarer å tolke responsen fra Skatt. Dette betyr typisk at vi ikke har klart å parse responsen fra skatt 
 som JSON. I denne feilsituasjonen har ingenting blitt lagret i sokos-utleggstrekk. Det betyr at siste sekvensnummer ikke vil oppdatere seg, og 
-sokos-utleggstrekk vil forsøke å hente de samme datene igjen neste gang jobben kjøres
+sokos-utleggstrekk vil forsøke å hente de samme datene igjen neste gang jobben kjøres.
 
 Trekk vil også bli avvist dersom de inneholder ugyldige verdier.
 
