@@ -20,12 +20,12 @@ Trekk kan også bli avvist dersom det ikke passerer validering (ugyldige tegn), 
 finne en rad i tabellen `fraskatt_status` med status `AVVIST`. Fordi trekket ble hentet vil siste sekvensnummer også endre seg, så det vil ikke bli forsøkt
 hentet igjen, men ingenting har blitt sendt til Oppdrag Z. Dette kan korrigeres ved at en eventuell feil med trekket rettes opp av Skatteetaten slik at
 vi får en ny versjon av trekket, eller hvis feilen er på sokos-utleggstrekks side kan man manuelt endre `fraskatt_status.status` til `REPETERES`. Da
-vil dette trekket bli forsøkt behandlet på nytt, med mindre det har kommet en ny versjon av trekket. Da vil status settes til `HOPPET OVER`. 
+vil dette trekket bli forsøkt behandlet på nytt, med mindre det har kommet en ny versjon av trekket. Da vil status settes til `HOPPET_OVER`. 
 Det finnes en [oversikt over tilstandene](../flytdiagram/README.md) til et trekk.
 
 ### Dersom trekk har blitt mottatt, blitt behandlet av sokos-utleggstrekk men finnes ikke i Oppdrag Z.
 I denne situasjonen vil `fraskatt_status.status` inneholde verdien `BEHANDLET`, som betyr at det er laget et innslag i tabellen
-`transaksjon_til_os`. Denne raden inneholder mange kolonner, men merk at de faktiske dataene som skal sendes til OS ligger i kollonnen `dokument_json`
+`transaksjon_os`. Denne raden inneholder mange kolonner, men merk at de faktiske dataene som skal sendes til OS ligger i kollonnen `dokument_json`
 Her vil det hjelpe å se på feltene `kvittering_status` og `transaksjon_status`.
 
 Dersom `transaksjon_status` er `IKKE_SENDT` har ikke meldingen blitt forsøkt sendt, og vil bli sendt neste gang jobben kjøres. Er den `VALIDERINGSFEIL`
@@ -36,7 +36,7 @@ Er `kvittering_status` = `OK` har sokos-utleggsrekk motatt bekreftelse på at tr
 `IKKE_MOTTATT`, `FEIL` og `UKJENT`. I de to siste tilfellene skal det være innslag i tabellen `feilmelding` med mer ufyllende beskrivelse.
 
 Det vil i denne feilsituasjonen også være mulig å endre `fraskatt_status.status` til `REPETERES`. Det vil føre til at det under neste kjøring vil bli laget en ny rad
-i `transaksjon_til_os` som så blir sendt over til Oppdrag Z.
+i `transaksjon_os` som så blir sendt over til Oppdrag Z.
 
 ### Gjenoppbygging etter tap av data
 I en situasjon hvor man har mistet alle data er det mulig å hente den ut igjen fra Skatteetatens API ved å spørre fra sekvensnummer=0. Merk da at dette kallet bare vil
