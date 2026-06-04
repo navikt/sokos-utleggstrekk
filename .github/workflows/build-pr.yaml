@@ -11,7 +11,7 @@ on:
       - 'setupLocalEnvironment.sh'
       - '.scripts'
       - 'dokumentasjon/**'
-      - '.github/workflows/codeql-trivy-scan.yaml'
+      - '.github/workflows/codeql-scan.yaml'
       - '.github/workflows/deploy.yaml'
       - '.github/workflows/digestabot-automerge.yaml'
       - '.github/workflows/digestabot-update.yaml'
@@ -28,4 +28,3 @@ jobs:
     permissions:
       contents: read
     uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-test-app.yaml@main
-
