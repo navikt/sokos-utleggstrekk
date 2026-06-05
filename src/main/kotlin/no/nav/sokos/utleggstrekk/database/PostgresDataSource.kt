@@ -37,7 +37,6 @@ object PostgresDataSource {
         HikariConfig().apply {
             maximumPoolSize = 5
             minimumIdle = 1
-            isAutoCommit = false
 
             if (PropertiesConfig.isLocal && postgresConfig.jdbcUrl.isEmpty()) {
                 dataSource =
