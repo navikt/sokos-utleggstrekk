@@ -50,7 +50,7 @@ val unleashedVersion = "12.2.1"
 val hikaricpVersion = "7.0.2"
 val flywayVersion = "12.5.0"
 val postgresqlVersion = "42.7.11"
-val kotliqueryVersion = "2.0.0"
+val kotliqueryVersion = "2.0.8"
 
 // Logging
 val logbackVersion = "1.5.32"
@@ -109,7 +109,7 @@ dependencies {
     // Database
     implementation("com.zaxxer:HikariCP:$hikaricpVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
-    implementation("no.nav.kotliquery:kotliquery:$kotliqueryVersion")
+    implementation("no.nav:kotliquery:$kotliqueryVersion")
     implementation("no.nav:vault-jdbc:$vaultVersion")
 
     runtimeOnly("org.flywaydb:flyway-database-postgresql:$flywayVersion")
