@@ -126,7 +126,7 @@ data class MQProperties(
     val password: String,
     val userAuth: Boolean,
 ) {
-    val replyBoqQueueName = "${replyQueueName}_BOQ"
+    val replyBoqQueueName = "${replyQueueName}_BQ"
 }
 
 @Serializable
