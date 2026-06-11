@@ -134,17 +134,7 @@ configurations.all {
     resolutionStrategy {
         eachDependency {
 
-            // Critical
-            if (requested.group == "org.lz4" && requested.name == "lz4-java") {
-                useTarget("at.yawk.lz4:lz4-java:1.11.0")
-                because("Prefer the patched fork for vulnerability fix")
-            }
-
             // High
-            if (requested.group == "io.netty" && requested.name == "netty-codec") {
-                useVersion("4.1.133.Final")
-                because("CVE-2026-42583: Netty Lz4FrameDecoder is vulnerable to resource exhaustion. Affected version = 4.1.131.Final, patched in >= 4.1.133.Final")
-            }
             if (requested.group == "com.fasterxml.jackson.core" && requested.name == "jackson-core") {
                 useVersion("2.21.1")
                 because("jackson-core: Number Length Constraint Bypass in Async Parser Leads to Potential DoS Condition. Affected version >= 2.19.0, < 2.21.1")
@@ -175,6 +165,12 @@ configurations.all {
                     "CVE-2026-42577: Netty epoll transport denial of service via RST on half-closed TCP connection. Affected version = 4.2.12.Final, patched in >= 4.2.13.Final",
                 )
             }
+            if (requested.group == "io.netty" && requested.name == "netty-handler") {
+                useVersion("4.2.15.Final")
+                because(
+                    "CVE-2026-44249 and CVE-2026-45416: Netty handler vulnerabilities. Patched in >= 4.2.15.Final",
+                )
+            }
             if (requested.group == "org.bouncycastle" && requested.name == "bcprov-jdk18on") {
                 useVersion("1.84")
                 because("Bouncy Castle Has Covert Timing Channel Vulnerability. Affected version >= 1.71, < 1.84")
@@ -191,12 +187,6 @@ configurations.all {
             }
 
             // Moderate
-            if (requested.group == "ch.qos.logback" && requested.name == "logback-core") {
-                if (requested.version?.startsWith("1.3.") == true) {
-                    useVersion("1.3.16")
-                    because("CVE-2025-11226: QOS.CH logback-core Arbitrary Code Execution through file processing. Affected version <= 1.3.14. Patched in >= 1.3.16")
-                }
-            }
             if (requested.group == "com.squareup.okio" && requested.name == "okio") {
                 useVersion("3.4.0")
                 because("Okio Signed to Unsigned Conversion Error vulnerability. Affected version >= 2.0.0-RC1, < 3.4.0")
