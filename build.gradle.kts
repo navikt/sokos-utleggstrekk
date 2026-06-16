@@ -153,23 +153,9 @@ configurations.all {
                     "CVE-2026-42587: Netty HttpContentDecompressor maxAllocation bypass with br/zstd/snappy leads to decompression bomb DoS. Affected version = 4.2.11.Final, patched in >= 4.2.13.Final",
                 )
             }
-            if (requested.group == "io.netty" && requested.name == "netty-codec-http2") {
-                useVersion("4.2.13.Final")
-                because(
-                    "CVE-2026-42587: Netty DelegatingDecompressorFrameListener maxAllocation bypass with br/zstd/snappy. Affected version = 4.2.11.Final, patched in >= 4.2.13.Final",
-                )
-            }
-            if (requested.group == "io.netty" && requested.name == "netty-transport-native-epoll") {
-                useVersion("4.2.13.Final")
-                because(
-                    "CVE-2026-42577: Netty epoll transport denial of service via RST on half-closed TCP connection. Affected version = 4.2.12.Final, patched in >= 4.2.13.Final",
-                )
-            }
-            if (requested.group == "io.netty" && requested.name == "netty-handler") {
+            if (requested.group == "io.netty") {
                 useVersion("4.2.15.Final")
-                because(
-                    "CVE-2026-44249 and CVE-2026-45416: Netty handler vulnerabilities. Patched in >= 4.2.15.Final",
-                )
+                because("Netty CVE remediation: CVE-2026-45536 and CVE-2026-48043")
             }
             if (requested.group == "org.bouncycastle" && requested.name == "bcprov-jdk18on") {
                 useVersion("1.84")
