@@ -18,7 +18,7 @@ jobs:
     permissions:
       contents: read
     name: Build and test
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-test-app.yaml@main
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-test-app.yaml@dac7a1ac47e76110d90af301b2152057c215c867 # ratchet:navikt/mob-gha-workflows/.github/workflows/gradle-build-test-app.yaml@v1.0.0
     with:
       upload-artifact: true
 
@@ -28,7 +28,7 @@ jobs:
       id-token: write
     needs: [build-and-test]
     name: Build push dev image
-    uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-push-image.yaml@main
+    uses: navikt/mob-gha-workflows/.github/workflows/gradle-build-push-image.yaml@dac7a1ac47e76110d90af301b2152057c215c867 # ratchet:navikt/mob-gha-workflows/.github/workflows/gradle-build-push-image.yaml@v1.0.0
     secrets: inherit
     with:
       image-suffix: "dev"
@@ -44,7 +44,7 @@ jobs:
       deployments: write
     needs: [ build-push-image-dev ]
     name: Deploy to dev-gcp-${{ inputs.environment }}
-    uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@main
+    uses: navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@dac7a1ac47e76110d90af301b2152057c215c867 # ratchet:navikt/mob-gha-workflows/.github/workflows/nais-deploy.yaml@v1.0.0
     with:
       cluster: dev-gcp
       resource: .nais/dev/naiserator-${{ inputs.environment }}.yaml
