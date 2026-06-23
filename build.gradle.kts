@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
-    kotlin("jvm") version "2.3.21"
-    kotlin("plugin.serialization") version "2.3.21"
+    kotlin("jvm") version "2.4.0"
+    kotlin("plugin.serialization") version "2.4.0"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.8"
 
@@ -66,7 +66,7 @@ val mockkVersion = "1.14.11"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
 val activemqVersion = "2.54.0"
-val ibmMqVersion = "9.4.5.0"
+val ibmMqVersion = "9.4.5.1"
 
 dependencies {
     // Ktor Server
