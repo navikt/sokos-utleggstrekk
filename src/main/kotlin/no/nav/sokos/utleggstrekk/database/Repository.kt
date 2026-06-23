@@ -559,12 +559,13 @@ class Repository(private val dataSource: DataSource) {
                                 SELECT 1
                                 FROM transaksjon_os tx
                                 WHERE tx.trekk_id_ske = f.trekkid
-                                AND tx.kvittering_status = 'FEIL'
+                                AND tx.kvittering_status = :FEIL
                              )
                              ORDER BY f.trekkid, f.trekkversjon DESC
                          ) t
                         GROUP BY t.trekkstatus;
                         """.trimIndent(),
+                        mapOf("FEIL" to KvitteringStatus.FEIL.name),
                     ),
                 ) { row -> Trekkstatus.valueOf(row.string("trekkstatus")) to row.long("count") }
                 .toMap()
