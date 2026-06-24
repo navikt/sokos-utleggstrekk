@@ -19,8 +19,8 @@ kubectl config use-context dev-gcp
 if ! gcloud auth application-default print-access-token &>/dev/null; then
     echo "ADC not configured or invalid, running login with --update-adc..."
     gcloud auth login --update-adc
-    nais postgres prepare sokos-utleggstrekk --team okonomi   -environment dev-gcp
-    nais postgres grant sokos-utleggstrekk --team okonomi -environment dev-gcp
+    nais postgres prepare sokos-utleggstrekk --team okonomi --environment dev-gcp
+    nais postgres grant sokos-utleggstrekk --team okonomi --environment dev-gcp
 fi
 
 
