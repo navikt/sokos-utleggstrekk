@@ -555,13 +555,8 @@ class Repository(private val dataSource: DataSource) {
                         FROM (
                             SELECT DISTINCT ON (f.trekkid) f.trekkid, f.trekkstatus
                             FROM fraskatt f
+                        
                             WHERE NOT EXISTS (
-                                SELECT 1
-                                FROM transaksjon_os tx
-                                WHERE tx.trekk_id_ske = f.trekkid
-                                AND tx.kvittering_status = :FEIL
-                                )
-                            AND NOT EXISTS (
                                 SELECT 1
                                 FROM fraskatt_status fs
                                 WHERE fs.fraskatt_id = f.id
@@ -572,7 +567,6 @@ class Repository(private val dataSource: DataSource) {
                         GROUP BY t.trekkstatus;
                         """.trimIndent(),
                         mapOf(
-                            "FEIL" to KvitteringStatus.FEIL.name,
                             "AVVIST" to SkattTrekkStatus.AVVIST.name,
                         ),
                     ),

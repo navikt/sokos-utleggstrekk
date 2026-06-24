@@ -31,6 +31,7 @@ import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.BEHANDLET
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.REPETERES
@@ -605,10 +606,12 @@ class RepositoryTest :
 
             val trekkAktiv = baseTrekkpaalegg.copy(trekkid = "countTest-aktiv", sekvensnummer = 9000)
             val trekkAktivMedFeil = baseTrekkpaalegg.copy(trekkid = "countTest-aktiv-feil", sekvensnummer = 9001)
+            val trekkAktivAvvist = baseTrekkpaalegg.copy(trekkid = "countTest-aktiv-avvist", sekvensnummer = 9003)
             val trekkAvsluttet = baseTrekkpaalegg.copy(trekkid = "countTest-avsluttet", trekkstatus = Trekkstatus.AVSLUTTET, sekvensnummer = 9002)
 
             repository.insertTrekkFraSkatt(trekkAktiv)
             repository.insertTrekkFraSkatt(trekkAktivMedFeil)
+            repository.insertTrekkFraSkatt(trekkAktivAvvist, SkattTrekkStatus.AVVIST)
             repository.insertTrekkFraSkatt(trekkAvsluttet)
 
             val dtoFeil =
@@ -625,8 +628,8 @@ class RepositoryTest :
             When("countUtleggstrekk kalles") {
                 val counts = repository.countUtleggstrekk()
 
-                Then("Trekk med FEIL kvitteringsstatus ekskluderes, øvrige trekk telles korrekt per trekkstatus") {
-                    counts[Trekkstatus.AKTIV] shouldBe 1
+                Then("Trekk med SkattTrekkStatus.AVVIST ekskluderes, trekk med KvitteringStatus.FEIL inkluderes") {
+                    counts[Trekkstatus.AKTIV] shouldBe 2
                     counts[Trekkstatus.AVSLUTTET] shouldBe 1
                 }
             }
