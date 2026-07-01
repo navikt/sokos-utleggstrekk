@@ -91,6 +91,7 @@ class BehandleTrekkService(
     }
 
     private fun nyePerioderTilOS(trekkFraSkatt: TrekkFraSkatt, session: TransactionalSession): PerioderTilOS {
+        // Vi justerer startDato til begynnelsen og sluttdato til slutten av måneden, med mindre startdata == sluttdato, hvor vi antar at perioden skal ignoreres.
         val trekkPerioder = repository.getPerioderForTrekk(trekkFraSkatt).mapNewFomTom()
         // Alternativene som finnes i dette trekket + alternativ fra dokumenter vi har sendt eller skal sende til OS
         val alternativ =

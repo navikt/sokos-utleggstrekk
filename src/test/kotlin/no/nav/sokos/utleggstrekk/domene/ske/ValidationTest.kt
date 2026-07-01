@@ -91,6 +91,18 @@ class ValidationTest :
                 }
             }
         }
+        Given("Trekkpålegg med periode hvor start og slutt dato er like") {
+            When("Validering") {
+                Then("Validate kaster ikke exception") {
+                    val trekkpaalegg =
+                        trekkpaalegg.copy(
+                            trekkstoerrelseForPeriode =
+                                listOf(trekkpaalegg.trekkstoerrelseForPeriode.first().copy(sluttdato = trekkpaalegg.trekkstoerrelseForPeriode.first().startdato)),
+                        )
+                    trekkpaalegg.validate()
+                }
+            }
+        }
         Given("Utleggstrekk med gyldige feltverdier") {
             When("Validering") {
                 Then("Validate kaster ikke exception") {

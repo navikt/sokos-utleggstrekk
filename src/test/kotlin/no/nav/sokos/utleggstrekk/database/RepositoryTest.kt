@@ -31,6 +31,7 @@ import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.PeriodeFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.PeriodeTilOS
+import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.BEHANDLET
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.MOTTATT
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus.REPETERES
@@ -46,6 +47,7 @@ import no.nav.sokos.utleggstrekk.domene.nav.Perioder
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
+import no.nav.sokos.utleggstrekk.domene.ske.Trekkstatus
 import no.nav.sokos.utleggstrekk.domene.ske.TrekkstorrelseForPeriode
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.repository
@@ -593,6 +595,42 @@ class RepositoryTest :
                         val status = repository.getTrekkFraSkattStatus(id)
                         status shouldBeIn listOf(MOTTATT, REPETERES)
                     }
+                }
+            }
+        }
+
+        Given("Vi teller utleggstrekk med countUtleggstrekk") {
+            DBListener.clearDB()
+            val baseTrekkpaalegg =
+                jsonConfig.decodeFromString<List<Trekkpaalegg>>(resourceToString("InitTrekk/Fra_Skatt_Trekk1_versjon1_en_periode_belop.json")).first()
+
+            val trekkAktiv = baseTrekkpaalegg.copy(trekkid = "countTest-aktiv", sekvensnummer = 9000)
+            val trekkAktivMedFeil = baseTrekkpaalegg.copy(trekkid = "countTest-aktiv-feil", sekvensnummer = 9001)
+            val trekkAktivAvvist = baseTrekkpaalegg.copy(trekkid = "countTest-aktiv-avvist", sekvensnummer = 9003)
+            val trekkAvsluttet = baseTrekkpaalegg.copy(trekkid = "countTest-avsluttet", trekkstatus = Trekkstatus.AVSLUTTET, sekvensnummer = 9002)
+
+            repository.insertTrekkFraSkatt(trekkAktiv)
+            repository.insertTrekkFraSkatt(trekkAktivMedFeil)
+            repository.insertTrekkFraSkatt(trekkAktivAvvist, SkattTrekkStatus.AVVIST)
+            repository.insertTrekkFraSkatt(trekkAvsluttet)
+
+            val dtoFeil =
+                OSDto(
+                    transaksjonID = "countTest-transaksjon-feil",
+                    trekkAktivMedFeil.trekkid,
+                    trekkversjon = 1,
+                    lagDokumentTilOppdrag("countTest-transaksjon-feil").innrapporteringTrekk,
+                    "dummy",
+                )
+            repository.insertTransaksjonTilOs(dtoFeil)
+            repository.updateReceiptStatusOfTransaksjon(dtoFeil.transaksjonID, KvitteringStatus.FEIL, "")
+
+            When("countUtleggstrekk kalles") {
+                val counts = repository.countUtleggstrekk()
+
+                Then("Trekk med SkattTrekkStatus.AVVIST ekskluderes, trekk med KvitteringStatus.FEIL inkluderes") {
+                    counts[Trekkstatus.AKTIV] shouldBe 2
+                    counts[Trekkstatus.AVSLUTTET] shouldBe 1
                 }
             }
         }

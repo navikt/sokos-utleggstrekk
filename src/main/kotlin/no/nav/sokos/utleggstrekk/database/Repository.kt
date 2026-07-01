@@ -551,11 +551,24 @@ class Repository(private val dataSource: DataSource) {
                     queryOf(
                         // language=SQL
                         """
-                        SELECT trekkstatus, COUNT(*) as count
-                            FROM (SELECT DISTINCT ON (trekkid) trekkid, trekkstatus 
-                                FROM fraskatt ORDER BY trekkid, trekkversjon DESC) 
-                            t GROUP BY trekkstatus
+                        SELECT t.trekkstatus, COUNT(*) AS count
+                        FROM (
+                            SELECT DISTINCT ON (f.trekkid) f.trekkid, f.trekkstatus
+                            FROM fraskatt f
+                        
+                            WHERE NOT EXISTS (
+                                SELECT 1
+                                FROM fraskatt_status fs
+                                WHERE fs.fraskatt_id = f.id
+                                AND fs.status = :AVVIST
+                                )
+                             ORDER BY f.trekkid, f.trekkversjon DESC
+                         ) t
+                        GROUP BY t.trekkstatus;
                         """.trimIndent(),
+                        mapOf(
+                            "AVVIST" to SkattTrekkStatus.AVVIST.name,
+                        ),
                     ),
                 ) { row -> Trekkstatus.valueOf(row.string("trekkstatus")) to row.long("count") }
                 .toMap()

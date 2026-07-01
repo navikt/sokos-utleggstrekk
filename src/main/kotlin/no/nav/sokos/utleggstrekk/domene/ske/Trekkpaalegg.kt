@@ -91,6 +91,7 @@ fun TrekkstorrelseForPeriode.validate() {
     require(startdato.isDate()) { "Startdato har ulovlig verdi" }
     if (sluttdato != null) {
         require(sluttdato.isDate()) { "Sluttdato har ulovlig verdi" }
-        require(LocalDate.parse(startdato).isBefore(LocalDate.parse(sluttdato))) { "Sluttdato må være etter startdato" }
+
+        require(!LocalDate.parse(startdato).isAfter(LocalDate.parse(sluttdato))) { "Sluttdato må ikke være før startdato" }
     }
 }

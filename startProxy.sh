@@ -19,8 +19,8 @@ kubectl config use-context dev-gcp
 if ! gcloud auth application-default print-access-token &>/dev/null; then
     echo "ADC not configured or invalid, running login with --update-adc..."
     gcloud auth login --update-adc
-    nais postgres prepare sokos-utleggstrekk --team okonomi
-    nais postgres grant sokos-utleggstrekk --team okonomi
+    nais postgres prepare sokos-utleggstrekk --team okonomi --environment dev-gcp
+    nais postgres grant sokos-utleggstrekk --team okonomi --environment dev-gcp
 fi
 
 
@@ -39,4 +39,4 @@ if nc -z localhost 5432 2>/dev/null; then
 fi
 
 echo "Starting NAIS postgres proxy..."
-nais postgres proxy sokos-utleggstrekk --reason "$1" --team okonomi
+nais postgres proxy sokos-utleggstrekk --reason "$1" --team okonomi --environment dev-gcp
