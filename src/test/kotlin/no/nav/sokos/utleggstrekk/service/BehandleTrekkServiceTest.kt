@@ -447,11 +447,10 @@ class BehandleTrekkServiceTest :
                 val trekkVersjon = 1
                 val trekkFraSkatt = lagTestTrekkFraSkatt(trekkVersjon)
                 val alleTrekkSomIkkeErBehandlet = listOf(trekkFraSkatt)
-                val dateWithWrongSluttDato = if (today.dayOfMonth == today.lengthOfMonth()) today.minusDays(1) else today
-                val perioderForTrekk = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, sluttDato = dateWithWrongSluttDato.toString())
+                val dateWithWrongSluttDato = LocalDate.parse("2016-02-14")
+                val perioderForTrekk = lagPeriodeForTrekkFraSkatt(trekkFraSkatt, startDato = "2016-02-03", sluttDato = dateWithWrongSluttDato.toString())
 
                 Then("Skal tom dato settes til siste dato i måneden") {
-
                     val behandleTrekkServiceNy = setUpBehandleTrekkServiceNy(alleTrekkSomIkkeErBehandlet, listOf(perioderForTrekk), emptyList())
                     behandleTrekkServiceNy.behandleTrekk()
 
