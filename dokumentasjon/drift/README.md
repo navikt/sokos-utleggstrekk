@@ -16,7 +16,7 @@ Dette kan være pga. format-endringer eller at responsen inneholder felter med u
 ikke vil oppdatere seg, og sokos-utleggstrekk vil forsøke å hente de samme datene igjen neste gang jobben kjøres. I denne situasjonen må enten trekket korrigeres
 av Skatteetaten, ellers må sokos-utleggstrekk fikses og deployes av oss.
 
-Trekk kan også bli avvist dersom det ikke passerer validering (ugyldige tegn), eller førte til en feil i behandling av trekket. I denne situasjonen vil man
+Trekk kan også bli avvist dersom det ikke passerer validering (ugyldige tegn, fom etter tom), eller førte til en feil i behandling av trekket. I denne situasjonen vil man
 finne en rad i tabellen `fraskatt_status` med status `AVVIST`. Fordi trekket ble hentet vil siste sekvensnummer også endre seg, så det vil ikke bli forsøkt
 hentet igjen, men ingenting har blitt sendt til Oppdrag Z. Dette kan korrigeres ved at en eventuell feil med trekket rettes opp av Skatteetaten slik at
 vi får en ny versjon av trekket, eller hvis feilen er på sokos-utleggstrekks side kan man manuelt endre `fraskatt_status.status` til `REPETERES`. Da
