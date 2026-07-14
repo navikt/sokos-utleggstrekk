@@ -56,7 +56,6 @@ val kotliqueryVersion = "2.0.8"
 val logbackVersion = "1.5.32"
 val logstashVersion = "9.0"
 val kotlinLoggingVersion = "3.0.5"
-val janinoVersion = "3.1.12"
 
 val gsonVersion = "2.13.2"
 
@@ -88,7 +87,6 @@ dependencies {
 
     // Logging
     implementation("io.github.microutils:kotlin-logging-jvm:$kotlinLoggingVersion")
-    runtimeOnly("org.codehaus.janino:janino:$janinoVersion")
     runtimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
     runtimeOnly("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
 
