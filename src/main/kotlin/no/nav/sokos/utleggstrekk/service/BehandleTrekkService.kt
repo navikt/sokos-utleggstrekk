@@ -131,13 +131,6 @@ class BehandleTrekkService(
         val maanedsbeloepperioder = nyePerioderForOS[LOPM]?.toList().orEmpty()
         val prosentperioder = nyePerioderForOS[LOPP]?.toList().orEmpty()
 
-        if (!trekkFraSkatt.erAvsluttet()) {
-            if (maanedsbeloepperioder.isEmpty() && prosentperioder.isEmpty()) {
-                val melding = "Trekk med id=${trekkFraSkatt.trekkid} sekvensnr=${trekkFraSkatt.sekvensnummer} er ikke avsluttet, men resulterte i ingen nye perioder."
-                logger.warn(melding)
-                slackService.addError("Manglende perioder", melding)
-            }
-        }
         return PerioderTilOS(
             alternativ,
             maanedsbeloepperioder,
@@ -203,5 +196,3 @@ class BehandleTrekkService(
             else -> false
         }
 }
-
-private fun TrekkFraSkatt.erAvsluttet(): Boolean = trekkstatus == AVSLUTTET.name
