@@ -31,6 +31,7 @@ import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Document
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
@@ -203,7 +204,7 @@ internal class UtleggsTrekkServiceTest :
                     )
 
                 utleggsTrekkService.schedule()
-                coVerify(exactly = 1) { slackService.sendCachedErrors("Trekk henting alert") }
+                coVerify(exactly = 1) { slackService.sendCachedErrors(ErrorCategory.TREKK_HENTING) }
             }
         }
 

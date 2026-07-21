@@ -17,6 +17,7 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
@@ -64,7 +65,7 @@ class UtleggsTrekkService(
         if (!PropertiesConfig.isTest) {
             calculateMetrics()
         }
-        slackService.sendCachedErrors("Trekk henting alert")
+        slackService.sendCachedErrors(ErrorCategory.TREKK_HENTING)
     }
 
     private suspend fun lagreAlleNyeUtleggstrekk() {
@@ -143,7 +144,7 @@ class UtleggsTrekkService(
                 val message = "Mangler kvittering for transaksjonID ${it.transaksjonsID} sendt ${it.tidspunktSendt?.format(formatter)}"
                 slackService.addError(ErrorHeader.MANGLENDE_KVITTERING, message)
             }
-        slackService.sendCachedErrors("Kvittering fra oppdrag uteblir")
+        slackService.sendCachedErrors(ErrorCategory.KVITTERING_UTEBLIR)
     }
 
     fun calculateMetrics() {

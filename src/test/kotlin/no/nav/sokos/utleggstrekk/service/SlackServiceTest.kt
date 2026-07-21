@@ -9,6 +9,7 @@ import io.mockk.mockk
 import io.mockk.slot
 
 import no.nav.sokos.utleggstrekk.client.SlackClient
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 
 class SlackServiceTest :
@@ -42,9 +43,9 @@ class SlackServiceTest :
                 service.addErrorSuspending(ErrorHeader.FEIL_VED_SENDING, "Info ${infoIndex + 1}")
             }
 
-            service.sendCachedErrors("Slack Message Header")
+            service.sendCachedErrors(ErrorCategory.TSS_ID)
 
-            coVerify(exactly = 1) { client.sendMessage("Slack Message Header", any()) }
+            coVerify(exactly = 1) { client.sendMessage(ErrorCategory.TSS_ID.value, any()) }
 
             val capturedMessages = messages.captured
             capturedMessages.size shouldBe 2
@@ -67,9 +68,9 @@ class SlackServiceTest :
                 service.addErrorSuspending(ErrorHeader.FEIL_VED_SENDING, "Info ${it + 2}")
             }
 
-            service.sendCachedErrors("Slack Message Header")
+            service.sendCachedErrors(ErrorCategory.TSS_ID)
 
-            coVerify(exactly = 1) { client.sendMessage("Slack Message Header", any()) }
+            coVerify(exactly = 1) { client.sendMessage(ErrorCategory.TSS_ID.value, any()) }
 
             val capturedMessages = messages.captured
             capturedMessages.size shouldBe 2
@@ -82,7 +83,7 @@ class SlackServiceTest :
             coEvery { client.sendMessage(any(), any()) } returns Unit
 
             val service = SlackService(client)
-            service.sendCachedErrors("Slack Message Header")
+            service.sendCachedErrors(ErrorCategory.TSS_ID)
 
             coVerify(exactly = 0) { client.sendMessage(any(), any()) }
         }
@@ -97,7 +98,7 @@ class SlackServiceTest :
             service.addErrorSuspending(ErrorHeader.FEIL_VED_SENDING, "Info 3")
 
             val thrownException =
-                runCatching { service.sendCachedErrors("Slack Message Header") }
+                runCatching { service.sendCachedErrors(ErrorCategory.TSS_ID) }
                     .exceptionOrNull()
 
             thrownException shouldBe expectedException

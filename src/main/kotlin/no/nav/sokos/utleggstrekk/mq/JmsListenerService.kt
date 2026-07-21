@@ -21,6 +21,7 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader.PROCESSING_FEIL
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
@@ -77,7 +78,7 @@ class JmsListenerService(
         }
 
         CoroutineScope(SupervisorJob() + Default).launch {
-            slackService.sendCachedErrors("Kvittering fra oppdrag feil")
+            slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL)
         }
     }
 

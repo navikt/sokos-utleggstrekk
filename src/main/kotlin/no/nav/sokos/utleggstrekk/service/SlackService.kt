@@ -8,6 +8,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 import no.nav.sokos.utleggstrekk.client.SlackClient
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 
 data class ErrorMessage(
@@ -60,7 +61,7 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
      * Send the messages that have been cached using [addError] to Slack.
      * @param messageTitle: Header for the Slack message
      */
-    suspend fun sendCachedErrors(messageTitle: String) {
+    suspend fun sendCachedErrors(messageTitle: ErrorCategory) {
         val errorsToSend =
             mutex.withLock {
                 if (errorTracking.isEmpty()) return
@@ -79,7 +80,7 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
             }
 
         try {
-            slackClient.sendMessage(messageTitle, errorsToSend)
+            slackClient.sendMessage(messageTitle.value, errorsToSend)
         } catch (exception: Exception) {
             errorsToSend.forEach { (type, info) ->
                 info.forEach { addErrorSuspending(type, it) }
