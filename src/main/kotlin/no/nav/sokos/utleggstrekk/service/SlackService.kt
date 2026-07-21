@@ -8,9 +8,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 import no.nav.sokos.utleggstrekk.client.SlackClient
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 
 data class ErrorMessage(
-    val type: String,
+    val type: ErrorHeader,
     val info: MutableList<String>,
 )
 
@@ -31,7 +32,7 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
      * @param header: Error name/short description of the problem
      * @param message: More detailed description of the error
      */
-    fun addError(header: String, message: String) {
+    fun addError(header: ErrorHeader, message: String) {
         CoroutineScope(SupervisorJob() + Default).launch {
             addErrorSuspending(header, message)
         }
@@ -44,7 +45,7 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
      * @param header: Error name/short description of the problem
      * @param message: More detailed description of the error
      */
-    suspend fun addErrorSuspending(header: String, message: String) {
+    suspend fun addErrorSuspending(header: ErrorHeader, message: String) {
         mutex.withLock {
             val error = errorTracking.find { it.type == header }
             if (error != null) {

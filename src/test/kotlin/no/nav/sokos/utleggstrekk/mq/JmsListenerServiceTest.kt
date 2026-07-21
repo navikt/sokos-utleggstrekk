@@ -9,9 +9,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContainInOrder
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
-import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -22,6 +23,7 @@ import no.nav.sokos.utleggstrekk.database.TestRepository.getFeilmeldingerFraOS
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTransaksjonTilOs
 import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.repository
 import no.nav.sokos.utleggstrekk.listener.MQListener
@@ -34,8 +36,8 @@ class JmsListenerServiceTest :
         extensions(listOf(MQListener, DBListener))
 
         val slackService = mockk<SlackService>()
-        every { slackService.addError(any(), any()) } returns Unit
-        coEvery { slackService.sendCachedErrors(any()) } returns Unit
+        justRun { slackService.addError(any<ErrorHeader>(), any<String>()) }
+        coJustRun { slackService.sendCachedErrors(any()) }
 
         val replyQueue = ActiveMQQueue("replyQueue")
 
@@ -111,7 +113,7 @@ class JmsListenerServiceTest :
                         val message = slot<String>()
                         eventually(duration = 1.seconds) {
                             coVerify(exactly = 1) {
-                                slackService.addError("Kvittering feil", capture(message))
+                                slackService.addError(ErrorHeader.KVITTERING_FEIL, capture(message))
                                 slackService.sendCachedErrors("Kvittering fra oppdrag feil")
                             }
                             message.captured.shouldContainInOrder(
@@ -132,7 +134,7 @@ class JmsListenerServiceTest :
                         val message = slot<String>()
                         eventually(duration = 1.seconds) {
                             coVerify(exactly = 1) {
-                                slackService.addError("Kvittering feil", capture(message))
+                                slackService.addError(ErrorHeader.KVITTERING_FEIL, capture(message))
                                 slackService.sendCachedErrors("Kvittering fra oppdrag feil")
                             }
                             message.captured.shouldContainInOrder(
@@ -152,7 +154,7 @@ class JmsListenerServiceTest :
                 Then("Feil skal sendes til slack") {
                     eventually(duration = 1.seconds) {
                         coVerify(exactly = 1) {
-                            slackService.addError("Prosessering av kvitteringmelding feilet.", any())
+                            slackService.addError(ErrorHeader.PROCESSING_FEIL, any())
                             slackService.sendCachedErrors("Kvittering fra oppdrag feil")
                         }
                     }

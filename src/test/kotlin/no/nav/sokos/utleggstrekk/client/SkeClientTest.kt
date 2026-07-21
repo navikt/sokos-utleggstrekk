@@ -1,7 +1,5 @@
 package no.nav.sokos.utleggstrekk.client
 
-import kotlin.time.ExperimentalTime
-
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
@@ -29,6 +27,7 @@ import org.slf4j.LoggerFactory
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.domene.ske.Betalingsinformasjon
 import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkbeloep
@@ -42,7 +41,6 @@ import no.nav.sokos.utleggstrekk.util.MockHttpClient.getClient
 import no.nav.sokos.utleggstrekk.util.MockHttpClient.getEngine
 import no.nav.sokos.utleggstrekk.util.resourceToString
 
-@OptIn(ExperimentalTime::class)
 class SkeClientTest :
     FunSpec({
         val slackService = mockk<SlackService>(relaxUnitFun = true)
@@ -159,7 +157,7 @@ class SkeClientTest :
             }
 
             test("skal sende slack + logge TEAM_LOGS når API-kallet gir 4xx, og ikke sende slack når 5xx") {
-                val alarmHeaders = mutableListOf<String>()
+                val alarmHeaders = mutableListOf<ErrorHeader>()
                 val messages = mutableListOf<String>()
                 every { slackService.addError(capture(alarmHeaders), capture(messages)) } returns Unit
 
@@ -188,12 +186,12 @@ class SkeClientTest :
                 skeClient.hentUtleggstrekkFraSekvensnr(2).shouldBeEmpty()
 
                 // Oppdatert behavior: Slack sendes både for 4xx og 5xx (hvis responsen kan parses til SkeErrorMessage).
-                verify(exactly = 2) { slackService.addError(any(), any()) }
-                alarmHeaders.first() shouldBe "Feil fra SKE"
+                verify(exactly = 2) { slackService.addError(any<ErrorHeader>(), any<String>()) }
+                alarmHeaders.first() shouldBe ErrorHeader.FEIL_FRA_SKE
                 messages.first() shouldContain "sekvensnr=1"
                 messages.first() shouldContain "KB-005"
 
-                alarmHeaders.last() shouldBe "Feil fra SKE"
+                alarmHeaders.last() shouldBe ErrorHeader.FEIL_FRA_SKE
                 messages.last() shouldContain "sekvensnr=2"
                 messages.last() shouldContain "KB-001"
 

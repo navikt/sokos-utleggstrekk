@@ -13,9 +13,11 @@ import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 
@@ -29,6 +31,7 @@ import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonsStatus
 import no.nav.sokos.utleggstrekk.domene.nav.Aksjonskode
 import no.nav.sokos.utleggstrekk.domene.nav.Document
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.domene.nav.InnrapporteringTrekk
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
@@ -218,8 +221,8 @@ internal class UtleggsTrekkServiceTest :
                 }
             val slackService =
                 mockk<SlackService> {
-                    every { addError(any(), any()) } returns Unit
-                    coEvery { sendCachedErrors(any()) } returns Unit
+                    justRun { addError(any<ErrorHeader>(), any<String>()) }
+                    coJustRun { sendCachedErrors(any()) }
                 }
             val utleggsTrekkService =
                 UtleggsTrekkService(
@@ -325,7 +328,7 @@ internal class UtleggsTrekkServiceTest :
 
                 utleggsTrekkService.schedule()
                 Then("Sendes en alarm til slack") {
-                    verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS") }
+                    verify { mockSlackService.addError(ErrorHeader.FEIL_VED_SENDING, "Feil ved sending av dokument til OS") }
                     coVerify { mockSlackService.sendCachedErrors(any()) }
                 }
 
@@ -342,7 +345,7 @@ internal class UtleggsTrekkServiceTest :
 
                 utleggsTrekkService.schedule()
                 Then("Vi sender en alarm på slack") {
-                    verify { mockSlackService.addError("Feil ved sending", "Feil ved sending av dokument til OS") }
+                    verify { mockSlackService.addError(ErrorHeader.FEIL_VED_SENDING, "Feil ved sending av dokument til OS") }
                     coVerify { mockSlackService.sendCachedErrors(any()) }
                 }
 
