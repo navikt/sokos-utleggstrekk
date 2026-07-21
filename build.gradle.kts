@@ -37,34 +37,34 @@ repositories {
 }
 
 val ktorVersion = "3.5.1"
-val kotlinxDatetimeVersion = "0.7.1-0.6.x-compat"
+val kotlinxDatetimeVersion = "0.8.0-0.6.x-compat"
 val kotlinxSerializationVersion = "1.11.0"
-val nimbusVersion = "10.9"
+val nimbusVersion = "10.9.1"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
-val prometheusVersion = "1.16.5"
-val unleashedVersion = "12.2.1"
+val prometheusVersion = "1.17.0"
+val unleashedVersion = "12.2.2"
 
 // DB
-val hikaricpVersion = "7.0.2"
-val flywayVersion = "12.5.0"
-val postgresqlVersion = "42.7.11"
-val kotliqueryVersion = "2.0.8"
+val hikaricpVersion = "7.1.0"
+val flywayVersion = "12.11.0"
+val postgresqlVersion = "42.7.13"
+val kotliqueryVersion = "2.0.9"
 
 // Logging
-val logbackVersion = "1.5.32"
+val logbackVersion = "1.5.38"
 val logstashVersion = "9.0"
 val kotlinLoggingVersion = "3.0.5"
 
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.1.11"
-val mockkVersion = "1.14.9"
+val kotestVersion = "6.2.2"
+val mockkVersion = "1.14.11"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
-val activemqVersion = "2.53.0"
+val activemqVersion = "2.55.0"
 val ibmMqVersion = "9.4.5.1"
 
 dependencies {
@@ -134,11 +134,11 @@ configurations.all {
 
             // High
             if (requested.group == "com.fasterxml.jackson.core" && requested.name == "jackson-core") {
-                useVersion("2.21.1")
+                useVersion("2.22.1")
                 because("jackson-core: Number Length Constraint Bypass in Async Parser Leads to Potential DoS Condition. Affected version >= 2.19.0, < 2.21.1")
             }
             if (requested.group == "tools.jackson.core" && requested.name == "jackson-core") {
-                useVersion("3.1.1")
+                useVersion("3.2.1")
                 because("Jackson Core: Document length constraint bypass in blocking, async, and DataInput parsers. Affected version >= 3.0.0, <= 3.1.0")
             }
             if (requested.group == "org.xerial.snappy" && requested.name == "snappy-java") {
