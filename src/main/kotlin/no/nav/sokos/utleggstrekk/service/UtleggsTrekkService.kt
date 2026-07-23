@@ -17,6 +17,8 @@ import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkAlternativ
 import no.nav.sokos.utleggstrekk.domene.nav.TrekkTilOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.validate
@@ -63,7 +65,7 @@ class UtleggsTrekkService(
         if (!PropertiesConfig.isTest) {
             calculateMetrics()
         }
-        slackService.sendCachedErrors("Trekk henting alert")
+        slackService.sendCachedErrors(ErrorCategory.TREKK_HENTING)
     }
 
     private suspend fun lagreAlleNyeUtleggstrekk() {
@@ -93,8 +95,8 @@ class UtleggsTrekkService(
             } catch (e: IllegalArgumentException) {
                 logger.error("Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}")
                 logger.error(TEAM_LOGS_MARKER, "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}", e)
-                slackService.addError("Feil i validering", "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}: $e")
-                slackService.sendCachedErrors("Ugyldige verdier i trekk fra skatt")
+                slackService.addError(ErrorHeader.FEIL_I_VALIDERING, "Ugyldige verdier i trekk fra skatt: $e", trekk.trekkid)
+                slackService.sendCachedErrors(ErrorCategory.TREKK_HENTING)
                 status = SkattTrekkStatus.AVVIST
             }
             try {
@@ -116,7 +118,7 @@ class UtleggsTrekkService(
         }.onSuccess {
             updateTransactionAfterSending(transaksjonOS.transaksjonsID)
         }.onFailure { exception ->
-            slackService.addError("Feil ved sending", "Feil ved sending av dokument til OS")
+            slackService.addError(ErrorHeader.FEIL_VED_SENDING, "Feil ved sending av dokument til OS", transaksjonOS.transaksjonsID)
             logger.error(TEAM_LOGS_MARKER, "Feil ved sending av dokument til OS", exception)
 
             if (exception is IllegalArgumentException) {
@@ -129,7 +131,7 @@ class UtleggsTrekkService(
         runCatching {
             repository.updateTransaksjonSendt(transaksjonId)
         }.onFailure {
-            slackService.addError("Database feil", "Kunne ikke oppdatere transaksjon status til $transaksjonId")
+            slackService.addError(ErrorHeader.DATABASE_ERROR, "Kunne ikke oppdatere transaksjon status", transaksjonId)
         }
     }
 
@@ -140,11 +142,9 @@ class UtleggsTrekkService(
             .getTransakjonerTilOsSomManglerKvittering()
             .filter { it.tidspunktSendt?.isBefore(yesterday) == true }
             .forEach {
-                val header = "TransaksjonID mangler kvitteringen"
-                val message = "Mangler kvittering for transaksjonID ${it.transaksjonsID} sendt ${it.tidspunktSendt?.format(formatter)}"
-                slackService.addError(header, message)
+                slackService.addError(ErrorHeader.MANGLENDE_KVITTERING, "Mangler kvittering for trekk sendt ${it.tidspunktSendt?.format(formatter)}", it.transaksjonsID)
             }
-        slackService.sendCachedErrors("Kvittering fra oppdrag uteblir")
+        slackService.sendCachedErrors(ErrorCategory.KVITTERING_UTEBLIR)
     }
 
     fun calculateMetrics() {

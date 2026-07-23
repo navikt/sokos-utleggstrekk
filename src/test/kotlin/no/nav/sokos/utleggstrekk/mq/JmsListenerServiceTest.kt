@@ -9,9 +9,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContainInOrder
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
-import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
@@ -22,6 +23,8 @@ import no.nav.sokos.utleggstrekk.database.TestRepository.getFeilmeldingerFraOS
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTransaksjonTilOs
 import no.nav.sokos.utleggstrekk.database.model.INGEN_TREKK_ID_I_KVITTERING
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.listener.DBListener
 import no.nav.sokos.utleggstrekk.listener.DBListener.repository
 import no.nav.sokos.utleggstrekk.listener.MQListener
@@ -34,8 +37,8 @@ class JmsListenerServiceTest :
         extensions(listOf(MQListener, DBListener))
 
         val slackService = mockk<SlackService>()
-        every { slackService.addError(any(), any()) } returns Unit
-        coEvery { slackService.sendCachedErrors(any()) } returns Unit
+        justRun { slackService.addError(any<ErrorHeader>(), any<String>(), any()) }
+        coJustRun { slackService.sendCachedErrors(any<ErrorCategory>()) }
 
         val replyQueue = ActiveMQQueue("replyQueue")
 
@@ -80,8 +83,8 @@ class JmsListenerServiceTest :
                         transaksjonerAfter.kvitteringStatus shouldBe KvitteringStatus.OK
                         transaksjonerAfter.navTrekkId shouldBe "navTrekkId01"
 
-                        coVerify(exactly = 0) { slackService.addError(any(), any()) }
-                        coVerify(exactly = 1) { slackService.sendCachedErrors("Kvittering fra oppdrag feil") }
+                        coVerify(exactly = 0) { slackService.addError(any(), any(), any()) }
+                        coVerify(exactly = 1) { slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL) }
                     }
                 }
             }
@@ -111,8 +114,8 @@ class JmsListenerServiceTest :
                         val message = slot<String>()
                         eventually(duration = 1.seconds) {
                             coVerify(exactly = 1) {
-                                slackService.addError("Kvittering feil", capture(message))
-                                slackService.sendCachedErrors("Kvittering fra oppdrag feil")
+                                slackService.addError(ErrorHeader.KVITTERING_FEIL, capture(message), any())
+                                slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL)
                             }
                             message.captured.shouldContainInOrder(
                                 "Trekk med kreditorstrekkID: 10342395",
@@ -132,8 +135,8 @@ class JmsListenerServiceTest :
                         val message = slot<String>()
                         eventually(duration = 1.seconds) {
                             coVerify(exactly = 1) {
-                                slackService.addError("Kvittering feil", capture(message))
-                                slackService.sendCachedErrors("Kvittering fra oppdrag feil")
+                                slackService.addError(ErrorHeader.KVITTERING_FEIL, capture(message))
+                                slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL)
                             }
                             message.captured.shouldContainInOrder(
                                 "Trekk med kreditorstrekkID: 10342395",
@@ -152,8 +155,8 @@ class JmsListenerServiceTest :
                 Then("Feil skal sendes til slack") {
                     eventually(duration = 1.seconds) {
                         coVerify(exactly = 1) {
-                            slackService.addError("Prosessering av kvitteringmelding feilet.", any())
-                            slackService.sendCachedErrors("Kvittering fra oppdrag feil")
+                            slackService.addError(ErrorHeader.PROCESSING_FEIL, any(), any())
+                            slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL)
                         }
                     }
                 }

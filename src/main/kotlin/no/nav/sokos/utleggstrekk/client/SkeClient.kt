@@ -16,6 +16,7 @@ import mu.KotlinLogging
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.domene.ske.SkeErrorMessage
 import no.nav.sokos.utleggstrekk.domene.ske.Trekkpaalegg
 import no.nav.sokos.utleggstrekk.security.maskinporten.MaskinportenAccessTokenClient
@@ -63,7 +64,7 @@ class SkeClient(
         if (status.isClientError() || status.isServerError()) {
             try {
                 val errorMessage = jsonConfig.decodeFromString<SkeErrorMessage>(bodyAsText)
-                slackService.addError("Feil fra SKE", "Kunne ikke få trekk for sekvensnr=$sekvensnr: ${errorMessage.kode}, korrId = ${errorMessage.korrelasjonsid}")
+                slackService.addError(ErrorHeader.FEIL_FRA_SKE, "Kunne ikke få trekk for sekvensnr=$sekvensnr: ${errorMessage.kode}", errorMessage.korrelasjonsid)
                 logger.error(marker = TEAM_LOGS_MARKER) { "Feil ved henting av trekk fra SKE: ${errorMessage.kode} ${errorMessage.description()}, korrId = ${errorMessage.korrelasjonsid} " }
             } catch (_: Exception) {
                 logger.error(marker = TEAM_LOGS_MARKER) { "Feil ved henting av trekk fra SKE: ${this.headers} ${status.value} ${status.description}" }

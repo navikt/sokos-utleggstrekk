@@ -7,6 +7,8 @@ import kotlinx.coroutines.launch
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.service.SlackService
 
 object TssIdResolver {
@@ -22,10 +24,10 @@ object TssIdResolver {
         }
 
     private fun sendAlarm(message: String) {
-        SlackService.instance.addError("IllegalArgumentException", message)
+        SlackService.instance.addError(ErrorHeader.TSSID_FEIL, message)
         val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         appScope.launch {
-            SlackService.instance.sendCachedErrors("TssIdResolver failed")
+            SlackService.instance.sendCachedErrors(ErrorCategory.TSS_ID)
         }
     }
 }

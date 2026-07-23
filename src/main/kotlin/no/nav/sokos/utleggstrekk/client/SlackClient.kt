@@ -8,6 +8,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
 import no.nav.sokos.utleggstrekk.domene.nav.createSlackMessage
 import no.nav.sokos.utleggstrekk.service.ErrorMessage
 
@@ -15,7 +16,7 @@ class SlackClient(
     private val slackEndpoint: String = PropertiesConfig.slackConfig.url,
     private val client: HttpClient = httpClient,
 ) {
-    suspend fun sendMessage(header: String, messages: List<ErrorMessage>) {
+    suspend fun sendMessage(header: ErrorCategory, messages: List<ErrorMessage>) {
         client.post {
             url(slackEndpoint)
             contentType(ContentType.Application.Json)

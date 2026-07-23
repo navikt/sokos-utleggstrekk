@@ -21,6 +21,8 @@ import io.mockk.verify
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.skeConfig
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.utils.TssIdResolver
 
 class TSSResolverTest :
@@ -53,8 +55,8 @@ class TSSResolverTest :
                 )
 
                 val message = slot<String>()
-                verify(exactly = 1) { slackService.addError("IllegalArgumentException", capture(message)) }
-                coVerify(exactly = 1) { slackService.sendCachedErrors("TssIdResolver failed") }
+                verify(exactly = 1) { slackService.addError(ErrorHeader.TSSID_FEIL, capture(message)) }
+                coVerify(exactly = 1) { slackService.sendCachedErrors(ErrorCategory.TSS_ID) }
                 message.captured.shouldContain("Kombinasjonen Orgnr=123456789")
             }
         }
@@ -68,8 +70,8 @@ class TSSResolverTest :
                 )
 
                 val message = slot<String>()
-                verify(exactly = 1) { slackService.addError("IllegalArgumentException", capture(message)) }
-                coVerify(exactly = 1) { slackService.sendCachedErrors("TssIdResolver failed") }
+                verify(exactly = 1) { slackService.addError(ErrorHeader.TSSID_FEIL, capture(message)) }
+                coVerify(exactly = 1) { slackService.sendCachedErrors(ErrorCategory.TSS_ID) }
                 message.captured.shouldContain("Konto=123456789")
             }
         }

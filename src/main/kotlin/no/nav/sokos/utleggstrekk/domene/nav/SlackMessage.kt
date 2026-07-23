@@ -32,13 +32,13 @@ data class Field(
     val text: String,
 )
 
-fun createSlackMessage(messageTitle: String, content: List<ErrorMessage>) =
+fun createSlackMessage(messageTitle: ErrorCategory, content: List<ErrorMessage>) =
     Data(
         text = ":package: $messageTitle",
         blocks = buildSections(messageTitle, content),
     )
 
-private fun buildSections(messageTitle: String, content: List<ErrorMessage>): MutableList<Block> {
+private fun buildSections(messageTitle: ErrorCategory, content: List<ErrorMessage>): MutableList<Block> {
     val dividerBlock = Block(type = "divider")
     val headerBlock =
         Block(
@@ -46,7 +46,7 @@ private fun buildSections(messageTitle: String, content: List<ErrorMessage>): Mu
             text =
                 Text(
                     type = "plain_text",
-                    text = ":error:  $messageTitle  ",
+                    text = ":error:  $messageTitle",
                     emoji = true,
                 ),
         )
@@ -64,13 +64,13 @@ private fun buildSections(messageTitle: String, content: List<ErrorMessage>): Mu
     val errorMessages =
         content
             .map { (errorType, info) ->
-                info.map { text ->
+                info.map { (description, referenceId) ->
                     Block(
                         type = "section",
                         fields =
                             listOf(
                                 Field(text = "*Feilmelding*\n$errorType"),
-                                Field(text = "*Info*\n$text"),
+                                Field(text = "*Info*\n$description\n*Korrelasjons- og TransaksjonsID* $referenceId"),
                             ),
                     )
                 }

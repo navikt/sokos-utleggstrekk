@@ -21,6 +21,9 @@ import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader.PROCESSING_FEIL
 import no.nav.sokos.utleggstrekk.domene.nav.KvitteringFraOppdrag
 import no.nav.sokos.utleggstrekk.domene.nav.validate
 import no.nav.sokos.utleggstrekk.metrics.Metrics.trekkAvvistAvOs
@@ -63,10 +66,9 @@ class JmsListenerService(
             processReceipt(receipt)
             message.acknowledge()
         }.onFailure { exception ->
-            val header = "Prosessering av kvitteringmelding feilet."
             val messageId = message.jmsMessageID
-            logger.error(TEAM_LOGS_MARKER, "$header $messageId", exception)
-            slackService.addError(header, messageId)
+            logger.error(TEAM_LOGS_MARKER, "$PROCESSING_FEIL $messageId", exception)
+            slackService.addError(PROCESSING_FEIL, exception::class.simpleName ?: "Ukjent feil", messageId)
 
             if (exception !is MessageFormatException) {
                 val jmsMessage = message.getBody(String::class.java)
@@ -76,7 +78,7 @@ class JmsListenerService(
         }
 
         CoroutineScope(SupervisorJob() + Default).launch {
-            slackService.sendCachedErrors("Kvittering fra oppdrag feil")
+            slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL)
         }
     }
 
@@ -107,6 +109,6 @@ class JmsListenerService(
                 "corrid: ${receipt.dokument.transaksjonsId} har feilkode: ${receipt.mmel?.kodeMelding} og beskrivelse: $errorDescription"
 
         logger.warn(message)
-        slackService.addError("Kvittering feil", message)
+        slackService.addError(ErrorHeader.KVITTERING_FEIL, message)
     }
 }
