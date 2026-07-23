@@ -70,7 +70,7 @@ private fun buildSections(messageTitle: ErrorCategory, content: List<ErrorMessag
                         fields =
                             listOf(
                                 Field(text = "*Feilmelding*\n$errorType"),
-                                Field(text = "*Info*\n$description\n*Korrelasjons- TransaksjonsID* $referenceId"),
+                                Field(text = "*Info*\n$description\n*Korrelasjons- og TransaksjonsID* $referenceId"),
                             ),
                     )
                 }
