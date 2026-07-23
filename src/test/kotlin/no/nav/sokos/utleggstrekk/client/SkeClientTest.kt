@@ -18,6 +18,7 @@ import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
@@ -157,9 +158,7 @@ class SkeClientTest :
             }
 
             test("skal sende slack + logge TEAM_LOGS når API-kallet gir 4xx, og ikke sende slack når 5xx") {
-                val alarmHeaders = mutableListOf<ErrorHeader>()
-                val messages = mutableListOf<String>()
-                every { slackService.addError(capture(alarmHeaders), capture(messages)) } returns Unit
+                justRun { slackService.addError(any<ErrorHeader>(), any<String>(), any<String>()) }
 
                 val skeErrorMessage1 =
                     SkeErrorMessage(
@@ -186,14 +185,19 @@ class SkeClientTest :
                 skeClient.hentUtleggstrekkFraSekvensnr(2).shouldBeEmpty()
 
                 // Oppdatert behavior: Slack sendes både for 4xx og 5xx (hvis responsen kan parses til SkeErrorMessage).
-                verify(exactly = 2) { slackService.addError(any<ErrorHeader>(), any<String>()) }
+                val alarmHeaders = mutableListOf<ErrorHeader>()
+                val messages = mutableListOf<String>()
+                val referenceIDs = mutableListOf<String>()
+                verify(exactly = 2) { slackService.addError(capture(alarmHeaders), capture(messages), capture(referenceIDs)) }
                 alarmHeaders.first() shouldBe ErrorHeader.FEIL_FRA_SKE
                 messages.first() shouldContain "sekvensnr=1"
                 messages.first() shouldContain "KB-005"
+                referenceIDs.first() shouldBe "123"
 
                 alarmHeaders.last() shouldBe ErrorHeader.FEIL_FRA_SKE
                 messages.last() shouldContain "sekvensnr=2"
                 messages.last() shouldContain "KB-001"
+                referenceIDs.last() shouldBe "345"
 
                 // Logging: TEAM_LOGS marker error logges for begge kallene.
                 logAppender.list.filter { it.markerList?.contains(TEAM_LOGS_MARKER) ?: false }.size shouldBe 2

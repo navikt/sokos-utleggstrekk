@@ -64,13 +64,13 @@ private fun buildSections(messageTitle: String, content: List<ErrorMessage>): Mu
     val errorMessages =
         content
             .map { (errorType, info) ->
-                info.map { text ->
+                info.map { (description, referenceId) ->
                     Block(
                         type = "section",
                         fields =
                             listOf(
                                 Field(text = "*Feilmelding*\n$errorType"),
-                                Field(text = "*Info*\n$text"),
+                                Field(text = "*Info*\n$description\n*Korrelasjons- TransaksjonsID* $referenceId"),
                             ),
                     )
                 }

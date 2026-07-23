@@ -5,6 +5,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldMatch
 
+import no.nav.sokos.utleggstrekk.service.ErrorInfo
 import no.nav.sokos.utleggstrekk.service.ErrorMessage
 
 class SlackMessageTest :
@@ -13,8 +14,8 @@ class SlackMessageTest :
             val header = "Feil header"
             val messages =
                 listOf(
-                    ErrorMessage(ErrorHeader.TSSID_FEIL, mutableListOf("Feil info 1")),
-                    ErrorMessage(ErrorHeader.FEIL_VED_SENDING, mutableListOf("Feil info 2", "Feil info 3")),
+                    ErrorMessage(ErrorHeader.TSSID_FEIL, "Feil info 1"),
+                    ErrorMessage(ErrorHeader.FEIL_VED_SENDING, mutableListOf(ErrorInfo("Feil info 2", "KorrelasjonId"), ErrorInfo("Feil info 3"))),
                 )
 
             val slackMessage = createSlackMessage(header, messages)
@@ -35,19 +36,19 @@ class SlackMessageTest :
             errorMessageBlock1.type shouldBe "section"
             errorMessageBlock1.fields?.shouldHaveSize(2)
             errorMessageBlock1.fields?.first()?.text shouldBe "*Feilmelding*\n${ErrorHeader.TSSID_FEIL}"
-            errorMessageBlock1.fields?.last()?.text shouldBe "*Info*\nFeil info 1"
+            errorMessageBlock1.fields?.last()?.text shouldBe "*Info*\nFeil info 1\n*Korrelasjons- TransaksjonsID* Ingen"
 
             val errorMessageBlock2 = slackMessage.blocks[5]
             errorMessageBlock2.type shouldBe "section"
             errorMessageBlock2.fields?.shouldHaveSize(2)
             errorMessageBlock2.fields?.first()?.text shouldBe "*Feilmelding*\n${ErrorHeader.FEIL_VED_SENDING}"
-            errorMessageBlock2.fields?.last()?.text shouldBe "*Info*\nFeil info 2"
+            errorMessageBlock2.fields?.last()?.text shouldBe "*Info*\nFeil info 2\n*Korrelasjons- TransaksjonsID* KorrelasjonId"
 
             val errorMessageBlock3 = slackMessage.blocks[6]
             errorMessageBlock3.type shouldBe "section"
             errorMessageBlock3.fields?.shouldHaveSize(2)
             errorMessageBlock3.fields?.first()?.text shouldBe "*Feilmelding*\n${ErrorHeader.FEIL_VED_SENDING}"
-            errorMessageBlock3.fields?.last()?.text shouldBe "*Info*\nFeil info 3"
+            errorMessageBlock3.fields?.last()?.text shouldBe "*Info*\nFeil info 3\n*Korrelasjons- TransaksjonsID* Ingen"
 
             val dividers = slackMessage.blocks.filter { it.type == "divider" }
             dividers shouldHaveSize 4

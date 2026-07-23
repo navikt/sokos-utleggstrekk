@@ -222,7 +222,7 @@ internal class UtleggsTrekkServiceTest :
                 }
             val slackService =
                 mockk<SlackService> {
-                    justRun { addError(any<ErrorHeader>(), any<String>()) }
+                    justRun { addError(any<ErrorHeader>(), any<String>(), any()) }
                     coJustRun { sendCachedErrors(any()) }
                 }
             val utleggsTrekkService =
@@ -237,7 +237,7 @@ internal class UtleggsTrekkServiceTest :
             When("Transaksjonen ble sendt for mer enn en døgn siden") {
                 utleggsTrekkService.reportMissingKvittering()
                 Then("Vi sender alarmer på slack") {
-                    verify(exactly = 1) { slackService.addError(any(), any()) }
+                    verify(exactly = 1) { slackService.addError(any(), any(), any()) }
                     coVerify(exactly = 1) { slackService.sendCachedErrors(any()) }
                 }
             }
@@ -273,7 +273,7 @@ internal class UtleggsTrekkServiceTest :
             val mockSlackService =
                 mockk<SlackService> {
                     coEvery { sendCachedErrors(any()) } returns Unit
-                    every { addError(any(), any()) } returns Unit
+                    every { addError(any(), any(), any()) } returns Unit
                 }
 
             val mockedTransaksjonOS = mockk<TransaksjonOS>()
@@ -324,12 +324,14 @@ internal class UtleggsTrekkServiceTest :
 
             When("Transaksjonen sendes ikke") {
                 clearMocks(mockSlackService, answers = false)
-                every { mockedTransaksjonOS.documentJson } returns jsonConfig.encodeToString(trekkTilOppdrag())
+                val trekkTilOppdrag = trekkTilOppdrag()
+                every { mockedTransaksjonOS.documentJson } returns jsonConfig.encodeToString(trekkTilOppdrag)
+                every { mockedTransaksjonOS.transaksjonsID } returns trekkTilOppdrag.dokument.transaksjonsId
                 every { mqProducerMock.send(any()) } throws Exception("Couldn't send document")
 
                 utleggsTrekkService.schedule()
                 Then("Sendes en alarm til slack") {
-                    verify { mockSlackService.addError(ErrorHeader.FEIL_VED_SENDING, "Feil ved sending av dokument til OS") }
+                    verify { mockSlackService.addError(ErrorHeader.FEIL_VED_SENDING, "Feil ved sending av dokument til OS", "TransaksjonsId01") }
                     coVerify { mockSlackService.sendCachedErrors(any()) }
                 }
 
@@ -346,7 +348,7 @@ internal class UtleggsTrekkServiceTest :
 
                 utleggsTrekkService.schedule()
                 Then("Vi sender en alarm på slack") {
-                    verify { mockSlackService.addError(ErrorHeader.FEIL_VED_SENDING, "Feil ved sending av dokument til OS") }
+                    verify { mockSlackService.addError(ErrorHeader.FEIL_VED_SENDING, "Feil ved sending av dokument til OS", "TransaksjonsId01") }
                     coVerify { mockSlackService.sendCachedErrors(any()) }
                 }
 

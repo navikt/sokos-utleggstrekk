@@ -11,10 +11,33 @@ import no.nav.sokos.utleggstrekk.client.SlackClient
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 
+const val REFERENCE_ID_DEFAULT = "Ingen"
+
+data class ErrorInfo(
+    val description: String,
+    val referenceId: String = REFERENCE_ID_DEFAULT,
+)
+
 data class ErrorMessage(
     val type: ErrorHeader,
-    val info: MutableList<String>,
-)
+    val info: MutableList<ErrorInfo>,
+) {
+    constructor(type: ErrorHeader, info: ErrorInfo) : this(type, mutableListOf(info))
+    constructor(type: ErrorHeader, description: String, referenceId: String = REFERENCE_ID_DEFAULT) : this(type, ErrorInfo(description, referenceId))
+
+    fun referenceIDs() =
+        info
+            .mapNotNull {
+                if (it.referenceId != REFERENCE_ID_DEFAULT) {
+                    it.referenceId
+                } else {
+                    null
+                }
+            }.takeIf { it.isNotEmpty() }
+            ?.distinct()
+            ?.joinToString()
+            ?: REFERENCE_ID_DEFAULT
+}
 
 class SlackService(private val slackClient: SlackClient = SlackClient()) {
     private val mutex = Mutex()
@@ -33,9 +56,9 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
      * @param header: Error name/short description of the problem
      * @param message: More detailed description of the error
      */
-    fun addError(header: ErrorHeader, message: String) {
+    fun addError(header: ErrorHeader, message: String, referenceId: String = REFERENCE_ID_DEFAULT) {
         CoroutineScope(SupervisorJob() + Default).launch {
-            addErrorSuspending(header, message)
+            addErrorSuspending(header, ErrorInfo(message, referenceId))
         }
     }
 
@@ -44,17 +67,21 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
      *
      * Use this if you are already in a coroutine-scope
      * @param header: Error name/short description of the problem
-     * @param message: More detailed description of the error
+     * @param errorInfo: More detailed description of the error
      */
-    suspend fun addErrorSuspending(header: ErrorHeader, message: String) {
+    suspend fun addErrorSuspending(header: ErrorHeader, errorInfo: ErrorInfo) {
         mutex.withLock {
             val error = errorTracking.find { it.type == header }
             if (error != null) {
-                error.info.add(message)
+                error.info.add(errorInfo)
             } else {
-                errorTracking.add(ErrorMessage(header, mutableListOf(message)))
+                errorTracking.add(ErrorMessage(header, errorInfo))
             }
         }
+    }
+
+    suspend fun addErrorSuspending(header: ErrorHeader, message: String, referenceId: String = REFERENCE_ID_DEFAULT) {
+        addErrorSuspending(header, ErrorInfo(message, referenceId))
     }
 
     /**
@@ -67,11 +94,11 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
                 if (errorTracking.isEmpty()) return
 
                 val preparedErrors =
-                    errorTracking.map { (type, info) ->
-                        if (info.size > 5) {
-                            ErrorMessage(type, mutableListOf("${info.size} av samme type feil: $type. Sjekk avstemming"))
+                    errorTracking.map { errorMessage ->
+                        if (errorMessage.info.size > 5) {
+                            ErrorMessage(errorMessage.type, "${errorMessage.info.size} av samme type feil. Sjekk avstemming", errorMessage.referenceIDs())
                         } else {
-                            ErrorMessage(type, info.toMutableList())
+                            errorMessage
                         }
                     }
 

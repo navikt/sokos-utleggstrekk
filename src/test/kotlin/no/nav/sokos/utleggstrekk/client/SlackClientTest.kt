@@ -31,8 +31,8 @@ class SlackClientTest :
             val header = "Message header"
             val messages =
                 listOf(
-                    ErrorMessage(ErrorHeader.FEIL_VED_SENDING, mutableListOf("Info 1")),
-                    ErrorMessage(ErrorHeader.TSSID_FEIL, mutableListOf("Info 2")),
+                    ErrorMessage(ErrorHeader.FEIL_VED_SENDING, "Info 1"),
+                    ErrorMessage(ErrorHeader.TSSID_FEIL, "Info 2"),
                 )
             slackClient.sendMessage(header, messages)
 
