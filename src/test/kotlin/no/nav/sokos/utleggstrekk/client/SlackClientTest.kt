@@ -12,6 +12,7 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 
 import no.nav.sokos.utleggstrekk.domene.nav.Data
+import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorHeader
 import no.nav.sokos.utleggstrekk.domene.nav.createSlackMessage
 import no.nav.sokos.utleggstrekk.service.ErrorMessage
@@ -28,13 +29,12 @@ class SlackClientTest :
             val engine = MockHttpClient.getEngine("")
             val slackClient = SlackClient(endpoint, MockHttpClient.getClient(engine))
 
-            val header = "Message header"
             val messages =
                 listOf(
                     ErrorMessage(ErrorHeader.FEIL_VED_SENDING, "Info 1"),
-                    ErrorMessage(ErrorHeader.TSSID_FEIL, "Info 2"),
+                    ErrorMessage(ErrorHeader.FEIL_FRA_SKE, "Info 2"),
                 )
-            slackClient.sendMessage(header, messages)
+            slackClient.sendMessage(ErrorCategory.TREKK_HENTING, messages)
 
             engine.requestHistory shouldHaveSize 1
             val request = engine.requestHistory.first()
@@ -44,7 +44,7 @@ class SlackClientTest :
             val body = request.body
             body.contentType shouldBe ContentType.Application.Json
 
-            verify(exactly = 1) { createSlackMessage(header, messages) }
+            verify(exactly = 1) { createSlackMessage(ErrorCategory.TREKK_HENTING, messages) }
 
             unmockkStatic(::createSlackMessage)
         }

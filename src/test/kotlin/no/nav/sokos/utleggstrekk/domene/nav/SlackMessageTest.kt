@@ -14,18 +14,18 @@ class SlackMessageTest :
             val header = "Feil header"
             val messages =
                 listOf(
-                    ErrorMessage(ErrorHeader.TSSID_FEIL, "Feil info 1"),
+                    ErrorMessage(ErrorHeader.FEIL_FRA_SKE, "Feil info 1"),
                     ErrorMessage(ErrorHeader.FEIL_VED_SENDING, mutableListOf(ErrorInfo("Feil info 2", "KorrelasjonId"), ErrorInfo("Feil info 3"))),
                 )
 
-            val slackMessage = createSlackMessage(header, messages)
+            val slackMessage = createSlackMessage(ErrorCategory.TREKK_HENTING, messages)
 
-            slackMessage.text shouldBe ":package: $header"
+            slackMessage.text shouldBe ":package: ${ErrorCategory.TREKK_HENTING}"
             slackMessage.blocks shouldHaveSize 9
 
             val headerBlock = slackMessage.blocks[0]
             headerBlock.type shouldBe "header"
-            headerBlock.text?.text shouldBe ":error:  $header  "
+            headerBlock.text?.text shouldBe ":error:  ${ErrorCategory.TREKK_HENTING}"
 
             val datoBlock = slackMessage.blocks[2]
             datoBlock.type shouldBe "section"
@@ -35,7 +35,7 @@ class SlackMessageTest :
             val errorMessageBlock1 = slackMessage.blocks[4]
             errorMessageBlock1.type shouldBe "section"
             errorMessageBlock1.fields?.shouldHaveSize(2)
-            errorMessageBlock1.fields?.first()?.text shouldBe "*Feilmelding*\n${ErrorHeader.TSSID_FEIL}"
+            errorMessageBlock1.fields?.first()?.text shouldBe "*Feilmelding*\n${ErrorHeader.FEIL_FRA_SKE}"
             errorMessageBlock1.fields?.last()?.text shouldBe "*Info*\nFeil info 1\n*Korrelasjons- TransaksjonsID* Ingen"
 
             val errorMessageBlock2 = slackMessage.blocks[5]

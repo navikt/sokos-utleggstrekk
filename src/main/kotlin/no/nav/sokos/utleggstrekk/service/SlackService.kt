@@ -107,7 +107,7 @@ class SlackService(private val slackClient: SlackClient = SlackClient()) {
             }
 
         try {
-            slackClient.sendMessage(messageTitle.value, errorsToSend)
+            slackClient.sendMessage(messageTitle, errorsToSend)
         } catch (exception: Exception) {
             errorsToSend.forEach { (type, info) ->
                 info.forEach { addErrorSuspending(type, it) }

@@ -24,13 +24,13 @@ class SlackServiceTest :
 
         test("addErrorSuspending lagre en ny feil når typen er ny") {
             val service = SlackService(client)
-            service.addErrorSuspending(ErrorHeader.TSSID_FEIL, "message")
+            service.addErrorSuspending(ErrorHeader.FEIL_FRA_SKE, "message")
             service.addErrorSuspending(ErrorHeader.FEIL_VED_SENDING, "message2", "referenceId")
 
             val errors = service.errorTracking()
             errors shouldHaveSize 2
             with(errors.first()) {
-                type shouldBe ErrorHeader.TSSID_FEIL
+                type shouldBe ErrorHeader.FEIL_FRA_SKE
                 info shouldHaveSize 1
                 info.forOne { (description, referenceId) ->
                     description shouldBe "message"
@@ -85,7 +85,7 @@ class SlackServiceTest :
             service.sendCachedErrors(ErrorCategory.TREKK_HENTING)
 
             val messages = slot<List<ErrorMessage>>()
-            coVerify(exactly = 1) { client.sendMessage(ErrorCategory.TREKK_HENTING.value, capture(messages)) }
+            coVerify(exactly = 1) { client.sendMessage(ErrorCategory.TREKK_HENTING, capture(messages)) }
 
             messages.captured shouldHaveSize 2
             messages.captured.forOne { (type, info) ->
@@ -122,7 +122,7 @@ class SlackServiceTest :
             service.sendCachedErrors(ErrorCategory.TREKK_HENTING)
 
             val messages = slot<List<ErrorMessage>>()
-            coVerify(exactly = 1) { client.sendMessage(ErrorCategory.TREKK_HENTING.value, capture(messages)) }
+            coVerify(exactly = 1) { client.sendMessage(ErrorCategory.TREKK_HENTING, capture(messages)) }
 
             messages.captured shouldHaveSize 2
             messages.captured.forOne { (type, info) ->
@@ -169,7 +169,7 @@ class SlackServiceTest :
             requeued.size shouldBe 2
             requeued.forOne { (type, info) ->
                 type shouldBe ErrorHeader.FEIL_FRA_SKE
-                info.shouldContainExactlyInAnyOrder(
+                info.shouldContainExactly(
                     ErrorInfo("Info 1", REFERENCE_ID_DEFAULT),
                     ErrorInfo("Info 2", "referenceId2"),
                 )
