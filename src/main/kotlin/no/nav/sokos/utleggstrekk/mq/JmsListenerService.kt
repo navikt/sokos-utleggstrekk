@@ -68,7 +68,7 @@ class JmsListenerService(
         }.onFailure { exception ->
             val messageId = message.jmsMessageID
             logger.error(TEAM_LOGS_MARKER, "$PROCESSING_FEIL $messageId", exception)
-            slackService.addError(PROCESSING_FEIL, messageId)
+            slackService.addError(PROCESSING_FEIL, exception::class.simpleName ?: "Ukjent feil", messageId)
 
             if (exception !is MessageFormatException) {
                 val jmsMessage = message.getBody(String::class.java)

@@ -37,7 +37,7 @@ class JmsListenerServiceTest :
         extensions(listOf(MQListener, DBListener))
 
         val slackService = mockk<SlackService>()
-        justRun { slackService.addError(any<ErrorHeader>(), any<String>()) }
+        justRun { slackService.addError(any<ErrorHeader>(), any<String>(), any()) }
         coJustRun { slackService.sendCachedErrors(any<ErrorCategory>()) }
 
         val replyQueue = ActiveMQQueue("replyQueue")
@@ -83,7 +83,7 @@ class JmsListenerServiceTest :
                         transaksjonerAfter.kvitteringStatus shouldBe KvitteringStatus.OK
                         transaksjonerAfter.navTrekkId shouldBe "navTrekkId01"
 
-                        coVerify(exactly = 0) { slackService.addError(any(), any()) }
+                        coVerify(exactly = 0) { slackService.addError(any(), any(), any()) }
                         coVerify(exactly = 1) { slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL) }
                     }
                 }
@@ -114,7 +114,7 @@ class JmsListenerServiceTest :
                         val message = slot<String>()
                         eventually(duration = 1.seconds) {
                             coVerify(exactly = 1) {
-                                slackService.addError(ErrorHeader.KVITTERING_FEIL, capture(message))
+                                slackService.addError(ErrorHeader.KVITTERING_FEIL, capture(message), any())
                                 slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL)
                             }
                             message.captured.shouldContainInOrder(
@@ -155,7 +155,7 @@ class JmsListenerServiceTest :
                 Then("Feil skal sendes til slack") {
                     eventually(duration = 1.seconds) {
                         coVerify(exactly = 1) {
-                            slackService.addError(ErrorHeader.PROCESSING_FEIL, any())
+                            slackService.addError(ErrorHeader.PROCESSING_FEIL, any(), any())
                             slackService.sendCachedErrors(ErrorCategory.KVITTERING_FEIL)
                         }
                     }
