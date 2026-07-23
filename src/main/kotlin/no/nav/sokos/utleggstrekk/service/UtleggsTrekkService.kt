@@ -96,6 +96,7 @@ class UtleggsTrekkService(
                 logger.error("Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}")
                 logger.error(TEAM_LOGS_MARKER, "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}", e)
                 slackService.addError(ErrorHeader.FEIL_I_VALIDERING, "Ugyldige verdier i trekk fra skatt: $e", trekk.trekkid)
+                slackService.sendCachedErrors(ErrorCategory.TREKK_HENTING)
                 status = SkattTrekkStatus.AVVIST
             }
             try {
