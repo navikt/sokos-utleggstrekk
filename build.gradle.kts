@@ -7,7 +7,7 @@ plugins {
     kotlin("jvm") version "2.3.21"
     kotlin("plugin.serialization") version "2.3.21"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    id("org.jetbrains.kotlinx.kover") version "0.9.8"
+    id("org.jetbrains.kotlinx.kover") version "0.9.9"
 
     application
 }
@@ -44,7 +44,7 @@ val nimbusVersion = "10.9.1"
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.17.0"
-val unleashedVersion = "12.2.2"
+val unleashedVersion = "12.2.3"
 
 // DB
 val hikaricpVersion = "7.1.0"
