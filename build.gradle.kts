@@ -53,14 +53,14 @@ val postgresqlVersion = "42.7.13"
 val kotliqueryVersion = "2.0.9"
 
 // Logging
-val logbackVersion = "1.5.38"
+val logbackVersion = "1.6.0"
 val logstashVersion = "9.0"
 val kotlinLoggingVersion = "3.0.5"
 
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.2.2"
+val kotestVersion = "6.2.3"
 val mockkVersion = "1.14.11"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
