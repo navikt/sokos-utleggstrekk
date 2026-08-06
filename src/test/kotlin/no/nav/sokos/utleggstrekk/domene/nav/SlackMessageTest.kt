@@ -35,19 +35,19 @@ class SlackMessageTest :
             errorMessageBlock1.type shouldBe "section"
             errorMessageBlock1.fields?.shouldHaveSize(2)
             errorMessageBlock1.fields?.first()?.text shouldBe "*Feilmelding*\n${ErrorHeader.FEIL_FRA_SKE}"
-            errorMessageBlock1.fields?.last()?.text shouldBe "*Info*\nFeil info 1\n*Korrelasjons- og TransaksjonsID* Ingen"
+            errorMessageBlock1.fields?.last()?.text shouldBe "*Info*\nFeil info 1\n*Korrelasjons- eller TransaksjonsID* Ingen"
 
             val errorMessageBlock2 = slackMessage.blocks[5]
             errorMessageBlock2.type shouldBe "section"
             errorMessageBlock2.fields?.shouldHaveSize(2)
             errorMessageBlock2.fields?.first()?.text shouldBe "*Feilmelding*\n${ErrorHeader.FEIL_VED_SENDING}"
-            errorMessageBlock2.fields?.last()?.text shouldBe "*Info*\nFeil info 2\n*Korrelasjons- og TransaksjonsID* KorrelasjonId"
+            errorMessageBlock2.fields?.last()?.text shouldBe "*Info*\nFeil info 2\n*Korrelasjons- eller TransaksjonsID* KorrelasjonId"
 
             val errorMessageBlock3 = slackMessage.blocks[6]
             errorMessageBlock3.type shouldBe "section"
             errorMessageBlock3.fields?.shouldHaveSize(2)
             errorMessageBlock3.fields?.first()?.text shouldBe "*Feilmelding*\n${ErrorHeader.FEIL_VED_SENDING}"
-            errorMessageBlock3.fields?.last()?.text shouldBe "*Info*\nFeil info 3\n*Korrelasjons- og TransaksjonsID* Ingen"
+            errorMessageBlock3.fields?.last()?.text shouldBe "*Info*\nFeil info 3\n*Korrelasjons- eller TransaksjonsID* Ingen"
 
             val dividers = slackMessage.blocks.filter { it.type == "divider" }
             dividers shouldHaveSize 4
