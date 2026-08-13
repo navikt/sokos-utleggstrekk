@@ -20,7 +20,7 @@ erDiagram
         text trekkpliktig "Organisasjonsnummer"
         text skyldner "f.nr eller d.nr"
         text trekkstatus "aktiv eller avsluttet"
-        timestamptz tidspunkt_opprettet "Tidspunkt denne raden ble oppdatert"        
+        timestamp tidspunkt_opprettet "Tidspunkt denne raden ble oppdatert"        
     }
     fraskatt_status {
         bigint id "Syntetisk primærnøkkel"

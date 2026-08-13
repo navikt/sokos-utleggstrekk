@@ -6,5 +6,8 @@ ALTER TABLE transaksjon_os
 ALTER TABLE feilmelding
     ALTER COLUMN tidspunkt_opprettet TYPE timestamp;
 
+ALTER TABLE fraskatt
+    ALTER COLUMN tidspunkt_opprettet TYPE timestamp;
+
 ALTER TABLE fraskatt_status
     ALTER COLUMN tidspunkt_satt TYPE timestamp;
