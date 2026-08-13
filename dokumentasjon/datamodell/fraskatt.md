@@ -20,13 +20,13 @@ erDiagram
         text trekkpliktig "Organisasjonsnummer"
         text skyldner "f.nr eller d.nr"
         text trekkstatus "aktiv eller avsluttet"
-        timestampz tidspunkt_opprettet "Tidspunkt denne raden ble oppdatert"        
+        timestamp tidspunkt_opprettet "Tidspunkt denne raden ble oppdatert"        
     }
     fraskatt_status {
         bigint id "Syntetisk primærnøkkel"
         bigint fraskatt_id "Fremmednøkkel til fraskatt"
         text status "mottatt eller behandlet"
-        timestampz tidspunkt_satt "Tidspunkt for status"
+        timestamp tidspunkt_satt "Tidspunkt for status"
     }
     fraskatt ||--o{ periode: har
     periode {
