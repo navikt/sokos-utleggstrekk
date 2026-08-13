@@ -6,6 +6,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -31,7 +32,6 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
         name: String? = null,
         task: suspend () -> Unit,
     ) {
-        logger.info("Scheduler for '$name' started on the hour at HH:${minute.twoPad()}:${second.twoPad()}")
         scheduleNext(minute = minute, second = second, name = name, task = task)
     }
 
@@ -41,7 +41,6 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
         name: String? = null,
         task: suspend () -> Unit,
     ) {
-        logger.info("Scheduler for '$name' started at ${hour.twoPad()}:${minute.twoPad()}:SS")
         scheduleNext(hour, minute, 0, name, task)
     }
 
@@ -70,8 +69,6 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
             }
         }
 
-        logger.info("Next ${if (name != null) "'$name' " else ""}job scheduled at " + next)
-
         val delay = Duration.between(now, next).toMillis()
 
         future =
@@ -97,10 +94,8 @@ class UtleggstrekkScheduler(private val scope: CoroutineScope) {
         future?.cancel(false)
         val job = runningJob
         if (job != null) {
-            withTimeoutOrNull(timeout.toMillis()) { job.join() }
+            withTimeoutOrNull(timeout.toMillis().milliseconds) { job.join() }
         }
         executor.shutdown()
     }
 }
-
-fun Int.twoPad() = "%02d".format(this)
