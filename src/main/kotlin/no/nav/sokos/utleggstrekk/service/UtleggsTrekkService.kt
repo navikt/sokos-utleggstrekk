@@ -133,8 +133,8 @@ class UtleggsTrekkService(
     private fun updateTransactionAfterSending(transaksjonId: String) {
         runCatching {
             repository.updateTransaksjonSendt(transaksjonId)
-        }.onFailure {
-            logger.error { "Kunne ikke oppdatere transaksjon status for $transaksjonId" }
+        }.onFailure { e ->
+            logger.error(e) { "Kunne ikke oppdatere transaksjon status for $transaksjonId" }
             slackService.addError(ErrorHeader.DATABASE_ERROR, "Kunne ikke oppdatere transaksjon status", transaksjonId)
         }
     }
