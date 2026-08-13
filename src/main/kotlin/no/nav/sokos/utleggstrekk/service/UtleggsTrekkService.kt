@@ -59,7 +59,9 @@ class UtleggsTrekkService(
         }
         if (featureToggles.isSendTilOSEnabled()) {
             val transaksjonerToSend = repository.getTransaksjonerTilOsSomIkkeErSendt()
-            logger.info("Sender ${transaksjonerToSend.size} transaksjon(er) til OS")
+            if (transaksjonerToSend.isNotEmpty()) {
+                logger.info { "Sender ${transaksjonerToSend.size} transaksjon(er) til OS" }
+            }
             transaksjonerToSend.forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
         }
         repository.deleteOldData()
