@@ -40,7 +40,6 @@ class SkeClient(
 
     suspend fun hentUtleggstrekkFraSekvensnr(sekvensnr: Int): List<Trekkpaalegg> {
         val korrId = UUID.randomUUID().toString()
-        logger.info { "Henter utleggstrekk fra sekvensnummer $sekvensnr, antall $MAX_ANTALL, korrId=$korrId" }
         return client
             .get {
                 url("$basePath?fraSekvensnummer=$sekvensnr&maksAntall=$MAX_ANTALL")
@@ -86,7 +85,7 @@ class SkeClient(
 
             jsonConfig.decodeFromString<List<Trekkpaalegg>>(text).also {
                 if (it.isNotEmpty()) {
-                    logger.info { "Hentet ${it.size} trekk sekvensnummer=$sekvensnr" }
+                    logger.info { "Hentet ${it.size} trekk med sekvensnummer=$sekvensnr" }
                 }
             }
         }.getOrElse { e ->

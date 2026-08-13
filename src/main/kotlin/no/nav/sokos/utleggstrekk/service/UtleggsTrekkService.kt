@@ -51,7 +51,6 @@ class UtleggsTrekkService(
     private val logger = KotlinLogging.logger { }
 
     suspend fun schedule() {
-        logger.info("Schedule started")
         if (featureToggles.isHentFraSKEEnabled()) {
             lagreAlleNyeUtleggstrekk()
         }
@@ -59,7 +58,9 @@ class UtleggsTrekkService(
             BehandleTrekkService(repository).behandleTrekk()
         }
         if (featureToggles.isSendTilOSEnabled()) {
-            repository.getTransaksjonerTilOsSomIkkeErSendt().forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
+            val transaksjonerToSend = repository.getTransaksjonerTilOsSomIkkeErSendt()
+            logger.info("Sender ${transaksjonerToSend.size} transaksjon(er) til OS")
+            transaksjonerToSend.forEach { osTransaksjon -> sendTrekkTilOS(osTransaksjon) }
         }
         repository.deleteOldData()
         if (!PropertiesConfig.isTest) {
@@ -131,6 +132,7 @@ class UtleggsTrekkService(
         runCatching {
             repository.updateTransaksjonSendt(transaksjonId)
         }.onFailure {
+            logger.error { "Kunne ikke oppdatere transaksjon status for $transaksjonId" }
             slackService.addError(ErrorHeader.DATABASE_ERROR, "Kunne ikke oppdatere transaksjon status", transaksjonId)
         }
     }
