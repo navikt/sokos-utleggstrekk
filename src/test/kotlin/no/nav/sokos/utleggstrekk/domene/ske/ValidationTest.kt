@@ -91,8 +91,8 @@ class ValidationTest :
             Then("Validate kaster exception") {
                 ugyldige.forEachIndexed { i, (ugyldigTrekk, expected) ->
                     withClue("TREKK nr. $i, $ugyldigTrekk skal ikke validere") {
-                        val errorMessage = shouldThrow<Exception> { ugyldigTrekk.validate() }
-                        errorMessage.message shouldContain expected
+                        val exception = shouldThrow<IllegalArgumentException> { ugyldigTrekk.validate() }
+                        exception.message shouldContain expected
                     }
                 }
             }
@@ -135,8 +135,8 @@ class ValidationTest :
             Then("validate kaster exception") {
                 ugyldige.forEachIndexed { i, (ugyldigTrekk, expected) ->
                     withClue("TREKK nr $i, $ugyldigTrekk skal ikke validere ") {
-                        val errorMessage = shouldThrow<Exception> { ugyldigTrekk.validate() }
-                        errorMessage.message shouldBe expected
+                        val exception = shouldThrow<Exception> { ugyldigTrekk.validate() }
+                        exception.message shouldBe expected
                     }
                 }
             }
