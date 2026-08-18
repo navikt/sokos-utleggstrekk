@@ -75,7 +75,7 @@ fun Trekkpaalegg.validate() {
         trekkstoerrelseForPeriode.forEach(TrekkstorrelseForPeriode::validate)
         betalingsinformasjon.validate()
     } catch (e: Exception) {
-        throw IllegalArgumentException("Trekkpaalegg validation failed: trekkid: $trekkid, trekkversjon: $trekkversjon, sekvensnummer: $sekvensnummer", e)
+        throw IllegalArgumentException("Trekkpaalegg validation failed: trekkid: $trekkid, trekkversjon: $trekkversjon, sekvensnummer: $sekvensnummer, message: ${e.message}", e)
     }
 }
 
