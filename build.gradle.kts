@@ -43,14 +43,14 @@ val nimbusVersion = "10.9.1"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
-val prometheusVersion = "1.17.0"
-val unleashedVersion = "12.2.3"
+val prometheusVersion = "1.17.1"
+val unleashedVersion = "12.3.0"
 
 // DB
 val hikaricpVersion = "7.1.0"
-val flywayVersion = "13.3.0"
+val flywayVersion = "13.5.0"
 val postgresqlVersion = "42.7.13"
-val kotliqueryVersion = "2.1.0"
+val kotliqueryVersion = "2.1.1"
 
 // Logging
 val logbackVersion = "1.6.3"
@@ -64,7 +64,7 @@ val kotestVersion = "6.2.4"
 val mockkVersion = "1.14.11"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
-val activemqVersion = "2.55.0"
+val activemqVersion = "2.56.0"
 val ibmMqVersion = "10.0.0.0"
 
 dependencies {
