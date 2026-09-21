@@ -45,6 +45,7 @@ val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
 val prometheusVersion = "1.17.0"
 val unleashedVersion = "12.2.3"
+val opentelemetryVersion = "2.31.1"
 
 // DB
 val hikaricpVersion = "7.1.0"
@@ -89,6 +90,9 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:$kotlinLoggingVersion")
     runtimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
     runtimeOnly("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
+
+    // Opentelemetry
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
 
     // metrics
     implementation("io.ktor:ktor-server-metrics-micrometer-jvm:$ktorVersion")

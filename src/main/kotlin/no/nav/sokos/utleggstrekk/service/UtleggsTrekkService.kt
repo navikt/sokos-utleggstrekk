@@ -6,6 +6,7 @@ import java.time.format.FormatStyle.SHORT
 
 import com.ibm.mq.jakarta.jms.MQQueue
 import com.ibm.msg.client.jakarta.wmq.WMQConstants
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import mu.KotlinLogging
 
 import no.nav.sokos.utleggstrekk.client.MAX_ANTALL
@@ -50,6 +51,7 @@ class UtleggsTrekkService(
 ) {
     private val logger = KotlinLogging.logger { }
 
+    @WithSpan
     suspend fun schedule() {
         if (featureToggles.isHentFraSKEEnabled()) {
             lagreAlleNyeUtleggstrekk()
@@ -139,6 +141,7 @@ class UtleggsTrekkService(
         }
     }
 
+    @WithSpan
     suspend fun reportMissingKvittering() {
         val yesterday = LocalDateTime.now().minusDays(1)
         val formatter = DateTimeFormatter.ofLocalizedDateTime(SHORT)
@@ -151,6 +154,7 @@ class UtleggsTrekkService(
         slackService.sendCachedErrors(ErrorCategory.KVITTERING_UTEBLIR)
     }
 
+    @WithSpan
     fun calculateMetrics() {
         val duration =
             durationOf {
