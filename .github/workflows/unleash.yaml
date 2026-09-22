@@ -18,7 +18,7 @@ jobs:
       id-token: write
       contents: read
     name: Deploy to dev-gcp
-    uses: navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@6d597f4b49bff3f5e59833b784eb63aa5ddc8603 # ratchet:navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@v1.0.2
+    uses: navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@4e30b004e60632c052461b9ce66a0d802d580f89 # ratchet:navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@v1.1.1
     with:
       cluster: dev-gcp
       resource: .nais/dev/unleash-dev.yaml
@@ -28,7 +28,7 @@ jobs:
       id-token: write
       contents: read
     name: Deploy to prod-gcp
-    uses: navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@6d597f4b49bff3f5e59833b784eb63aa5ddc8603 # ratchet:navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@v1.0.2
+    uses: navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@4e30b004e60632c052461b9ce66a0d802d580f89 # ratchet:navikt/mob-gha-workflows/.github/workflows/unleash-deploy.yaml@v1.1.1
     with:
       cluster: prod-gcp
       resource: .nais/prod/unleash-prod.yaml
