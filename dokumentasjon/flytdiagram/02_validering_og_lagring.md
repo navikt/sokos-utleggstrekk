@@ -41,5 +41,5 @@ flowchart LR
 |--------|---------|
 | `fraskatt` | Hoveddata: trekkid, trekkversjon, skyldner, saksnummer, trekkstatus |
 | `periode` | Perioder med start/slutt-dato og sats (prosent eller beløp) |
-| `betalingsinformasjon` | Kreditors kontonr, orgnr, KID |
+| `betalingsinformasjonfraskatt` | Kreditors kontonr, orgnr, KID |
 | `fraskatt_status` | Nåværende behandlingsstatus (MOTTATT, BEHANDLET, AVVIST, ...) |
