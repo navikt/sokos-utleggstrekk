@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
-    kotlin("jvm") version "2.4.10"
-    kotlin("plugin.serialization") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
+    kotlin("plugin.serialization") version "2.4.20"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("org.jetbrains.kotlinx.kover") version "0.9.9"
 
@@ -43,14 +43,15 @@ val nimbusVersion = "10.9.1"
 
 val vaultVersion = "1.3.10"
 val konfigVersion = "1.6.10.0"
-val prometheusVersion = "1.17.0"
-val unleashedVersion = "12.2.3"
+val prometheusVersion = "1.17.1"
+val unleashedVersion = "12.3.0"
+val opentelemetryVersion = "2.31.1"
 
 // DB
 val hikaricpVersion = "7.1.0"
-val flywayVersion = "13.3.0"
+val flywayVersion = "13.6.0"
 val postgresqlVersion = "42.7.13"
-val kotliqueryVersion = "2.1.0"
+val kotliqueryVersion = "2.1.1"
 
 // Logging
 val logbackVersion = "1.6.3"
@@ -60,11 +61,11 @@ val kotlinLoggingVersion = "3.0.5"
 val gsonVersion = "2.13.2"
 
 // Test
-val kotestVersion = "6.2.4"
+val kotestVersion = "6.2.5"
 val mockkVersion = "1.14.11"
 val commonsVersion = "3.13.0"
 val testContainerVersion = "1.21.4"
-val activemqVersion = "2.55.0"
+val activemqVersion = "2.57.0"
 val ibmMqVersion = "10.0.0.0"
 
 dependencies {
@@ -89,6 +90,9 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:$kotlinLoggingVersion")
     runtimeOnly("ch.qos.logback:logback-classic:$logbackVersion")
     runtimeOnly("net.logstash.logback:logstash-logback-encoder:$logstashVersion")
+
+    // Opentelemetry
+    implementation("io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:$opentelemetryVersion")
 
     // metrics
     implementation("io.ktor:ktor-server-metrics-micrometer-jvm:$ktorVersion")
