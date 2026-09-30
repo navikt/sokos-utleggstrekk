@@ -13,7 +13,7 @@ flowchart LR
     Newer -->|Nei| Process
     RepCheck -->|Nei| Process[Beregn perioder<br/>+ lag dokumenter]
 
-    Process --> Split{Både prosent<br/>og beløp?}
+    Process --> Split{Flere relevante alternativ<br/>fra perioder + tidligere sendt til OS?}
     Split -->|Ja| TwoDocs[Lag 2 dokumenter<br/>LOPP + LOPM]
     Split -->|Nei| OneDoc[Lag 1 dokument]
 
