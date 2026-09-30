@@ -92,7 +92,7 @@ Merk: I tabellen over er det **samme trekkpålegg** på alle tre radene. Verdien
 
 ## Når splittes det IKKE?
 
-Dersom alle perioder i et trekkpålegg er av **samme type** (kun prosent eller kun beløp), lages det bare **ett** trekk til Oppdrag Z:
+Dersom alle perioder i et trekkpålegg er av **samme type** (kun prosent eller kun beløp), og det motsatte alternativet aldri tidligere er sendt til OS, lages det bare **ett** trekk til Oppdrag Z. Et tidligere kjent alternativ tas fortsatt med slik at gamle perioder kan nulles.
 
 ```
 Trekkpålegg med kun prosent:
