@@ -36,7 +36,7 @@ Dette oppretter filen `defaults.properties` med alle nødvendige environment-var
 For å koble til dev-databasen lokalt:
 
 ```bash
-chmod 755 startProxy.sh && ./startProxy.sh
+chmod 755 startProxy.sh && ./startProxy.sh "TOB-XXX: Lokal utvikling"
 ```
 
 Dette starter en proxy mot Cloud SQL-instansen i dev.
