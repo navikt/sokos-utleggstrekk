@@ -199,8 +199,12 @@ sequenceDiagram
         end
         Listener->>MQ: message.acknowledge()
     else Parse/validering feiler
-        Listener->>BOQ: send(original melding)
-        Listener->>MQ: message.acknowledge()
+        alt MessageFormatException
+            Note over Listener,MQ: Ikke BOQ og ikke acknowledge
+        else Annen parse/valideringsfeil
+            Listener->>BOQ: send(original melding)
+            Listener->>MQ: message.acknowledge()
+        end
         Listener->>Slack: addError(PROCESSING_FEIL)
     end
 ```
