@@ -108,10 +108,10 @@ Når et trekkpålegg fra Skatteetaten har perioder med **både** prosent og bel�
 
 | Property | Default | Forklaring | Kilde |
 |----------|---------|------------|-------|
-| SKE_REST_URL | https://api-test.sits.no/api/trekkpaalegg/v1 | REST-endepunkt | application-{env}.conf |
-| SKE_ORGNR | 971648199 | Skatteetatens orgnummer → TSS ID | application-{env}.conf |
-| SKE_TSSID | | TSS ID for Skatteetaten | application-{env}.conf |
-| SKE_KONTONR | | Skatteetatens kontonummer | application-{env}.conf |
+| `skeConfig.skeRestUrl` | https://api-test.sits.no/api/trekkpaalegg/v1 | REST-endepunkt | application-{env}.conf |
+| `skeConfig.skeOrgNr` | 971648199 | Skatteetatens orgnummer → TSS ID | application-{env}.conf |
+| `skeConfig.skeTSSId` | | TSS ID for Skatteetaten | application-{env}.conf |
+| `skeConfig.skeKontoNr` | | Skatteetatens kontonummer | application-{env}.conf |
 
 ---
 

@@ -171,7 +171,7 @@ Skatteetaten sender et komplett øyeblikksbilde, mens Oppdrag Z mottar endringer
 
 ```mermaid
 flowchart TD
-    SKE[Hent perioder fra Skatteetaten] --> ROUND[mapNewFomTom()<br/>fom til 1. i måneden<br/>tom til siste dag i måneden]
+    SKE[Hent perioder fra Skatteetaten] --> ROUND["mapNewFomTom()<br/>fom til 1. i måneden<br/>tom til siste dag i måneden"]
     ROUND --> OVERLAP{Overlapper avrundede perioder?}
     OVERLAP -->|Ja| TRIM[Nyere periode har forrang<br/>kutt eller fjern eldre periode]
     OVERLAP -->|Nei| ALT

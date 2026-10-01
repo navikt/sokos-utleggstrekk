@@ -113,7 +113,7 @@ For å skille de to trekkene i Oppdrag Z brukes et suffiks på trekkid-en:
 | Prosent (LOPP) | `P` | `a1b2c3d4e5f67890abcdef1234567890P` |
 | Beløp (LOPM) | `M` | `a1b2c3d4e5f67890abcdef1234567890M` |
 
-Se [kodestruktur – ID-konvertering](kodestruktur/README.md#id-konvertering-syntetiskid) for detaljer om hvordan trekkid konverteres.
+Se [kodestruktur – ID-konvertering](../kodestruktur/README.md#id-konvertering-syntetiskid) for detaljer om hvordan trekkid konverteres.
 
 ---
 
