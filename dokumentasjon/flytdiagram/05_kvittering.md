@@ -39,7 +39,7 @@ flowchart LR
 
 ## Feilhåndtering
 
-- Kvitteringer som ikke kan parses sendes til en **backout-kø** (BOQ) for manuell oppfølging
+- Kvitteringert som feiler under parsing, validering eller prosessering sendes til en **backout-kø** (BOQ) 
 - `MessageFormatException` (tom/uleselig melding) sendes **ikke** til BOQ
 - Ved `FEIL`-kvittering lagres feilkode og beskrivelse i `feilmelding`-tabellen
 - Fødselsnummer i feilbeskrivelser maskeres i logger

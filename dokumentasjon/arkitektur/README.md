@@ -13,7 +13,7 @@ C4Context
     System(app, "sokos-utleggstrekk", "Kotlin/Ktor<br/>Henter utleggstrekk fra SKE<br/>og sender til Oppdrag Z")
 
     System_Ext(ske, "Skatteetaten", "REST API for trekkpålegg")
-    System_Ext(oz, "Oppdrag Z", "Stormaskin<br/>IBM MQ")
+    System_Ext(os, "Oppdrag Z", "Stormaskin<br/>IBM MQ")
     System_Ext(maskinporten, "Maskinporten", "OAuth2 tokentjeneste")
 
     SystemDb(db, "PostgreSQL", "Cloud SQL i GCP")
@@ -49,7 +49,7 @@ flowchart TB
     end
 
     subgraph Ekstern["Eksterne tjenester"]
-        SKE[Skatteetaten API<br/>api-test.sits.no / api.sits.no]
+        SKE[Skatteetaten API<br/>api-test.sits.no / api.skatteetaten.no]
         MP[Maskinporten<br/>ver2.maskinporten.no]
     end
 
@@ -65,7 +65,7 @@ flowchart TB
 | Miljø | Kluster | Ingress | MQ Host |
 |-------|---------|---------|---------|
 | Dev | dev-gcp | sokos-utleggstrekk.intern.dev.nav.no | mqls02.preprod.local:1413 |
-| Prod | prod-gcp | sokos-utleggstrekk.intern.nav.no | mqls02.prod.local:1413 |
+| Prod | prod-gcp | sokos-utleggstrekk.intern.nav.no | mqls02.adeo.no:1414 |
 
 ### Infrastrukturkomponenter
 
@@ -121,7 +121,7 @@ flowchart TD
     end
 
     Henting --> Behandling --> Sending
-    Kvittering -.->|Asynkront| Sending
+    Sending -.->|Asynkron kvittering| Kvittering
 ```
 
 ---

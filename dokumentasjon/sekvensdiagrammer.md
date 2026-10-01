@@ -77,7 +77,7 @@ sequenceDiagram
     Maskinporten-->>Service: Bearer token
 
     loop Gjenta så lenge antall == MAX_ANTALL (2500)
-        Service->>SKE: GET /trekkpaalegg?fraSekvensnummer=N&maksAntall=2500<br/>Headers: Authorization, Klientid, Korrelasjonsid
+        Service->>SKE: GET /trekkpaalegg?fraSekvensnummer=N&maksAntall=2500<br/>
         SKE-->>Service: JSON-array med trekkpålegg
 
         loop For hvert trekk (sortert på sekvensnummer)

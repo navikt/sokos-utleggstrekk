@@ -61,7 +61,7 @@ Når et trekk har `trekkstatus = AVSLUTTET` sendes et dokument **uten perioder**
 
 ## Nøkkelpunkter
 
-- Hele behandlingen skjer i en databasetransaksjon per trekk
-- Ved feil rulles transaksjonen tilbake og trekket settes til AVVIST
+- Hele behandlingen skjer i en databasetransaksjon per trekk -
+- Ved feil fanges unntaket under transaksjonen og trekket forsøkes satt til AVVIST
 - REPETERES-trekk sjekkes mot nyere versjoner for å unngå å overskrive nyere data
 - Dokumentet som lages er en `TrekkTilOppdrag` JSON som serialiseres og lagres i `transaksjon_os`

@@ -6,7 +6,7 @@ Denne siden forklarer hvordan sokos-utleggstrekk beregner hvilke perioder som sk
 
 Oppdrag Z opererer med **endringer** (diff), ikke med øyeblikksbilder. Skatteetaten derimot sender alltid et komplett bilde av gjeldende perioder. sokos-utleggstrekk må derfor:
 
-1. Vite hva som allerede er sendt til OS
+1. Vite hva som allerede er sendt til OS                                
 2. Sammenligne med det nye trekkpålegget
 3. Beregne forskjellen (nye perioder, fjernede perioder)
 4. Sende kun endringene
@@ -158,22 +158,34 @@ Perioder fra SKE:
 
 ### Beregning
 
-**Steg 3**: Relevante alternativ = {LOPP (fra perioder + OS), LOPM (fra perioder)}
+**Steg 3**: Relevante alternativ =  LOPP (fra SKE + OS), LOPM (fra SKE)
 
-**Steg 4**: Kjente OS-perioder for LOPP: [jan–mar 5%, apr–jun 8%]. For LOPM: [] (tomt – aldri sendt)
+**Steg 4**: Kjente OS-perioder for:
+* LOPP:
+  * jan–mar 5%
+  * apr–jun 8%
+* LOPM: 
+  * [] (tomt – aldri sendt)
 
 **Steg 5** (nullinger):
-- LOPP: apr–jun 8% finnes i OS men ikke i SKE (SKE har beløp der, ikke prosent) → null: apr–jun, sats=0.0
-- LOPM: ingenting å nulle (tomt i OS)
+- LOPP: 
+  - apr–jun 8% 
+    - finnes i OS  → null  →  apr–jun, sats=0.0
+- LOPM:
+  - ingenting å nulle
 
 **Steg 6** (nye perioder):
-- SKE-periode jan–mar 5% finnes allerede i OS LOPP → skip
-- SKE-periode apr–jun 500kr → ikke i OS:
-  - LOPP: apr–jun, sats=0.0
-  - LOPM: apr–jun, sats=500.0
-- SKE-periode jul–åpen 10% → ikke i OS:
-  - LOPP: jul–åpen, sats=10.0
-  - LOPM: jul–åpen, sats=0.0
+- SKE-periode 
+  - jan–mar 5% 
+    - finnes allerede i OS LOPP → skip 
+  - apr–jun 500kr 
+    -  ikke i OS:
+        - LOPP: apr–jun, sats=0.0
+        - LOPM: apr–jun, sats=500.0
+- jul–åpen 10%
+  - ikke i OS:
+    - LOPP: jul–åpen, sats=10.0
+    - LOPM: jul–åpen, sats=0.0
 
 **Steg 7** (kombiner):
 

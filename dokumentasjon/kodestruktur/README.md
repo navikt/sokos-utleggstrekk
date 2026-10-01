@@ -190,7 +190,7 @@ Skatteetatens `trekkid` konverteres til `kreditor_trekk_id` for Oppdrag Z:
 
 ```mermaid
 flowchart TD
-    A[trekkid fra SKE] --> B{Er UUID v4?}
+    A[trekkid fra SKE] --> B{Har UUID-format?}
     B -->|Ja| C[Fjern bindestreker + suffiks P/M]
     B -->|Nei| D{Lengde > 34?}
     D -->|Nei| E[Behold + suffiks P/M]
@@ -236,7 +236,7 @@ Eksponeres på `/internal/metrics` i Prometheus-format:
 | `sokos_utleggstrekk_trekk_kvittert_for_av_os` | Counter | Trekk kvittert OK |
 | `sokos_utleggstrekk_trekk_avvist_av_os` | Counter | Trekk avvist av OS |
 | `sokos_utleggstrekk_utleggstrekk_fra_skatt_aktive` | Gauge | Antall aktive trekk |
-| `sokos_utleggstrekk_utleggstrekk_fra_skatt_avsluttet` | Gauge | Antall avsluttede trekk |
+| `sokos_utleggstrekk__utleggstrekk_fra_skatt_avsluttet` | Gauge | Antall avsluttede trekk |
 | `sokos_utleggstrekk_antall_aktive_trekk_kvittert_av_OS` | Gauge | Aktive trekk kvittert (per alternativ) |
 | `sokos_utleggstrekk_tid_brukt_paa_lagring_av_utleggstrekk` | Gauge | ms/trekk for lagring |
 | `sokos_utleggstrekk_tid_brukt_paa_metrikker` | Gauge | Sekunder brukt på metrikk-beregning |

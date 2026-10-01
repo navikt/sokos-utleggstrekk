@@ -86,7 +86,7 @@ flowchart TD
 
     PROCESS --> GET_ALT[Finn kjente trekkalternativ i OS]
     GET_ALT --> CALC_PERIODS[Beregn nye perioder]
-    CALC_PERIODS --> SPLIT{Både prosent og beløp?}
+    CALC_PERIODS --> SPLIT{Flere relevante alternativ<br/>fra perioder + tidligere sendt til OS?}
     SPLIT -->|Ja| TWO_DOCS[Lag 2 dokumenter: LOPP + LOPM]
     SPLIT -->|Nei| ONE_DOC[Lag 1 dokument]
     TWO_DOCS --> SAVE
@@ -205,7 +205,7 @@ Oppdrag Z krever at ett trekk har én trekktype: prosent (`LOPP`) eller beløp (
 | `LOPP` | Perioder med trekkprosent | Perioder med trekkbeløp |
 | `LOPM` | Perioder med trekkbeløp | Perioder med trekkprosent |
 
-Nullperiodene sørger for at begge dokumentene dekker samme perioder, samtidig som bare riktig trekkype virker i hver periode. Et alternativ som allerede finnes i OS beholdes også i beregningen, selv om den nyeste SKE-versjonen ikke inneholder typen lenger; slik kan tidligere perioder nulles i stedet for å bli stående aktive.
+Nullperiodene sørger for at begge dokumentene dekker samme perioder, samtidig som bare korrekt trekkype er gyldig i hver periode. Et alternativ som allerede finnes i OS beholdes også i beregningen, selv om den nyeste SKE-versjonen ikke inneholder typen lenger; slik kan tidligere perioder nulles i stedet for å bli stående aktive.
 
 Se også [trekksplitting](../trekksplitting/README.md) for et konkret eksempel og [periodeberegning](../periodeberegning/README.md) for den detaljerte diff-algoritmen.
 

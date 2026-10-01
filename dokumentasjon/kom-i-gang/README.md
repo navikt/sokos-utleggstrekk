@@ -29,10 +29,10 @@ Kjør setupLocalEnvironment-scriptet (krever naisdevice):
 chmod 755 setupLocalEnvironment.sh && ./setupLocalEnvironment.sh
 ```
 
-Dette oppretter filen `defaults.properties` med alle nødvendige environment-variabler. **Merk**: `POSTGRES_USERNAME` og `POSTGRES_PASSWORD` må hentes manuelt fra Vault.
+Dette oppretter filen `defaults.properties` med alle nødvendige environment-variabler. 
 
 ### 3. Start database-proxy
-
+                                                    
 For å koble til dev-databasen lokalt:
 
 ```bash
@@ -133,19 +133,17 @@ sokos-utleggstrekk/
 
 ---
 
-## Vanlige problemer
+~~## Vanlige problemer
 
 ### `defaults.properties` mangler
 Kjør `setupLocalEnvironment.sh` på nytt. Krever aktiv naisdevice-tilkobling.
 
 ### Database-tilkobling feiler
-Sjekk at `startProxy.sh` kjører og at du har riktig brukernavn/passord fra Vault.
+Sjekk at `startProxy.sh` kjører og at du er koblet til sokos-utleggstrekk
 
-### MQ-tilkobling feiler lokalt
-MQ-tilkobling krever nettverkstilgang via naisdevice. Lokalt kan du deaktivere MQ-sending ved å sette Unleash-toggle `sokos-utleggstrekk.send-til-os.enabled` til false.
 
 ### Tester feiler med Docker-feil
-Testene krever Docker for Testcontainers (PostgreSQL). Sjekk at Docker kjører.
+Testene krever Docker for Testcontainers (PostgreSQL). Sjekk at Docker kjører.~~
 
 ---
 

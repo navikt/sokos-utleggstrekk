@@ -50,8 +50,8 @@ Hver time trigges `UtleggsTrekkService.schedule()` på minuttet konfigurert i `S
 1. **Henter nye trekkpålegg** fra Skatteetaten fra siste kjente sekvensnummer og lagrer disse i databasen
 2. **Behandler trekk** – sammenlikner med tidligere innrapporteringstrekk og genererer NY eller ENDR-dokumenter
 3. **Sender til Oppdrag Z** over IBM MQ
-4. **Mottar kvitteringer** fra Oppdrag Z og lagrer nav_trekk_id eller feilmeldinger
-5. **Sletter gamle data** – data som tilhører trekk avsluttet for mer enn 6 måneder siden
+
+4. **Sletter gamle data** – data som tilhører trekk avsluttet for mer enn 6 måneder siden
 
 ### Daglig jobb (kl 08:00)
 
@@ -78,8 +78,6 @@ Når et trekkpålegg fra Skatteetaten har perioder med **både** prosent og bel�
 |----------|---------|------------|-------|
 | NAIS_APP_NAME | sokos-utleggstrekk | Navnet på applikasjonen | NAIS |
 | NAIS_NAMESPACE | okonomi | Navnet på namespace | NAIS |
-| SCHEDULER_ACTIVE | false | Hvis true blir scheduleren aktivert | application.conf |
-| SCHEDULER_MINUTES | 45 | Minutt på timen jobben starter | application.conf |
 | SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL | | Webhook for Slack-alarmer | NAIS secret |
 | MASKINPORTEN_SYSTEMBRUKER_CLAIM | | Organisasjonsnummer for systembruker-claim | application.conf |
 
