@@ -47,18 +47,22 @@ Når et trekk er BEHANDLET finnes det dokumenter i `transaksjon_os`:
 title: Tilstandsflyt for transaksjon_os
 ---
 stateDiagram-v2
-    [*] --> IKKE_SENDT : Dokument opprettet
-    IKKE_SENDT --> SENDT : MQ-sending OK
-    IKKE_SENDT --> VALIDERINGSFEIL : Output-validering feilet
+    state "Transaksjonsstatus" as transaksjon_status {
+        [*] --> IKKE_SENDT : Dokument opprettet
+        IKKE_SENDT --> SENDT : MQ-sending OK
+        IKKE_SENDT --> VALIDERINGSFEIL : Output-validering feilet
+    }
 
-    state kvittering <<choice>>
-    SENDT --> kvittering : Kvittering mottatt
-    kvittering --> OK : Alvorlighetsgrad 00
-    kvittering --> FEIL : Alvorlighetsgrad 04/08
-    kvittering --> UKJENT : Annen verdi
-
-    SENDT --> IKKE_MOTTATT : Ingen kvittering (timeout)
+    state "Kvitteringsstatus" as kvittering_status {
+        [*] --> IKKE_MOTTATT
+        IKKE_MOTTATT --> OK : Alvorlighetsgrad 00
+        IKKE_MOTTATT --> FEIL : Alvorlighetsgrad 04/08
+        IKKE_MOTTATT --> UKJENT : Annen verdi
+    }
 ```
+
+Transaksjonsstatus og kvitteringsstatus lagres uavhengig av hverandre. En
+kvittering endrer derfor ikke transaksjonsstatusen `SENDT`.
 
 ### Transaksjonsstatus + kvitteringsstatus
 
