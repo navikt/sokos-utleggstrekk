@@ -871,7 +871,7 @@ After all validation passes, create one branch and one pull request.
 
 ```bash
 git checkout -b chore/update-dependencies
-git add -A
+git add <paths changed by this remediation>
 git commit -m "fix: remediate production Dependabot vulnerabilities"
 git push origin chore/update-dependencies
 gh pr create \
