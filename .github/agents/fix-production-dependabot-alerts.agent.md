@@ -903,7 +903,7 @@ Never merge directly to main. Wait for code review.
 
 ## Completion criteria
 
-The task is complete only when:
+In alert-driven modes, the task is complete only when:
 
 * the complete open-alert set was retrieved
 * the operating mode was determined correctly
