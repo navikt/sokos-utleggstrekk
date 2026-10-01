@@ -149,15 +149,9 @@ configurations.all {
                 useVersion("1.1.10.4")
                 because("snappy-java's missing upper bound check on chunk length can lead to Denial of Service (DoS) impact. Affected version <= 1.1.10.3")
             }
-            if (requested.group == "io.netty" && requested.name == "netty-codec-http") {
-                useVersion("4.2.13.Final")
-                because(
-                    "CVE-2026-42587: Netty HttpContentDecompressor maxAllocation bypass with br/zstd/snappy leads to decompression bomb DoS. Affected version = 4.2.11.Final, patched in >= 4.2.13.Final",
-                )
-            }
             if (requested.group == "io.netty") {
-                useVersion("4.2.15.Final")
-                because("Netty CVE remediation: CVE-2026-45536 and CVE-2026-48043")
+                useVersion("4.2.18.Final")
+                because("Netty CVE remediation: CVE-2026-42587, CVE-2026-45536, CVE-2026-48043 and CVE-2026-55831")
             }
             if (requested.group == "org.bouncycastle" && requested.name == "bcprov-jdk18on") {
                 useVersion("1.84")
@@ -172,18 +166,6 @@ configurations.all {
             if (requested.group == "org.bouncycastle" && requested.name == "bcutil-jdk18on") {
                 useVersion("1.84")
                 because("Upgrading bcutil-jdk18on to match bcpkix-jdk18on and bcprov-jdk18on versions for consistency")
-            }
-
-            // Moderate
-            if (requested.group == "com.squareup.okio" && requested.name == "okio") {
-                useVersion("3.4.0")
-                because("Okio Signed to Unsigned Conversion Error vulnerability. Affected version >= 2.0.0-RC1, < 3.4.0")
-            }
-
-            // Test
-            if (requested.group == "org.apache.commons" && requested.name == "commons-compress") { // ./gradlew dependencies --configuration testRuntimeClasspath | grep commons-compress
-                useVersion("1.26.0")
-                because("Apache Commons Compress: OutOfMemoryError unpacking broken Pack200 file. Affected version >= 1.21, < 1.26.0")
             }
         }
     }
