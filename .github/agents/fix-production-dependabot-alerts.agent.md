@@ -876,7 +876,7 @@ git commit -m "fix: remediate production Dependabot vulnerabilities"
 git push origin chore/update-dependencies
 gh pr create \
   --title "<descriptive title per Pull request title rules>" \
-  --body "<contents per Pull request description template>" \
+  --body-file "<path-to-completed-pr-description.md>" \
   --base main
 ```
 
