@@ -65,7 +65,7 @@ flowchart TB
 | Miljø | Kluster | Ingress | MQ Host |
 |-------|---------|---------|---------|
 | Dev | dev-gcp | sokos-utleggstrekk.intern.dev.nav.no | mqls02.preprod.local:1413 |
-| Prod | prod-gcp | sokos-utleggstrekk.intern.nav.no | mqls02.adeo.no:1414 |
+| Prod | prod-gcp | sokos-utleggstrekk.intern.nav.no | mpls02.adeo.no:1414 |
 
 ### Infrastrukturkomponenter
 
