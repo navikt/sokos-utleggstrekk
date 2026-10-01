@@ -114,8 +114,9 @@ sokos-utleggstrekk/
 │   │       ├── application.conf        # Hovedkonfigurasjon
 │   │       ├── application-{env}.conf  # Miljøoverstyrelser
 │   │       ├── db/migration/           # Flyway-migrasjoner
-│   │       └── ske_trekkeksempler/     # Eksempel-JSON fra SKE
+│   │      
 │   └── test/
+        └── resources/ske_trekkeksempler/ # Eksempel-JSON fra SKE
 ├── build.gradle.kts       # Bygg-konfigurasjon
 └── gradlew                # Gradle wrapper
 ```

@@ -34,6 +34,6 @@ Tabellene har fremmednøkler, så sletting skjer i riktig rekkefølge:
 
 ## Nøkkelpunkter
 
-- Kun trekk med `trekkstatus = AVSLUTTET` slettes
+- Når minst én avsluttet versjon er eldre enn 6 måneder, slettes alle versjoner og OS-transaksjoner med samme `trekkid`
 - 6-måneders grensen gir tid til manuell feiloppfølging
 - Kjøres alltid, uavhengig av feature toggles

@@ -22,8 +22,8 @@ C4Context
 
     Rel(app, ske, "Henter trekkpålegg", "REST/HTTPS")
     Rel(app, maskinporten, "Henter access token", "OAuth2 JWT Bearer")
-    Rel(app, oz, "Sender innrapporteringstrekk", "IBM MQ")
-    Rel(oz, app, "Kvitteringer", "IBM MQ")
+    Rel(app, os, "Sender innrapporteringstrekk", "IBM MQ")
+    Rel(os, app, "Kvitteringer", "IBM MQ")
     Rel(app, db, "Lese/skrive", "JDBC/PostgreSQL")
     Rel(app, slack, "Alarmer", "Webhook")
     Rel(app, unleash, "Feature toggles", "HTTP")
