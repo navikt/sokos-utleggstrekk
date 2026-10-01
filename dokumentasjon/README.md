@@ -16,6 +16,16 @@ Deployes i GCP (Google Cloud Platform) via NAIS.
 | [Datamodell](datamodell/README.md) | Databasetabeller og relasjoner |
 | [Driftshåndbok](drift/README.md) | Feilsituasjoner, korrigering og gjenoppbygging |
 
+### Detaljerte flytdiagrammer
+
+- [Oversikt](flytdiagram/00_oversikt.md)
+- [Henting fra Skatteetaten](flytdiagram/01_henting_fra_ske.md)
+- [Validering og lagring](flytdiagram/02_validering_og_lagring.md)
+- [Behandling](flytdiagram/03_behandling.md)
+- [Sending til Oppdrag Z](flytdiagram/04_sending_til_os.md)
+- [Kvittering](flytdiagram/05_kvittering.md)
+- [Opprydding](flytdiagram/06_opprydding.md)
+
 ---
 
 ## Hva gjør sokos-utleggstrekk?
