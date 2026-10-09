@@ -15,7 +15,7 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.applicationProperties
 import no.nav.sokos.utleggstrekk.config.applicationLifecycleConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
-import no.nav.sokos.utleggstrekk.config.mergeWithEnv
+import no.nav.sokos.utleggstrekk.config.loadConfig
 import no.nav.sokos.utleggstrekk.config.routingConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.scheduling.UtleggstrekkScheduler
@@ -26,7 +26,21 @@ fun main() {
 }
 
 private fun Application.module() {
-    PropertiesConfig.load(environment.config.mergeWithEnv())
+    PropertiesConfig.load(loadConfig())
+
+    log.info("--- Loaded Application Configuration ---")
+    log.info("applicationProperties = $applicationProperties")
+    log.info("skeConfig = ${PropertiesConfig.skeConfig}")
+    log.info(
+        "maskinportenClientConfig = ${PropertiesConfig.maskinportenClientConfig.clientId} ${PropertiesConfig.maskinportenClientConfig.wellKnownUrl} ${PropertiesConfig.maskinportenClientConfig.scopes} ${PropertiesConfig.maskinportenClientConfig.systemBrukerClaim}",
+    )
+    log.info(
+        "mqProperties = ${PropertiesConfig.mqProperties.hostname} ${PropertiesConfig.mqProperties.port} ${PropertiesConfig.mqProperties.mqQueueManagerName} ${PropertiesConfig.mqProperties.username} ${PropertiesConfig.mqProperties.queueName} ${PropertiesConfig.mqProperties.replyQueueName}",
+    )
+    log.info("postgresConfig = ${PropertiesConfig.postgresConfig.host} ${PropertiesConfig.postgresConfig.username} ${PropertiesConfig.postgresConfig.port} ${PropertiesConfig.postgresConfig.jdbcUrl}")
+    log.info("skeConfig = ${PropertiesConfig.slackConfig}")
+    log.info("unleashProperties = ${PropertiesConfig.unleashProperties}")
+    log.info("---------------------------------------")
 
     val applicationState = ApplicationState()
     val utleggsTrekkService = UtleggsTrekkService()
