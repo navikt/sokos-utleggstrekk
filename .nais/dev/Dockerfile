@@ -1,9 +1,7 @@
 FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jre:openjdk-25-dev@sha256:7509be568305c47fdb604f2c1842aba4b08964555cdfed6e97f51425e8e16d2a
 
 COPY build/install/*/lib /lib
-
+COPY .nais/dev/application.conf /app/
 ENV TZ="Europe/Oslo"
-# --enable-native-access=ALL-UNNAMED fjernes når ingen avhengigheter kaster WARNING etterhvert som Java 25 kommer med flere oppdateringer
-ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=75 --enable-native-access=ALL-UNNAMED"
 
 ENTRYPOINT ["java", "-cp", "/lib/*", "no.nav.sokos.utleggstrekk.ApplicationKt"]
