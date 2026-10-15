@@ -15,7 +15,7 @@ import no.nav.sokos.utleggstrekk.config.PropertiesConfig
 import no.nav.sokos.utleggstrekk.config.PropertiesConfig.applicationProperties
 import no.nav.sokos.utleggstrekk.config.applicationLifecycleConfig
 import no.nav.sokos.utleggstrekk.config.commonConfig
-import no.nav.sokos.utleggstrekk.config.mergeWithEnv
+import no.nav.sokos.utleggstrekk.config.loadConfig
 import no.nav.sokos.utleggstrekk.config.routingConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.scheduling.UtleggstrekkScheduler
@@ -26,7 +26,7 @@ fun main() {
 }
 
 private fun Application.module() {
-    PropertiesConfig.load(environment.config.mergeWithEnv())
+    PropertiesConfig.load(loadConfig())
 
     val applicationState = ApplicationState()
     val utleggsTrekkService = UtleggsTrekkService()
