@@ -285,7 +285,7 @@ class Repository(private val dataSource: DataSource) {
         }
     }
 
-    fun updateTransaksjonSendt(transaksjonId: String) {
+    fun updateTransaksjonSendt(transaksjonId: String, kvitteringStatus: KvitteringStatus) {
         dataSource.withTransaction { session ->
             session.update(
                 queryOf(
@@ -295,12 +295,14 @@ class Repository(private val dataSource: DataSource) {
                     SET 
                         transaksjon_status=:transaksjonStatus,
                         tidspunkt_siste_status=NOW(),
-                        tidspunkt_sendt=NOW()
+                        tidspunkt_sendt=NOW(),
+                        kvittering_status=:kvitteringStatus
                     WHERE transaksjons_id=:transaksjonsId
                     """.trimIndent(),
                     mapOf(
                         "transaksjonStatus" to TransaksjonsStatus.SENDT.name,
                         "transaksjonsId" to transaksjonId,
+                        "kvitteringStatus" to kvitteringStatus.name,
                     ),
                 ),
             )

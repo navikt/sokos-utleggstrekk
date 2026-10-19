@@ -26,6 +26,7 @@ import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkattMedStatus
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkattStatus
 import no.nav.sokos.utleggstrekk.database.TestRepository.insertTransaksjonTilOs
+import no.nav.sokos.utleggstrekk.database.TestRepository.klargjorTransaksjonForResending
 import no.nav.sokos.utleggstrekk.database.model.BetalingsinformasjonFraSkatt
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
@@ -113,22 +114,16 @@ class RepositoryTest :
                     "dummydokument",
                 )
             repository.insertTransaksjonTilOs(dtoSomErSendt)
-            repository.updateTransaksjonSendt(dtoSomErSendt.transaksjonID)
+            repository.updateTransaksjonSendt(dtoSomErSendt.transaksjonID, KvitteringStatus.IKKE_MOTTATT)
 
             Then("Finnes det en transaksjon som ikke er sendt") {
                 val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
                 ikkeSendt.shouldHaveSize(1)
             }
             Then("Den sendte transaksjonen har fått oppdatert tidspunkt") {
-                repository.withTransaction { session ->
-                    session.list(
-                        queryOf(
-                            // language=SQL
-                            "SELECT tidspunkt_sendt FROM transaksjon_os WHERE transaksjons_id=:transaksjonId",
-                            mapOf("transaksjonId" to dtoSomErSendt.transaksjonID),
-                        ),
-                    ) { row -> row.localDateTime("tidspunkt_sendt") } shouldNotBe null
-                }
+                val transaksjon = repository.getTransaksjonTilOs(dtoSomErSendt.transaksjonID).shouldNotBeNull()
+                transaksjon.tidspunktSendt.shouldNotBeNull()
+                transaksjon.tidspunktSisteStatus.shouldNotBeNull()
             }
         }
 
@@ -259,13 +254,12 @@ class RepositoryTest :
                 And("KvitteringStatus skal være KvitteringStatus.IKKE_MOTTATT") {
                     transaksjonTilOs.kvitteringStatus shouldBe KvitteringStatus.IKKE_MOTTATT
                 }
-                And("Tidspunktsendt skal være nå") {
-                    val now = dbNow()
-                    transaksjonTilOs.tidspunktSendt?.shouldBeIn(now.minusSeconds(10)..now)
+                And("Tidspunktsendt skal være null før sending") {
+                    transaksjonTilOs.tidspunktSendt.shouldBeNull()
                 }
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSisteStatus.shouldNotBeNull().shouldBeIn(now.minusSeconds(10)..now)
                 }
                 And("Enumverdier skal lagres korrekt") {
                     transaksjonTilOs.aksjonskode shouldBe Aksjonskode.NY
@@ -289,12 +283,12 @@ class RepositoryTest :
 
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSisteStatus.shouldNotBeNull().shouldBeIn(now.minusSeconds(10)..now)
                 }
             }
 
             When("Transaksjonstatus oppdateres til sendt") {
-                repository.updateTransaksjonSendt(dto.transaksjonID)
+                repository.updateTransaksjonSendt(dto.transaksjonID, KvitteringStatus.IKKE_MOTTATT)
 
                 val transaksjonTilOs = repository.getTransaksjonTilOs(dto.transaksjonID)
                 transaksjonTilOs.shouldNotBeNull()
@@ -305,12 +299,12 @@ class RepositoryTest :
 
                 And("Tidspunktsendt skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSendt?.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSendt.shouldNotBeNull().shouldBeIn(now.minusSeconds(10)..now)
                 }
 
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSisteStatus.shouldNotBeNull().shouldBeIn(now.minusSeconds(10)..now)
                 }
             }
 
@@ -327,17 +321,59 @@ class RepositoryTest :
                 }
                 And("Tidspunktsistestatus skal være nå") {
                     val now = dbNow()
-                    transaksjonTilOs.tidspunktSisteStatus?.shouldBeIn(now.minusSeconds(10)..now)
+                    transaksjonTilOs.tidspunktSisteStatus.shouldNotBeNull().shouldBeIn(now.minusSeconds(10)..now)
                 }
                 And("Navtrekkid skal ikke være blank") {
                     transaksjonTilOs.navTrekkId shouldBe nyNavTrekkId
                 }
             }
             When("transaksjonstatus er SENDT og kvitteringsstatus er IKKE_MOTTAT") {
-                repository.updateTransaksjonSendt(dto.transaksjonID)
-                Then("getTransakjonerTilOsSomManglerKvittering skal ikke være null") {
+                repository.updateTransaksjonSendt(dto.transaksjonID, KvitteringStatus.IKKE_MOTTATT)
+                repository.updateReceiptStatusOfTransaksjon(dto.transaksjonID, KvitteringStatus.IKKE_MOTTATT, "")
+                Then("Transaksjonen skal finnes blant dem som mangler kvittering") {
                     val transaksjonTilOs = repository.getTransakjonerTilOsSomManglerKvittering()
-                    transaksjonTilOs.shouldNotBeNull()
+                    transaksjonTilOs.map { it.transaksjonsID } shouldBe listOf(dto.transaksjonID)
+                }
+            }
+        }
+
+        KvitteringStatus.entries.forEach { forrigeKvitteringStatus ->
+            Given("En sendt transaksjon med kvitteringsstatus $forrigeKvitteringStatus skal resendes") {
+                DBListener.clearDB()
+                val dto =
+                    OSDto(
+                        transaksjonID = "Resending-$forrigeKvitteringStatus",
+                        trekkIDSke = "ResendtTrekk",
+                        trekkversjon = 1,
+                        innrapporteringTrekk = dummyInnrapporteringTrekk,
+                        documentJson = "",
+                    )
+                repository.insertTransaksjonTilOs(dto)
+                repository.updateTransaksjonSendt(dto.transaksjonID, KvitteringStatus.IKKE_MOTTATT)
+                repository.updateReceiptStatusOfTransaksjon(dto.transaksjonID, forrigeKvitteringStatus, "navTrekkId")
+                val forrigeSendetidspunkt = dbNow().minusDays(2)
+                repository.klargjorTransaksjonForResending(dto.transaksjonID, forrigeSendetidspunkt)
+
+                When("Transaksjonen markeres som sendt på nytt") {
+                    repository.getTransaksjonerTilOsSomIkkeErSendt().map { it.transaksjonsID } shouldBe listOf(dto.transaksjonID)
+                    val tidligsteSendetidspunkt = dbNow()
+                    repository.updateTransaksjonSendt(dto.transaksjonID, KvitteringStatus.IKKE_MOTTATT)
+                    val senesteSendetidspunkt = dbNow()
+                    val transaksjon = repository.getTransaksjonTilOs(dto.transaksjonID).shouldNotBeNull()
+
+                    Then("Begge tidspunktene erstattes med tidspunktet for resendingen") {
+                        transaksjon.tidspunktSendt.shouldNotBeNull().shouldBeIn(tidligsteSendetidspunkt..senesteSendetidspunkt)
+                        transaksjon.tidspunktSisteStatus.shouldNotBeNull().shouldBeIn(tidligsteSendetidspunkt..senesteSendetidspunkt)
+                        transaksjon.tidspunktSendt shouldNotBe forrigeSendetidspunkt
+                        transaksjon.tidspunktSisteStatus shouldNotBe forrigeSendetidspunkt
+                    }
+
+                    Then("Transaksjonen er sendt og venter på en ny kvittering") {
+                        transaksjon.transaksjonStatus shouldBe TransaksjonsStatus.SENDT
+                        transaksjon.kvitteringStatus shouldBe KvitteringStatus.IKKE_MOTTATT
+                        repository.getTransaksjonerTilOsSomIkkeErSendt().shouldHaveSize(0)
+                        repository.getTransakjonerTilOsSomManglerKvittering().map { it.transaksjonsID } shouldBe listOf(dto.transaksjonID)
+                    }
                 }
             }
         }
@@ -482,7 +518,7 @@ class RepositoryTest :
             }
 
             When("Vi oppdaterer en transaksjonstatus") {
-                repository.updateTransaksjonSendt(transaksjonsId3)
+                repository.updateTransaksjonSendt(transaksjonsId3, KvitteringStatus.IKKE_MOTTATT)
 
                 Then("Skal ny status settes korrekt") {
                     val transaksjoner = repository.getTransaksjonerTilOsForTrekkID(trekkId)
@@ -544,7 +580,7 @@ class RepositoryTest :
             }
 
             When("Vi henter perioder for TrekkID '$trekkIdSke' og TrekkAlternativ '$alternativ'") {
-                repository.updateTransaksjonSendt(dto.transaksjonID)
+                repository.updateTransaksjonSendt(dto.transaksjonID, KvitteringStatus.IKKE_MOTTATT)
 
                 val fetchedPerioder = repository.getPerioderTilOs(trekkIdSke, alternativ)
 

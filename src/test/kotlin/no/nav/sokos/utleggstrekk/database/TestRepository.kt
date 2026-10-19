@@ -1,5 +1,8 @@
 package no.nav.sokos.utleggstrekk.database
 
+import java.time.LocalDateTime
+
+import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 
 import no.nav.sokos.utleggstrekk.database.model.Feilmelding
@@ -10,6 +13,26 @@ import no.nav.sokos.utleggstrekk.domene.nav.OSDto
 
 object TestRepository {
     fun Repository.insertTransaksjonTilOs(dto: OSDto) = withTransaction { session -> insertTransaksjonTilOs(dto, session) }
+
+    fun Repository.klargjorTransaksjonForResending(transaksjonsId: String, forrigeSendetidspunkt: LocalDateTime) {
+        withTransaction { session ->
+            session.update(
+                queryOf(
+                    """
+                    UPDATE transaksjon_os
+                    SET transaksjon_status = 'IKKE_SENDT',
+                        tidspunkt_sendt = :tidspunkt,
+                        tidspunkt_siste_status = :tidspunkt
+                    WHERE transaksjons_id = :transaksjonsId
+                    """.trimIndent(),
+                    mapOf(
+                        "tidspunkt" to forrigeSendetidspunkt,
+                        "transaksjonsId" to transaksjonsId,
+                    ),
+                ),
+            ) shouldBe 1
+        }
+    }
 
     fun Repository.getTransaksjonTilOs(transaksjonsId: String): TransaksjonOS? =
         withTransaction { session ->
