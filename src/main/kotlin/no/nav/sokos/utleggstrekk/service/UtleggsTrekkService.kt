@@ -96,9 +96,11 @@ class UtleggsTrekkService(
         // Sortert for at vi ikke skal hoppe over noen i sekvens dersom vi feiler før alle er lagret.
         trekkpaalegg.sortedBy { it.sekvensnummer }.forEach { trekk ->
             var status = SkattTrekkStatus.MOTTATT
+            var valideringsfeil: String? = null
             try {
                 trekk.validate()
             } catch (e: IllegalArgumentException) {
+                valideringsfeil = e.message
                 val errorMessage = "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}: ${e.message}"
                 logger.error(errorMessage)
                 logger.error(TEAM_LOGS_MARKER, errorMessage, e)
@@ -107,7 +109,7 @@ class UtleggsTrekkService(
                 status = SkattTrekkStatus.AVVIST
             }
             try {
-                repository.insertTrekkFraSkatt(trekk, status)
+                repository.insertTrekkFraSkatt(trekk, status, valideringsfeil)
                 utleggstrekkFraSkatt.inc()
             } catch (e: Exception) {
                 logger.error("Kunne ikke lagre trekkpålegg sekvens #${trekk.sekvensnummer} ")

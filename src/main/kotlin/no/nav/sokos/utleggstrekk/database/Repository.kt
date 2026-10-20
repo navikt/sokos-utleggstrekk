@@ -72,7 +72,7 @@ class Repository(private val dataSource: DataSource) {
         }
     }
 
-    fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg, status: SkattTrekkStatus = SkattTrekkStatus.MOTTATT): Long? =
+    fun insertTrekkFraSkatt(trekkpaalegg: Trekkpaalegg, status: SkattTrekkStatus = SkattTrekkStatus.MOTTATT, valideringsfeil: String? = null): Long? =
         dataSource.withTransaction { session ->
             val fraSkattId =
                 session.updateAndReturnGeneratedKey(
@@ -150,12 +150,13 @@ class Repository(private val dataSource: DataSource) {
                 queryOf(
                     // language=SQL
                     """
-                    INSERT INTO fraskatt_status(fraskatt_id, status)
-                        VALUES(:fraskattID, :status)
+                    INSERT INTO fraskatt_status(fraskatt_id, status, valideringsfeil)
+                        VALUES(:fraskattID, :status, :valideringsfeil)
                     """.trimIndent(),
                     mapOf(
                         "fraskattID" to fraSkattId,
                         "status" to status.name,
+                        "valideringsfeil" to valideringsfeil,
                     ),
                 ),
             )

@@ -93,6 +93,7 @@ class ValidationTest :
                     withClue("TREKK nr. $i, $ugyldigTrekk skal ikke validere") {
                         val exception = shouldThrow<IllegalArgumentException> { ugyldigTrekk.validate() }
                         exception.message shouldContain expected
+                        exception.cause?.message shouldContain expected.substringAfter("message: ")
                     }
                 }
             }
