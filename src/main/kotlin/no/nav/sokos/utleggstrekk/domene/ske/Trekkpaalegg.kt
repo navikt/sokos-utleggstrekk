@@ -87,11 +87,11 @@ fun Betalingsinformasjon.validate() {
 
 fun TrekkstorrelseForPeriode.validate() {
     if (trekkprosent != null) require(trekkprosent.trekkprosent in 0.0..100.0) { "Trekkprosent har ulovlig verdi" }
-    if (trekkbeloep != null) require(trekkbeloep.trekkbeloep >= 0.0) { "Trekkbeloep ulovlig verdi" }
+    if (trekkbeloep != null) require(trekkbeloep.trekkbeloep >= 0.0) { "Trekkbeloep har ulovlig verdi" }
     require(startdato.isDate()) { "Startdato har ulovlig verdi" }
     if (sluttdato != null) {
         require(sluttdato.isDate()) { "Sluttdato har ulovlig verdi" }
 
-        require(!LocalDate.parse(startdato).isAfter(LocalDate.parse(sluttdato))) { "Sluttdato må ikke være før startdato" }
+        require(!LocalDate.parse(startdato).isAfter(LocalDate.parse(sluttdato))) { "Sluttdato($sluttdato) må ikke være før startdato($startdato)" }
     }
 }

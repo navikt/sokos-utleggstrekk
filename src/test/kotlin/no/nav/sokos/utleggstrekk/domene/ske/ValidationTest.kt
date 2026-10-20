@@ -79,7 +79,7 @@ class ValidationTest :
                     trekkpaalegg.copy(trekkstoerrelseForPeriode = listOf(trekkpaalegg.trekkstoerrelseForPeriode.first().copy(startdato = "342"))) to "message: Startdato har ulovlig verdi",
                     trekkpaalegg.copy(trekkstoerrelseForPeriode = listOf(trekkpaalegg.trekkstoerrelseForPeriode.first().copy(sluttdato = "342"))) to "message: Sluttdato har ulovlig verdi",
                     trekkpaalegg.copy(trekkstoerrelseForPeriode = listOf(trekkpaalegg.trekkstoerrelseForPeriode.first().copy(trekkbeloep = Trekkbeloep(-1000.0)))) to
-                        "message: Trekkbeloep ulovlig verdi",
+                        "message: Trekkbeloep har ulovlig verdi",
                     trekkpaalegg.copy(trekkstoerrelseForPeriode = listOf(trekkpaalegg.trekkstoerrelseForPeriode.first().copy(trekkbeloep = null, trekkprosent = Trekkprosent(110.0)))) to
                         "message: Trekkprosent har ulovlig verdi",
                     trekkpaalegg.copy(trekkstoerrelseForPeriode = listOf(trekkpaalegg.trekkstoerrelseForPeriode.first().copy(trekkbeloep = null, trekkprosent = Trekkprosent(-20.0)))) to
@@ -103,7 +103,11 @@ class ValidationTest :
                     val trekkpaalegg =
                         trekkpaalegg.copy(
                             trekkstoerrelseForPeriode =
-                                listOf(trekkpaalegg.trekkstoerrelseForPeriode.first().copy(sluttdato = trekkpaalegg.trekkstoerrelseForPeriode.first().startdato)),
+                                listOf(
+                                    trekkpaalegg.trekkstoerrelseForPeriode
+                                        .first()
+                                        .copy(sluttdato = trekkpaalegg.trekkstoerrelseForPeriode.first().startdato),
+                                ),
                         )
                     trekkpaalegg.validate()
                 }

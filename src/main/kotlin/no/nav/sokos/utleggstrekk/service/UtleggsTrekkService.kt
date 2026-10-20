@@ -98,9 +98,10 @@ class UtleggsTrekkService(
             try {
                 trekk.validate()
             } catch (e: IllegalArgumentException) {
-                logger.error("Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}")
-                logger.error(TEAM_LOGS_MARKER, "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}", e)
-                slackService.addError(ErrorHeader.FEIL_I_VALIDERING, "Ugyldige verdier i trekk fra skatt: $e", trekk.trekkid)
+                val errorMessage = "Ugyldige verdier i trekk fra skatt med id ${trekk.trekkid}: ${e.message}"
+                logger.error(errorMessage)
+                logger.error(TEAM_LOGS_MARKER, errorMessage, e)
+                slackService.addError(ErrorHeader.FEIL_I_VALIDERING, errorMessage, trekk.trekkid)
                 slackService.sendCachedErrors(ErrorCategory.TREKK_HENTING)
                 status = SkattTrekkStatus.AVVIST
             }
