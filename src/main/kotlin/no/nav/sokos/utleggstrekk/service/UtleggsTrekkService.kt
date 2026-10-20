@@ -16,6 +16,7 @@ import no.nav.sokos.utleggstrekk.config.TEAM_LOGS_MARKER
 import no.nav.sokos.utleggstrekk.config.jsonConfig
 import no.nav.sokos.utleggstrekk.database.PostgresDataSource
 import no.nav.sokos.utleggstrekk.database.Repository
+import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
 import no.nav.sokos.utleggstrekk.database.model.SkattTrekkStatus
 import no.nav.sokos.utleggstrekk.database.model.TransaksjonOS
 import no.nav.sokos.utleggstrekk.domene.nav.ErrorCategory
@@ -133,9 +134,9 @@ class UtleggsTrekkService(
         }
     }
 
-    private fun updateTransactionAfterSending(transaksjonId: String) {
+    private fun updateTransactionAfterSending(transaksjonId: String, kvitteringStatus: KvitteringStatus = KvitteringStatus.IKKE_MOTTATT) {
         runCatching {
-            repository.updateTransaksjonSendt(transaksjonId)
+            repository.updateTransaksjonSendt(transaksjonId, kvitteringStatus)
         }.onFailure { e ->
             logger.error(e) { "Kunne ikke oppdatere transaksjon status for $transaksjonId" }
             slackService.addError(ErrorHeader.DATABASE_ERROR, "Kunne ikke oppdatere transaksjon status", transaksjonId)

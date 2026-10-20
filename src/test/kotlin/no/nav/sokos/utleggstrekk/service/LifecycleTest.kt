@@ -177,7 +177,7 @@ internal class LifecycleTest :
             val idToTrekkId = trekkId.associateWith { repository.getTrekkFraSkatt(it).trekkid }
             service.behandleTrekk()
             val ikkeSendt = repository.getTransaksjonerTilOsSomIkkeErSendt()
-            ikkeSendt.forEach { repository.updateTransaksjonSendt(it.transaksjonsID) }
+            ikkeSendt.forEach { repository.updateTransaksjonSendt(it.transaksjonsID, KvitteringStatus.IKKE_MOTTATT) }
             val skalSlettes1 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv1" }!!
             repository.updateReceiptStatusOfTransaksjon(skalSlettes1.transaksjonsID, KvitteringStatus.OK, "navid1")
             val skalSlettes2 = ikkeSendt.find { it.trekkIdSke == "1" && it.kreditorsref == "gammelv2" }!!
