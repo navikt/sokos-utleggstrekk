@@ -27,6 +27,7 @@ import no.nav.sokos.utleggstrekk.database.Repository
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTransaksjonTilOs
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkatt
 import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkattStatus
+import no.nav.sokos.utleggstrekk.database.TestRepository.getTrekkFraSkattValideringsfeil
 import no.nav.sokos.utleggstrekk.database.TestRepository.insertTransaksjonTilOs
 import no.nav.sokos.utleggstrekk.database.TestRepository.klargjorTransaksjonForResending
 import no.nav.sokos.utleggstrekk.database.model.KvitteringStatus
@@ -117,6 +118,7 @@ internal class UtleggsTrekkServiceTest :
                 Then("Skal trekkpaalegget lagres i databasen") {
                     val trekkFraSkatt = repository.getTrekkFraSkatt(trekkpaalegg.trekkid, trekkpaalegg.trekkversjon)
                     trekkFraSkatt.shouldNotBeNull()
+                    repository.getTrekkFraSkattValideringsfeil(trekkFraSkatt.id).shouldBeNull()
 
                     withClue("Perioder skal lagres") {
                         val perioder = repository.getPerioderForTrekkVersjon(trekkFraSkatt.id)
@@ -397,6 +399,20 @@ internal class UtleggsTrekkServiceTest :
                 utleggsTrekkService.schedule()
                 Then("Blir status AVVIST") {
                     repository.getTrekkFraSkattStatus(1) shouldBe SkattTrekkStatus.AVVIST
+                }
+                Then("Lagres den opprinnelige valideringsfeilen og sendes til Slack") {
+                    val trekkFraSkatt = repository.getTrekkFraSkatt(trekkpaalegg.trekkid, trekkpaalegg.trekkversjon).shouldNotBeNull()
+                    val expected =
+                        "Trekkpaalegg validation failed: trekkid: ${trekkpaalegg.trekkid}, trekkversjon: ${trekkpaalegg.trekkversjon}, " +
+                            "sekvensnummer: ${trekkpaalegg.sekvensnummer}, message: skyldner har ulovlig verdi"
+                    repository.getTrekkFraSkattValideringsfeil(trekkFraSkatt.id) shouldBe expected
+                    verify(exactly = 1) {
+                        slackService.addError(
+                            ErrorHeader.FEIL_I_VALIDERING,
+                            "Ugyldige verdier i trekk fra skatt med id ${trekkpaalegg.trekkid}: $expected",
+                            trekkpaalegg.trekkid,
+                        )
+                    }
                 }
             }
         }

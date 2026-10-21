@@ -120,6 +120,16 @@ object TestRepository {
             }
         }
 
+    fun Repository.getTrekkFraSkattValideringsfeil(id: Long): String? =
+        withTransaction { session ->
+            session.single(
+                queryOf(
+                    "SELECT valideringsfeil FROM fraskatt_status WHERE fraskatt_id = :id",
+                    mapOf("id" to id),
+                ),
+            ) { row -> row.stringOrNull("valideringsfeil") }
+        }
+
     fun Repository.getFeilmeldingerFraOS(transaksjonsId: String): Feilmelding? =
         withTransaction { session ->
             session.single(
