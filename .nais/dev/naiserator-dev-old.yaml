@@ -1,0 +1,84 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: sokos-utleggstrekk
+  namespace: okonomi
+  labels:
+    team: okonomi
+spec:
+  image: {{image}}
+  port: 8080
+  replicas:
+    min: 0
+    max: 0
+  webproxy: true
+  resources:
+    limits:
+      memory: 4096Mi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+  liveness:
+    path: /internal/isAlive
+    initialDelay: 10
+    timeout: 5
+    periodSeconds: 5
+    failureThreshold: 30
+  readiness:
+    path: /internal/isReady
+    initialDelay: 10
+    periodSeconds: 5
+    timeout: 5
+  azure:
+    application:
+      enabled: true
+      allowAllUsers: true
+      claims:
+        extra:
+          - NAVident
+  accessPolicy:
+    inbound:
+      rules:
+        - application: azure-token-generator
+          namespace: nais
+          cluster: dev-gcp
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
+      external:
+        - host: okonomi-unleash-api.nav.cloud.nais.io
+        - host: mqls02.preprod.local
+          ports:
+            - port: 1413
+        - host: api-test.sits.no
+        - host: hooks.slack.com
+  ingresses:
+    - https://sokos-utleggstrekk.intern.dev.nav.no
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  vault:
+    enabled: true
+  maskinporten:
+    enabled: true
+    scopes:
+      consumes:
+        - name: skatteetaten:trekkpaalegg
+  envFrom:
+    - secret: sokos-utleggstrekk-secrets
+    - secret: sokos-utleggstrekk-unleash-api-token
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_18
+        diskAutoresize: true
+        pointInTimeRecovery: true
+        tier: db-f1-micro
+        diskType: SSD
+        databases:
+          - name: sokos-utleggstrekk
+            envVarPrefix: POSTGRES
