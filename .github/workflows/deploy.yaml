@@ -76,7 +76,7 @@ jobs:
     uses: navikt/skatt-og-trekk-gha-workflows/.github/workflows/nais-deploy.yaml@f6a6b44d0edd525d7cc0614394a4af5a2b7ea04d # ratchet:navikt/skatt-og-trekk-gha-workflows/.github/workflows/nais-deploy.yaml@v1.1.2
     with:
       cluster: dev-gcp
-      resource: .nais/dev/naiserator-dev-old.yaml
+      resource: .nais/dev/naiserator-dev.yaml
       image: ${{ needs.build-push-image-dev.outputs.image }}
 
   deploy-prod:
