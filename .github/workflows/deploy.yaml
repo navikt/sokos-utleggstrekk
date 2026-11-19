@@ -20,6 +20,8 @@ on:
       - '.github/workflows/manual-deploy.yaml'
       - '.github/workflows/unleash.yaml'
       - '.github/dependabot.yaml'
+  schedule:
+    - cron: '0 8 * * 1'
 
 env:
   TZ: Europe/Oslo
