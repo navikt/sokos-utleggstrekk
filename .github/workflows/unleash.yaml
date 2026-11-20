@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/workflows/unleash.yaml'
       - '.nais/dev/unleash-dev.yaml'
-      - '.nais/dev/unleash-prod.yaml'
+      - '.nais/prod/unleash-prod.yaml'
 
 env:
   TZ: Europe/Oslo
