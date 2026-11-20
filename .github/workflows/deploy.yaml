@@ -91,5 +91,5 @@ jobs:
     uses: navikt/skatt-og-trekk-gha-workflows/.github/workflows/nais-deploy.yaml@f6a6b44d0edd525d7cc0614394a4af5a2b7ea04d # ratchet:navikt/skatt-og-trekk-gha-workflows/.github/workflows/nais-deploy.yaml@v1.1.2
     with:
       cluster: prod-gcp
-      resource: .nais/prod/naiserator-prod.yaml
+      resource: .nais/prod/naiserator-prod-migratie.yaml
       image: ${{ needs.build-push-image-prod.outputs.image }}

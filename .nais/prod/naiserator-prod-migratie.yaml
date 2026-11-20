@@ -2,15 +2,15 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: sokos-utleggstrekk
-  namespace: okonomi
+  namespace: skatt-og-trekk
   labels:
-    team: okonomi
+    team: skatt-og-trekk
 spec:
   image: {{image}}
   port: 8080
   replicas:
-    min: 0
-    max: 0
+    min: 1
+    max: 1
   webproxy: true
   resources:
     limits:
@@ -37,24 +37,19 @@ spec:
         extra:
           - NAVident
   accessPolicy:
-    inbound:
-      rules:
-        - application: azure-token-generator
-          namespace: nais
-          cluster: dev-gcp
     outbound:
       rules:
         - application: logging
           namespace: nais-system
       external:
-        - host: okonomi-unleash-api.nav.cloud.nais.io
-        - host: mqls02.preprod.local
+        - host: skatt-og-trekk-unleash-api.nav.cloud.nais.io
+        - host: mpls02.adeo.no
           ports:
-            - port: 1413
-        - host: api-test.sits.no
+            - port: 1414
+        - host: api.skatteetaten.no
         - host: hooks.slack.com
   ingresses:
-    - https://sokos-utleggstrekk.intern.dev.nav.no
+    - https://sokos-utleggstrekk.intern.nav.no
   prometheus:
     enabled: true
     path: /internal/metrics
@@ -75,10 +70,22 @@ spec:
   gcp:
     sqlInstances:
       - type: POSTGRES_18
+        highAvailability: true
         diskAutoresize: true
         pointInTimeRecovery: true
-        tier: db-f1-micro
-        diskType: SSD
+        autoBackupHour: 3
+        tier: db-custom-1-3840
         databases:
           - name: sokos-utleggstrekk
             envVarPrefix: POSTGRES
+        flags:
+          - name: "cloudsql.enable_pgaudit"
+            value: "on"
+          - name: "pgaudit.log"
+            value: "write,ddl,role"
+          - name: "pgaudit.log_parameter"
+            value: "on"
+          - name: "pgaudit.log_relation"
+            value: "on"
+          - name: "cloudsql.logical_decoding"
+            value: "on"
