@@ -77,7 +77,7 @@ N책r et trekkp책legg fra Skatteetaten har perioder med **b책de** prosent og bel�
 | Property | Default | Forklaring | Kilde |
 |----------|---------|------------|-------|
 | NAIS_APP_NAME | sokos-utleggstrekk | Navnet p책 applikasjonen | NAIS |
-| NAIS_NAMESPACE | okonomi | Navnet p책 namespace | NAIS |
+| NAIS_NAMESPACE | skatt-og-trekk | Navnet p책 namespace | NAIS |
 | SOKOS_UTLEGGSTREKK_SLACK_WEBHOOK_URL | | Webhook for Slack-alarmer | NAIS secret |
 | MASKINPORTEN_SYSTEMBRUKER_CLAIM | | Organisasjonsnummer for systembruker-claim | application.conf |
 
@@ -117,7 +117,7 @@ N책r et trekkp책legg fra Skatteetaten har perioder med **b책de** prosent og bel�
 
 ## Feature Toggles (Unleash)
 
-Tre kill-switcher i [Unleash](https://okonomi-unleash-web.iap.nav.cloud.nais.io/):
+Tre kill-switcher i [Unleash](https://skatt-og-trekk-unleash-web.iap.nav.cloud.nais.io/):
 
 | Toggle | Styrer |
 |--------|--------|

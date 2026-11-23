@@ -128,7 +128,7 @@ sokos-utleggstrekk/
 | Formål | URL |
 |--------|-----|
 | Applikasjon | https://sokos-utleggstrekk.intern.dev.nav.no |
-| Unleash | https://okonomi-unleash-web.iap.nav.cloud.nais.io/ |
+| Unleash | https://skatt-og-trekk-unleash-web.iap.nav.cloud.nais.io/ |
 | Grafana/Metrikker | Via NAIS-dashboards |
 | Logs (Kibana) | Via nav.no/logs |
 
