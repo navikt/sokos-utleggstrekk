@@ -90,7 +90,7 @@ data class ApplicationProperties(
 @Serializable
 data class SchedulerProperties(
     val isActive: Boolean = false,
-    val minutes: Int = 45,
+    val minutes: Int = 5,
 )
 
 @Serializable
